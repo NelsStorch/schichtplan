@@ -734,6 +734,8 @@ model EventMessage {
   targetLabel    String   @map("target_label")
   recipientCount Int      @map("recipient_count")
   failedCount    Int      @default(0) @map("failed_count")
+  // Alle Empfänger*innen (E-Mail und/oder Push), für den Verlauf pro Person
+  recipientUserIds String[] @default([]) @map("recipient_user_ids")
   createdAt      DateTime @default(now()) @map("created_at")
 
   event          Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)

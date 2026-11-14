@@ -76,6 +76,49 @@ describe.skipIf(!hasTestDb)('OK-Werkzeuge: Nachrichten und Massenbearbeitung', (
       expect(history.json()[0]).toMatchObject({ subject: 'Treffpunkt', targetLabel: 'Eingetragene in 1 Schicht', recipientCount: 1 });
     });
 
+    it('zeigt im Verlauf einer Person Eintragungen und erhaltene Nachrichten, nur für das OK', async () => {
+      const { department, lead, event } = await setup();
+      const shift = await createShift(app, event.id, { title: 'Bar' });
+      const helper = await createUser(app, { firstName: 'Anna', lastName: 'Muster' });
+      const other = await createUser(app, { firstName: 'Ben', lastName: 'Anders' });
+      await app.prisma.shiftSignup.create({ data: { shiftId: shift.id, userId: helper.id } });
+      await app.prisma.shiftSignupLog.createMany({
+        data: [
+          { eventId: event.id, shiftId: shift.id, action: 'SIGNUP', helperUserId: helper.id, helperName: 'Anna Muster', shiftTitle: 'Bar' },
+          { eventId: event.id, shiftId: shift.id, action: 'SIGNUP', helperUserId: other.id, helperName: 'Ben Anders', shiftTitle: 'Bar' },
+        ],
+      });
+
+      const send = await inject(app, {
+        method: 'POST',
+        url: `/api/events/${event.slug}/messages`,
+        tenant: department.slug,
+        cookie: authCookie(app, lead),
+        payload: { subject: 'Bitte eintragen', body: 'Es fehlen noch Schichten.', target: 'PEOPLE', userIds: [helper.id] },
+      });
+      expect(send.statusCode).toBe(200);
+
+      const url = `/api/events/${event.slug}/person-history?userId=${helper.id}`;
+      const res = await inject(app, { method: 'GET', url, tenant: department.slug, cookie: authCookie(app, lead) });
+      expect(res.statusCode).toBe(200);
+      const body = res.json();
+      expect(body.logs).toHaveLength(1);
+      expect(body.logs[0]).toMatchObject({ action: 'SIGNUP', helperName: 'Anna Muster' });
+      expect(body.messages).toHaveLength(1);
+      expect(body.messages[0]).toMatchObject({ subject: 'Bitte eintragen' });
+
+      const otherRes = await inject(app, {
+        method: 'GET',
+        url: `/api/events/${event.slug}/person-history?userId=${other.id}`,
+        tenant: department.slug,
+        cookie: authCookie(app, lead),
+      });
+      expect(otherRes.json().messages).toHaveLength(0);
+
+      const denied = await inject(app, { method: 'GET', url, tenant: department.slug, cookie: authCookie(app, helper) });
+      expect(denied.statusCode).toBe(403);
+    });
+
     it('bezieht Schicht- und Tages-Verantwortliche bei ALL und SHIFTS mit ein', async () => {
       const { department, lead, event } = await setup();
       const shift1 = await createShift(app, event.id, {

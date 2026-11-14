@@ -1259,6 +1259,14 @@ export interface EventMessageDto {
   createdAt: string;
 }
 
+/** Verlauf einer Person an einem Anlass (GET /api/events/:slug/person-history) */
+export interface PersonHistoryDto {
+  /** Ein- und Austragungen, Übernahmen, Anwesenheit (neueste zuerst) */
+  logs: ShiftSignupLogDto[];
+  /** OK-Nachrichten, die an die Person gingen (neueste zuerst), nur für Personen mit Konto */
+  messages: { id: string; subject: string; sentByName: string; targetLabel: string; createdAt: string }[];
+}
+
 /** Antwort von POST /api/events/:slug/messages (bei dryRun ohne Versand) */
 export interface EventMessageResultDto {
   recipientCount: number;

@@ -7,6 +7,7 @@ import {
   SetDayResponsiblesSchema,
   UnregisterHelperSchema,
   type AttendanceStatus,
+  type PersonHistoryDto,
   type ShiftSignupLogAction,
 } from '@schichtplan/shared';
 import {
@@ -461,6 +462,89 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
         attendance: l.attendance as AttendanceStatus | null,
         createdAt: l.createdAt.toISOString(),
       }));
+    }
+  );
+
+  // Verlauf einer einzelnen Person: Eintragungen/Austragungen und erhaltene OK-Nachrichten (Abteilungsleitung ODER Event-OK)
+  fastify.get<{ Params: { slug: string }; Querystring: { userId?: string; guestName?: string } }>(
+    '/api/events/:slug/person-history',
+    {
+      schema: {
+        tags: ['Events'],
+        summary: 'Verlauf einer Person am Anlass abrufen',
+        description:
+          'Liefert alle Ein- und Austragungen, Übernahmen und Anwesenheitsänderungen einer Person sowie die OK-Nachrichten, die an sie gingen.',
+        security: [{ bearerAuth: [] }],
+        params: z.object({
+          slug: z.string().describe('Slug des Anlasses'),
+        }),
+        querystring: z.object({
+          userId: z.string().max(100).optional().describe('Person mit Konto'),
+          guestName: z.string().min(1).max(200).optional().describe('Gast ohne Konto (Name wie eingetragen)'),
+        }),
+      },
+      preHandler: [fastify.authenticate],
+    },
+    async (request, reply) => {
+      if (!request.tenant) {
+        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+      }
+      if (Boolean(request.query.userId) === Boolean(request.query.guestName)) {
+        return reply.status(400).send({ error: 'Entweder userId oder guestName angeben' });
+      }
+
+      const event = await fastify.prisma.event.findUnique({
+        where: { departmentId_slug: { departmentId: request.tenant.id, slug: request.params.slug } },
+        include: { organizers: true },
+      });
+      if (!event) {
+        return reply.status(404).send({ error: 'Event nicht gefunden' });
+      }
+
+      const flags = await managerFlags(fastify.prisma, event, request.user);
+      if (!flags.isManager) {
+        return reply.status(403).send({ error: 'Keine Berechtigung zum Einsehen des Verlaufs' });
+      }
+      reply.header('Cache-Control', 'no-store');
+
+      const { userId, guestName } = request.query;
+      const [logs, messages] = await Promise.all([
+        fastify.prisma.shiftSignupLog.findMany({
+          where: userId
+            ? { eventId: event.id, helperUserId: userId }
+            : { eventId: event.id, helperUserId: null, helperName: guestName },
+          orderBy: { createdAt: 'desc' },
+          take: 200,
+        }),
+        userId
+          ? fastify.prisma.eventMessage.findMany({
+              where: { eventId: event.id, recipientUserIds: { has: userId } },
+              orderBy: { createdAt: 'desc' },
+              take: 50,
+              select: { id: true, subject: true, sentByName: true, targetLabel: true, createdAt: true },
+            })
+          : Promise.resolve([]),
+      ]);
+
+      return {
+        logs: logs.map((l) => ({
+          id: l.id,
+          eventId: l.eventId,
+          shiftId: l.shiftId,
+          action: l.action as ShiftSignupLogAction,
+          helperUserId: l.helperUserId,
+          helperName: l.helperName,
+          performedByUserId: l.performedByUserId,
+          performedByName: l.performedByName,
+          shiftTitle: l.shiftTitle,
+          shiftStartTime: l.shiftStartTime ? l.shiftStartTime.toISOString() : null,
+          shiftEndTime: l.shiftEndTime ? l.shiftEndTime.toISOString() : null,
+          taskTitle: l.taskTitle,
+          attendance: l.attendance as AttendanceStatus | null,
+          createdAt: l.createdAt.toISOString(),
+        })),
+        messages: messages.map((m) => ({ ...m, createdAt: m.createdAt.toISOString() })),
+      } satisfies PersonHistoryDto;
     }
   );
 };

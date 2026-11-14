@@ -373,6 +373,7 @@ const eventMessageRoutes: FastifyPluginAsync = async (fastify) => {
           target,
           targetLabel,
           recipientCount: withEmail.length,
+          recipientUserIds: recipients.map((r) => r.id),
         },
       });
 
