@@ -3,7 +3,23 @@
 import { Suspense, useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { AlertTriangle, ChevronDown, ChevronUp, Clock, Filter, Mail, Plus, Search, UserCheck, UserMinus, UserPlus, Users, X } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowDownUp,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Download,
+  Filter,
+  Mail,
+  Plus,
+  Search,
+  UserCheck,
+  UserMinus,
+  UserPlus,
+  Users,
+  X,
+} from 'lucide-react';
 import { type EventRosterResponseDto, type ShiftCollisionCheckResult, type ShiftDto } from '@schichtplan/shared';
 import {
   Avatar,
@@ -28,10 +44,61 @@ import { useOkEvent } from '@/components/ok/OkContext';
 import { OkPageHeader } from '@/components/ok/OkLayout';
 import { shiftTasks } from '@/components/event/shift-utils';
 import { api, ApiError, errorMessage } from '@/lib/api';
-import { dayKeyToIso, fmtDayMonth, fmtShortWeekday, fmtTime, fmtTimeRange, groupByBusinessDay, shiftName } from '@/lib/format';
+import { downloadCsv } from '@/lib/exportFile';
+import {
+  businessDayKey,
+  dayKeyToIso,
+  fmtDayMonth,
+  fmtShortWeekday,
+  fmtTime,
+  fmtTimeRange,
+  groupByBusinessDay,
+  shiftName,
+} from '@/lib/format';
 import { formatMinutes } from '@/lib/helperStats';
 
-type Status = 'ALL' | 'WITH' | 'WITHOUT' | 'UNDER' | 'DEREGISTERED';
+type Status = 'ALL' | 'WITH' | 'WITHOUT' | 'UNDER' | 'MET' | 'DEREGISTERED';
+type CountOp = 'ANY' | 'LT' | 'EQ' | 'GTE';
+type SortKey = 'NAME' | 'SHIFTS_ASC' | 'SHIFTS_DESC' | 'HOURS_ASC' | 'HOURS_DESC' | 'AGE_ASC' | 'AGE_DESC';
+type PersonType = 'ALL' | 'MEMBER' | 'GUEST';
+
+// Filter landen in der URL, damit man eine gefilterte Liste teilen oder neu laden kann
+const STATUS_PARAM: Record<Status, string> = {
+  ALL: 'alle',
+  WITH: 'mit',
+  WITHOUT: 'ohne',
+  UNDER: 'unter',
+  MET: 'erfuellt',
+  DEREGISTERED: 'abgemeldet',
+};
+const COUNT_PARAM: Record<Exclude<CountOp, 'ANY'>, string> = { LT: 'lt', EQ: 'eq', GTE: 'ge' };
+const SORT_PARAM: Record<SortKey, string> = {
+  NAME: 'name',
+  SHIFTS_ASC: 'schichten',
+  SHIFTS_DESC: 'schichten-ab',
+  HOURS_ASC: 'stunden',
+  HOURS_DESC: 'stunden-ab',
+  AGE_ASC: 'alter',
+  AGE_DESC: 'alter-ab',
+};
+const SORT_LABEL: Record<SortKey, string> = {
+  NAME: 'Name A–Z',
+  SHIFTS_ASC: 'Wenigste Schichten zuerst',
+  SHIFTS_DESC: 'Meiste Schichten zuerst',
+  HOURS_ASC: 'Wenigste Stunden zuerst',
+  HOURS_DESC: 'Meiste Stunden zuerst',
+  AGE_ASC: 'Jüngste zuerst',
+  AGE_DESC: 'Älteste zuerst',
+};
+
+const fromParam = <K extends string>(map: Record<K, string>, value: string | null, fallback: K): K =>
+  (Object.entries(map) as [K, string][]).find(([, v]) => v === value)?.[0] ?? fallback;
+
+function parseCount(value: string | null): { op: CountOp; n: number } {
+  const m = value?.match(/^(lt|eq|ge)(\d{1,2})$/);
+  if (!m) return { op: 'ANY', n: 1 };
+  return { op: fromParam(COUNT_PARAM, m[1], 'LT'), n: Number(m[2]) };
+}
 
 interface PersonShift {
   shiftId: string;
@@ -51,12 +118,19 @@ interface PersonRow {
   stufen: { id: string; name: string; role: string }[];
   age: number | null;
   shifts: PersonShift[];
+  /** Summe der Schichtdauer in Minuten */
+  minutes: number;
+  /** Geschäftstage (Tageswechsel gemäss Anlass), an denen die Person eingeteilt ist */
+  dayKeys: Set<string>;
   isGuest: boolean;
   guestEmail: string | null;
   guestPhone: string | null;
   isDeregistered: boolean;
   deregistrationReason: string | null;
 }
+
+const shiftMinutes = (s: { startTime: string; endTime: string }) =>
+  Math.max(0, Math.round((new Date(s.endTime).getTime() - new Date(s.startTime).getTime()) / 60_000));
 
 function HelpersPage() {
   const { event, base, reload, setMessageDraft, permissions } = useOkEvent();
@@ -70,11 +144,22 @@ function HelpersPage() {
   const [rosterError, setRosterError] = useState<string | null>(null);
   const minShifts = event.minShiftsPerPerson ?? null;
 
-  const initialStatus: Status = params.get('status') === 'offen' ? (minShifts ? 'UNDER' : 'WITHOUT') : 'ALL';
+  const statusParam = params.get('status');
+  const initialStatus: Status =
+    statusParam === 'offen' ? (minShifts ? 'UNDER' : 'WITHOUT') : fromParam(STATUS_PARAM, statusParam, 'ALL');
+  const initialCount = parseCount(params.get('anzahl'));
   const [status, setStatus] = useState<Status>(initialStatus);
-  const [search, setSearch] = useState('');
-  const [stufe, setStufe] = useState('ALL');
-  const [dept, setDept] = useState('ALL');
+  const [search, setSearch] = useState(params.get('q') ?? '');
+  const [stufe, setStufe] = useState(params.get('stufe') ?? 'ALL');
+  const [dept, setDept] = useState(params.get('abt') ?? 'ALL');
+  const [countOp, setCountOp] = useState<CountOp>(initialCount.op);
+  const [countN, setCountN] = useState(initialCount.n);
+  const [sort, setSort] = useState<SortKey>(fromParam(SORT_PARAM, params.get('sort'), 'NAME'));
+  const [personType, setPersonType] = useState<PersonType>(
+    params.get('typ') === 'gaeste' ? 'GUEST' : params.get('typ') === 'mitglieder' ? 'MEMBER' : 'ALL'
+  );
+  // «frei:2026-11-14» = am Tag keine Schicht, «am:2026-11-14» = am Tag eingeteilt
+  const [day, setDay] = useState(params.get('tag') ?? 'ALL');
   const [expanded, setExpanded] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [deregTarget, setDeregTarget] = useState<PersonRow | null>(null);
@@ -125,6 +210,8 @@ function HelpersPage() {
             stufen: [],
             age: null,
             shifts: [],
+            minutes: 0,
+            dayKeys: new Set<string>(),
             isGuest: true,
             guestEmail: su.guestEmail ?? null,
             guestPhone: su.guestPhone ?? null,
@@ -145,13 +232,20 @@ function HelpersPage() {
       stufen: i.stufen,
       age: i.age,
       shifts: shiftsByUser.get(i.userId) ?? [],
+      minutes: 0,
+      dayKeys: new Set<string>(),
       isGuest: false,
       guestEmail: null,
       guestPhone: null,
       isDeregistered: i.isDeregistered,
       deregistrationReason: i.deregistrationReason,
     }));
-    return [...people, ...guests.values()].sort((a, b) => a.name.localeCompare(b.name, 'de'));
+    const all = [...people, ...guests.values()];
+    for (const r of all) {
+      r.minutes = r.shifts.reduce((sum, s) => sum + shiftMinutes(s), 0);
+      r.dayKeys = new Set(r.shifts.map((s) => businessDayKey(s.startTime, event.dayCutoffTime)));
+    }
+    return all.sort((a, b) => a.name.localeCompare(b.name, 'de'));
   }, [event, roster]);
 
   const counts = useMemo(() => {
@@ -161,9 +255,66 @@ function HelpersPage() {
       WITH: active.filter((r) => r.shifts.length > 0).length,
       WITHOUT: active.filter((r) => r.shifts.length === 0).length,
       UNDER: minShifts ? active.filter((r) => !r.isGuest && r.shifts.length < minShifts).length : 0,
+      MET: minShifts ? active.filter((r) => !r.isGuest && r.shifts.length >= minShifts).length : 0,
       DEREGISTERED: rows.filter((r) => r.isDeregistered).length,
     };
   }, [rows, minShifts]);
+
+  // Verteilung: wie viele (nicht abgemeldete) Personen haben 0, 1, 2 … Schichten
+  const distribution = useMemo(() => {
+    const active = rows.filter((r) => !r.isDeregistered);
+    const max = active.reduce((m, r) => Math.max(m, r.shifts.length), 0);
+    const buckets = Array.from({ length: max + 1 }, (_, n) => ({
+      n,
+      count: active.filter((r) => r.shifts.length === n).length,
+    }));
+    const missing = minShifts
+      ? active.filter((r) => !r.isGuest).reduce((sum, r) => sum + Math.max(0, minShifts - r.shifts.length), 0)
+      : 0;
+    return { buckets, max: Math.max(1, ...buckets.map((b) => b.count)), missing };
+  }, [rows, minShifts]);
+
+  const eventDays = useMemo(
+    () => groupByBusinessDay(event.shifts, event.dayCutoffTime).map((d) => d.key),
+    [event.shifts, event.dayCutoffTime]
+  );
+
+  // Filter in die URL schreiben (ohne Navigation), Standardwerte weglassen
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (status !== 'ALL') next.set('status', STATUS_PARAM[status]);
+    if (search.trim()) next.set('q', search.trim());
+    if (stufe !== 'ALL') next.set('stufe', stufe);
+    if (dept !== 'ALL') next.set('abt', dept);
+    if (countOp !== 'ANY') next.set('anzahl', `${COUNT_PARAM[countOp]}${countN}`);
+    if (sort !== 'NAME') next.set('sort', SORT_PARAM[sort]);
+    if (personType !== 'ALL') next.set('typ', personType === 'GUEST' ? 'gaeste' : 'mitglieder');
+    if (day !== 'ALL') next.set('tag', day);
+    const qs = next.toString();
+    const url = `${window.location.pathname}${qs ? `?${qs}` : ''}`;
+    if (url !== `${window.location.pathname}${window.location.search}`) window.history.replaceState(null, '', url);
+  }, [status, search, stufe, dept, countOp, countN, sort, personType, day]);
+
+  const activeFilterCount = [
+    status !== 'ALL',
+    search.trim() !== '',
+    stufe !== 'ALL',
+    dept !== 'ALL',
+    countOp !== 'ANY',
+    personType !== 'ALL',
+    day !== 'ALL',
+  ].filter(Boolean).length;
+
+  const resetFilters = () => {
+    setStatus('ALL');
+    setSearch('');
+    setStufe('ALL');
+    setDept('ALL');
+    setCountOp('ANY');
+    setCountN(1);
+    setPersonType('ALL');
+    setDay('ALL');
+  };
 
   const stufen = useMemo(() => {
     const map = new Map<string, string>();
@@ -176,16 +327,50 @@ function HelpersPage() {
   );
 
   const q = search.trim().toLowerCase();
-  const filtered = rows.filter((r) => {
-    if (status === 'WITH' && (r.isDeregistered || r.shifts.length === 0)) return false;
-    if (status === 'WITHOUT' && (r.isDeregistered || r.shifts.length > 0)) return false;
-    if (status === 'UNDER' && (r.isDeregistered || r.isGuest || r.shifts.length >= (minShifts ?? 0))) return false;
-    if (status === 'DEREGISTERED' && !r.isDeregistered) return false;
-    if (stufe !== 'ALL' && !r.stufen.some((s) => s.id === stufe)) return false;
-    if (dept !== 'ALL' && r.departmentName !== dept) return false;
-    if (q && !`${r.name} ${r.subName ?? ''} ${r.stufen.map((s) => s.name).join(' ')}`.toLowerCase().includes(q)) return false;
-    return true;
-  });
+  const [dayMode, dayKey] = day.includes(':') ? (day.split(':') as ['frei' | 'am', string]) : [null, null];
+  const filtered = rows
+    .filter((r) => {
+      const n = r.shifts.length;
+      if (status === 'WITH' && (r.isDeregistered || n === 0)) return false;
+      if (status === 'WITHOUT' && (r.isDeregistered || n > 0)) return false;
+      if (status === 'UNDER' && (r.isDeregistered || r.isGuest || n >= (minShifts ?? 0))) return false;
+      if (status === 'MET' && (r.isDeregistered || r.isGuest || n < (minShifts ?? 0))) return false;
+      if (status === 'DEREGISTERED' && !r.isDeregistered) return false;
+      if (countOp === 'LT' && n >= countN) return false;
+      if (countOp === 'EQ' && n !== countN) return false;
+      if (countOp === 'GTE' && n < countN) return false;
+      if (personType === 'GUEST' && !r.isGuest) return false;
+      if (personType === 'MEMBER' && r.isGuest) return false;
+      if (dayMode === 'frei' && (r.isDeregistered || r.dayKeys.has(dayKey!))) return false;
+      if (dayMode === 'am' && !r.dayKeys.has(dayKey!)) return false;
+      if (stufe !== 'ALL' && !r.stufen.some((s) => s.id === stufe)) return false;
+      if (dept !== 'ALL' && r.departmentName !== dept) return false;
+      if (q && !`${r.name} ${r.subName ?? ''} ${r.stufen.map((s) => s.name).join(' ')}`.toLowerCase().includes(q)) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      // Abgemeldete bei Zahlen-Sortierungen immer ans Ende, sonst stehen sie bei «wenigste zuerst» oben
+      if (sort !== 'NAME' && a.isDeregistered !== b.isDeregistered) return a.isDeregistered ? 1 : -1;
+      const byName = a.name.localeCompare(b.name, 'de');
+      switch (sort) {
+        case 'SHIFTS_ASC':
+          return a.shifts.length - b.shifts.length || a.minutes - b.minutes || byName;
+        case 'SHIFTS_DESC':
+          return b.shifts.length - a.shifts.length || b.minutes - a.minutes || byName;
+        case 'HOURS_ASC':
+          return a.minutes - b.minutes || byName;
+        case 'HOURS_DESC':
+          return b.minutes - a.minutes || byName;
+        case 'AGE_ASC':
+        case 'AGE_DESC': {
+          // Personen ohne Alter immer ans Ende
+          if (a.age === null || b.age === null) return a.age === null ? (b.age === null ? byName : 1) : -1;
+          return (sort === 'AGE_ASC' ? a.age - b.age : b.age - a.age) || byName;
+        }
+        default:
+          return byName;
+      }
+    });
   const selectableIds = filtered.filter((r) => r.userId).map((r) => r.userId!);
   const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selected.has(id));
 
@@ -244,10 +429,38 @@ function HelpersPage() {
     }
   };
 
-  const writeMessage = () => {
-    const ids = [...selected];
-    setMessageDraft({ target: 'PEOPLE', userIds: ids, label: `${ids.length} ausgewählte Person${ids.length === 1 ? '' : 'en'}` });
+  const writeMessage = (ids: string[], label: string) => {
+    setMessageDraft({ target: 'PEOPLE', userIds: ids, label });
     router.push(`${base}/nachrichten`);
+  };
+  const plural = (n: number) => `${n} Person${n === 1 ? '' : 'en'}`;
+
+  const exportFiltered = () => {
+    const header = ['Name', 'Vollständiger Name', org.unitTerm, 'Stufen', 'Alter', 'Typ', 'Schichten'];
+    if (minShifts) header.push('Soll', 'Fehlend');
+    header.push('Stunden', 'Status', 'Eingeteilte Schichten');
+    const lines = filtered.map((r) => {
+      const line: (string | number)[] = [
+        r.name,
+        r.isGuest ? '' : (r.subName ?? r.name),
+        r.departmentName ?? '',
+        r.stufen.map((s) => s.name).join(', '),
+        r.age ?? '',
+        r.isGuest ? 'Gast' : 'Konto',
+        r.shifts.length,
+      ];
+      if (minShifts) line.push(r.isGuest ? '' : minShifts, r.isGuest ? '' : Math.max(0, minShifts - r.shifts.length));
+      line.push(
+        Math.round((r.minutes / 60) * 10) / 10,
+        r.isDeregistered ? `Abgemeldet${r.deregistrationReason ? ` (${r.deregistrationReason})` : ''}` : '',
+        [...r.shifts]
+          .sort((a, b) => a.startTime.localeCompare(b.startTime))
+          .map((s) => `${shiftName(s)}${s.taskTitle ? ` (${s.taskTitle})` : ''} ${fmtShortWeekday(s.startTime)} ${fmtTimeRange(s.startTime, s.endTime)}`)
+          .join(' | ')
+      );
+      return line;
+    });
+    downloadCsv(`helfende-${event.slug}.csv`, [header, ...lines]);
   };
 
   const statusChips: { key: Status; label: string; show: boolean }[] = [
@@ -255,8 +468,10 @@ function HelpersPage() {
     { key: 'WITH', label: 'Mit Schicht', show: true },
     { key: 'WITHOUT', label: 'Ohne Schicht', show: true },
     { key: 'UNDER', label: 'Unter dem Soll', show: Boolean(minShifts) },
+    { key: 'MET', label: 'Soll erfüllt', show: Boolean(minShifts) },
     { key: 'DEREGISTERED', label: 'Abgemeldet', show: counts.DEREGISTERED > 0 },
   ];
+  const hasGuests = rows.some((r) => r.isGuest);
 
   return (
     <div>
@@ -280,8 +495,17 @@ function HelpersPage() {
           <MiniStat
             label={minShifts ? 'Unter dem Soll' : 'Ohne Schicht'}
             value={minShifts ? counts.UNDER : counts.WITHOUT}
-            hint={minShifts ? `Soll: ${minShifts} Schichten` : undefined}
+            hint={
+              minShifts
+                ? `Soll: ${minShifts} Schichten${distribution.missing > 0 ? ` · ${distribution.missing} fehlen total` : ''}`
+                : undefined
+            }
             tone="warning"
+            onClick={() => {
+              resetFilters();
+              setStatus(minShifts ? 'UNDER' : 'WITHOUT');
+              setSort('SHIFTS_ASC');
+            }}
           />
           <MiniStat label="Abgemeldet" value={counts.DEREGISTERED} hint="müssen nicht helfen" />
         </div>
@@ -328,7 +552,78 @@ function HelpersPage() {
             </Select>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <Select
+              className="h-10 w-auto text-sm"
+              value={countOp}
+              onChange={(e) => setCountOp(e.target.value as CountOp)}
+              aria-label="Anzahl Schichten filtern"
+            >
+              <option value="ANY">Beliebig viele Schichten</option>
+              <option value="LT">Weniger als …</option>
+              <option value="EQ">Genau …</option>
+              <option value="GTE">Mindestens …</option>
+            </Select>
+            {countOp !== 'ANY' && (
+              <>
+                <Input
+                  type="number"
+                  min={0}
+                  max={99}
+                  inputMode="numeric"
+                  className="h-10 w-16 text-center text-sm"
+                  value={countN}
+                  onChange={(e) => setCountN(Math.min(99, Math.max(0, parseInt(e.target.value, 10) || 0)))}
+                  aria-label="Anzahl Schichten"
+                />
+                <span className="text-sm text-fg-muted">Schicht{countN === 1 ? '' : 'en'}</span>
+              </>
+            )}
+          </div>
+          {eventDays.length > 1 && (
+            <Select className="h-10 w-auto text-sm" value={day} onChange={(e) => setDay(e.target.value)} aria-label="Tag">
+              <option value="ALL">Alle Tage</option>
+              <optgroup label="Noch frei am …">
+                {eventDays.map((k) => (
+                  <option key={`frei:${k}`} value={`frei:${k}`}>
+                    Frei am {fmtShortWeekday(dayKeyToIso(k))} {fmtDayMonth(dayKeyToIso(k))}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Eingeteilt am …">
+                {eventDays.map((k) => (
+                  <option key={`am:${k}`} value={`am:${k}`}>
+                    Eingeteilt am {fmtShortWeekday(dayKeyToIso(k))} {fmtDayMonth(dayKeyToIso(k))}
+                  </option>
+                ))}
+              </optgroup>
+            </Select>
+          )}
+          {hasGuests && (
+            <Select
+              className="h-10 w-auto text-sm"
+              value={personType}
+              onChange={(e) => setPersonType(e.target.value as PersonType)}
+              aria-label="Personentyp"
+            >
+              <option value="ALL">Mitglieder und Gäste</option>
+              <option value="MEMBER">Nur mit Konto</option>
+              <option value="GUEST">Nur Gäste</option>
+            </Select>
+          )}
+          <div className="flex items-center gap-1.5 sm:ml-auto">
+            <ArrowDownUp className="size-4 text-fg-subtle" aria-hidden />
+            <Select className="h-10 w-auto text-sm" value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label="Sortierung">
+              {(Object.keys(SORT_LABEL) as SortKey[]).map((k) => (
+                <option key={k} value={k}>
+                  {SORT_LABEL[k]}
+                </option>
+              ))}
+            </Select>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
           {statusChips
             .filter((c) => c.show)
             .map((c) => (
@@ -336,7 +631,62 @@ function HelpersPage() {
                 {c.label}
               </Chip>
             ))}
+          {activeFilterCount > 0 && (
+            <Button size="sm" variant="ghost" onClick={resetFilters}>
+              <X className="size-3.5" /> Filter zurücksetzen ({activeFilterCount})
+            </Button>
+          )}
         </div>
+
+        {/* Verteilung der Schichten pro Person, Klick filtert auf genau diese Anzahl */}
+        {roster && distribution.buckets.length > 1 && (
+          <div className="rounded-card border border-line bg-surface p-3">
+            <div className="mb-2 flex items-baseline justify-between gap-2">
+              <p className="text-2xs font-bold uppercase tracking-wider text-fg-subtle">Schichten pro Person</p>
+              <p className="text-2xs text-fg-muted">Klick auf einen Balken filtert</p>
+            </div>
+            <div className="flex items-end gap-1.5 overflow-x-auto pb-1">
+              {distribution.buckets.map((b) => {
+                const isActive = countOp === 'EQ' && countN === b.n;
+                const below = minShifts !== null && b.n < minShifts;
+                return (
+                  <button
+                    key={b.n}
+                    type="button"
+                    onClick={() => {
+                      if (isActive) {
+                        setCountOp('ANY');
+                      } else {
+                        setCountOp('EQ');
+                        setCountN(b.n);
+                        if (status !== 'ALL' && status !== 'DEREGISTERED') setStatus('ALL');
+                      }
+                    }}
+                    aria-pressed={isActive}
+                    title={`${plural(b.count)} mit ${b.n} Schicht${b.n === 1 ? '' : 'en'}`}
+                    className={cn(
+                      'group flex min-w-[2.5rem] flex-1 flex-col items-center gap-1 rounded-field px-1 pt-1 transition',
+                      isActive ? 'bg-accent/10' : 'hover:bg-surface-2'
+                    )}
+                  >
+                    <span className="tabular text-2xs font-bold text-fg-muted">{b.count}</span>
+                    <span className="flex h-12 w-full items-end">
+                      <span
+                        className={cn(
+                          'w-full rounded-t-sm transition-[height]',
+                          isActive ? 'bg-accent' : below ? 'bg-warning/60 group-hover:bg-warning' : 'bg-success/50 group-hover:bg-success'
+                        )}
+                        style={{ height: `${b.count === 0 ? 2 : Math.max(8, (b.count / distribution.max) * 100)}%` }}
+                      />
+                    </span>
+                    <span className={cn('tabular text-xs font-semibold', isActive ? 'text-accent-ink' : 'text-fg')}>{b.n}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {minShifts && <p className="mt-1 text-2xs text-fg-muted">Orange: unter dem Soll von {minShifts} Schichten</p>}
+          </div>
+        )}
       </div>
 
       {/* Auswahl-Leiste */}
@@ -360,16 +710,41 @@ function HelpersPage() {
           />
           {selected.size > 0 ? `${selected.size} ausgewählt` : `${filtered.length} Personen`}
         </label>
-        {selected.size > 0 && (
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>
-              Auswahl aufheben
+        <div className="flex flex-wrap items-center gap-2">
+          {selected.size > 0 ? (
+            <>
+              <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>
+                Auswahl aufheben
+              </Button>
+              <Button size="sm" onClick={() => writeMessage([...selected], `${plural(selected.size)} ausgewählt`)}>
+                <Mail className="size-4" /> Nachricht an Auswahl
+              </Button>
+            </>
+          ) : (
+            activeFilterCount > 0 &&
+            selectableIds.length > 0 && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() =>
+                  writeMessage(
+                    selectableIds,
+                    status === 'UNDER' && activeFilterCount === 1
+                      ? `${plural(selectableIds.length)} unter dem Soll`
+                      : `${plural(selectableIds.length)} (gefiltert)`
+                  )
+                }
+              >
+                <Mail className="size-4" /> {plural(selectableIds.length)} anschreiben
+              </Button>
+            )
+          )}
+          {filtered.length > 0 && (
+            <Button size="sm" variant="ghost" onClick={exportFiltered} title="Gefilterte Liste als CSV (Excel)">
+              <Download className="size-4" /> CSV
             </Button>
-            <Button size="sm" onClick={writeMessage}>
-              <Mail className="size-4" /> Nachricht an Auswahl
-            </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {!roster && !rosterError ? (
@@ -390,11 +765,8 @@ function HelpersPage() {
             const isOpen = expanded === row.key;
             const target = minShifts && !row.isGuest ? minShifts : null;
             const met = target ? row.shifts.length >= target : row.shifts.length > 0;
-            const totalMins = row.shifts.reduce((sum, s) => {
-              const start = new Date(s.startTime).getTime();
-              const end = new Date(s.endTime).getTime();
-              return sum + Math.max(0, Math.round((end - start) / (60 * 1000)));
-            }, 0);
+            const totalMins = row.minutes;
+            const missing = target && !row.isDeregistered ? Math.max(0, target - row.shifts.length) : 0;
 
             return (
               <div key={row.key} className={cn('px-4 py-3', row.isDeregistered && 'bg-surface-2/40')}>
@@ -424,6 +796,7 @@ function HelpersPage() {
                       </span>
                     </span>
                     <span className="hidden shrink-0 sm:flex sm:items-center sm:gap-2">
+                      {missing > 0 && <span className="text-2xs font-semibold text-warning-ink">fehlt {missing}</span>}
                       {totalMins > 0 && (
                         <span className="font-mono text-xs font-semibold text-fg-muted">
                           {formatMinutes(totalMins)}
@@ -558,9 +931,28 @@ function HelpersPage() {
   );
 }
 
-function MiniStat({ label, value, hint, tone }: { label: string; value: number; hint?: string; tone?: 'success' | 'warning' }) {
+function MiniStat({
+  label,
+  value,
+  hint,
+  tone,
+  onClick,
+}: {
+  label: string;
+  value: number;
+  hint?: string;
+  tone?: 'success' | 'warning';
+  onClick?: () => void;
+}) {
   return (
-    <Card className="p-4">
+    <Card
+      className={cn('p-4', onClick && 'cursor-pointer transition hover:border-line-strong')}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onClick()) : undefined}
+      title={onClick ? 'Diese Personen anzeigen' : undefined}
+    >
       <p className="text-2xs font-bold uppercase tracking-wider text-fg-subtle">{label}</p>
       <p
         className={cn(
