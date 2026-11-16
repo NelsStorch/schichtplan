@@ -240,11 +240,18 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.redirect(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerConfig.type));
       }
 
-      // Simulierte Person (nur Dev/lokal): Profil und Gruppenstruktur kommen aus der Simulation, nicht von Hitobito
-      if (simulated) {
-        const persona = simulationEnabled(request.hostname) ? findSimPersona(providerConfig.type, code) : null;
+      // Simulierte Person (nur Dev/lokal). Ob simuliert werden darf, entscheidet allein der Server (Schalter in der
+      // .env und Dev-/lokaler Host). Den state kann jede Person selbst bauen (samt passendem Cookie im eigenen
+      // Browser): Ein «sim» darin ist nur ein Wunsch und führt ausserhalb der Simulation zu einem Fehler.
+      const simulationActive = simulationEnabled(request.hostname);
+      if (!simulationActive && simulated) {
+        fastify.log.warn({ provider: providerConfig.type }, 'Simulierter Login ausserhalb von Dev abgelehnt');
+        return reply.redirect(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerConfig.type));
+      }
+      if (simulationActive && simulated) {
+        const persona = findSimPersona(providerConfig.type, code);
         if (!persona) {
-          fastify.log.warn({ provider: providerConfig.type }, 'Simulierter Login ohne gültige Person oder ausserhalb von Dev');
+          fastify.log.warn({ provider: providerConfig.type }, 'Simulierter Login ohne gültige Person');
           return reply.redirect(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerConfig.type));
         }
         const simulatedProfile: any = simProfile(providerConfig.type, persona);
