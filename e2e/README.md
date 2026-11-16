@@ -9,10 +9,20 @@ Prüfen die wichtigsten Abläufe im echten Browser (Playwright, Chromium) gegen 
 | `helperSignup.spec.ts` | Helfer*in trägt sich ein, sieht die Schicht in «Meine Schichten», trägt sich aus; ohne Anmeldung kein Eintragen |
 | `nickname.spec.ts` | Spitznamen-Profil anlegen und wieder anmelden, falsches Geburtsdatum |
 | `okArea.spec.ts` | Abteilungsleitung im OK-Bereich, Helfende ohne Rechte bekommen keine OK-Daten |
+| `registration.spec.ts` | Konto mit Passwort erstellen, Login erst nach Bestätigung, Bestätigungslink aus der Mail, «Passwort vergessen» mit Link (gilt nur einmal, altes Passwort danach ungültig) |
+| `twoFactor.spec.ts` | Zwei-Faktor mit frischem Konto: einschalten, Passwort allein reicht nicht, falscher und schon verwendeter Code, Wiederherstellungscode (nur einmal), ausschalten nur mit Code |
+| `permissions.spec.ts` | Datenschutz: ohne Anmeldung keine Daten, Helfende ohne Personenlisten, Protokoll und Anlass-Listen, keine Admin-API, fremde Abteilung «nur für Mitglieder», Anlass nicht unter fremder Subdomain |
+| `organizations.spec.ts` | Cevi- und Pfadi-Abteilung mit gleicher Subdomain bleiben getrennt (`<slug>.localhost` / `<slug>.pfadi.localhost`), Verzeichnis je Verband, Verbands-Login-Knopf je Domain |
+| `adminPortal.spec.ts` | Admin-Portal: ohne Anmeldung nichts, Helfende «Kein Zugriff», globale Admin sieht Daten, Admin-API lehnt Aufrufe von fremder Seite ab (CSRF) |
 | `simulation.spec.ts` | Verbands-Login über die simulierte Cevi.DB: Auswahlseite, Stufenleiterin ohne Schichtplan (Grund und Rollen), Abteilungsleitung legt an, automatische Zugehörigkeit, eigene Rollen. Setzt die Simulation vorher und nachher zurück |
 
-Die Tests legen pro Lauf eigene Anlässe in der Zukunft an (Slug `e2e-…`) und löschen sie danach wieder.
-Cevi-Name-Testprofile (`E2E…`) bleiben in der lokalen Datenbank.
+Die Tests legen pro Lauf eigene Anlässe in der Zukunft an (Slug `e2e-…`) und löschen sie danach wieder, ebenso
+die Test-Abteilungen (`e2e-fremd-…`, `e2e-org-…`). Cevi-Name-Testprofile (`E2E…`) und Testkonten
+(`e2e-…@example.com`) bleiben in der lokalen Datenbank.
+
+**Mails:** Lokal ist kein `SMTP_PASSWORD` gesetzt, das Backend schreibt Mails darum ins Container-Log. Die Tests lesen
+Bestätigungs- und Reset-Links mit `docker logs schichtplan-dev-backend` aus und brechen ab, wenn ein Link nicht auf
+`localhost` zeigt (nie echte Domains öffnen).
 
 ## Ausführen
 
@@ -33,6 +43,10 @@ Einmalig den Browser installieren, dann die Tests mit demselben Passwort starten
 npx playwright install chromium
 SEED_PASSWORD=mein-lokales-passwort npm run test:e2e
 ```
+
+Statt `SEED_PASSWORD` jedes Mal mitzugeben, kann es in `e2e/.env.e2e` stehen (gitignored, Zeile `SEED_PASSWORD=…`).
+Nach Änderungen am Backend-Code den Container neu starten (`docker restart schichtplan-dev-backend`): Unter Windows
+kommen Dateiänderungen über den Mount nicht immer beim Watcher an.
 
 ## Hinweise
 

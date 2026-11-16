@@ -1,4 +1,10 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { defineConfig, devices } from '@playwright/test';
+
+// Lokales Seed-Passwort (gitignored), damit es nicht bei jedem Lauf übergeben werden muss
+const localEnv = join(__dirname, '.env.e2e');
+if (!process.env.SEED_PASSWORD && existsSync(localEnv)) process.loadEnvFile(localEnv);
 
 /**
  * End-to-End-Tests der wichtigsten Abläufe gegen die lokale Umgebung (npm run dev:docker)
