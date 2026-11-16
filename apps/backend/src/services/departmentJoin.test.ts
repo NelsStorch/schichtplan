@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { checkDepartmentJoin } from './departmentJoin.js';
+import { checkDepartmentJoin, syncProviderMemberships } from './departmentJoin.js';
 
 function makePrisma(
   dept: {
@@ -30,7 +30,7 @@ function makePrisma(
       findMany: vi.fn(async ({ where }: any) =>
         (hitobito.departments ?? [])
           .filter((d) => where.hitobitoGroupId.in.includes(d.hitobitoGroupId))
-          .map((d) => ({ id: d.id }))
+          .map((d) => ({ id: d.id, hitobitoGroupId: d.hitobitoGroupId }))
       ),
     },
     userHitobitoRole: {
@@ -133,5 +133,91 @@ describe('checkDepartmentJoin', () => {
       departmentId: 'dept-1',
     });
     expect(res).toMatchObject({ ok: false, status: 403, code: 'INVITE_REQUIRED' });
+  });
+
+  it('lässt bei INVITE_ONLY ohne Einladung beitreten, wenn die Rollen die Abteilung belegen (bestätigt)', async () => {
+    // Leiterin in einer Kindergruppe (41) der Schar 40
+    const hitobito = {
+      roleGroupIds: [41],
+      groups: [{ id: 41, jungscharId: null, ortsgruppeId: 40 }],
+      departments: [{ id: 'dept-wetzikon', hitobitoGroupId: 40 }],
+    };
+    const prisma = makePrisma({ id: 'dept-wetzikon', joinMode: 'INVITE_ONLY', organization: 'JUBLA' }, hitobito);
+    const res = await checkDepartmentJoin(prisma, {
+      userId: 'u-1',
+      user: { homeDepartmentId: 'dept-uster', passwordHash: null, providerId: '101', provider: 'JUBLA' },
+      departmentId: 'dept-wetzikon',
+    });
+    expect(res).toEqual({ ok: true, invited: false, fromProvider: true, grantedPermissions: [] });
+  });
+
+  it('bestätigt bei geteilter Ortsgruppe nicht automatisch (welche Jungschar, sagt die DB nicht)', async () => {
+    const hitobito = {
+      roleGroupIds: [170],
+      groups: [
+        { id: 170, jungscharId: null, ortsgruppeId: 161 },
+        { id: 295, jungscharId: 295, ortsgruppeId: 161 },
+      ],
+      departments: [{ id: 'dept-1', hitobitoGroupId: 295 }],
+    };
+    const prisma = makePrisma({ id: 'dept-1', joinMode: 'INVITE_ONLY', organization: 'CEVI' }, hitobito);
+    const res = await checkDepartmentJoin(prisma, {
+      userId: 'u-1',
+      user: { homeDepartmentId: null, passwordHash: null, providerId: '101', provider: 'CEVI' },
+      departmentId: 'dept-1',
+    });
+    expect(res).toMatchObject({ ok: false, status: 403, code: 'INVITE_REQUIRED' });
+  });
+
+  it('nutzt bei Vereinen keine Verbands-Rollen', async () => {
+    const hitobito = {
+      roleGroupIds: [41],
+      groups: [{ id: 41, jungscharId: null, ortsgruppeId: 40 }],
+      departments: [{ id: 'verein-1', hitobitoGroupId: 40 }],
+    };
+    const prisma = makePrisma({ id: 'verein-1', joinMode: 'INVITE_ONLY', organization: 'OTHER' }, hitobito);
+    const res = await checkDepartmentJoin(prisma, {
+      userId: 'u-1',
+      user: { homeDepartmentId: null, passwordHash: 'hash', providerId: null, provider: 'OTHER' },
+      departmentId: 'verein-1',
+    });
+    expect(res).toMatchObject({ ok: false, status: 403, code: 'INVITE_REQUIRED' });
+    expect(prisma.userHitobitoRole.findMany).not.toHaveBeenCalled();
+  });
+});
+
+describe('syncProviderMemberships', () => {
+  function memberDb(existing: Record<string, { joinedAt: Date | null; confirmedAt: Date | null; permissions: string[] }>) {
+    return {
+      departmentMember: {
+        findUnique: vi.fn(async ({ where }: any) => existing[where.departmentId_userId.departmentId] ?? null),
+        upsert: vi.fn().mockResolvedValue({}),
+        updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+      },
+    } as any;
+  }
+
+  it('trägt weitere Abteilungen laut Rollen bestätigt ein, die Heimabteilung nicht', async () => {
+    const db = memberDb({});
+    await syncProviderMemberships(db, 'u-1', 'dept-home', ['dept-home', 'dept-2'], true);
+    expect(db.departmentMember.upsert).toHaveBeenCalledTimes(1);
+    const call = db.departmentMember.upsert.mock.calls[0][0];
+    expect(call.where.departmentId_userId).toEqual({ departmentId: 'dept-2', userId: 'u-1' });
+    expect(call.create).toMatchObject({ joinSource: 'CEVIDB', role: 'HELPER' });
+    expect(call.create.joinedAt).toBeInstanceOf(Date);
+    expect(call.create.confirmedAt).toBeInstanceOf(Date);
+  });
+
+  it('beendet DB-Beitritte ohne Rolle nur mit vollständiger Gruppenstruktur', async () => {
+    const db = memberDb({});
+    await syncProviderMemberships(db, 'u-1', null, ['dept-2'], true);
+    expect(db.departmentMember.updateMany).toHaveBeenCalledWith({
+      where: { userId: 'u-1', joinSource: 'CEVIDB', departmentId: { notIn: ['dept-2'] } },
+      data: { joinedAt: null, confirmedAt: null, confirmedById: null, joinSource: null },
+    });
+
+    const incomplete = memberDb({});
+    await syncProviderMemberships(incomplete, 'u-1', null, [], false);
+    expect(incomplete.departmentMember.updateMany).not.toHaveBeenCalled();
   });
 });

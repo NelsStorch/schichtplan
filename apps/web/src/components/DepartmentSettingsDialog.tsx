@@ -295,7 +295,11 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
 
       <Field
         label="Beitritt für E-Mail-Konten"
-        hint="Steuert, wie neue Personen mit E-Mail-Konto dieser Organisation beitreten können."
+        hint={
+          department?.organization === 'OTHER'
+            ? 'Steuert, wie neue Personen mit E-Mail-Konto dieser Organisation beitreten können.'
+            : 'Steuert, wie neue Personen mit E-Mail-Konto dieser Organisation beitreten können. Wer laut Verbandsdatenbank Rollen bei euch hat, gehört immer automatisch dazu.'
+        }
       >
         <Select
           value={form.joinMode}

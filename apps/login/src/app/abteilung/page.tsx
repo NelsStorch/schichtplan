@@ -478,7 +478,8 @@ function DepartmentSetup() {
                     Weitere {org.unitTerm === 'Verein' ? 'Vereine' : 'Mitgliedschaften'}
                   </h2>
                   <p className="mt-1 text-[13px] text-fg-subtle">
-                    Hier bist du zusätzlich dabei. Beitreten geht über den Link oder Einladungslink.
+                    Hier bist du zusätzlich dabei. Beitreten geht über den Link oder Einladungslink
+                    {org.slug !== 'verein' ? `, oder automatisch über deine Rollen in ${org.authProviderShort}` : ''}.
                   </p>
                   <ul className="mt-3 divide-y divide-line rounded-card border border-line bg-surface/70">
                     {user!.joinedDepartments!.map((d) => (
@@ -486,17 +487,28 @@ function DepartmentSetup() {
                         <span className="min-w-0">
                           <span className="block truncate text-sm font-semibold text-fg">{d.name}</span>
                           <span className="block text-xs text-fg-subtle">
-                            {d.confirmed ? 'Bestätigt' : d.counts ? 'Selbst beigetreten' : 'Wartet auf Bestätigung'}
+                            {d.fromProvider
+                              ? `Aus ${org.authProviderShort}`
+                              : d.confirmed
+                                ? 'Bestätigt'
+                                : d.counts
+                                  ? 'Selbst beigetreten'
+                                  : 'Wartet auf Bestätigung'}
                           </span>
                         </span>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          loading={leaving === d.id}
-                          onClick={() => leave(d.id, d.name)}
-                        >
-                          Verlassen
-                        </Button>
+                        {d.fromProvider ? (
+                          // Kommt beim Login aus den Rollen und lässt sich nur in der Verbands-DB ändern
+                          <span className="shrink-0 text-xs text-fg-subtle">nur in {org.authProviderShort} änderbar</span>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            loading={leaving === d.id}
+                            onClick={() => leave(d.id, d.name)}
+                          >
+                            Verlassen
+                          </Button>
+                        )}
                       </li>
                     ))}
                   </ul>

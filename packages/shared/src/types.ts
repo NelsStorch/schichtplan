@@ -414,6 +414,8 @@ export interface JoinedDepartmentDto extends HomeDepartmentDto {
   confirmed: boolean;
   /** Zählt der Beitritt schon (bei «nur per Einladung» erst bestätigt)? */
   counts: boolean;
+  /** Laut Rollen der Verbands-DB: kommt beim Login, lässt sich nur dort ändern (nicht selbst verlassen) */
+  fromProvider?: boolean;
 }
 
 export interface DepartmentStufeDto {

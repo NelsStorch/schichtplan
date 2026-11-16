@@ -18,6 +18,7 @@ import {
   checkDepartmentJoin,
   markMembershipJoined,
   ownProviderDepartmentIds,
+  PROVIDER_JOIN_SOURCE,
   replaceSelfStufen,
 } from '../../services/departmentJoin.js';
 import { applyProfileUpdate } from '../../services/profileUpdate.js';
@@ -349,6 +350,8 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
       // Cevi.DB-Personen behalten ihre Heimabteilung; eine Einladung in eine andere Abteilung wird dort ein Beitritt
       const inviteTargetDeptId = input.departmentId ?? departmentId;
       let invited = false;
+      // Laut Rollen der Verbands-DB belegt: zählt wie eine Einladung (bestätigt), Herkunft CEVIDB
+      let fromProvider = false;
       let grantedPermissions: DepartmentPermission[] = [];
 
       if (inviteTargetDeptId && (!fromCeviDb || input.inviteToken)) {
@@ -365,7 +368,8 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
           return reply.status(check.status).send({ code: check.code, error: check.error });
         }
         if (check.ok) {
-          invited = check.invited;
+          fromProvider = Boolean(check.fromProvider);
+          invited = check.invited || fromProvider;
           grantedPermissions = check.grantedPermissions;
         }
       }
@@ -447,7 +451,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
         }
         // Einladung in eine andere Abteilung (Cevi.DB-Heimabteilung bleibt): dort bestätigt beitreten
         if (invited && inviteTargetDeptId && inviteTargetDeptId !== departmentId) {
-          await markMembershipJoined(tx, inviteTargetDeptId, userId, { confirmed: true, grantedPermissions });
+          await markMembershipJoined(tx, inviteTargetDeptId, userId, { confirmed: true, grantedPermissions, fromProvider });
         } else if (inviteTargetDeptId && grantedPermissions.length > 0) {
           // Rechte aus der Einladung in der Heimabteilung (kein zusätzlicher Beitritt)
           await markMembershipJoined(tx, inviteTargetDeptId, userId, {
@@ -517,8 +521,9 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
 
       await fastify.prisma.$transaction(async (tx) => {
         await markMembershipJoined(tx, input.departmentId, userId, {
-          confirmed: check.invited,
+          confirmed: check.invited || Boolean(check.fromProvider),
           grantedPermissions: check.grantedPermissions,
+          fromProvider: check.fromProvider,
         });
         await replaceSelfStufen(tx, userId, input.departmentId, input.stufen);
       });
@@ -545,9 +550,16 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
       const { departmentId } = request.params;
       const member = await fastify.prisma.departmentMember.findUnique({
         where: { departmentId_userId: { departmentId, userId } },
-        select: { joinedAt: true },
+        select: { joinedAt: true, joinSource: true },
       });
       if (!member?.joinedAt) return reply.status(404).send({ error: 'Du bist dort nicht beigetreten.' });
+      // Beitritt aus der Verbands-DB: käme beim nächsten Login zurück, ändern lässt er sich nur dort
+      if (member.joinSource === PROVIDER_JOIN_SOURCE) {
+        return reply.status(400).send({
+          code: 'FROM_PROVIDER',
+          error: 'Diese Zugehörigkeit kommt aus der Verbandsdatenbank und lässt sich nur dort ändern.',
+        });
+      }
       await fastify.prisma.$transaction(async (tx) => {
         await tx.departmentMember.update({
           where: { departmentId_userId: { departmentId, userId } },

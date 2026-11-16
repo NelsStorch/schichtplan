@@ -10,19 +10,28 @@ import { isCeviNameProfile } from './nicknameLogin.js';
 
 type Db = Pick<PrismaClient, 'department' | 'departmentMember' | 'eventOrganizer' | 'userHitobitoRole' | 'hitobitoGroup'>;
 
-/**
- * Abteilungen, die laut Verbands-DB zu den eigenen Gruppen gehören: an der Gruppe einer Rolle, ihrer Jungschar oder
- * Ortsgruppe, dazu die Jungscharen der eigenen Ortsgruppen (geteilte Ortsgruppe, Rolle z. B. nur im Vorstand).
- * Nur diese darf ein Verbands-Konto ohne Link aus der Liste wählen; fremde nur per Link oder Einladung.
- */
-export async function ownProviderDepartmentIds(
+export interface ProviderDepartments {
+  /**
+   * Laut Rollen belegt: Abteilung an der Gruppe einer Rolle, ihrer Jungschar oder Ortsgruppe (wie beim Login).
+   * Beitritt geht hier ohne Link und ohne Einladung und gilt als bestätigt.
+   */
+  verified: Set<string>;
+  /**
+   * Belegt plus die Jungscharen der eigenen Ortsgruppen (geteilte Ortsgruppe, Rolle z. B. nur im Vorstand): Welche
+   * Jungschar es ist, sagt die DB nicht. Wählbar ohne Link, aber nicht bestätigt (das macht die Abteilungsleitung).
+   */
+  candidates: Set<string>;
+}
+
+/** Abteilungen, die laut Verbands-DB zu den eigenen Gruppen gehören (aus den Rollen vom letzten Login) */
+export async function ownProviderDepartments(
   prisma: Pick<PrismaClient, 'userHitobitoRole' | 'hitobitoGroup' | 'department'>,
   userId: string,
   provider: OrganizationType
-): Promise<Set<string>> {
+): Promise<ProviderDepartments> {
   const roles = await prisma.userHitobitoRole.findMany({ where: { userId }, select: { groupId: true } });
   const roleGroupIds = [...new Set(roles.flatMap((r) => (r.groupId !== null ? [r.groupId] : [])))];
-  if (roleGroupIds.length === 0) return new Set();
+  if (roleGroupIds.length === 0) return { verified: new Set(), candidates: new Set() };
   const groups = await prisma.hitobitoGroup.findMany({ where: { provider, id: { in: roleGroupIds } } });
   const ortsgruppeIds = [...new Set(groups.flatMap((g) => (g.ortsgruppeId !== null ? [g.ortsgruppeId] : [])))];
   const jungscharen = ortsgruppeIds.length
@@ -31,20 +40,26 @@ export async function ownProviderDepartmentIds(
         select: { jungscharId: true },
       })
     : [];
-  const candidateIds = [
-    ...new Set(
-      [
-        ...roleGroupIds,
-        ...groups.flatMap((g) => [g.jungscharId, g.ortsgruppeId]),
-        ...jungscharen.map((j) => j.jungscharId),
-      ].filter((id): id is number => id !== null)
-    ),
-  ];
+  const notNull = (ids: (number | null)[]) => ids.filter((id): id is number => id !== null);
+  const verifiedGroupIds = new Set(notNull([...roleGroupIds, ...groups.flatMap((g) => [g.jungscharId, g.ortsgruppeId])]));
+  const candidateGroupIds = new Set([...verifiedGroupIds, ...notNull(jungscharen.map((j) => j.jungscharId))]);
   const departments = await prisma.department.findMany({
-    where: { organization: provider, hitobitoGroupId: { in: candidateIds } },
-    select: { id: true },
+    where: { organization: provider, hitobitoGroupId: { in: [...candidateGroupIds] } },
+    select: { id: true, hitobitoGroupId: true },
   });
-  return new Set(departments.map((d) => d.id));
+  return {
+    verified: new Set(departments.filter((d) => verifiedGroupIds.has(d.hitobitoGroupId!)).map((d) => d.id)),
+    candidates: new Set(departments.map((d) => d.id)),
+  };
+}
+
+/** Kurzform: alle Abteilungen der eigenen Gruppen, die ohne Link wählbar sind */
+export async function ownProviderDepartmentIds(
+  prisma: Pick<PrismaClient, 'userHitobitoRole' | 'hitobitoGroup' | 'department'>,
+  userId: string,
+  provider: OrganizationType
+): Promise<Set<string>> {
+  return (await ownProviderDepartments(prisma, userId, provider)).candidates;
 }
 type Tx = Pick<PrismaClient, 'departmentMember' | 'userStufe'>;
 
@@ -54,6 +69,8 @@ export type JoinCheck =
       ok: true;
       /** Gültige Einladung: Zugehörigkeit gilt als bestätigt */
       invited: boolean;
+      /** Laut Rollen der Verbands-DB belegt: gilt ebenfalls als bestätigt (Herkunft CEVIDB) */
+      fromProvider?: boolean;
       /** Rechte aus einer Einladung mit Rechte-Vorlage (nie für Spitznamen-Profile) */
       grantedPermissions: DepartmentPermission[];
     };
@@ -106,6 +123,12 @@ export async function checkDepartmentJoin(
     (await prisma.eventOrganizer.count({ where: { userId, event: { departmentId } } })) > 0;
   if (alreadyMember) return { ok: true, invited: false, grantedPermissions: [] };
 
+  // Abteilungen der eigenen Gruppen laut Verbands-DB (nur Konten desselben Verbands; Vereine haben keine DB)
+  const sameProvider = user.providerId !== null && (!user.provider || user.provider === dept.organization);
+  const own = sameProvider && dept.organization !== 'OTHER' ? await ownProviderDepartments(prisma, userId, dept.organization) : null;
+  // Laut Rollen belegt: Beitritt auch bei INVITE_ONLY, bestätigt durch die DB
+  if (own?.verified.has(dept.id)) return { ok: true, invited: false, fromProvider: true, grantedPermissions: [] };
+
   if (dept.joinMode === 'INVITE_ONLY') {
     return {
       ok: false,
@@ -120,10 +143,8 @@ export async function checkDepartmentJoin(
   // will, wählt INVITE_ONLY (dort zählt nur Einladung oder Bestätigung durch die Leitung).
   if (dept.joinMode === 'LINK_ONLY' && !params.viaLink && params.tenantId !== departmentId) {
     // Verbands-Konten, deren Rollen keine eindeutige Abteilung ergeben (z. B. geteilte Ortsgruppe), landen ohne
-    // Subdomain auf login.<domain>/abteilung. Dort dürfen sie nur Abteilungen ihrer eigenen Gruppen wählen.
-    const sameProvider = user.providerId !== null && (!user.provider || user.provider === dept.organization);
-    const own = sameProvider && (await ownProviderDepartmentIds(prisma, userId, dept.organization)).has(dept.id);
-    if (own) return { ok: true, invited: false, grantedPermissions: [] };
+    // Subdomain auf login.<domain>/abteilung. Dort dürfen sie Abteilungen ihrer eigenen Gruppen wählen (unbestätigt).
+    if (own?.candidates.has(dept.id)) return { ok: true, invited: false, grantedPermissions: [] };
     return {
       ok: false,
       status: 403,
@@ -148,6 +169,8 @@ export async function markMembershipJoined(
     confirmed: boolean;
     confirmedById?: string | null;
     grantedPermissions?: DepartmentPermission[];
+    /** Beitritt laut Rollen der Verbands-DB: Herkunft CEVIDB, der Login nimmt ihn wieder weg, wenn die Rolle fehlt */
+    fromProvider?: boolean;
   }
 ) {
   const join = opts.join ?? true;
@@ -158,12 +181,14 @@ export async function markMembershipJoined(
   const now = new Date();
   const permissions = normalizePermissions([...(existing?.permissions ?? []), ...(opts.grantedPermissions ?? [])]);
   const confirm = join && opts.confirmed && !existing?.confirmedAt;
+  const source = join && opts.fromProvider ? { joinSource: PROVIDER_JOIN_SOURCE } : {};
   await tx.departmentMember.upsert({
     where: { departmentId_userId: { departmentId, userId } },
     update: {
       ...(join ? { joinedAt: existing?.joinedAt ?? now } : {}),
       ...(confirm ? { confirmedAt: now, confirmedById: opts.confirmedById ?? null } : {}),
       ...(opts.grantedPermissions?.length ? { permissions } : {}),
+      ...source,
     },
     create: {
       departmentId,
@@ -173,7 +198,39 @@ export async function markMembershipJoined(
       joinedAt: join ? now : null,
       confirmedAt: confirm ? now : null,
       confirmedById: confirm ? (opts.confirmedById ?? null) : null,
+      ...source,
     },
+  });
+}
+
+/** Herkunft eines Beitritts laut Rollen der Verbands-DB */
+export const PROVIDER_JOIN_SOURCE = 'CEVIDB';
+
+/**
+ * Beim Verbands-Login: In jeder Abteilung, zu der laut Rollen eine Gruppe gehört (ausser der Heimabteilung), gilt die
+ * Person als bestätigt beigetreten, auch bei INVITE_ONLY. Beitritte aus der DB, deren Rolle fehlt, enden wieder
+ * (nur mit vollständiger Gruppenstruktur, sonst wäre ein fehlender Treffer keine Aussage). Selbst gewählte Beitritte
+ * und Rechte bleiben unberührt.
+ */
+export async function syncProviderMemberships(
+  prisma: Pick<PrismaClient, 'departmentMember'>,
+  userId: string,
+  homeDepartmentId: string | null,
+  roleDepartmentIds: string[],
+  complete: boolean
+) {
+  const wanted = roleDepartmentIds.filter((id) => id !== homeDepartmentId);
+  for (const departmentId of wanted) {
+    await markMembershipJoined(prisma, departmentId, userId, { confirmed: true, fromProvider: true });
+  }
+  if (!complete) return;
+  await prisma.departmentMember.updateMany({
+    where: {
+      userId,
+      joinSource: PROVIDER_JOIN_SOURCE,
+      departmentId: { notIn: wanted },
+    },
+    data: { joinedAt: null, confirmedAt: null, confirmedById: null, joinSource: null },
   });
 }
 

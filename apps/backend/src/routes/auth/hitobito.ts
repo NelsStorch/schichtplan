@@ -17,6 +17,7 @@ import {
 import { mergeCeviNameProfilesInto } from '../../services/mergeProfiles.js';
 import { trackUsage } from '../../services/usageStats.js';
 import { syncCeviDbLeadership } from '../../services/departmentLeaders.js';
+import { syncProviderMemberships } from '../../services/departmentJoin.js';
 import { departmentCreationEligibility } from '../departments/shared.js';
 import { findSimPersona, simProfile, simulationEnabled, storeSimGroups } from '../../services/hitobitoSimulation.js';
 import { hitobitoCircuitBreaker } from '../../services/hitobitoCircuitBreaker.js';
@@ -530,6 +531,14 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
       homeDepartment?.id ?? null,
       placement.leaderDepartmentIds,
       placement.departmentIds
+    );
+    // Weitere Abteilungen laut Rollen: bestätigt beigetreten (auch bei «nur per Einladung»), fehlende Rollen enden
+    await syncProviderMemberships(
+      fastify.prisma,
+      user.id,
+      homeDepartment?.id ?? null,
+      placement.departmentIds,
+      placement.complete
     );
 
     // Kommt die Person von einer Abteilungs-Subdomain, dort ohne Rechte eintragen (Leitung nur in der Heimabteilung)

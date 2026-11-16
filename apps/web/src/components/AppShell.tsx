@@ -331,7 +331,13 @@ function AccountSheet({ open, onClose }: { open: boolean; onClose: () => void })
                   {user.joinedDepartments?.map((d) => (
                     <span
                       key={d.id}
-                      title={d.counts ? 'Zusätzlich beigetreten' : 'Beitritt noch nicht bestätigt'}
+                      title={
+                        d.fromProvider
+                          ? 'Laut Rollen in der Verbandsdatenbank'
+                          : d.counts
+                            ? 'Zusätzlich beigetreten'
+                            : 'Beitritt noch nicht bestätigt'
+                      }
                       className={cn(
                         'rounded-full border border-line px-2 py-0.5 text-[11px] font-medium',
                         d.counts ? 'bg-surface-elevated text-fg-muted' : 'border-dashed text-fg-subtle'

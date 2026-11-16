@@ -293,6 +293,7 @@ export async function loadUserDto(
     },
     select: {
       confirmedAt: true,
+      joinSource: true,
       department: { select: { id: true, name: true, slug: true, organization: true, joinMode: true } },
     },
     orderBy: { department: { name: 'asc' } },
@@ -340,6 +341,7 @@ export async function loadUserDto(
       confirmed: Boolean(m.confirmedAt),
       // Unbestätigt bei INVITE_ONLY: Beitritt zählt erst nach Bestätigung durch die Leitung
       counts: Boolean(m.confirmedAt) || m.department.joinMode !== 'INVITE_ONLY',
+      fromProvider: m.joinSource === 'CEVIDB',
     })),
     ortsgruppeId: user.ortsgruppeId,
     ceviDbOrtsgruppeId: user.ortsgruppeId,

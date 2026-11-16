@@ -266,6 +266,9 @@ model DepartmentMember {
   // Von der Leitung bestätigt (Einladung oder von Hand). Bei INVITE_ONLY zählt nur eine bestätigte Mitgliedschaft.
   confirmedAt   DateTime? @map("confirmed_at")
   confirmedById String?   @map("confirmed_by_id")
+  // Woher der Beitritt kommt: CEVIDB = aus den Rollen der Verbands-DB (der Login trägt ein und nimmt wieder weg),
+  // null = selbst oder per Einladung
+  joinSource   String?    @map("join_source")
   createdAt    DateTime   @default(now())
   department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
