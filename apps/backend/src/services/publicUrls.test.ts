@@ -69,6 +69,13 @@ describe('Adressen nur aus der Konfiguration', () => {
 
     // Localhost bleibt lokal
     expect(getLoginPortalBaseUrl({ NODE_ENV: 'development' }, 'localhost:3000')).toBe('http://localhost:3002');
+    // auch mit Verband (Bestätigungs- und Reset-Mails): lokal nie auf die echte Domain
+    expect(getLoginPortalBaseUrl({ NODE_ENV: 'development' }, 'localhost:3002', 'CEVI')).toBe('http://localhost:3002');
+    expect(getLoginPortalBaseUrl({ NODE_ENV: 'development' }, 'demo.pfadi.localhost:3000', 'PFADI')).toBe('http://localhost:3002');
+    expect(getLoginPortalBaseUrl({ NODE_ENV: 'development' }, 'backend:4000', 'CEVI')).toBe('http://localhost:3002');
+    expect(getLoginPortalBaseUrl({ NODE_ENV: 'production' }, 'backend:4000', 'CEVI')).toBe('https://login.cevi-schichtplan.ch');
+    // in Produktion zählt ein localhost-Host nicht
+    expect(getLoginPortalBaseUrl({ NODE_ENV: 'production' }, 'localhost:3002', 'CEVI')).toBe('https://login.cevi-schichtplan.ch');
 
     // domainOrOrg Parameter (z. B. aus dem Admin-Portal oder bei user.homeDepartment)
     expect(getLoginPortalBaseUrl({ NODE_ENV: 'production' }, 'admin.cevi-schichtplan.ch', 'PFADI')).toBe('https://login.pfadi-schichtplan.ch');

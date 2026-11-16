@@ -169,6 +169,16 @@ export function getLoginPortalBaseUrl(
   reqHost?: string,
   domainOrOrg?: OrganizationType | string
 ): string {
+  // Lokal (nie in Produktion, dort zählt der Host nicht): Links in Mails bleiben auf dem lokalen Portal,
+  // auch wenn der Verband mitgegeben wird. Sonst zeigten Bestätigungs- und Reset-Links lokal auf Prod.
+  // Über den Next-Proxy der Frontends kommt lokal der Docker-Dienstname an (z. B. «backend:4000»).
+  if (env.NODE_ENV !== 'production' && reqHost) {
+    const localHost = reqHost.toLowerCase().split(',')[0].trim().replace(/:\d+$/, '');
+    if (localHost === 'localhost' || localHost.endsWith('.localhost') || localHost === '127.0.0.1' || !localHost.includes('.')) {
+      return (env.LOGIN_PORTAL_URL || 'http://localhost:3002').replace(/\/$/, '');
+    }
+  }
+
   let root = domainOrOrg
     ? getOrganization(domainOrOrg).domain
     : reqHost
