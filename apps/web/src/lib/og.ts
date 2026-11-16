@@ -7,6 +7,8 @@ export interface DepartmentPreview {
   slug: string;
   logoUrl: string | null;
   primaryColor: string | null;
+  /** Ebene über der Abteilung/Schar (z. B. «Bund»), sonst null */
+  levelName?: string | null;
 }
 
 /** Abteilungs-Slug aus dem Host (`illnau.cevi-schichtplan.ch` → `illnau`), null auf der Hauptdomain. */
@@ -25,7 +27,15 @@ export function slugFromHost(host: string): string | null {
  */
 export async function getDepartmentPreview(): Promise<DepartmentPreview | null> {
   const d = await fetchPreview<DepartmentPreview>('/api/departments/current');
-  return d ? { name: d.name, slug: d.slug, logoUrl: d.logoUrl ?? null, primaryColor: d.primaryColor ?? null } : null;
+  return d
+    ? {
+        name: d.name,
+        slug: d.slug,
+        logoUrl: d.logoUrl ?? null,
+        primaryColor: d.primaryColor ?? null,
+        levelName: d.levelName ?? null,
+      }
+    : null;
 }
 
 export interface EventPreview {

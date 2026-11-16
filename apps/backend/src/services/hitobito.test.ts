@@ -445,3 +445,17 @@ describe('Hitobito & Vokabular (Multi-Verband)', () => {
     });
   });
 });
+
+describe('organizationForLevel (Begriffe pro Ebene)', () => {
+  it('nennt höhere Ebenen «Organisation» mit «Leitung», Scharen und Vereine bleiben', async () => {
+    const { ORGANIZATIONS, organizationForLevel } = await import('@schichtplan/shared');
+    expect(organizationForLevel(ORGANIZATIONS.jubla, 'Bund')).toMatchObject({
+      unitTerm: 'Organisation',
+      unitTermPlural: 'Organisationen',
+      leadTerm: 'Leitung',
+      orgName: ORGANIZATIONS.jubla.orgName,
+    });
+    expect(organizationForLevel(ORGANIZATIONS.jubla, null).unitTerm).toBe('Schar');
+    expect(organizationForLevel(ORGANIZATIONS.verein, 'Bund').unitTerm).toBe('Verein');
+  });
+});

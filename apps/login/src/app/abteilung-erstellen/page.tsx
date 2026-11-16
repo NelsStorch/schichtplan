@@ -10,7 +10,7 @@ import type {
   UserDto,
 } from '@schichtplan/shared';
 import { getDepartmentUrl, helpUrl } from '@schichtplan/shared/redirect';
-import { type OrganizationConfig } from '@schichtplan/shared';
+import { organizationForLevel, type OrganizationConfig } from '@schichtplan/shared';
 import { Button, Callout, BrandLogo, Field, Input, ThemeToggle, buttonClasses, useOrganization } from '@schichtplan/ui';
 import { afterLogin, cleanReturnTo } from '@/lib/destination';
 import { AuthFooter } from '@/components/AuthFooter';
@@ -161,6 +161,8 @@ function CreateDepartment() {
   const choices = (eligibility?.options ?? []).filter((o) => o.existingDepartment === null);
   const chosen = choices.find((o) => o.hitobitoGroupId === groupId) ?? null;
   const chosenName = chosen?.name ?? eligibility?.ortsgruppeName ?? null;
+  // Höhere Ebene gewählt (Region, Kanton, Bund …): im Formular «Organisation» statt «Schar»
+  const formOrg = organizationForLevel(org, chosen && chosen.level > 0 ? (chosen.groupType ?? 'Ebene') : null);
 
   const choose = (id: number) => {
     const option = choices.find((o) => o.hitobitoGroupId === id);
@@ -268,15 +270,15 @@ function CreateDepartment() {
                 ? 'Neuen Verein anlegen'
                 : choices.length > 1
                   ? 'Für welche Ebene willst du einen Schichtplan anlegen?'
-                  : (chosenName ?? `Deine ${org.unitTerm}`) + ' hat noch keinen Schichtplan'}
+                  : (chosenName ?? `Deine ${formOrg.unitTerm}`) + ' hat noch keinen Schichtplan'}
             </h1>
             <p className="mt-3 text-[15px] leading-relaxed text-fg-muted">
               {org.slug === 'verein'
                 ? 'Lege jetzt einen Schichtplan für deinen Verein an. Du wirst automatisch Vereinsleitung und kannst weitere Mitglieder einladen sowie Helferlisten verwalten.'
                 : `Du bist laut ${org.authProviderShort} Leitung${
                     eligibility.leaderGroupName ? ` (${eligibility.leaderGroupName})` : ''
-                  }. Lege den Schichtplan für eure ${org.unitTerm} jetzt an. Alle aus eurer ${
-                    org.unitTerm
+                  }. Lege den Schichtplan für eure ${formOrg.unitTerm} jetzt an. Alle aus eurer ${
+                    formOrg.unitTerm
                   }, die sich mit ${org.authProviderShort} anmelden, gehören automatisch dazu.`}
             </p>
 
@@ -307,7 +309,7 @@ function CreateDepartment() {
                   ))}
                 </fieldset>
               )}
-              <Field label={org.slug === 'verein' ? 'Name des Vereins' : `Name der ${org.unitTerm}`} required>
+              <Field label={org.slug === 'verein' ? 'Name des Vereins' : `Name der ${formOrg.unitTerm}`} required>
                 <Input
                   value={name}
                   onChange={(e) => {
@@ -341,14 +343,14 @@ function CreateDepartment() {
 
               <Callout tone="info">
                 <p>
-                  Du wirst Hauptverantwortliche*r ({org.unitTerm}-Leitung im Schichtplan). Das lässt sich später unter
-                  «{org.unitTerm} → Personen» ändern. Name, Logo, Farbe und Stufen kannst du jederzeit anpassen, nur die
+                  Du wirst Hauptverantwortliche*r ({formOrg.unitTerm}-Leitung im Schichtplan). Das lässt sich später unter
+                  «{formOrg.unitTerm} → Personen» ändern. Name, Logo, Farbe und Stufen kannst du jederzeit anpassen, nur die
                   Subdomain bleibt fest.
                 </p>
               </Callout>
 
               <Button type="submit" size="lg" className="w-full" loading={saving} disabled={name.trim().length < 2 || slug.length < 3}>
-                {org.unitTerm} anlegen
+                {formOrg.unitTerm} anlegen
               </Button>
               <Button type="button" variant="ghost" className="w-full" onClick={later}>
                 Später

@@ -34,6 +34,11 @@ export interface DepartmentDto {
   name: string;
   slug: string;
   organization?: OrganizationType;
+  /**
+   * Ebene über der Abteilung/Schar laut Verbands-DB (z. B. «Region», «Kanton», «Bund», «Mitgliederorganisation»),
+   * null bei einer normalen Abteilung/Schar. Bestimmt die Begriffe in der Oberfläche («Organisation» statt «Schar»).
+   */
+  levelName?: string | null;
   logoUrl?: string | null;
   primaryColor?: string | null;
   secondaryColor?: string | null;

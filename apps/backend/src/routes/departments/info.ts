@@ -10,6 +10,7 @@ import {
   type DepartmentJoinMode,
   type DepartmentPermission,
   type PasswordlessAccountsDto,
+  getHitobitoConfig,
   getOrganizationByDbType,
   isPassiveRoleClass,
 } from '@schichtplan/shared';
@@ -64,10 +65,22 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
       canSeeInviteToken = access.permissions.has('DEPARTMENT_SETTINGS') || access.permissions.has('PEOPLE_MANAGE');
     }
 
+    // Ebene über der Abteilung/Schar (Region, Kanton, Bund …): andere Begriffe in der Oberfläche
+    let levelName: string | null = null;
+    if (request.tenant.hitobitoGroupId !== null && request.tenant.organization !== 'OTHER') {
+      const group = await fastify.prisma.hitobitoGroup.findUnique({
+        where: { provider_id: { provider: request.tenant.organization, id: request.tenant.hitobitoGroupId } },
+        select: { groupType: true },
+      });
+      const levels = getHitobitoConfig(request.tenant.organization).departmentGroupLabels;
+      if (group?.groupType && levels.indexOf(group.groupType) > 0) levelName = group.groupType;
+    }
+
     return {
       id: request.tenant.id,
       name: request.tenant.name,
       slug: request.tenant.slug,
+      levelName,
       logoUrl: request.tenant.logoUrl,
       primaryColor: request.tenant.primaryColor,
       secondaryColor: request.tenant.secondaryColor,

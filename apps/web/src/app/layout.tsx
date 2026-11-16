@@ -69,13 +69,15 @@ export async function generateViewport(): Promise<Viewport> {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { host } = await getRequestOrigin();
   const orgSlug = getOrganizationSlugFromHost(host);
+  // Ebene der Abteilung (Region, Kanton, Bund …): bestimmt die Begriffe in der Oberfläche
+  const department = await getDepartmentPreview();
   return (
     <html lang="de-CH" className={fontVariables} suppressHydrationWarning>
       <head>
         <ThemeScript />
       </head>
       <body className="min-h-[100dvh]">
-        <OrganizationProvider slug={orgSlug}>
+        <OrganizationProvider slug={orgSlug} levelName={department?.levelName ?? null}>
         <FeedbackProvider>
           <PortalProvider>
             <CommandPaletteProvider>

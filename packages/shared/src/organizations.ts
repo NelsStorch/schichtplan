@@ -203,3 +203,13 @@ export function getOrganizationByDbType(dbType?: string | null): OrganizationCon
       return ORGANIZATIONS.cevi;
   }
 }
+
+/**
+ * Begriffe für einen Schichtplan auf einer höheren Ebene (Region, Kanton, Bund, Mitgliederorganisation …): Dort ist
+ * es keine «Schar» bzw. «Abteilung» mit «Scharleitung», sondern eine Organisation mit ihrer Leitung. Neutral
+ * gewählt, damit Sätze wie «eure Organisation» grammatisch passen. Ohne Ebene bleibt alles beim Verband.
+ */
+export function organizationForLevel(org: OrganizationConfig, levelName?: string | null): OrganizationConfig {
+  if (!levelName || org.slug === 'verein') return org;
+  return { ...org, unitTerm: 'Organisation', unitTermPlural: 'Organisationen', leadTerm: 'Leitung' };
+}
