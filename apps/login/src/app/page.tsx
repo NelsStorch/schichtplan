@@ -91,10 +91,11 @@ function getLoginErrorMessage(code: string, org: OrganizationConfig, other?: str
     case 'hitobito_email_taken':
       return `Die E-Mail aus deinem ${org.authProviderShort}-Profil gehört schon zu einem anderen Konto. Melde dich bitte bei den Betreibern des Schichtplans.`;
     case 'cevidb_email_other_provider': {
-      // Ein Konto hängt an genau einer Verbands-DB: Mit derselben E-Mail geht nur die, mit der es verbunden ist
+      // Ein Konto hängt an genau einer Verbands-DB. Der Login dort hilft hier nichts (Sitzung gilt pro Domain),
+      // also: hier mit E-Mail und Passwort anmelden oder in der eigenen DB eine andere E-Mail eintragen.
       const otherOrg = other ? getOrganizationByDbType(other) : null;
       const otherDb = otherOrg && otherOrg.dbType !== org.dbType ? otherOrg.authProviderShort : 'einer anderen Verbands-DB';
-      return `Mit der E-Mail aus deinem ${org.authProviderShort}-Profil gibt es schon ein Konto, das mit ${otherDb} verbunden ist. Ein Konto kann nur mit einer Verbands-DB verbunden sein. Melde dich mit ${otherDb} an oder trage in ${org.authProviderShort} eine andere E-Mail-Adresse ein.`;
+      return `Mit der E-Mail aus deinem ${org.authProviderShort}-Profil gibt es schon ein Konto, das mit ${otherDb} verbunden ist. Ein Konto kann nur mit einer Verbands-DB verbunden sein. Du kannst dich hier mit dieser E-Mail und deinem Passwort anmelden (noch keines? «Passwort vergessen» setzt eines), deine Rollen aus ${org.authProviderShort} zählen dann aber nicht. Damit sie zählen, trage in ${org.authProviderShort} eine andere E-Mail-Adresse ein und melde dich nochmals an.`;
     }
     default:
       return null;
@@ -187,6 +188,8 @@ function LoginContent() {
     const errCode = searchParams.get('error');
     if (errCode) {
       setError(getLoginErrorMessage(errCode, org, searchParams.get('other')) ?? 'Ein Fehler ist aufgetreten.');
+      // Konto eines anderen Verbands: direkt den Passwort-Login anbieten
+      if (errCode === 'cevidb_email_other_provider') setErrorAction('password');
       setHitobitoDown(
         errCode === 'cevidb_failed' ||
         errCode === 'hitobito_failed' ||

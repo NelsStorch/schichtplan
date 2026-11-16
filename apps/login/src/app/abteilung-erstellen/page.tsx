@@ -14,6 +14,7 @@ import { organizationForLevel, type OrganizationConfig } from '@schichtplan/shar
 import { Button, Callout, BrandLogo, Field, Input, ThemeToggle, buttonClasses, useOrganization } from '@schichtplan/ui';
 import { afterLogin, cleanReturnTo } from '@/lib/destination';
 import { AuthFooter } from '@/components/AuthFooter';
+import { OtherProviderHint, isOtherProviderAccount } from '@/components/OtherProviderHint';
 
 const slugify = (value: string) =>
   value
@@ -404,10 +405,15 @@ function CreateDepartment() {
                 </>
               ) : (
                 <>
-                  <p className="text-[15px] leading-relaxed text-fg-muted">
-                    Eine neue {org.unitTerm} kann nur die Leitung anlegen. Melde dich dazu mit {org.authProviderShort} an, dort
-                    sehen wir deine Rolle und eure Gruppe.
-                  </p>
+                  {/* Konto eines anderen Verbands (z. B. Cevi-Konto per Passwort auf Jubla): sagen, warum es nicht geht */}
+                  {isOtherProviderAccount(user, org) ? (
+                    <OtherProviderHint user={user} org={org} />
+                  ) : (
+                    <p className="text-[15px] leading-relaxed text-fg-muted">
+                      Eine neue {org.unitTerm} kann nur die Leitung anlegen. Melde dich dazu mit {org.authProviderShort} an,
+                      dort sehen wir deine Rolle und eure Gruppe.
+                    </p>
+                  )}
                   <a
                     href={`/api/auth/cevidb/login?returnTo=${encodeURIComponent(
                       typeof window === 'undefined' ? '' : window.location.href

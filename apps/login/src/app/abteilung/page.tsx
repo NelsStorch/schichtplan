@@ -7,6 +7,7 @@ import type { DepartmentDirectoryItemDto, StufeRole, UserDto } from '@schichtpla
 import { Button, Callout, BrandLogo, Input, ThemeToggle, cn, useOrganization } from '@schichtplan/ui';
 import { cleanReturnTo, departmentSlugFromReturnTo, finalDestination } from '@/lib/destination';
 import { AuthFooter } from '@/components/AuthFooter';
+import { OtherProviderHint } from '@/components/OtherProviderHint';
 
 const NONE = 'NONE';
 
@@ -294,6 +295,7 @@ function DepartmentSetup() {
 
         <div className="mt-8 space-y-6">
           {error && <Callout tone="danger">{error}</Callout>}
+          <OtherProviderHint user={user} org={org} />
 
           {loading ? (
             <div className="space-y-2" aria-busy>
