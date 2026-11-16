@@ -912,7 +912,18 @@ export interface AdminUserAccessDiagnosisDto {
     role: string;
     /** CEVIDB: aus dem Login (wird dort auch wieder entzogen), MANUAL: im Admin-Portal gesetzt */
     leaderSource: string | null;
+    /** Heimabteilung der Person */
+    home?: boolean;
+    /** Herkunft der Heimabteilung (CEVIDB, CONFIRMED, SELF) */
+    homeSource?: string | null;
+    /** Ausdrücklich beigetreten (nicht nur technischer Helfer-Eintrag) */
+    joined?: boolean;
+    confirmed?: boolean;
+    /** Beitritt laut Rollen der Verbands-DB */
+    fromProvider?: boolean;
   }[];
+  /** Abteilungen laut eigenen Rollen; verified: durch die DB belegt, sonst nur wählbar (geteilte Ortsgruppe) */
+  providerDepartments?: { name: string; slug: string; verified: boolean }[];
 }
 
 export interface AdminUserDetailDto extends AdminUserListItemDto {

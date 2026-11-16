@@ -174,6 +174,52 @@ export function AccessDiagnosis({ userId }: { userId: string }) {
         )}
       </div>
 
+      {data.memberships.some((m) => m.home || m.joined) && (
+        <div>
+          <p className="mb-1 text-xs text-fg-subtle">Zugehörigkeiten</p>
+          <ul className="space-y-0.5 text-sm">
+            {data.memberships
+              .filter((m) => m.home || m.joined)
+              .map((m) => (
+                <li key={m.departmentSlug} className="flex flex-wrap items-baseline gap-2">
+                  <span>{m.departmentName}</span>
+                  <span className="text-xs text-fg-muted">
+                    {m.home
+                      ? `Heimabteilung (${
+                          m.homeSource === 'CEVIDB'
+                            ? `aus ${vocab.authProvider}`
+                            : m.homeSource === 'CONFIRMED'
+                              ? 'von der Leitung bestätigt'
+                              : 'selbst gewählt'
+                        })`
+                      : m.fromProvider
+                        ? `zusätzlich, aus ${vocab.authProvider} (endet beim Login, wenn die Rolle fehlt)`
+                        : m.confirmed
+                          ? 'zusätzlich, bestätigt'
+                          : 'zusätzlich, unbestätigt'}
+                  </span>
+                </li>
+              ))}
+          </ul>
+        </div>
+      )}
+
+      {data.providerDepartments && data.providerDepartments.length > 0 && (
+        <div>
+          <p className="mb-1 text-xs text-fg-subtle">{vocab.departmentPlural} laut Rollen in {vocab.authProvider}</p>
+          <ul className="space-y-0.5 text-sm">
+            {data.providerDepartments.map((d) => (
+              <li key={d.slug} className="flex flex-wrap items-baseline gap-2">
+                <span>{d.name}</span>
+                <span className="text-xs text-fg-muted">
+                  {d.verified ? 'durch die Rollen belegt' : 'wählbar, aber nicht belegt (geteilte Ortsgruppe)'}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {data.memberships.some((m) => m.role === 'ADMIN') && (
         <div>
           <p className="mb-1 text-xs text-fg-subtle">Herkunft der {vocab.departmentLeader}</p>

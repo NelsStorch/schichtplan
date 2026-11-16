@@ -16,6 +16,7 @@ import { hashResetToken } from './passwordReset.js';
 import { getLoginPortalBaseUrl } from '../services/authSession.js';
 import { toCeviDbStufeDto } from '../services/homeDepartment.js';
 import { hitobitoRoleKind } from '../services/hitobito.js';
+import { ownProviderDepartments, PROVIDER_JOIN_SOURCE } from '../services/departmentJoin.js';
 import { departmentCreationEligibility } from './departments/shared.js';
 import { recordAdminAction } from '../services/adminAudit.js';
 import { trackUsage } from '../services/usageStats.js';
@@ -477,8 +478,17 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           providerId: true,
           providerSyncedAt: true,
           hitobitoRoles: { orderBy: [{ groupName: 'asc' }, { roleClass: 'asc' }] },
+          homeDepartmentId: true,
+          homeDepartmentSource: true,
           memberships: {
-            select: { role: true, leaderSource: true, department: { select: { name: true, slug: true } } },
+            select: {
+              role: true,
+              leaderSource: true,
+              joinedAt: true,
+              confirmedAt: true,
+              joinSource: true,
+              department: { select: { id: true, name: true, slug: true } },
+            },
             orderBy: { department: { name: 'asc' } },
           },
         },
@@ -542,7 +552,27 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           departmentSlug: m.department.slug,
           role: m.role,
           leaderSource: m.leaderSource,
+          home: m.department.id === user.homeDepartmentId,
+          homeSource: m.department.id === user.homeDepartmentId ? user.homeDepartmentSource : null,
+          joined: Boolean(m.joinedAt),
+          confirmed: Boolean(m.confirmedAt),
+          fromProvider: m.joinSource === PROVIDER_JOIN_SOURCE,
         })),
+        // Abteilungen, die laut Rollen zu den eigenen Gruppen gehören (mit aktueller Konfiguration berechnet)
+        providerDepartments: hasProvider
+          ? await (async () => {
+              const own = await ownProviderDepartments(fastify.prisma, user.id, provider);
+              const ids = [...own.candidates];
+              const rows = ids.length
+                ? await fastify.prisma.department.findMany({
+                    where: { id: { in: ids } },
+                    select: { id: true, name: true, slug: true },
+                    orderBy: { name: 'asc' },
+                  })
+                : [];
+              return rows.map((d) => ({ name: d.name, slug: d.slug, verified: own.verified.has(d.id) }));
+            })()
+          : [],
       };
       return result;
     }
