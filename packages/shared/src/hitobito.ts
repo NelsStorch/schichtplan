@@ -54,10 +54,13 @@ export interface HitobitoConfig {
 }
 
 /**
- * Leitung der Cevi-Ebenen über der Ortsgruppe (Mitgliederorganisation, Sektion): Sie darf dort einen Schichtplan
- * anlegen. Reine Datenpflege-Rollen (Administrator der Mitgliederorganisation, AdminOrtsgruppen) zählen nicht.
+ * Leitung der Cevi-Ebenen über der Ortsgruppe (Dachverband, Mitgliederorganisation, Sektion): Sie darf dort einen
+ * Schichtplan anlegen. Reine Datenpflege-Rollen (Administrator von Dachverband oder Mitgliederorganisation,
+ * AdminOrtsgruppen) zählen nicht.
  */
 export const CEVI_REGIONAL_LEADER_ROLE_CLASSES = [
+  'Group::DachverbandGeschaeftsstelle::Geschaeftsleiter',
+  'Group::DachverbandVorstand::Praesidium',
   'Group::MitgliederorganisationGeschaeftsstelle::Geschaeftsleiter',
   'Group::MitgliederorganisationVorstand::Praesidium',
   'Group::Sektion::Administrator',
@@ -75,8 +78,9 @@ export const HITOBITO_CEVI_CONFIG: HitobitoConfig = {
     'Group::Ortsgruppe',
   ],
   // Struktur laut hitobito_cevi: Dachverband → Mitgliederorganisation (z. B. Cevi Region Zürich) → Sektion (optional)
-  // → Ortsgruppe → Jungschar → Stufe. Mitgliederorganisation und Sektion können einen eigenen Schichtplan haben.
-  departmentGroupLabels: ['Ortsgruppe', 'Sektion', 'Mitgliederorganisation'],
+  // → Ortsgruppe → Jungschar → Stufe. Dachverband, Mitgliederorganisation und Sektion können einen eigenen
+  // Schichtplan haben.
+  departmentGroupLabels: ['Ortsgruppe', 'Sektion', 'Mitgliederorganisation', 'Dachverband'],
   jungscharGroupLabels: ['Jungschar'],
   departmentLeaderRoleClasses: [
     'Group::Jungschar::Abteilungsleiter',
@@ -129,8 +133,8 @@ export const HITOBITO_PFADI_CONFIG: HitobitoConfig = {
   defaultBaseUrl: 'https://db.scout.ch',
   // Struktur laut hitobito_pbs: Bund → Kantonalverband → Region (verschachtelbar) → Abteilung → Biber, Wölfe, Pfadi,
   // Pio, Rover, PTA. Abteilungen hängen unter einer Region oder direkt unter dem Kantonalverband.
-  departmentGroupTypes: ['Group::Abteilung', 'Group::Region', 'Group::Kantonalverband'],
-  departmentGroupLabels: ['Abteilung', 'Region', 'Kantonalverband'],
+  departmentGroupTypes: ['Group::Abteilung', 'Group::Region', 'Group::Kantonalverband', 'Group::Bund'],
+  departmentGroupLabels: ['Abteilung', 'Region', 'Kantonalverband', 'Bund'],
   jungscharGroupLabels: [],
   // Nur Rollen mit Schreibrechten auf die Ebene (layer_and_below_full). Präsidium und Vizepräsidium dürfen in
   // MiData nur lesen und werden darum hier nicht Leitung.
@@ -142,6 +146,9 @@ export const HITOBITO_PFADI_CONFIG: HitobitoConfig = {
     'Group::Region::Sekretariat',
     'Group::Kantonalverband::Kantonsleitung',
     'Group::Kantonalverband::Sekretariat',
+    // Bund: Geschäftsstelle. Die Geschäftsleitung darf in MiData nur lesen.
+    'Group::Bund::MitarbeiterGs',
+    'Group::Bund::Sekretariat',
   ],
   departmentLeaderSuffixes: [
     '::abteilungsleitung',

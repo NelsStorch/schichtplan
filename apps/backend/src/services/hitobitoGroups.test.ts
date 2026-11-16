@@ -105,6 +105,16 @@ describe('parseCeviDbGroup', () => {
     expect(parseCeviDbGroup(vorstand, 3)).toMatchObject({ ortsgruppeId: 2, jungscharCount: null });
   });
 
+  it('ordnet die Geschäftsstelle des Dachverbands dem Dachverband zu', () => {
+    const geschaeftsstelle = {
+      groups: [{ id: '5', name: 'Geschäftsstelle', group_type: 'Geschäftsstelle', links: { hierarchies: ['1', '5'] } }],
+      linked: { groups: [{ id: '1', name: 'Cevi Schweiz', group_type: 'Dachverband' }] },
+    };
+    expect(parseCeviDbGroup(geschaeftsstelle, 5)).toMatchObject({ ortsgruppeId: 1 });
+    // Eine Stufe bleibt bei ihrer Ortsgruppe, auch wenn der Dachverband darüber liegt
+    expect(parseCeviDbGroup(joschija, 806)).toMatchObject({ ortsgruppeId: 161 });
+  });
+
   it('nimmt keine Personendaten mit', () => {
     expect(JSON.stringify(parseCeviDbGroup(joschija, 806))).not.toMatch(/Musterweg|Vorname|6396/);
   });
@@ -155,6 +165,8 @@ describe('parseCeviDbGroup für Pfadi (MiData)', () => {
     expect(parseCeviDbGroup(region, 906, 'PFADI')).toMatchObject({ ortsgruppeId: 906, jungscharCount: 0 });
     const kantonalverband = pbsGroup('234', 'AS Genevois', 'Kantonalverband', ['1113', '1', '234'], ['906']);
     expect(parseCeviDbGroup(kantonalverband, 234, 'PFADI')).toMatchObject({ ortsgruppeId: 234, jungscharCount: 0 });
+    const bund = pbsGroup('1', 'Pfadibewegung Schweiz', 'Bund', ['1113', '1'], ['234']);
+    expect(parseCeviDbGroup(bund, 1, 'PFADI')).toMatchObject({ ortsgruppeId: 1, jungscharCount: 0 });
   });
 
   it('wertet Pfadi-Gruppen nicht mit den Cevi-Typen aus', () => {

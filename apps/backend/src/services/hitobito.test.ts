@@ -134,6 +134,11 @@ describe('Hitobito & Vokabular (Multi-Verband)', () => {
       expect(isDepartmentLeaderRole('Group::Sektion::Administrator', 'CEVI')).toBe(true);
       expect(isDepartmentLeaderRole('Group::Mitgliederorganisation::Administrator', 'CEVI')).toBe(false);
       expect(isDepartmentLeaderRole('Group::MitgliederorganisationGeschaeftsstelle::AdminOrtsgruppen', 'CEVI')).toBe(false);
+      // Dachverband: Geschäftsleitung und Präsidium, nicht Angestellte und Datenpflege
+      expect(isDepartmentLeaderRole('Group::DachverbandGeschaeftsstelle::Geschaeftsleiter', 'CEVI')).toBe(true);
+      expect(isDepartmentLeaderRole('Group::DachverbandVorstand::Praesidium', 'CEVI')).toBe(true);
+      expect(isDepartmentLeaderRole('Group::DachverbandGeschaeftsstelle::Angestellter', 'CEVI')).toBe(false);
+      expect(isDepartmentLeaderRole('Group::Dachverband::Administrator', 'CEVI')).toBe(false);
       expect(isDepartmentLeaderRole('Group::Stufe::Stufenleiter', 'CEVI')).toBe(false);
     });
 
@@ -145,6 +150,11 @@ describe('Hitobito & Vokabular (Multi-Verband)', () => {
       expect(isDepartmentLeaderRole('Group::Region::Sekretariat', 'PFADI')).toBe(true);
       expect(isDepartmentLeaderRole('Group::Kantonalverband::Kantonsleitung', 'PFADI')).toBe(true);
       expect(isDepartmentLeaderRole('Group::Kantonalverband::Sekretariat', 'PFADI')).toBe(true);
+      expect(isDepartmentLeaderRole('Group::Bund::MitarbeiterGs', 'PFADI')).toBe(true);
+      expect(isDepartmentLeaderRole('Group::Bund::Sekretariat', 'PFADI')).toBe(true);
+      expect(isDepartmentLeaderRole('Group::Bund::Geschaeftsleitung', 'PFADI')).toBe(false);
+      expect(isDepartmentLeaderRole('Group::Bund::ItSupport', 'PFADI')).toBe(false);
+      expect(isDepartmentLeaderRole('Group::Bund::Adressverwaltung', 'PFADI')).toBe(false);
       // Präsidium darf in MiData nur lesen
       expect(isDepartmentLeaderRole('Group::Abteilung::Praesidium', 'PFADI')).toBe(false);
       expect(isDepartmentLeaderRole('Group::Abteilung::VizePraesidium', 'PFADI')).toBe(false);

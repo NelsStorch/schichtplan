@@ -67,7 +67,7 @@ export function hitobitoConfig(): HitobitoConfig {
       'Group::Abteilung::Abteilungsleiterin',
       'Group::Ortsgruppe::Abteilungsleiter',
       'Group::Ortsgruppe::Abteilungsleiterin',
-      // Mitgliederorganisation und Sektion (Regionen): eigener Schichtplan für ihre Ebene
+      // Dachverband, Mitgliederorganisation und Sektion: eigener Schichtplan für ihre Ebene
       ...CEVI_REGIONAL_LEADER_ROLE_CLASSES,
     ]),
     stufeRoleClassPrefix: process.env.CEVIDB_STUFE_ROLE_PREFIX?.trim() || 'Group::Stufe::',
