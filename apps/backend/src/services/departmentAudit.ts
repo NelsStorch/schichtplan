@@ -14,12 +14,18 @@ export type DepartmentAuditAction =
   | 'STUFEN_SET'
   | 'MEMBER_REMOVE'
   | 'MEMBER_CONFIRM'
-  | 'MEMBER_UNCONFIRM';
+  | 'MEMBER_UNCONFIRM'
+  /** Beitritt laut Rollen der Verbands-DB (automatisch beim Login) */
+  | 'MEMBER_JOIN'
+  /** Beitritt laut Verbands-DB beendet, weil die Rolle fehlt */
+  | 'MEMBER_LEAVE';
 
 export interface DepartmentAuditEntry {
   departmentId: string;
-  /** null = automatisch (Cevi.DB-Login) */
+  /** null = automatisch (Login über die Verbands-DB) */
   actorId: string | null;
+  /** Bei automatischen Einträgen: Name der Verbands-DB (z. B. «Jubla-DB»), sonst «Cevi.DB» */
+  automaticBy?: string;
   action: DepartmentAuditAction;
   targetUserId: string | null;
   targetLabel: string;
@@ -35,7 +41,7 @@ export async function recordDepartmentAction(
   entry: DepartmentAuditEntry
 ) {
   try {
-    let actorName = 'Cevi.DB (automatisch)';
+    let actorName = `${entry.automaticBy ?? 'Cevi.DB'} (automatisch)`;
     if (entry.actorId) {
       const actor = await prisma.user.findUnique({
         where: { id: entry.actorId },

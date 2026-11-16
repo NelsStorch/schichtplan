@@ -5,7 +5,10 @@
  */
 import type { OrganizationType, PrismaClient } from '../db.js';
 import { isPassiveRoleClass, normalizePermissions, type DepartmentPermission } from '@schichtplan/shared';
+import type { FastifyBaseLogger } from 'fastify';
 import { verifyDepartmentInviteToken } from './inviteToken.js';
+import { recordDepartmentAction } from './departmentAudit.js';
+import { personLabel } from './profile.js';
 import { isCeviNameProfile } from './nicknameLogin.js';
 
 type Db = Pick<PrismaClient, 'department' | 'departmentMember' | 'eventOrganizer' | 'userHitobitoRole' | 'hitobitoGroup'>;
@@ -216,25 +219,59 @@ export const PROVIDER_JOIN_SOURCE = 'CEVIDB';
  * und Rechte bleiben unberührt.
  */
 export async function syncProviderMemberships(
-  prisma: Pick<PrismaClient, 'departmentMember'>,
+  prisma: Pick<PrismaClient, 'departmentMember' | 'user' | 'departmentAuditLog'>,
+  log: FastifyBaseLogger,
   userId: string,
   homeDepartmentId: string | null,
   roleDepartmentIds: string[],
-  complete: boolean
+  complete: boolean,
+  providerName: string
 ) {
   const wanted = roleDepartmentIds.filter((id) => id !== homeDepartmentId);
+  const before = await prisma.departmentMember.findMany({
+    where: { userId, joinSource: PROVIDER_JOIN_SOURCE },
+    select: { departmentId: true },
+  });
+  const hadFromProvider = new Set(before.map((m) => m.departmentId));
+  const person = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { firstName: true, lastName: true, nickname: true },
+  });
+  const targetLabel = person ? personLabel(person) : 'Unbekannt';
+
   for (const departmentId of wanted) {
     await markMembershipJoined(prisma, departmentId, userId, { confirmed: true, fromProvider: true });
+    // Ins Protokoll der Abteilung, damit die Leitung sieht, warum jemand dazugehört
+    if (!hadFromProvider.has(departmentId)) {
+      await recordDepartmentAction(prisma, log, {
+        departmentId,
+        actorId: null,
+        automaticBy: providerName,
+        action: 'MEMBER_JOIN',
+        targetUserId: userId,
+        targetLabel,
+        details: { source: 'CEVIDB' },
+      });
+    }
   }
   if (!complete) return;
+  const ended = [...hadFromProvider].filter((id) => !wanted.includes(id));
+  if (ended.length === 0) return;
   await prisma.departmentMember.updateMany({
-    where: {
-      userId,
-      joinSource: PROVIDER_JOIN_SOURCE,
-      departmentId: { notIn: wanted },
-    },
+    where: { userId, joinSource: PROVIDER_JOIN_SOURCE, departmentId: { in: ended } },
     data: { joinedAt: null, confirmedAt: null, confirmedById: null, joinSource: null },
   });
+  for (const departmentId of ended) {
+    await recordDepartmentAction(prisma, log, {
+      departmentId,
+      actorId: null,
+      automaticBy: providerName,
+      action: 'MEMBER_LEAVE',
+      targetUserId: userId,
+      targetLabel,
+      details: { reason: 'NO_ROLE' },
+    });
+  }
 }
 
 /** Selbst angegebene Stufen einer Abteilung ersetzen; Stufen aus Cevi.DB und anderer Abteilungen bleiben */

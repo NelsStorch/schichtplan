@@ -187,37 +187,58 @@ describe('checkDepartmentJoin', () => {
 });
 
 describe('syncProviderMemberships', () => {
-  function memberDb(existing: Record<string, { joinedAt: Date | null; confirmedAt: Date | null; permissions: string[] }>) {
+  const log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
+  function memberDb(fromProviderBefore: string[] = []) {
     return {
       departmentMember: {
-        findUnique: vi.fn(async ({ where }: any) => existing[where.departmentId_userId.departmentId] ?? null),
+        findUnique: vi.fn().mockResolvedValue(null),
+        findMany: vi.fn().mockResolvedValue(fromProviderBefore.map((departmentId) => ({ departmentId }))),
         upsert: vi.fn().mockResolvedValue({}),
         updateMany: vi.fn().mockResolvedValue({ count: 0 }),
       },
+      user: { findUnique: vi.fn().mockResolvedValue({ firstName: 'Lea', lastName: 'Muster', nickname: 'Sim' }) },
+      departmentAuditLog: { create: vi.fn().mockResolvedValue({}) },
     } as any;
   }
 
-  it('trägt weitere Abteilungen laut Rollen bestätigt ein, die Heimabteilung nicht', async () => {
-    const db = memberDb({});
-    await syncProviderMemberships(db, 'u-1', 'dept-home', ['dept-home', 'dept-2'], true);
+  it('trägt weitere Abteilungen laut Rollen bestätigt ein und protokolliert sie, die Heimabteilung nicht', async () => {
+    const db = memberDb();
+    await syncProviderMemberships(db, log, 'u-1', 'dept-home', ['dept-home', 'dept-2'], true, 'Jubla-DB');
     expect(db.departmentMember.upsert).toHaveBeenCalledTimes(1);
     const call = db.departmentMember.upsert.mock.calls[0][0];
     expect(call.where.departmentId_userId).toEqual({ departmentId: 'dept-2', userId: 'u-1' });
     expect(call.create).toMatchObject({ joinSource: 'CEVIDB', role: 'HELPER' });
     expect(call.create.joinedAt).toBeInstanceOf(Date);
     expect(call.create.confirmedAt).toBeInstanceOf(Date);
+    expect(db.departmentAuditLog.create).toHaveBeenCalledTimes(1);
+    expect(db.departmentAuditLog.create.mock.calls[0][0].data).toMatchObject({
+      departmentId: 'dept-2',
+      action: 'MEMBER_JOIN',
+      actorName: 'Jubla-DB (automatisch)',
+    });
+  });
+
+  it('protokolliert bestehende DB-Beitritte nicht erneut', async () => {
+    const db = memberDb(['dept-2']);
+    await syncProviderMemberships(db, log, 'u-1', null, ['dept-2'], true, 'Jubla-DB');
+    expect(db.departmentAuditLog.create).not.toHaveBeenCalled();
+    expect(db.departmentMember.updateMany).not.toHaveBeenCalled();
   });
 
   it('beendet DB-Beitritte ohne Rolle nur mit vollständiger Gruppenstruktur', async () => {
-    const db = memberDb({});
-    await syncProviderMemberships(db, 'u-1', null, ['dept-2'], true);
+    const db = memberDb(['dept-2', 'dept-alt']);
+    await syncProviderMemberships(db, log, 'u-1', null, ['dept-2'], true, 'Cevi.DB');
     expect(db.departmentMember.updateMany).toHaveBeenCalledWith({
-      where: { userId: 'u-1', joinSource: 'CEVIDB', departmentId: { notIn: ['dept-2'] } },
+      where: { userId: 'u-1', joinSource: 'CEVIDB', departmentId: { in: ['dept-alt'] } },
       data: { joinedAt: null, confirmedAt: null, confirmedById: null, joinSource: null },
     });
+    expect(db.departmentAuditLog.create.mock.calls.at(-1)[0].data).toMatchObject({
+      departmentId: 'dept-alt',
+      action: 'MEMBER_LEAVE',
+    });
 
-    const incomplete = memberDb({});
-    await syncProviderMemberships(incomplete, 'u-1', null, [], false);
+    const incomplete = memberDb(['dept-alt']);
+    await syncProviderMemberships(incomplete, log, 'u-1', null, [], false, 'Cevi.DB');
     expect(incomplete.departmentMember.updateMany).not.toHaveBeenCalled();
   });
 });

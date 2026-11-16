@@ -535,10 +535,12 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
     // Weitere Abteilungen laut Rollen: bestätigt beigetreten (auch bei «nur per Einladung»), fehlende Rollen enden
     await syncProviderMemberships(
       fastify.prisma,
+      fastify.log,
       user.id,
       homeDepartment?.id ?? null,
       placement.departmentIds,
-      placement.complete
+      placement.complete,
+      getOrganizationByDbType(provider).authProviderShort
     );
 
     // Kommt die Person von einer Abteilungs-Subdomain, dort ohne Rechte eintragen (Leitung nur in der Heimabteilung)

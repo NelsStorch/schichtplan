@@ -19,6 +19,8 @@ const ACTION_LABELS: Record<string, string> = {
   MEMBER_REMOVE: 'Aus der Abteilung entfernt',
   MEMBER_CONFIRM: 'Zugehörigkeit bestätigt',
   MEMBER_UNCONFIRM: 'Bestätigung aufgehoben',
+  MEMBER_JOIN: 'Dazugekommen',
+  MEMBER_LEAVE: 'Nicht mehr dabei',
 };
 
 const list = (value: unknown): string[] => (Array.isArray(value) ? value.filter((v) => typeof v === 'string') : []);
@@ -42,6 +44,8 @@ function changeText(entry: DepartmentAuditEntryDto, org: OrganizationConfig): st
   if (entry.action === 'LEADER_REVOKE' && d.reason === 'NO_LEADER_ROLE') return `Keine Leitungsrolle mehr in ${provider}`;
   if (entry.action === 'LEADER_REVOKE' && d.reason === 'OTHER_DEPARTMENT') return `Andere Ortsgruppe in ${provider}`;
   if (entry.action === 'LEADER_GRANT' && (d.source === 'CEVIDB' || d.source === 'HITOBITO')) return `Leitungsrolle in ${provider}`;
+  if (entry.action === 'MEMBER_JOIN') return `Rolle bei euch in ${provider}`;
+  if (entry.action === 'MEMBER_LEAVE') return `Keine Rolle mehr bei euch in ${provider}`;
   return null;
 }
 

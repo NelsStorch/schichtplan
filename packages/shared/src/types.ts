@@ -632,7 +632,7 @@ export interface DepartmentAuditEntryDto {
   /** null = automatisch über den Cevi.DB-Login */
   actorId: string | null;
   actorName: string;
-  /** PERMISSIONS_SET, LEADER_GRANT, LEADER_REVOKE, STUFEN_SET, MEMBER_REMOVE, MEMBER_CONFIRM, MEMBER_UNCONFIRM */
+  /** PERMISSIONS_SET, LEADER_GRANT, LEADER_REVOKE, STUFEN_SET, MEMBER_REMOVE, MEMBER_CONFIRM, MEMBER_UNCONFIRM, MEMBER_JOIN, MEMBER_LEAVE */
   action: string;
   targetUserId: string | null;
   targetLabel: string;
