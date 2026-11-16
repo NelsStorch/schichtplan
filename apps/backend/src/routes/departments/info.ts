@@ -217,11 +217,23 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
         select: {
           provider: true,
           providerId: true,
+          ortsgruppeId: true,
+          ortsgruppeName: true,
+          jungscharIds: true,
           hitobitoRoles: { select: { roleClass: true, roleName: true, groupName: true }, orderBy: [{ groupName: 'asc' }, { roleClass: 'asc' }] },
         },
       });
       if (!user || user.providerId === null || user.provider !== request.organization) return result;
-      return { ...result, myRoles: creationRoles(user.hitobitoRoles, user.provider) };
+      // Eigene Gruppe (Schar, Abteilung …) und ob sie schon einen Schichtplan hat: bei Cevi zuerst die Jungschar
+      const groupIds = [...user.jungscharIds, ...(user.ortsgruppeId !== null ? [user.ortsgruppeId] : [])];
+      const existing = groupIds.length
+        ? await fastify.prisma.department.findFirst({
+            where: { organization: user.provider, hitobitoGroupId: { in: groupIds } },
+            select: { name: true, slug: true },
+          })
+        : null;
+      const ownGroup = groupIds.length ? { name: user.ortsgruppeName, existingDepartment: existing } : null;
+      return { ...result, myRoles: creationRoles(user.hitobitoRoles, user.provider), ownGroup };
     }
   );
 

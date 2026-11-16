@@ -1122,6 +1122,11 @@ export interface DepartmentCreationEligibilityDto {
    * und ob sie als Leitung zählen. So sieht sie selbst, woran es liegt.
    */
   myRoles?: DepartmentCreationRoleDto[];
+  /**
+   * Nur für die eigene Person und nur, wenn sie nicht anlegen darf: ihre eigene Gruppe laut Verbands-DB (z. B. Schar)
+   * und ob es dafür schon einen Schichtplan gibt. null: keine Gruppe bekannt.
+   */
+  ownGroup?: { name: string | null; existingDepartment: { name: string; slug: string } | null } | null;
 }
 
 export interface DepartmentCreationRoleDto {

@@ -141,7 +141,8 @@ function CreateDepartment() {
   };
 
   const shareUrl = typeof window === 'undefined' ? '/abteilung-erstellen' : `${window.location.origin}/abteilung-erstellen`;
-  const groupLabel = eligibility?.ortsgruppeName ? withOrgName(eligibility.ortsgruppeName, org) : `unsere ${org.unitTerm}`;
+  const knownGroupName = eligibility?.ortsgruppeName ?? eligibility?.ownGroup?.name ?? null;
+  const groupLabel = knownGroupName ? withOrgName(knownGroupName, org) : `unsere ${org.unitTerm}`;
   const shareMessage = `Hey! Könntest du für ${groupLabel} kurz den Schichtplan auf ${org.name} einrichten? Als ${org.unitTerm}-Leitung in ${org.authProviderShort} geht das mit einem Klick:`;
 
   const copyForLeader = async () => {
@@ -191,6 +192,11 @@ function CreateDepartment() {
   };
 
   const rootHost = typeof window === 'undefined' ? '' : window.location.hostname.replace(/^login\./, '');
+
+  // Eigene Gruppe laut Verbands-DB: Gibt es dafür noch keinen Schichtplan, sagt die Seite das zuerst
+  const ownExisting = eligibility?.ownGroup?.existingDepartment ?? null;
+  const noPlanYet = eligibility?.reason === 'NOT_LEADER' && Boolean(eligibility.ownGroup) && !ownExisting;
+  const ownGroupLabel = eligibility?.ownGroup?.name ? withOrgName(eligibility.ownGroup.name, org) : `deine ${org.unitTerm}`;
 
   return (
     <div className="grain flex min-h-[100dvh] flex-col">
@@ -313,10 +319,22 @@ function CreateDepartment() {
           </form>
         ) : (
           <div className="animate-fade-up space-y-6">
-            <h1 className="font-display text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-fg">
-              {org.unitTerm} anlegen
+            <h1 className="font-display text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-fg text-balance">
+              {noPlanYet ? `Für ${ownGroupLabel} gibt es noch keinen Schichtplan` : `${org.unitTerm} anlegen`}
             </h1>
-            {eligibility.reason === 'EXISTS' && eligibility.existingDepartment ? (
+            {eligibility.reason === 'NOT_LEADER' && ownExisting ? (
+              <>
+                <p className="text-[15px] leading-relaxed text-fg-muted">
+                  Für eure {org.unitTerm} gibt es schon einen Schichtplan: {ownExisting.name}.
+                </p>
+                <a
+                  href={getDepartmentUrl(ownExisting.slug)}
+                  className={buttonClasses({ size: 'lg', className: 'w-full justify-between' })}
+                >
+                  Zu {ownExisting.name} <ArrowUpRight />
+                </a>
+              </>
+            ) : eligibility.reason === 'EXISTS' && eligibility.existingDepartment ? (
               <>
                 <p className="text-[15px] leading-relaxed text-fg-muted">
                   Für eure {org.unitTerm} gibt es schon einen Schichtplan: {eligibility.existingDepartment.name}.
@@ -378,9 +396,11 @@ function CreateDepartment() {
                   title={
                     org.slug === 'verein'
                       ? 'Verein anlegen'
-                      : eligibility.ortsgruppeName
-                        ? `${withOrgName(eligibility.ortsgruppeName, org)} hat noch keinen Schichtplan`
-                        : `Nur für die ${org.unitTerm}-Leitung`
+                      : noPlanYet
+                        ? `Einrichten kann ihn die ${org.unitTerm}-Leitung`
+                        : eligibility.ortsgruppeName
+                          ? `${withOrgName(eligibility.ortsgruppeName, org)} hat noch keinen Schichtplan`
+                          : `Nur für die ${org.unitTerm}-Leitung`
                   }
                 >
                   {org.slug === 'verein' ? (
@@ -389,7 +409,9 @@ function CreateDepartment() {
                     </p>
                   ) : (
                     <p className="text-[14px] leading-relaxed">
-                      Du bist selbst nicht als {org.unitTerm}-Leitung in {org.authProviderShort} eingetragen – deshalb kannst du die {org.unitTerm} nicht direkt selbst eröffnen.
+                      {noPlanYet
+                        ? `Den Schichtplan für ${ownGroupLabel} richtet die ${org.unitTerm}-Leitung laut ${org.authProviderShort} ein. Du bist dort nicht als ${org.unitTerm}-Leitung eingetragen.`
+                        : `Du bist selbst nicht als ${org.unitTerm}-Leitung in ${org.authProviderShort} eingetragen – deshalb kannst du die ${org.unitTerm} nicht direkt selbst eröffnen.`}
                     </p>
                   )}
                 </Callout>
@@ -399,9 +421,10 @@ function CreateDepartment() {
 
                 {org.slug !== 'verein' && (
                   <p className="text-[14px] leading-relaxed text-fg-muted">
-                    <strong className="text-fg">So klappt es trotzdem sofort:</strong> Schicke deiner {org.unitTerm}-Leitung den
-                    Einrichtungslink. Sobald sie den Schichtplan mit einem Klick angelegt hat, kann sie dir unter{' '}
-                    <em>{org.unitTerm} → Personen</em> das Recht <strong className="text-fg">Anlässe erstellen</strong> geben.
+                    <strong className="text-fg">So geht es weiter:</strong> Schicke deiner {org.unitTerm}-Leitung den
+                    Einrichtungslink. Sobald sie den Schichtplan mit einem Klick angelegt hat, gehörst du beim nächsten Login
+                    automatisch dazu. Willst du selbst Anlässe planen, kann sie dir unter <em>{org.unitTerm} → Personen</em>{' '}
+                    das Recht <strong className="text-fg">Anlässe erstellen</strong> geben.
                   </p>
                 )}
 
