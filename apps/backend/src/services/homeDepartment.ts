@@ -212,7 +212,7 @@ export async function autoCreateCeviDbDepartmentStufen(
   return autoCreateAllCeviDbDepartmentStufen(prisma, departmentId);
 }
 
-/** Stufen aus Cevi.DB abgleichen: nur Stufen, die eine Abteilung mit ihrer Cevi.DB-Gruppe verknüpft hat. */
+/** Stufen aus Cevi.DB abgleichen: nur Stufen, die eine Abteilung rechtmässig mit ihrer Cevi.DB-Gruppe verknüpft hat. */
 export async function syncCeviDbStufen(prisma: Db, userId: string, provider?: OrganizationType) {
   let effectiveProvider = provider;
   if (!effectiveProvider) {
@@ -221,11 +221,28 @@ export async function syncCeviDbStufen(prisma: Db, userId: string, provider?: Or
   }
   const fromCeviDb = await prisma.userHitobitoStufe.findMany({ where: { userId } });
   const groupIds = fromCeviDb.map((s) => s.groupId);
-  const linked = groupIds.length
+  const rawLinked = groupIds.length
     ? await prisma.departmentStufe.findMany({
-        where: { hitobitoGroupId: { in: groupIds }, department: { organization: effectiveProvider } },
+        where: {
+          hitobitoGroupId: { in: groupIds },
+          department: { organization: effectiveProvider, hitobitoGroupId: { not: null } },
+        },
+        include: { department: { select: { hitobitoGroupId: true } } },
       })
     : [];
+  const groups = groupIds.length
+    ? await prisma.hitobitoGroup.findMany({
+        where: { provider: effectiveProvider, id: { in: groupIds } },
+      })
+    : [];
+  const groupById = new Map(groups.map((g) => [g.id, g]));
+  const linked = rawLinked.filter((s) => {
+    const deptGroupId = s.department?.hitobitoGroupId ?? null;
+    if (deptGroupId === null || s.hitobitoGroupId === null) return false;
+    const g = groupById.get(s.hitobitoGroupId);
+    if (!g) return true; // Vor Gruppenstruktur-Abruf: Abteilung hat hitobitoGroupId
+    return g.id === deptGroupId || g.jungscharId === deptGroupId || g.ortsgruppeId === deptGroupId;
+  });
 
   await runInTransaction(prisma, async (tx) => {
     await tx.userStufe.deleteMany({

@@ -754,8 +754,8 @@ function LoginContent() {
                     </li>
                   )}
 
-                  {/* Spitzname / Cevi-Name: Fallback für Personen ohne E-Mail */}
-                  {department && department.allowPasswordless !== false && (
+                  {/* Spitzname / Cevi-Name: Fallback für Personen ohne E-Mail (nur wenn von der Abteilung freigeschaltet) */}
+                  {department && department.allowPasswordless === true && (
                     <li>
                       <button
                         type="button"

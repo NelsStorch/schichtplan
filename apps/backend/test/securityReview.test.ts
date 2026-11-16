@@ -36,8 +36,22 @@ describe.skipIf(!hasTestDb)('Security-Review 2026-10-25', () => {
         payload: { departmentSlug, ceviName, birthDate },
       });
 
-    it('lässt während der Sperre auch das richtige Geburtsdatum nicht durch', async () => {
+    it('ist für neue Abteilungen standardmässig deaktiviert', async () => {
       const department = await createDepartment(app);
+      expect(department.allowPasswordless).toBe(false);
+      await createUser(app, {
+        email: null,
+        ceviName: 'Fuchs',
+        birthDate: new Date('2012-04-01T00:00:00Z'),
+        homeDepartmentId: department.id,
+      });
+      const res = await login(department.slug, 'Fuchs', '2012-04-01', '10.0.0.99');
+      expect(res.statusCode).toBe(403);
+      expect(res.json().code).toBe('PASSWORDLESS_DISABLED');
+    });
+
+    it('lässt während der Sperre auch das richtige Geburtsdatum nicht durch', async () => {
+      const department = await createDepartment(app, { allowPasswordless: true });
       await createUser(app, {
         email: null,
         ceviName: 'Fuchs',
@@ -55,7 +69,7 @@ describe.skipIf(!hasTestDb)('Security-Review 2026-10-25', () => {
     });
 
     it('zählt Treffer auf geschützte Konten als Fehlversuch (sonst ein Orakel fürs Geburtsdatum)', async () => {
-      const department = await createDepartment(app);
+      const department = await createDepartment(app, { allowPasswordless: true });
       await createUser(app, {
         ceviDbId: 999,
         ceviName: 'Adler',

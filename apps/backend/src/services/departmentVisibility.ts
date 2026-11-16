@@ -110,10 +110,21 @@ export async function allUsersRelatedTo(
   return count === ids.length;
 }
 
-/** Personen einer Abteilung: Heimabteilung, Mitgliedschaft oder Stufe */
+/** Personen einer Abteilung: Heimabteilung, echte Mitgliedschaft (Beitritt/Rechte) oder Stufe */
 export const departmentPeopleWhere = (departmentIds: string[]) => [
   { homeDepartmentId: { in: departmentIds } },
-  { memberships: { some: { departmentId: { in: departmentIds } } } },
+  {
+    memberships: {
+      some: {
+        departmentId: { in: departmentIds },
+        OR: [
+          { joinedAt: { not: null } },
+          { role: 'ADMIN' },
+          { NOT: { permissions: { isEmpty: true } } },
+        ],
+      },
+    },
+  },
   { stufen: { some: { stufe: { departmentId: { in: departmentIds } } } } },
 ];
 

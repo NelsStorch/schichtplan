@@ -21,9 +21,11 @@ describe('resolveJwtSecret', () => {
 
 describe('isAllowedOrigin', () => {
   const root = 'cevi-schichtplan.ch';
-  it('erlaubt die eigene Domain mit https', () => {
+  it('erlaubt die eigene Domain mit https (aber keine Staging-Subdomains in Produktion)', () => {
     expect(isAllowedOrigin('https://cevi-schichtplan.ch', root, false)).toBe(true);
-    expect(isAllowedOrigin('https://illnau.dev.cevi-schichtplan.ch', root, false)).toBe(true);
+    expect(isAllowedOrigin('https://illnau.cevi-schichtplan.ch', root, false)).toBe(true);
+    expect(isAllowedOrigin('https://illnau.dev.cevi-schichtplan.ch', root, false)).toBe(false);
+    expect(isAllowedOrigin('https://dev.cevi-schichtplan.ch', root, false)).toBe(false);
     expect(isAllowedOrigin('http://illnau.cevi-schichtplan.ch', root, false)).toBe(false);
   });
 

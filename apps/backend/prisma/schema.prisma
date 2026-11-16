@@ -39,8 +39,8 @@ model Department {
   hitobitoGroupId Int?              @map("hitobito_group_id")
   // Startseite (Liste der Anlässe) nur für Mitglieder (Vorgabe: an); öffentliche Anlässe bleiben per Link erreichbar
   membersOnly   Boolean           @default(true) @map("members_only")
-  // Passwortlose Anmeldung (Spitzname + Geburtsdatum) für diese Abteilung erlaubt
-  allowPasswordless Boolean       @default(true) @map("allow_passwordless")
+  // Passwortlose Anmeldung (Spitzname + Geburtsdatum) für diese Abteilung erlaubt (Vorgabe: aus)
+  allowPasswordless Boolean       @default(false) @map("allow_passwordless")
   // Beitrittsmodus für E-Mail-Konten: OPEN (Verzeichnis), LINK_ONLY (Abteilungs-Link), INVITE_ONLY (nur Einladung)
   joinMode      String            @default("LINK_ONLY") @map("join_mode")
   // Geheimer Einladungs-Token für bestätigten Beitritt (v. a. bei INVITE_ONLY)
@@ -212,6 +212,8 @@ model User {
   emailNotifyMessages      Boolean        @default(true) @map("email_notify_messages")
   /// Geheimer Token für den persönlichen Webcal/iCal-Kalenderfeed
   calendarToken       String?            @unique @map("calendar_token")
+  /// Hinweis, dass nach dem Zusammenführen eines Spitznamen-Profils das alte Kalender-Abo gelöscht und neu eingerichtet werden muss
+  calendarResetNotice Boolean            @default(false) @map("calendar_reset_notice")
   /// Letzter Tag mit Nutzung (nur das Datum, ohne Uhrzeit). Höchstens ein Schreibzugriff pro Person und Tag (plugins/jwt.ts)
   lastSeenOn          DateTime?          @db.Date @map("last_seen_on")
   /// Zwei-Faktor (TOTP, RFC 6238): Secret AES-256-GCM-verschlüsselt (services/twoFactor.ts), nie im Klartext

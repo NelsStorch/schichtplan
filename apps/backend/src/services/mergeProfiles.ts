@@ -49,12 +49,21 @@ async function mergeOne(tx: Tx, sourceId: string, targetId: string) {
     tx.user.findUniqueOrThrow({ where: { id: sourceId } }),
     tx.user.findUniqueOrThrow({ where: { id: targetId } }),
   ]);
+  const sourceIsGuest = isCeviNameProfile(source);
   const targetIsGuest = isCeviNameProfile(target);
-  // Kalender-Abonnement nicht verlieren: falls das Zielkonto noch keinen Token hat, den des Quellkontos übernehmen
+  // Kalender-Abonnement: Aus einem ungeschützten Spitznamen-Profil wird der Token aus Sicherheitsgründen
+  // NICHT in ein geschütztes Konto übernommen (sonst behielte jemand, der nur Spitzname + Geburtsdatum kannte,
+  // dauerhaft Lesezugriff auf den Kalender). Die Person erhält stattdessen einen Hinweis zum Neueinrichten.
   let transferredCalendarToken: string | undefined = undefined;
-  if (!target.calendarToken && source.calendarToken) {
-    transferredCalendarToken = source.calendarToken;
-    await tx.user.update({ where: { id: sourceId }, data: { calendarToken: null } });
+  let calendarResetNotice: boolean | undefined = undefined;
+  if (source.calendarToken) {
+    if (sourceIsGuest && !targetIsGuest) {
+      calendarResetNotice = true;
+      await tx.user.update({ where: { id: sourceId }, data: { calendarToken: null } });
+    } else if (!target.calendarToken) {
+      transferredCalendarToken = source.calendarToken;
+      await tx.user.update({ where: { id: sourceId }, data: { calendarToken: null } });
+    }
   }
 
   await tx.user.update({
@@ -64,6 +73,7 @@ async function mergeOne(tx: Tx, sourceId: string, targetId: string) {
       nickname: target.nickname || source.nickname,
       birthDate: target.birthDate ?? source.birthDate,
       calendarToken: transferredCalendarToken,
+      ...(calendarResetNotice ? { calendarResetNotice: true } : {}),
       lastName:
         (!target.lastName || target.lastName === PLACEHOLDER_LAST_NAME) && source.lastName !== PLACEHOLDER_LAST_NAME
           ? source.lastName
@@ -234,14 +244,19 @@ async function mergeOne(tx: Tx, sourceId: string, targetId: string) {
   await tx.adminAuditLog.updateMany({ where: { adminId: sourceId }, data: { adminId: targetId } });
   await tx.adminAuditLog.updateMany({ where: { targetType: 'USER', targetId: sourceId }, data: { targetId: targetId } });
 
-  // Push-Abonnements übernehmen: Doppelte Endpoints der Zielperson behalten
-  const targetEndpoints = new Set(
-    (await tx.pushSubscription.findMany({ where: { userId: targetId }, select: { endpoint: true } })).map((p) => p.endpoint)
-  );
-  const sourceSubs = await tx.pushSubscription.findMany({ where: { userId: sourceId }, select: { id: true, endpoint: true } });
-  const dupSubs = sourceSubs.filter((s) => targetEndpoints.has(s.endpoint)).map((s) => s.id);
-  if (dupSubs.length) await tx.pushSubscription.deleteMany({ where: { id: { in: dupSubs } } });
-  await tx.pushSubscription.updateMany({ where: { userId: sourceId }, data: { userId: targetId } });
+  // Push-Abonnements übernehmen: aus einem ungeschützten Spitznamen-Profil werden keine Push-Endpunkte
+  // in ein geschütztes Konto übernommen (sonst bekäme ein fremder Browser weiterhin Benachrichtigungen).
+  if (sourceIsGuest && !targetIsGuest) {
+    await tx.pushSubscription.deleteMany({ where: { userId: sourceId } });
+  } else {
+    const targetEndpoints = new Set(
+      (await tx.pushSubscription.findMany({ where: { userId: targetId }, select: { endpoint: true } })).map((p) => p.endpoint)
+    );
+    const sourceSubs = await tx.pushSubscription.findMany({ where: { userId: sourceId }, select: { id: true, endpoint: true } });
+    const dupSubs = sourceSubs.filter((s) => targetEndpoints.has(s.endpoint)).map((s) => s.id);
+    if (dupSubs.length) await tx.pushSubscription.deleteMany({ where: { id: { in: dupSubs } } });
+    await tx.pushSubscription.updateMany({ where: { userId: sourceId }, data: { userId: targetId } });
+  }
 
   // Rest (doppelte Antworten, Mitgliedschaften usw.) verschwindet mit dem Profil
   await tx.user.delete({ where: { id: sourceId } });

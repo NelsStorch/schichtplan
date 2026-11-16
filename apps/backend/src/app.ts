@@ -64,6 +64,7 @@ export function isAllowedOrigin(origin: string, rootDomain: string, allowLocalho
   const roots = new Set([ownRoot, ...ALLOWED_PLATFORM_DOMAINS.map((d) => (isStaging ? `dev.${d}` : d))]);
 
   if (url.protocol === 'https:') {
+    if (!isStaging && (host.startsWith('dev.') || host.includes('.dev.'))) return false;
     for (const r of roots) {
       if (host === r || host.endsWith(`.${r}`)) return true;
     }

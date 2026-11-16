@@ -246,7 +246,13 @@ describe.skipIf(!hasTestDb)('OK-Werkzeuge: Nachrichten und Massenbearbeitung', (
     it('aktualisiert und leert Rolle sowie Funktion/Ressort bestehender OK-Mitglieder', async () => {
       const { department, lead, event } = await setup();
       // Mit Passwort: reine Cevi-Name-Profile dürfen keine OK-Rolle erhalten
-      const co = await createUser(app, { firstName: 'Lena', lastName: 'Ressort', ceviName: 'Fuchs', passwordHash: 'x' });
+      const co = await createUser(app, {
+        firstName: 'Lena',
+        lastName: 'Ressort',
+        ceviName: 'Fuchs',
+        passwordHash: 'x',
+        homeDepartmentId: department.id,
+      });
       const url = `/api/events/${event.slug}/organizers`;
       const cookie = authCookie(app, lead);
 

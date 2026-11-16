@@ -56,11 +56,12 @@ const passwordResetRoutes: FastifyPluginAsync = async (fastify) => {
 
       const user = await fastify.prisma.user.findUnique({
         where: { email },
-        select: { id: true, email: true, passwordHash: true, nickname: true, firstName: true },
+        select: { id: true, email: true, emailVerified: true, passwordHash: true, providerId: true, nickname: true, firstName: true },
       });
-      // Funktioniert für alle Konten mit echter E-Mail (auch Hitobito-Konten als Notfall-Passwort).
-      // Nur Platzhalter-Adressen (z. B. cevi_123@cevi-schichtplan.ch) erhalten keine Mail.
-      if (!user?.email || isPlaceholderEmail(user.email)) return { success: true, message: GENERIC_MESSAGE };
+      // Funktioniert für alle Konten mit echter E-Mail (Passwort-Konto oder Hitobito-Konto mit bestätigter E-Mail).
+      // Reine Spitznamen-Profile (ohne Passwort und ohne Provider) und unbestätigte selbst eingetragene Adressen erhalten keine Reset-Mail.
+      const canReset = Boolean(user?.passwordHash || (user?.providerId !== null && user?.emailVerified));
+      if (!user?.email || !canReset || isPlaceholderEmail(user.email)) return { success: true, message: GENERIC_MESSAGE };
 
       // Höchstens ein Link pro Minute und Konto
       const recent = await fastify.prisma.passwordResetToken.findFirst({

@@ -35,11 +35,20 @@ export async function resetDb(app: FastifyInstance) {
 let counter = 0;
 const unique = () => `${Date.now().toString(36)}${(counter++).toString(36)}`;
 
-export async function createDepartment(app: FastifyInstance, data: { slug?: string; name?: string; membersOnly?: boolean } = {}) {
+export async function createDepartment(
+  app: FastifyInstance,
+  data: { slug?: string; name?: string; membersOnly?: boolean; allowPasswordless?: boolean; organization?: OrganizationType } = {}
+) {
   const slug = data.slug ?? `abt${unique()}`;
   departmentCache.clear();
   return app.prisma.department.create({
-    data: { slug, name: data.name ?? `Cevi ${slug}`, membersOnly: data.membersOnly ?? false },
+    data: {
+      slug,
+      name: data.name ?? `Cevi ${slug}`,
+      membersOnly: data.membersOnly ?? false,
+      ...(data.allowPasswordless !== undefined ? { allowPasswordless: data.allowPasswordless } : {}),
+      ...(data.organization ? { organization: data.organization } : {}),
+    },
   });
 }
 

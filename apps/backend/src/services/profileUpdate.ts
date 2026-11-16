@@ -114,6 +114,7 @@ export async function applyProfileUpdate(
       data.emailVerified = false;
       data.emailVerifiedAt = null;
       data.emailVerificationTokens = { deleteMany: {} };
+      data.passwordResetTokens = { deleteMany: {} };
     }
   }
 

@@ -169,6 +169,9 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.status(resolved.status).send({ error: resolved.error });
       }
       const targetUser = resolved.user;
+      if (targetUser.id !== request.user.id && !(await allUsersRelatedToEvent(fastify.prisma, event.id, [targetUser.id]))) {
+        return reply.status(400).send({ error: UNRELATED_PERSON_ERROR });
+      }
 
       // Schutz: Die letzte OK-Leitung kann nicht zu einem einfachen Mitglied herabgestuft werden
       if (role !== 'OK_LEAD') {

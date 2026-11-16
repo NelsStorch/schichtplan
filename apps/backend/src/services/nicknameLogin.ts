@@ -108,16 +108,21 @@ export async function resolveOrganizerUser(
     const local = candidates.filter(
       (c) => c.homeDepartmentId === departmentId || c.memberships.some((m) => m.departmentId === departmentId)
     );
-    const pick = candidates.length === 1 ? candidates : local;
+    const pick = local;
     if (pick.length === 1) {
       user = pick[0];
-    } else if (candidates.length > 1) {
+    } else if (local.length > 1) {
       return {
         error: `Mehrere Personen heissen «${name}». Gib die E-Mail an oder wähle die Person aus der Liste.`,
         status: 409,
       };
     } else {
-      const onlyProfile = await prisma.user.count({ where: { nickname: { equals: name, mode: 'insensitive' } } });
+      const onlyProfile = await prisma.user.count({
+        where: {
+          nickname: { equals: name, mode: 'insensitive' },
+          OR: [{ homeDepartmentId: departmentId }, { memberships: { some: { departmentId } } }],
+        },
+      });
       if (onlyProfile > 0) return { error: CEVINAME_ROLE_ERROR, status: 400 };
     }
   }

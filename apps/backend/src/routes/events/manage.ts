@@ -145,6 +145,9 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
             return reply.status(resolved.status).send({ error: `OK: ${who}: ${resolved.error}` });
           }
           const targetUser = resolved.user;
+          if (!(await allUsersRelatedTo(fastify.prisma, { departmentIds: [request.tenant.id] }, [targetUser.id]))) {
+            return reply.status(400).send({ error: UNRELATED_PERSON_ERROR });
+          }
 
           if (!userIdsSeen.has(targetUser.id)) {
             userIdsSeen.add(targetUser.id);
@@ -152,22 +155,6 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
               userId: targetUser.id,
               role: item.role || 'OK_MEMBER',
               roleTitle: item.roleTitle?.trim() || (item.role === 'OK_LEAD' ? 'Event-Leitung' : undefined),
-            });
-
-            // Sicherstellen, dass die Person Mitglied der Abteilung ist
-            await fastify.prisma.departmentMember.upsert({
-              where: {
-                departmentId_userId: {
-                  departmentId: request.tenant.id,
-                  userId: targetUser.id,
-                },
-              },
-              update: {},
-              create: {
-                departmentId: request.tenant.id,
-                userId: targetUser.id,
-                role: 'HELPER',
-              },
             });
           }
         }

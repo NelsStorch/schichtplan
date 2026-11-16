@@ -1,6 +1,9 @@
 import bcrypt from 'bcryptjs';
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { createPendingLink, PENDING_LINK_COOKIE } from '../src/services/authSession.js';
+import { mergeCeviNameProfilesInto } from '../src/services/mergeProfiles.js';
+import { totpCode, totpStep } from '../src/services/twoFactor.js';
 import {
   addMember,
   authCookie,
@@ -154,7 +157,7 @@ describe.skipIf(!hasTestDb)('Sicherheit der API', () => {
   describe('Datenschutz', () => {
     it('zeigt die Mitgliederliste (mit E-Mails) nur Planenden', async () => {
       const department = await createDepartment(app);
-      const helper = await createUser(app);
+      const helper = await createUser(app, { homeDepartmentId: department.id });
       await addMember(app, department.id, helper.id, 'HELPER');
       const outsider = await createUser(app);
 
@@ -574,6 +577,235 @@ describe.skipIf(!hasTestDb)('Sicherheit der API', () => {
         cookie: authCookie(app, ok),
       });
       expect(right.statusCode).toBe(200);
+    });
+  });
+
+  describe('Security-Audit 2026-11-16', () => {
+    it('verbietet das Setzen eines Passworts bei unbestätigter E-Mail-Adresse (kein E-Mail-Squatting)', async () => {
+      const guest = await createUser(app, { email: 'fremd@example.com', emailVerified: false, passwordHash: null, ceviName: 'Fuchs' });
+      const res = await inject(app, {
+        method: 'POST',
+        url: '/api/auth/me/password',
+        cookie: authCookie(app, guest),
+        payload: { newPassword: 'neues-passwort-123' },
+      });
+      expect(res.statusCode).toBe(400);
+      expect(res.json().code).toBe('EMAIL_NOT_VERIFIED');
+      const after = await app.prisma.user.findUniqueOrThrow({ where: { id: guest.id } });
+      expect(after.emailVerified).toBe(false);
+      expect(after.passwordHash).toBeNull();
+    });
+
+    it('stellt keinen Passwort-Reset für unbestätigte E-Mails aus und löscht Reset-Tokens beim E-Mail-Wechsel', async () => {
+      const unverified = await createUser(app, { email: 'unbestaetigt@example.com', emailVerified: false, passwordHash: null });
+      const reqRes = await inject(app, {
+        method: 'POST',
+        url: '/api/auth/password-reset/request',
+        payload: { email: 'unbestaetigt@example.com' },
+      });
+      expect(reqRes.statusCode).toBe(200);
+      expect(await app.prisma.passwordResetToken.count({ where: { userId: unverified.id } })).toBe(0);
+
+      // Bestehendes Reset-Token muss beim Ändern der E-Mail verfallen
+      await app.prisma.passwordResetToken.create({
+        data: { userId: unverified.id, tokenHash: 'abc123hash', expiresAt: new Date(Date.now() + 3600_000) },
+      });
+      await app.prisma.user.update({ where: { id: unverified.id }, data: { email: null } });
+      const patchRes = await inject(app, {
+        method: 'PATCH',
+        url: '/api/auth/me',
+        cookie: authCookie(app, unverified),
+        payload: { email: 'andere@example.com' },
+      });
+      expect(patchRes.statusCode).toBe(200);
+      expect(await app.prisma.passwordResetToken.count({ where: { userId: unverified.id } })).toBe(0);
+    });
+
+    it('verlangt beim Verknüpfen eines 2FA-geschützten Passwort-Kontos den 2FA-Code vor dem Speichern von providerId', async () => {
+      const passwordHash = await bcrypt.hash('mein-passwort-123', 4);
+      const user = await createUser(app, { email: 'twofa-link@example.com', passwordHash, emailVerified: true });
+      const userCookie = authCookie(app, user);
+      const setupRes = await inject(app, {
+        method: 'POST',
+        url: '/api/auth/2fa/setup',
+        cookie: userCookie,
+        payload: { currentPassword: 'mein-passwort-123' },
+      });
+      const secret = (setupRes.json().secret as string).replace(/ /g, '');
+      const step = totpStep();
+      await inject(app, {
+        method: 'POST',
+        url: '/api/auth/2fa/enable',
+        cookie: userCookie,
+        payload: { code: totpCode(secret, step) },
+      });
+
+      const linkToken = createPendingLink({
+        profile: { id: 777888, email: 'twofa-link@example.com', first_name: 'Anna', last_name: 'Test' },
+        returnTo: '/',
+        tenantSlug: null,
+        userId: user.id,
+        provider: 'CEVI',
+      });
+
+      // Nur Passwort ohne 2FA-Code: abgelehnt und providerId noch NICHT in DB geschrieben
+      const noCode = await inject(app, {
+        method: 'POST',
+        url: '/api/auth/cevidb/link',
+        cookie: `${PENDING_LINK_COOKIE}=${linkToken}`,
+        payload: { password: 'mein-passwort-123' },
+      });
+      expect(noCode.statusCode).toBe(401);
+      expect(noCode.json().code).toBe('TWO_FACTOR_REQUIRED');
+      const before = await app.prisma.user.findUniqueOrThrow({ where: { id: user.id } });
+      expect(before.providerId).toBeNull();
+
+      // Mit gültigem 2FA-Code: Verknüpfung wird gespeichert
+      const withCode = await inject(app, {
+        method: 'POST',
+        url: '/api/auth/cevidb/link',
+        cookie: `${PENDING_LINK_COOKIE}=${linkToken}`,
+        payload: { password: 'mein-passwort-123', code: totpCode(secret, step + 1) },
+      });
+      expect(withCode.statusCode).toBe(200);
+      const after = await app.prisma.user.findUniqueOrThrow({ where: { id: user.id } });
+      expect(after.providerId).toBe('777888');
+    });
+
+    it('erlaubt im OK nur Personen mit Bezug zur Abteilung oder zum Anlass', async () => {
+      const host = await createDepartment(app);
+      const foreign = await createDepartment(app);
+      const lead = await createUser(app, { homeDepartmentId: host.id, passwordHash: 'x' });
+      await addMember(app, host.id, lead.id, 'ADMIN');
+      const event = await createEvent(app, host.id, { organizerId: lead.id });
+      const stranger = await createUser(app, {
+        email: 'stranger@example.com',
+        nickname: 'Einzigartig',
+        passwordHash: 'x',
+        homeDepartmentId: foreign.id,
+      });
+
+      for (const payload of [
+        { userId: stranger.id, role: 'OK_MEMBER' },
+        { email: 'stranger@example.com', role: 'OK_MEMBER' },
+        { nickname: 'Einzigartig', role: 'OK_MEMBER' },
+      ]) {
+        const res = await inject(app, {
+          method: 'POST',
+          url: `/api/events/${event.slug}/organizers`,
+          tenant: host.slug,
+          cookie: authCookie(app, lead),
+          payload,
+        });
+        expect([400, 404]).toContain(res.statusCode);
+      }
+      expect(await app.prisma.eventOrganizer.count({ where: { eventId: event.id, userId: stranger.id } })).toBe(0);
+    });
+
+    it('verhindert das Verknüpfen fremder Hitobito-Gruppen bei Stufen', async () => {
+      const dept = await createDepartment(app);
+      await app.prisma.department.update({ where: { id: dept.id }, data: { hitobitoGroupId: 100 } });
+      await app.prisma.hitobitoGroup.createMany({
+        data: [
+          { provider: 'CEVI', id: 100, name: 'Abteilung A', ortsgruppeId: 100, jungscharId: null, jungscharCount: 0, fetchedAt: new Date() },
+          { provider: 'CEVI', id: 200, name: 'Fremde Stufe', ortsgruppeId: 999, jungscharId: null, jungscharCount: 0, fetchedAt: new Date() },
+        ],
+      });
+      const admin = await createUser(app, { homeDepartmentId: dept.id });
+      await addMember(app, dept.id, admin.id, 'ADMIN');
+
+      const res = await inject(app, {
+        method: 'POST',
+        url: '/api/departments/current/stufen',
+        tenant: dept.slug,
+        cookie: authCookie(app, admin),
+        payload: { name: 'Pios', hitobitoGroupId: 200 },
+      });
+      expect(res.statusCode).toBe(400);
+    });
+
+    it('verwirft beim Merge eines Spitznamen-Profils dessen calendarToken und Push-Abos und setzt resetNotice', async () => {
+      const dept = await createDepartment(app);
+      const birthDate = new Date('2005-06-15T00:00:00Z');
+      const guest = await createUser(app, {
+        email: null,
+        passwordHash: null,
+        providerId: null,
+        nickname: 'Biber',
+        birthDate,
+        homeDepartmentId: dept.id,
+      });
+      await app.prisma.user.update({ where: { id: guest.id }, data: { calendarToken: '0123456789abcdef0123456789abcdef' } });
+      await app.prisma.pushSubscription.create({
+        data: { userId: guest.id, endpoint: 'https://push.example/evil', p256dh: 'k1', auth: 'a1' },
+      });
+
+      const real = await createUser(app, {
+        email: 'biber@example.com',
+        providerId: '555',
+        nickname: 'Biber',
+        birthDate,
+        homeDepartmentId: dept.id,
+      });
+
+      const merged = await mergeCeviNameProfilesInto(app.prisma, real, [dept.id]);
+      expect(merged).toBe(1);
+
+      const updated = await app.prisma.user.findUniqueOrThrow({ where: { id: real.id } });
+      expect(updated.calendarToken).toBeNull();
+      expect(updated.calendarResetNotice).toBe(true);
+      expect(await app.prisma.pushSubscription.count({ where: { userId: real.id } })).toBe(0);
+
+      // Der alte Kalender-Feed funktioniert nicht mehr, und /api/calendar/token liefert resetNotice: true
+      const oldFeed = await inject(app, { method: 'GET', url: '/api/calendar/0123456789abcdef0123456789abcdef.ics' });
+      expect(oldFeed.statusCode).toBe(404);
+      const tokenRes = await inject(app, { method: 'GET', url: '/api/calendar/token', cookie: authCookie(app, real) });
+      expect(tokenRes.statusCode).toBe(200);
+      expect(tokenRes.json().resetNotice).toBe(true);
+    });
+
+    it('lässt bei CEVIDB_ALL nur Personen desselben Verbands zu und blendet reine Besucher (joinedAt: null) aus', async () => {
+      const jublaDept = await createDepartment(app, { organization: 'JUBLA' });
+      const lead = await createUser(app, { provider: 'JUBLA', providerId: '10', homeDepartmentId: jublaDept.id });
+      await addMember(app, jublaDept.id, lead.id, 'ADMIN');
+      const event = await createEvent(app, jublaDept.id, { accessType: 'CEVIDB_ALL', organizerId: lead.id });
+      const shift = await createShift(app, event.id);
+
+      const ceviUser = await createUser(app, { provider: 'CEVI', providerId: '20', birthDate: new Date('1995-01-01T00:00:00Z') });
+      const jublaUser = await createUser(app, { provider: 'JUBLA', providerId: '30', birthDate: new Date('1995-01-01T00:00:00Z') });
+
+      const denied = await inject(app, {
+        method: 'POST',
+        url: `/api/shifts/${shift.id}/signup`,
+        tenant: jublaDept.slug,
+        headers: { 'x-tenant-org': 'jubla' },
+        cookie: authCookie(app, ceviUser),
+        payload: {},
+      });
+      expect(denied.statusCode).toBe(403);
+
+      const allowed = await inject(app, {
+        method: 'POST',
+        url: `/api/shifts/${shift.id}/signup`,
+        tenant: jublaDept.slug,
+        headers: { 'x-tenant-org': 'jubla' },
+        cookie: authCookie(app, jublaUser),
+        payload: {},
+      });
+      expect(allowed.statusCode).toBe(200);
+
+      // Reiner Besucher-Eintrag (joinedAt: null ohne Schicht) erscheint nicht in /members
+      const visitor = await createUser(app, { email: 'visitor@example.com' });
+      await app.prisma.departmentMember.create({ data: { departmentId: jublaDept.id, userId: visitor.id, role: 'HELPER', joinedAt: null } });
+      const membersRes = await inject(app, {
+        method: 'GET',
+        url: '/api/departments/current/members',
+        tenant: jublaDept.slug,
+        headers: { 'x-tenant-org': 'jubla' },
+        cookie: authCookie(app, lead),
+      });
+      expect(membersRes.statusCode).toBe(200);
+      expect(membersRes.json().some((m: { userId: string }) => m.userId === visitor.id)).toBe(false);
     });
   });
 });

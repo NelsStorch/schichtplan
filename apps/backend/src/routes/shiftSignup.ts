@@ -157,7 +157,6 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
           event: {
             include: {
               ...accessEventInclude,
-              department: { select: { name: true } },
               questions: { select: { id: true, required: true, scope: true, label: true, type: true, options: true } },
             },
           },

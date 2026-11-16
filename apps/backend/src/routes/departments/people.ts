@@ -72,18 +72,22 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
             { homeDepartmentId: tenant.id },
             {
               memberships: {
-                some: withGuests
-                  ? { departmentId: tenant.id }
-                  : {
-                      departmentId: tenant.id,
-                      OR: [
-                        { role: 'ADMIN' },
-                        { NOT: { permissions: { isEmpty: true } } },
-                        { joinedAt: { not: null } },
-                      ],
-                    },
+                some: {
+                  departmentId: tenant.id,
+                  OR: [
+                    { role: 'ADMIN' },
+                    { NOT: { permissions: { isEmpty: true } } },
+                    { joinedAt: { not: null } },
+                  ],
+                },
               },
             },
+            ...(withGuests
+              ? [
+                  { signups: { some: { shift: { event: { departmentId: tenant.id } } } } },
+                  { organizedEvents: { some: { event: { departmentId: tenant.id } } } },
+                ]
+              : []),
           ],
         },
         select: {
@@ -779,7 +783,15 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
       reply.header('Cache-Control', 'no-store');
 
       const members = await fastify.prisma.departmentMember.findMany({
-        where: { departmentId: request.tenant.id },
+        where: {
+          departmentId: request.tenant.id,
+          OR: [
+            { joinedAt: { not: null } },
+            { role: 'ADMIN' },
+            { NOT: { permissions: { isEmpty: true } } },
+            { user: { homeDepartmentId: request.tenant.id } },
+          ],
+        },
         include: {
           user: {
             select: {
@@ -807,7 +819,7 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
         lastName: m.user.lastName,
         nickname: m.user.nickname,
         ceviName: m.user.nickname,
-        email: m.user.email,
+        email: m.user.email && !isPlaceholderEmail(m.user.email) ? m.user.email : null,
         // Nur Cevi-Name-Profil: kann eingeteilt, aber nicht ins OK aufgenommen werden
         isCeviNameProfile: isCeviNameProfile(m.user),
         displayName: m.user.nickname

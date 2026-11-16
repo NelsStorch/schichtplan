@@ -55,6 +55,7 @@ interface CalendarTokenData {
   token: string;
   webcalUrl: string;
   httpsUrl: string;
+  resetNotice?: boolean;
 }
 
 const toCalendar = (s: MyShift): CalendarEntry => {
@@ -120,6 +121,15 @@ export default function MyShiftsPage() {
       // Kalender-Token optional ignorieren falls nicht geladen
     }
   }, []);
+
+  const dismissCalResetNotice = async () => {
+    setCalData((prev) => (prev ? { ...prev, resetNotice: false } : prev));
+    try {
+      await api('/api/calendar/token/ack-notice', { method: 'POST' });
+    } catch {
+      // ignorieren
+    }
+  };
 
   const handleResetToken = async () => {
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
@@ -311,6 +321,26 @@ export default function MyShiftsPage() {
             </div>
           )}
         </header>
+
+        {calData?.resetNotice && (
+          <div className="mt-6 rounded-card border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-fg">
+            <p className="font-semibold text-fg">Kalender-Abo bitte neu einrichten</p>
+            <p className="mt-1 text-fg-muted">
+              Dein früheres Schnelllogin-Profil wurde mit deinem Konto zusammengeführt. Aus Sicherheitsgründen wurde der
+              alte Kalender-Link deaktiviert. Bitte <strong>lösche zuerst das alte Kalender-Abo</strong> in deiner
+              Kalender-App und richte es danach mit deinem neuen Link neu ein (gleiches gilt für allfällige
+              Push-Benachrichtigungen im Profil).
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="primary" onClick={() => setCalDialogOpen(true)}>
+                <CalendarSync className="size-4" /> Neues Kalender-Abo einrichten
+              </Button>
+              <Button size="sm" variant="ghost" onClick={dismissCalResetNotice}>
+                Hinweis ausblenden
+              </Button>
+            </div>
+          </div>
+        )}
 
         {shifts === null ? (
           <div className="mt-10 grid gap-3">

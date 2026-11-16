@@ -61,6 +61,9 @@ describe('isPrivateOrInternalHost', () => {
     expect(isPrivateOrInternalHost('192.168.1.1')).toBe(true);
     expect(isPrivateOrInternalHost('169.254.169.254')).toBe(true);
     expect(isPrivateOrInternalHost('[::1]')).toBe(true);
+    expect(isPrivateOrInternalHost('[::ffff:7f00:1]')).toBe(true);
+    expect(isPrivateOrInternalHost('[::ffff:ac12:2]')).toBe(true);
+    expect(isPrivateOrInternalHost('127.0.0.1.nip.io')).toBe(true);
   });
 
   it('erlaubt öffentliche Domains', () => {

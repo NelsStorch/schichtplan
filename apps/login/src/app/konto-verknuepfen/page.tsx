@@ -17,9 +17,11 @@ function LinkAccount() {
   // Verband der Domain, vom Server-Layout bereitgestellt (richtig schon beim ersten Rendern)
   const org = useOrganization();
   const [returnTo, setReturnTo] = useState<string | null>(null);
-  const [info, setInfo] = useState<{ email: string | null; name: string } | null>(null);
+  const [info, setInfo] = useState<{ email: string | null; name: string; twoFactorRequired?: boolean } | null>(null);
   const [missing, setMissing] = useState(false);
   const [password, setPassword] = useState('');
+  const [code, setCode] = useState('');
+  const [twoFactorRequired, setTwoFactorRequired] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -32,7 +34,9 @@ function LinkAccount() {
     fetch('/api/auth/cevidb/link', { cache: 'no-store' })
       .then(async (res) => {
         if (!res.ok) throw new Error();
-        setInfo(await res.json());
+        const loaded = await res.json();
+        setInfo(loaded);
+        if (loaded.twoFactorRequired) setTwoFactorRequired(true);
       })
       .catch(() => setMissing(true));
   }, [searchParams]);
@@ -45,9 +49,10 @@ function LinkAccount() {
       const res = await fetch('/api/auth/cevidb/link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password, ...(twoFactorRequired || code ? { code } : {}) }),
       });
       const data = await res.json().catch(() => ({}));
+      if (data.twoFactorRequired) setTwoFactorRequired(true);
       if (!res.ok) throw new Error(data.error || 'Das hat nicht geklappt.');
       setDone(true);
       window.location.href = data.redirectUrl;
@@ -118,7 +123,20 @@ function LinkAccount() {
                   required
                 />
               </Field>
-              <Button type="submit" size="lg" className="w-full" loading={saving} disabled={!password || done}>
+              {twoFactorRequired && (
+                <Field label="Zwei-Faktor-Code (oder Wiederherstellungscode)" required>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="123 456"
+                    autoComplete="one-time-code"
+                    required
+                  />
+                </Field>
+              )}
+              <Button type="submit" size="lg" className="w-full" loading={saving} disabled={!password || (twoFactorRequired && !code.trim()) || done}>
                 Verknüpfen und anmelden
               </Button>
               <Button type="button" variant="ghost" className="w-full" onClick={cancel} disabled={saving}>

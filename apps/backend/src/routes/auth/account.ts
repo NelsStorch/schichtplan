@@ -24,6 +24,7 @@ import {
   replaceSelfStufen,
 } from '../../services/departmentJoin.js';
 import { INVITE_REASON_ERRORS } from '../../services/inviteToken.js';
+import { findCeviNameMatches, isCeviNameProfile } from '../../services/nicknameLogin.js';
 import { applyProfileUpdate } from '../../services/profileUpdate.js';
 import { trackUsage } from '../../services/usageStats.js';
 import { createRateLimiter } from '../../services/rateLimit.js';
@@ -137,7 +138,9 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
           id: true,
           email: true,
           passwordHash: true,
+          providerId: true,
           isGlobalAdmin: true,
+          emailVerified: true,
           emailVerifiedAt: true,
         },
       });
@@ -146,6 +149,12 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
       if (!user.email || isPlaceholderEmail(user.email)) {
         return reply.status(400).send({
           error: 'Bitte trage zuerst eine gültige E-Mail-Adresse im Profil ein.',
+        });
+      }
+      if (!user.emailVerified) {
+        return reply.status(400).send({
+          error: 'Bitte bestätige zuerst deine E-Mail-Adresse über den Link in deinem Postfach, bevor du ein Passwort festlegst.',
+          code: 'EMAIL_NOT_VERIFIED',
         });
       }
 
@@ -157,7 +166,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
             code: 'CURRENT_PASSWORD_REQUIRED',
           });
         }
-        if (passwordChangeFailures.isBlocked(user.id)) {
+        if (passwordChangeFailures.hit(user.id)) {
           return reply.status(429).send({
             error: 'Zu viele Versuche. Bitte warte ein paar Minuten.',
             code: 'RATE_LIMITED',
@@ -165,12 +174,12 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
         }
         const matches = await bcrypt.compare(input.currentPassword, user.passwordHash);
         if (!matches) {
-          passwordChangeFailures.hit(user.id);
           return reply.status(401).send({
             error: 'Das aktuelle Passwort ist nicht korrekt.',
             code: 'CURRENT_PASSWORD_WRONG',
           });
         }
+        passwordChangeFailures.undo(user.id);
       }
 
       const passwordHash = await bcrypt.hash(input.newPassword, 10);
@@ -349,6 +358,8 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
           passwordHash: true,
           email: true,
           emailVerified: true,
+          nickname: true,
+          birthDate: true,
         },
       });
       if (!current) return reply.status(404).send({ error: 'Person nicht gefunden' });
@@ -359,6 +370,17 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
       const staysConfirmed = current.homeDepartmentSource === 'CONFIRMED' && departmentId === current.homeDepartmentId;
       // Cevi.DB-Personen behalten ihre Heimabteilung; eine Einladung in eine andere Abteilung wird dort ein Beitritt
       const inviteTargetDeptId = input.departmentId ?? departmentId;
+      if (inviteTargetDeptId && isCeviNameProfile(current) && current.nickname && current.birthDate) {
+        const birthIso = current.birthDate.toISOString().slice(0, 10);
+        const clash = (await findCeviNameMatches(fastify.prisma, inviteTargetDeptId, current.nickname, birthIso)).some(
+          (m) => m.id !== userId
+        );
+        if (clash) {
+          return reply.status(409).send({
+            error: 'In dieser Abteilung gibt es schon ein Profil mit diesem Spitznamen und Geburtsdatum.',
+          });
+        }
+      }
       let invited = false;
       // Laut Rollen der Verbands-DB belegt: zählt wie eine Einladung (bestätigt), Herkunft CEVIDB
       let fromProvider = false;
@@ -522,11 +544,31 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
       const userId = request.user.id;
       const current = await fastify.prisma.user.findUnique({
         where: { id: userId },
-        select: { homeDepartmentId: true, passwordHash: true, providerId: true, provider: true, email: true, emailVerified: true },
+        select: {
+          homeDepartmentId: true,
+          passwordHash: true,
+          providerId: true,
+          provider: true,
+          email: true,
+          emailVerified: true,
+          nickname: true,
+          birthDate: true,
+        },
       });
       if (!current) return reply.status(404).send({ error: 'Person nicht gefunden' });
       if (current.homeDepartmentId === input.departmentId) {
         return reply.status(400).send({ error: 'Das ist bereits deine Hauptabteilung.' });
+      }
+      if (isCeviNameProfile(current) && current.nickname && current.birthDate) {
+        const birthIso = current.birthDate.toISOString().slice(0, 10);
+        const clash = (await findCeviNameMatches(fastify.prisma, input.departmentId, current.nickname, birthIso)).some(
+          (m) => m.id !== userId
+        );
+        if (clash) {
+          return reply.status(409).send({
+            error: 'In dieser Abteilung gibt es schon ein Profil mit diesem Spitznamen und Geburtsdatum.',
+          });
+        }
       }
 
       const check = await checkDepartmentJoin(fastify.prisma, {

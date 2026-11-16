@@ -70,6 +70,19 @@ export async function loadBrandLogo(host?: string): Promise<string | null> {
 
 const MAX_IMAGE_BYTES = 1_500_000;
 
+function isPrivateIpv4Octets(a: number, b: number): boolean {
+  return (
+    a === 0 ||
+    a === 10 ||
+    a === 127 ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) ||
+    (a === 100 && b >= 64 && b <= 127) ||
+    a >= 224
+  );
+}
+
 /**
  * Prüft, ob ein Hostname auf eine lokale, private oder interne Netzwerk-Adresse zeigt (SSRF-Schutz).
  */
@@ -81,35 +94,49 @@ export function isPrivateOrInternalHost(hostname: string): boolean {
     host.endsWith('.localhost') ||
     host.endsWith('.local') ||
     host.endsWith('.internal') ||
-    !host.includes('.')
+    host.endsWith('.nip.io') ||
+    host.endsWith('.sslip.io') ||
+    host.endsWith('.xip.io') ||
+    host.endsWith('.localtest.me') ||
+    host.endsWith('.lvh.me') ||
+    host.endsWith('.vcap.me') ||
+    host.endsWith('.traefik.me') ||
+    !host.includes('.') && !host.includes(':')
   ) {
     return true;
   }
   if (host.includes(':')) {
-    return (
+    // IPv4-mapped IPv6 in Hex-Normalform von WHATWG URL (z. B. ::ffff:7f00:1 oder ::ffff:ac12:2)
+    const mappedHex = host.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/);
+    if (mappedHex) {
+      const hi = parseInt(mappedHex[1], 16);
+      const a = (hi >> 8) & 0xff;
+      const b = hi & 0xff;
+      return isPrivateIpv4Octets(a, b);
+    }
+    const mappedDec = host.match(/^::ffff:(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+    if (mappedDec) {
+      const [a, b] = mappedDec.slice(1).map(Number);
+      return isPrivateIpv4Octets(a, b);
+    }
+    if (
       host === '::1' ||
       host === '::' ||
       host.startsWith('fc') ||
       host.startsWith('fd') ||
       host.startsWith('fe80') ||
-      host.startsWith('::ffff:127.') ||
-      host.startsWith('::ffff:10.') ||
-      host.startsWith('::ffff:192.168.') ||
-      host.startsWith('::ffff:169.254.')
-    );
+      host.startsWith('ff') ||
+      host.startsWith('2001:db8:') ||
+      !/^[23][0-9a-f]{0,3}:/.test(host)
+    ) {
+      return true;
+    }
+    return false;
   }
   const ipv4 = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
   if (ipv4) {
     const [a, b] = ipv4.slice(1).map(Number);
-    if (
-      a === 0 ||
-      a === 10 ||
-      a === 127 ||
-      (a === 169 && b === 254) ||
-      (a === 172 && b >= 16 && b <= 31) ||
-      (a === 192 && b === 168) ||
-      (a === 100 && b >= 64 && b <= 127)
-    ) {
+    if (isPrivateIpv4Octets(a, b)) {
       return true;
     }
   }

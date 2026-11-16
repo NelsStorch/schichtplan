@@ -27,6 +27,7 @@ interface CalendarData {
   token: string;
   webcalUrl: string;
   httpsUrl: string;
+  resetNotice?: boolean;
 }
 
 interface CalendarSubscribeDialogProps {
@@ -75,6 +76,16 @@ export function CalendarSubscribeDialog({
   return (
     <Dialog open={open} onClose={onClose} size="md" title="Schichten im Kalender abonnieren">
       <div className="space-y-5 text-sm">
+        {calData.resetNotice && (
+          <div className="rounded-card border border-amber-500/40 bg-amber-500/10 p-3.5 text-xs text-fg">
+            <p className="font-semibold">Wichtig vor dem Einrichten:</p>
+            <p className="mt-1 text-fg-muted">
+              Dein alter Kalender-Link aus dem Schnelllogin wurde aus Sicherheitsgründen deaktiviert. Bitte{' '}
+              <strong>entferne zuerst das alte Kalender-Abo</strong> in deiner Kalender-App, bevor du den neuen Link
+              unten hinzufügst.
+            </p>
+          </div>
+        )}
         <p className="text-fg-muted">
           Abonniere alle deine Schichten direkt in deiner bevorzugten Kalender-App. Zukünftige Einsätze, Verschiebungen
           oder Abmeldungen synchronisieren sich <strong>vollautomatisch</strong> im Hintergrund.

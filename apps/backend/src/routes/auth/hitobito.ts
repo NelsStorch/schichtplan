@@ -27,7 +27,13 @@ import {
   storeSimGroups,
 } from '../../services/hitobitoSimulation.js';
 import { hitobitoCircuitBreaker } from '../../services/hitobitoCircuitBreaker.js';
-import { needsSecondFactor, setChallengeCookie } from '../../services/twoFactor.js';
+import {
+  consumeSecondFactor,
+  needsSecondFactor,
+  setChallengeCookie,
+  twoFactorFailuresByIp,
+  twoFactorFailuresByUser,
+} from '../../services/twoFactor.js';
 
 import {
   getOrganizationSlugFromHost,
@@ -461,7 +467,8 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
     linkConfirmedUserId?: string,
     targetProvider: OrganizationType = 'CEVI',
     /** Einladungs-Token vom Login-Link: danach auf /abteilung einlösen */
-    invite: string | null = null
+    invite: string | null = null,
+    secondFactorVerified = false
   ): Promise<string> {
     const ceviDbId = profile.id;
     const providerId = String(profile.id);
@@ -598,7 +605,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
       getOrganizationByDbType(provider).authProviderShort
     );
 
-    // Kommt die Person von einer Abteilungs-Subdomain, dort ohne Rechte eintragen (Leitung nur in der Heimabteilung)
+    // Kommt die Person von ihrer Heimabteilungs-Subdomain, dort ohne Rechte eintragen (keine Gast-Einträge auf fremden Subdomains)
     let tenantDepartmentId: string | null = null;
     if (tenantSlug) {
       const department = await fastify.prisma.department.findUnique({
@@ -607,7 +614,9 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
       });
       if (department) {
         tenantDepartmentId = department.id;
-        await ensureHelperMembership(fastify.prisma, department.id, user.id);
+        if (homeDepartment?.id === department.id) {
+          await ensureHelperMembership(fastify.prisma, department.id, user.id);
+        }
       }
     }
 
@@ -665,8 +674,8 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     // Zwei-Faktor: beim Verbands-Login nur, wenn die Person es so eingestellt hat. Beim Verknüpfen
-    // wurde eben das Passwort des Kontos verwendet: dann gilt die Regel für den Passwort-Login.
-    if (needsSecondFactor(user, linkConfirmedUserId ? 'password' : 'provider')) {
+    // wird der 2FA-Code bereits vor dem Speichern der Verknüpfung geprüft (secondFactorVerified = true).
+    if (!secondFactorVerified && needsSecondFactor(user, linkConfirmedUserId ? 'password' : 'provider')) {
       setChallengeCookie(reply, { uid: user.id, amr, next: redirectUrl });
       return loginPageUrl('/zwei-faktor', returnTo ?? '', reply.request?.hostname, invite);
     }
@@ -683,7 +692,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
     return redirectUrl;
   }
 
-  // 2b. Cevi.DB mit bestehendem Passwort-Konto (gleiche E-Mail) verknüpfen: nur mit dessen Passwort.
+  // 2b. Cevi.DB mit bestehendem Passwort-Konto (gleiche E-Mail) verknüpfen: nur mit dessen Passwort (und ggf. 2FA-Code).
   //     Ohne Passwort kein Login, denn zwei Konten mit derselben E-Mail gibt es nicht.
   fastify.get(
     '/api/auth/cevidb/link',
@@ -700,10 +709,15 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
     if (!link) return reply.status(404).send({ error: 'Keine offene Verknüpfung. Melde dich nochmals mit Cevi.DB an.' });
     const user = await fastify.prisma.user.findUnique({
       where: { id: link.userId },
-      select: { email: true, nickname: true, firstName: true },
+      select: { email: true, nickname: true, firstName: true, totpEnabledAt: true, totpOnProviderLogin: true },
     });
     if (!user) return reply.status(404).send({ error: 'Das Konto gibt es nicht mehr.' });
-    return { email: user.email, name: user.nickname || user.firstName, returnTo: link.returnTo };
+    return {
+      email: user.email,
+      name: user.nickname || user.firstName,
+      returnTo: link.returnTo,
+      twoFactorRequired: needsSecondFactor(user, 'password'),
+    };
   });
 
   fastify.post(
@@ -712,9 +726,10 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
       schema: {
         tags: ['Auth'],
         summary: 'Cevi.DB-Konto mit Passwort bestätigen und verknüpfen',
-        description: 'Bestätigt die Kontoverknüpfung mit dem bisherigen Kontopasswort.',
+        description: 'Bestätigt die Kontoverknüpfung mit dem bisherigen Kontopasswort (und ggf. Zwei-Faktor-Code).',
         body: z.object({
           password: z.string().describe('Passwort des bestehenden Kontos'),
+          code: z.string().trim().max(40).optional().describe('6-stelliger Zwei-Faktor-Code oder Wiederherstellungscode'),
         }),
       },
     },
@@ -726,7 +741,9 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
     const link = readPendingLink(token);
     if (!link) return reply.status(404).send({ error: 'Die Verknüpfung ist abgelaufen. Melde dich nochmals mit Cevi.DB an.' });
 
-    const password = typeof (request.body as any)?.password === 'string' ? (request.body as any).password : '';
+    const body = (request.body as { password?: string; code?: string }) ?? {};
+    const password = typeof body.password === 'string' ? body.password : '';
+    const code = typeof body.code === 'string' ? body.code.trim() : '';
     const user = await fastify.prisma.user.findUnique({ where: { id: link.userId } });
     // Der Vergleich läuft immer über bcrypt; ein leeres Passwort oder fehlender Hash zählt nur als Fehlversuch
     const passwordOk = user?.passwordHash ? (await bcrypt.compare(password, user.passwordHash)) && password.length > 0 : false;
@@ -742,9 +759,55 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.status(401).send({ error: 'Das Passwort stimmt nicht.' });
     }
 
+    // Ist 2FA auf dem Passwort-Konto aktiv, muss der 2FA-Code VOR dem Speichern der Verknüpfung geprüft werden
+    let secondFactorVerified = false;
+    if (needsSecondFactor(user, 'password')) {
+      if (!code) {
+        return reply.status(401).send({
+          error: 'Bitte gib zusätzlich den 6-stelligen Code aus deiner Authenticator-App (oder einen Wiederherstellungscode) ein.',
+          code: 'TWO_FACTOR_REQUIRED',
+          twoFactorRequired: true,
+        });
+      }
+      const ipBlocked = twoFactorFailuresByIp.hit(request.ip);
+      const userBlocked = twoFactorFailuresByUser.hit(user.id);
+      if (ipBlocked || userBlocked) {
+        return reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
+      }
+      const result = await consumeSecondFactor(fastify.prisma, user, code);
+      if (!result.ok) {
+        trackUsage('LOGIN_FAILED', { dim: 'TWO_FACTOR_WRONG' });
+        link.failedAttempts++;
+        if (link.failedAttempts >= MAX_LINK_ATTEMPTS) {
+          pendingLinks.delete(token!);
+          reply.clearCookie(PENDING_LINK_COOKIE, { path: '/' });
+          return reply
+            .status(429)
+            .send({ error: 'Zu viele Fehlversuche. Melde dich nochmals an.', code: 'RATE_LIMITED' });
+        }
+        return reply.status(401).send({
+          error: 'Der Code stimmt nicht oder wurde schon verwendet.',
+          code: 'TWO_FACTOR_WRONG',
+          twoFactorRequired: true,
+        });
+      }
+      twoFactorFailuresByIp.undo(request.ip);
+      twoFactorFailuresByUser.reset(user.id);
+      secondFactorVerified = true;
+    }
+
     pendingLinks.delete(token!);
     reply.clearCookie(PENDING_LINK_COOKIE, { path: '/' });
-    const redirectUrl = await finishCeviDbLogin(reply, link.profile, link.returnTo, link.tenantSlug, user.id, link.provider || 'CEVI', link.invite ?? null);
+    const redirectUrl = await finishCeviDbLogin(
+      reply,
+      link.profile,
+      link.returnTo,
+      link.tenantSlug,
+      user.id,
+      link.provider || 'CEVI',
+      link.invite ?? null,
+      secondFactorVerified
+    );
     fastify.log.info({ userId: user.id }, 'Passwort-Konto mit Provider verknüpft');
     trackUsage('ACCOUNT_LINK');
     return { redirectUrl };

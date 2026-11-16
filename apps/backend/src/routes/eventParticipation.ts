@@ -495,7 +495,7 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
       const event = await fastify.prisma.event.findUnique({
         where: { departmentId_slug: { departmentId: request.tenant.id, slug: request.params.slug } },
         include: {
-          department: { select: { id: true, name: true } },
+          department: { select: { id: true, name: true, organization: true } },
           allowedDepartments: { include: { department: { select: { id: true, name: true } } } },
           allowedStufen: { include: { stufe: { select: { id: true, name: true, departmentId: true } } } },
           organizers: { select: { userId: true, role: true } },
@@ -597,6 +597,7 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
           const accessUser: AccessUser = {
             id: u.id,
             isGlobalAdmin: u.isGlobalAdmin,
+            provider: u.provider,
             providerId: u.providerId,
             departmentLeader: u.departmentLeader,
             hitobitoStufen: u.hitobitoStufen,
@@ -613,7 +614,11 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
         if (!hasAccess) {
           const inHostDepartment =
             u.homeDepartmentId === event.departmentId ||
-            u.memberships.some((m) => m.departmentId === event.departmentId);
+            u.memberships.some(
+              (m) =>
+                m.departmentId === event.departmentId &&
+                (Boolean(m.joinedAt) || m.role === 'ADMIN' || m.permissions.length > 0)
+            );
           if (request.query.alle !== '1' || !inHostDepartment) continue;
         }
 

@@ -21,6 +21,7 @@ import { accessFrom, eventCapabilities } from './permissions.js';
 export interface AccessEvent {
   id: string;
   departmentId: string;
+  department?: { organization?: string | null } | null;
   accessType: string;
   leadersOnly: boolean;
   allowPublicSignup: boolean;
@@ -31,6 +32,7 @@ export interface AccessEvent {
 }
 
 export const accessEventInclude = {
+  department: { select: { name: true, organization: true } },
   organizers: { select: { userId: true, role: true } },
   allowedDepartments: { include: { department: { select: { name: true } } } },
   allowedStufen: { include: { stufe: { select: { departmentId: true, name: true } } } },
@@ -48,6 +50,7 @@ export function isVerifiedHomeSource(source: string | null): boolean {
 export interface AccessUser {
   id: string;
   isGlobalAdmin: boolean;
+  provider?: string | null;
   providerId?: string | null;
   ceviDbId?: number | null;
   /** Abteilungsleitung laut Provider/Hitobito (beim Login gespeichert) */
@@ -110,6 +113,7 @@ export function effectiveHomeDepartmentId(
 export const accessUserSelect = {
   id: true,
   isGlobalAdmin: true,
+  provider: true,
   providerId: true,
   departmentLeader: true,
   hitobitoStufen: { select: { kind: true } },
@@ -198,7 +202,14 @@ export function checkRules(event: AccessEvent, user: AccessUser, departmentName:
   const audience = audienceLabel(event, departmentName);
   const deny = (reason: EventAccessReason, message: string): RuleResult => ({ ok: false, reason, message });
 
-  const hasProviderId = user.providerId !== null && user.providerId !== undefined ? Boolean(user.providerId) : user.ceviDbId !== null && user.ceviDbId !== undefined;
+  const eventOrg = event.department?.organization ?? null;
+  const userProvider = user.provider ?? 'CEVI';
+  const sameProvider = !eventOrg || userProvider === eventOrg;
+  const hasProviderId =
+    sameProvider &&
+    (user.providerId !== null && user.providerId !== undefined
+      ? Boolean(user.providerId)
+      : user.ceviDbId !== null && user.ceviDbId !== undefined);
   if (cfg.ceviDb && !hasProviderId) {
     return deny('CEVIDB_REQUIRED', 'Für diesen Anlass brauchst du einen Cevi.DB-Login. Melde dich bitte mit Cevi.DB an.');
   }

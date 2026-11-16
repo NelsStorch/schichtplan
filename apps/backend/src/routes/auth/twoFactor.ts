@@ -202,14 +202,14 @@ const twoFactorRoutes: FastifyPluginAsync = async (fastify) => {
       }
       if (user.passwordHash) {
         const { currentPassword } = request.body as { currentPassword?: string };
-        // Gleiche Bremse wie bei falschen Codes: sonst liesse sich hier das Passwort durchprobieren
-        if (twoFactorFailuresByUser.isBlocked(user.id)) {
+        // Gleiche Bremse wie bei falschen Codes: zuerst zählen, dann prüfen (gegen parallele Anfragen)
+        if (twoFactorFailuresByUser.hit(user.id)) {
           return reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
         }
         if (!currentPassword || !(await bcrypt.compare(currentPassword, user.passwordHash))) {
-          twoFactorFailuresByUser.hit(user.id);
           return reply.status(401).send({ error: 'Das Passwort stimmt nicht.', code: 'CURRENT_PASSWORD_WRONG' });
         }
+        twoFactorFailuresByUser.undo(user.id);
       }
 
       const secret = generateTotpSecret();

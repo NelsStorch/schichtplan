@@ -13,6 +13,30 @@ const departmentStufenRoutes: FastifyPluginAsync = async (fastify) => {
   const requirePermission = (request: FastifyRequest, reply: FastifyReply, permission: DepartmentPermission) =>
     requireDepartmentPermission(fastify, request, reply, permission);
 
+  /** Prüft, ob eine Hitobito-Gruppen-ID tatsächlich zur Verbands-Gruppe dieser Abteilung gehört */
+  async function canLinkHitobitoGroup(
+    tenant: { organization: any; hitobitoGroupId: number | null },
+    hitobitoGroupId: number | null | undefined
+  ): Promise<string | null> {
+    if (hitobitoGroupId === null || hitobitoGroupId === undefined) return null;
+    if (tenant.organization === 'OTHER' || tenant.hitobitoGroupId === null) {
+      return 'Nur Abteilungen mit verknüpfter Verbands-Gruppe können eine Stufe mit der Verbands-DB verknüpfen.';
+    }
+    const group = await fastify.prisma.hitobitoGroup.findUnique({
+      where: { provider_id: { provider: tenant.organization, id: hitobitoGroupId } },
+      select: { id: true, jungscharId: true, ortsgruppeId: true },
+    });
+    if (
+      !group ||
+      (group.id !== tenant.hitobitoGroupId &&
+        group.jungscharId !== tenant.hitobitoGroupId &&
+        group.ortsgruppeId !== tenant.hitobitoGroupId)
+    ) {
+      return 'Diese Verbands-Gruppe gehört nicht zu deiner Abteilung.';
+    }
+    return null;
+  }
+
   // Stufen der aktuellen Abteilung
   fastify.get(
     '/api/departments/current/stufen',
@@ -58,6 +82,8 @@ const departmentStufenRoutes: FastifyPluginAsync = async (fastify) => {
     try {
       const count = await fastify.prisma.departmentStufe.count({ where: { departmentId: tenant.id } });
       const hitobitoGroupId = input.hitobitoGroupId ?? input.ceviDbGroupId ?? null;
+      const groupErr = await canLinkHitobitoGroup(tenant, hitobitoGroupId);
+      if (groupErr) return reply.status(400).send({ error: groupErr });
       const stufe = await fastify.prisma.departmentStufe.create({
         data: {
           departmentId: tenant.id,
@@ -105,6 +131,10 @@ const departmentStufenRoutes: FastifyPluginAsync = async (fastify) => {
 
       try {
         const hitobitoGroupId = input.hitobitoGroupId !== undefined ? input.hitobitoGroupId : input.ceviDbGroupId;
+        if (hitobitoGroupId !== undefined && hitobitoGroupId !== existing.hitobitoGroupId) {
+          const groupErr = await canLinkHitobitoGroup(tenant, hitobitoGroupId);
+          if (groupErr) return reply.status(400).send({ error: groupErr });
+        }
         const stufe = await fastify.prisma.departmentStufe.update({
           where: { id: existing.id },
           data: {

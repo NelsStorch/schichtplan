@@ -12,6 +12,7 @@ const CalendarTokenResponseSchema = z.object({
   token: z.string().describe('Geheimer Kalender-Token'),
   httpsUrl: z.string().url().describe('HTTPS-URL der .ics-Datei'),
   webcalUrl: z.string().describe('Direkter webcal:// Link zum Abonnieren in Kalender-Apps'),
+  resetNotice: z.boolean().optional().describe('True, wenn ein früheres Kalender-Abo beim Profil-Merge zurückgesetzt wurde und neu eingerichtet werden muss'),
 });
 
 export function deriveCalendarUrls(request: { headers: Record<string, any>; protocol: string }, token: string) {
@@ -99,8 +100,14 @@ const calendarRoutes: FastifyPluginAsync = async (fastify) => {
 
   // Authentifizierte Endpunkte für die Verwaltung des eigenen Kalender-Tokens
   const getTokenHandler = async (request: any) => {
-    const token = await getOrCreateCalendarToken(fastify.prisma, request.user.id);
-    return deriveCalendarUrls(request, token);
+    const [token, user] = await Promise.all([
+      getOrCreateCalendarToken(fastify.prisma, request.user.id),
+      fastify.prisma.user.findUnique({ where: { id: request.user.id }, select: { calendarResetNotice: true } }),
+    ]);
+    return {
+      ...deriveCalendarUrls(request, token),
+      resetNotice: Boolean(user?.calendarResetNotice),
+    };
   };
 
   const tokenRouteOptions = {
@@ -121,7 +128,8 @@ const calendarRoutes: FastifyPluginAsync = async (fastify) => {
 
   const resetTokenHandler = async (request: any) => {
     const token = await resetCalendarToken(fastify.prisma, request.user.id);
-    return deriveCalendarUrls(request, token);
+    await fastify.prisma.user.update({ where: { id: request.user.id }, data: { calendarResetNotice: false } });
+    return { ...deriveCalendarUrls(request, token), resetNotice: false };
   };
 
   const resetTokenRouteOptions = {
@@ -139,6 +147,25 @@ const calendarRoutes: FastifyPluginAsync = async (fastify) => {
 
   fastify.post('/api/calendar/token/reset', resetTokenRouteOptions, resetTokenHandler);
   fastify.post('/api/auth/me/calendar-token/reset', { schema: { hide: true }, preHandler: [fastify.authenticate] }, resetTokenHandler);
+
+  fastify.post(
+    '/api/calendar/token/ack-notice',
+    {
+      schema: {
+        tags: ['Kalender'],
+        summary: 'Hinweis zum zurückgesetzten Kalender-Abo bestätigen',
+        security: [{ bearerAuth: [] }],
+      },
+      preHandler: [fastify.authenticate],
+    },
+    async (request) => {
+      await fastify.prisma.user.update({
+        where: { id: request.user.id },
+        data: { calendarResetNotice: false },
+      });
+      return { ok: true };
+    }
+  );
 };
 
 export default calendarRoutes;

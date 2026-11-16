@@ -129,7 +129,7 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
     qrColorPrimary: department?.qrColorPrimary ?? '#0f172a',
     qrColorSecondary: department?.qrColorSecondary ?? '#e11d48',
     membersOnly: department?.membersOnly ?? true,
-    allowPasswordless: department?.allowPasswordless ?? true,
+    allowPasswordless: department?.allowPasswordless ?? false,
     joinMode: (department?.joinMode ?? 'LINK_ONLY') as DepartmentJoinMode,
   });
   const [saving, setSaving] = useState(false);
