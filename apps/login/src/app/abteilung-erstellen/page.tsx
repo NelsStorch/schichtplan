@@ -3,7 +3,12 @@
 import { Suspense, useEffect, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ArrowUpRight, Building2, Check, Copy, Share2 } from 'lucide-react';
-import type { DepartmentCreationEligibilityDto, DepartmentCreationRoleDto, UserDto } from '@schichtplan/shared';
+import type {
+  DepartmentCreationEligibilityDto,
+  DepartmentCreationOwnGroupDto,
+  DepartmentCreationRoleDto,
+  UserDto,
+} from '@schichtplan/shared';
 import { getDepartmentUrl, helpUrl } from '@schichtplan/shared/redirect';
 import { type OrganizationConfig } from '@schichtplan/shared';
 import { Button, Callout, BrandLogo, Field, Input, ThemeToggle, buttonClasses, useOrganization } from '@schichtplan/ui';
@@ -32,6 +37,36 @@ const suggestedName = (e: DepartmentCreationEligibilityDto, org: OrganizationCon
 
 const slugFromName = (name: string, org: OrganizationConfig) =>
   slugify(name.replace(new RegExp(`^${org.orgName}\\s+`, 'i'), ''));
+
+/** «A», «A und B», «A, B und C» */
+const joinNames = (names: string[]) =>
+  names.length <= 1 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} und ${names[names.length - 1]}`;
+
+/** Eigene Gruppen (Scharen …) mit Status: Link zum Schichtplan oder «noch kein Schichtplan» */
+function OwnGroups({ groups, org }: { groups: DepartmentCreationOwnGroupDto[]; org: OrganizationConfig }) {
+  return (
+    <ul aria-label={`Deine Gruppen in ${org.authProviderShort}`} className="divide-y divide-line overflow-hidden rounded-card border border-line bg-surface">
+      {groups.map((group) => (
+        <li key={group.hitobitoGroupId} className="flex items-center justify-between gap-3 px-4 py-2.5">
+          <span className="min-w-0">
+            <span className="block text-[14px] font-medium text-fg">{group.name}</span>
+            {group.groupType && <span className="block text-[13px] text-fg-muted">{group.groupType}</span>}
+          </span>
+          {group.existingDepartment ? (
+            <a
+              href={getDepartmentUrl(group.existingDepartment.slug, '/', org.dbType)}
+              className="inline-flex shrink-0 items-center gap-0.5 text-[13px] font-medium text-accent-ink underline-offset-2 hover:underline"
+            >
+              Zum Schichtplan <ArrowUpRight className="size-3.5" aria-hidden />
+            </a>
+          ) : (
+            <span className="shrink-0 text-[12px] text-fg-subtle">noch kein Schichtplan</span>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 /** Eigene Rollen aus der Verbands-DB: zeigt, welche als Leitung zählen und welche nicht */
 function MyRoles({ roles, org }: { roles: DepartmentCreationRoleDto[]; org: OrganizationConfig }) {
@@ -141,7 +176,15 @@ function CreateDepartment() {
   };
 
   const shareUrl = typeof window === 'undefined' ? '/abteilung-erstellen' : `${window.location.origin}/abteilung-erstellen`;
-  const knownGroupName = eligibility?.ortsgruppeName ?? eligibility?.ownGroup?.name ?? null;
+  // Eigene Gruppen laut Verbands-DB (Scharen, Abteilungen …), getrennt nach mit und ohne Schichtplan
+  const ownGroups = eligibility?.ownGroups ?? [];
+  const withoutPlan = ownGroups.filter((g) => g.existingDepartment === null);
+  const withPlan = ownGroups.filter((g) => g.existingDepartment !== null);
+  const notLeader = eligibility?.reason === 'NOT_LEADER' && org.slug !== 'verein';
+  const noPlanYet = notLeader && withoutPlan.length > 0;
+  const missingNames = joinNames(withoutPlan.map((g) => withOrgName(g.name, org)));
+
+  const knownGroupName = eligibility?.ortsgruppeName ?? (withoutPlan.length === 1 ? withoutPlan[0].name : null);
   const groupLabel = knownGroupName ? withOrgName(knownGroupName, org) : `unsere ${org.unitTerm}`;
   const shareMessage = `Hey! Könntest du für ${groupLabel} kurz den Schichtplan auf ${org.name} einrichten? Als ${org.unitTerm}-Leitung in ${org.authProviderShort} geht das mit einem Klick:`;
 
@@ -192,11 +235,6 @@ function CreateDepartment() {
   };
 
   const rootHost = typeof window === 'undefined' ? '' : window.location.hostname.replace(/^login\./, '');
-
-  // Eigene Gruppe laut Verbands-DB: Gibt es dafür noch keinen Schichtplan, sagt die Seite das zuerst
-  const ownExisting = eligibility?.ownGroup?.existingDepartment ?? null;
-  const noPlanYet = eligibility?.reason === 'NOT_LEADER' && Boolean(eligibility.ownGroup) && !ownExisting;
-  const ownGroupLabel = eligibility?.ownGroup?.name ? withOrgName(eligibility.ownGroup.name, org) : `deine ${org.unitTerm}`;
 
   return (
     <div className="grain flex min-h-[100dvh] flex-col">
@@ -320,19 +358,16 @@ function CreateDepartment() {
         ) : (
           <div className="animate-fade-up space-y-6">
             <h1 className="font-display text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-fg text-balance">
-              {noPlanYet ? `Für ${ownGroupLabel} gibt es noch keinen Schichtplan` : `${org.unitTerm} anlegen`}
+              {noPlanYet ? `Für ${missingNames} gibt es noch keinen Schichtplan` : `${org.unitTerm} anlegen`}
             </h1>
-            {eligibility.reason === 'NOT_LEADER' && ownExisting ? (
+            {notLeader && withPlan.length > 0 && withoutPlan.length === 0 ? (
               <>
                 <p className="text-[15px] leading-relaxed text-fg-muted">
-                  Für eure {org.unitTerm} gibt es schon einen Schichtplan: {ownExisting.name}.
+                  {withPlan.length === 1
+                    ? `Für eure ${org.unitTerm} gibt es schon einen Schichtplan.`
+                    : `Für alle deine ${org.unitTermPlural} gibt es schon einen Schichtplan.`}
                 </p>
-                <a
-                  href={getDepartmentUrl(ownExisting.slug)}
-                  className={buttonClasses({ size: 'lg', className: 'w-full justify-between' })}
-                >
-                  Zu {ownExisting.name} <ArrowUpRight />
-                </a>
+                <OwnGroups groups={withPlan} org={org} />
               </>
             ) : eligibility.reason === 'EXISTS' && eligibility.existingDepartment ? (
               <>
@@ -410,11 +445,14 @@ function CreateDepartment() {
                   ) : (
                     <p className="text-[14px] leading-relaxed">
                       {noPlanYet
-                        ? `Den Schichtplan für ${ownGroupLabel} richtet die ${org.unitTerm}-Leitung laut ${org.authProviderShort} ein. Du bist dort nicht als ${org.unitTerm}-Leitung eingetragen.`
+                        ? `Den Schichtplan richtet die ${org.unitTerm}-Leitung laut ${org.authProviderShort} ein. Du bist dort nicht als ${org.unitTerm}-Leitung eingetragen.`
                         : `Du bist selbst nicht als ${org.unitTerm}-Leitung in ${org.authProviderShort} eingetragen – deshalb kannst du die ${org.unitTerm} nicht direkt selbst eröffnen.`}
                     </p>
                   )}
                 </Callout>
+
+                {/* Mehrere eigene Gruppen oder eine mit Schichtplan: alle zeigen, die mit Schichtplan verlinkt */}
+                {notLeader && (ownGroups.length > 1 || withPlan.length > 0) && <OwnGroups groups={ownGroups} org={org} />}
 
                 {/* Erst der Beleg (eigene Rollen), dann der Ausweg über die Leitung */}
                 {eligibility.myRoles && <MyRoles roles={eligibility.myRoles} org={org} />}

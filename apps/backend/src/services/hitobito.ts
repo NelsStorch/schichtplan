@@ -10,6 +10,7 @@
  */
 import {
   type CeviDbStufeDto,
+  type DepartmentCreationOwnGroupDto,
   type DepartmentCreationRoleDto,
   type HitobitoRoleKindDto,
   type OrganizationType,
@@ -107,6 +108,41 @@ export function creationRoles(
     groupName: r.groupName,
     isLeader: isLeaderRoleFor(r.roleClass, orgType),
   }));
+}
+
+/**
+ * Eigene Gruppen auf Abteilungs-Ebene (Schar, Abteilung, Region, Kanton, Bund) aus den Gruppen der Rollen, je mit dem
+ * Schichtplan, falls es einen gibt. Eine Gruppe gehört zu ihrer Ortsgruppe, bei mehreren Jungscharen zur Jungschar.
+ * Ein Schichtplan kann an der Gruppe selbst, ihrer Jungschar oder ihrer Ortsgruppe hängen (wie placeCeviDbPerson).
+ */
+export function ownUnitGroups(
+  roleGroupIds: number[],
+  groups: ReadonlyMap<number, CeviDbGroupInfo>,
+  departments: { name: string; slug: string; hitobitoGroupId: number | null }[]
+): DepartmentCreationOwnGroupDto[] {
+  const departmentFor = (ids: (number | null)[]) =>
+    departments.find((d) => d.hitobitoGroupId !== null && ids.includes(d.hitobitoGroupId)) ?? null;
+  const result = new Map<number, DepartmentCreationOwnGroupDto>();
+  for (const groupId of roleGroupIds) {
+    const group = groups.get(groupId);
+    if (!group || group.ortsgruppeId === null) continue;
+    const ortsgruppe = groups.get(group.ortsgruppeId);
+    const perJungschar = group.jungscharId !== null && (ortsgruppe?.jungscharCount ?? 0) > 1;
+    const unitId = perJungschar ? group.jungscharId! : group.ortsgruppeId;
+    if (result.has(unitId)) continue;
+    const unit = groups.get(unitId);
+    const existing = departmentFor([groupId, group.jungscharId, group.ortsgruppeId]);
+    result.set(unitId, {
+      hitobitoGroupId: unitId,
+      name: unit?.name ?? group.name,
+      groupType: unit?.groupType ?? null,
+      existingDepartment: existing ? { name: existing.name, slug: existing.slug } : null,
+    });
+  }
+  // Ohne Schichtplan zuerst, dann nach Name
+  return [...result.values()].sort(
+    (a, b) => Number(a.existingDepartment !== null) - Number(b.existingDepartment !== null) || a.name.localeCompare(b.name, 'de')
+  );
 }
 
 export function ceviDbLeadership(profile: unknown, orgType: OrganizationType = 'CEVI'): CeviDbLeadership {

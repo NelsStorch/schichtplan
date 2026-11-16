@@ -1123,10 +1123,18 @@ export interface DepartmentCreationEligibilityDto {
    */
   myRoles?: DepartmentCreationRoleDto[];
   /**
-   * Nur für die eigene Person und nur, wenn sie nicht anlegen darf: ihre eigene Gruppe laut Verbands-DB (z. B. Schar)
-   * und ob es dafür schon einen Schichtplan gibt. null: keine Gruppe bekannt.
+   * Nur für die eigene Person und nur, wenn sie nicht anlegen darf: alle eigenen Gruppen laut Verbands-DB (Scharen,
+   * Abteilungen, Region …) und ob es dafür schon einen Schichtplan gibt. Die ohne Schichtplan zuerst.
    */
-  ownGroup?: { name: string | null; existingDepartment: { name: string; slug: string } | null } | null;
+  ownGroups?: DepartmentCreationOwnGroupDto[];
+}
+
+export interface DepartmentCreationOwnGroupDto {
+  hitobitoGroupId: number;
+  name: string;
+  /** Gruppentyp aus der Verbands-DB, z. B. «Schar», «Region» */
+  groupType: string | null;
+  existingDepartment: { name: string; slug: string } | null;
 }
 
 export interface DepartmentCreationRoleDto {

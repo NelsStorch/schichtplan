@@ -10,7 +10,53 @@ import {
   isDepartmentLeaderRole,
   isUnitRoleClass,
 } from '@schichtplan/shared';
-import { creationRoles, deriveCeviDbFields, hitobitoRoleKind, hitobitoRoles } from './hitobito.js';
+import { creationRoles, deriveCeviDbFields, hitobitoRoleKind, hitobitoRoles, ownUnitGroups, type CeviDbGroupInfo } from './hitobito.js';
+
+describe('ownUnitGroups (eigene Scharen beim Anlegen)', () => {
+  const group = (id: number, name: string, ortsgruppeId: number | null, extra: Partial<CeviDbGroupInfo> = {}): CeviDbGroupInfo => ({
+    id,
+    name,
+    jungscharId: null,
+    ortsgruppeId,
+    jungscharCount: null,
+    groupType: null,
+    ...extra,
+  });
+
+  it('listet jede Schar einmal, die ohne Schichtplan zuerst', () => {
+    const groups = new Map(
+      [
+        group(30, 'Jubla Uster', 30, { groupType: 'Schar', jungscharCount: 0 }),
+        group(31, 'Blauring 3. Klasse', 30),
+        group(32, 'Jungwacht 5. Klasse', 30),
+        group(40, 'Jubla Wetzikon', 40, { groupType: 'Schar', jungscharCount: 0 }),
+        group(41, 'Leiterteam', 40),
+      ].map((g) => [g.id, g])
+    );
+    const departments = [{ name: 'Jubla Uster', slug: 'uster', hitobitoGroupId: 30 }];
+    expect(ownUnitGroups([31, 32, 41], groups, departments)).toEqual([
+      { hitobitoGroupId: 40, name: 'Jubla Wetzikon', groupType: 'Schar', existingDepartment: null },
+      { hitobitoGroupId: 30, name: 'Jubla Uster', groupType: 'Schar', existingDepartment: { name: 'Jubla Uster', slug: 'uster' } },
+    ]);
+  });
+
+  it('nimmt bei mehreren Jungscharen die Jungschar (Cevi)', () => {
+    const groups = new Map(
+      [
+        group(161, 'Illnau-Effretikon', 161, { groupType: 'Ortsgruppe', jungscharCount: 2 }),
+        group(295, 'JS Illnau', 161, { jungscharId: 295, groupType: 'Jungschar' }),
+        group(806, 'Joschija', 161, { jungscharId: 295 }),
+      ].map((g) => [g.id, g])
+    );
+    expect(ownUnitGroups([806], groups, [{ name: 'Cevi Illnau', slug: 'illnau', hitobitoGroupId: 295 }])).toEqual([
+      { hitobitoGroupId: 295, name: 'JS Illnau', groupType: 'Jungschar', existingDepartment: { name: 'Cevi Illnau', slug: 'illnau' } },
+    ]);
+  });
+
+  it('übergeht Gruppen ohne bekannte Struktur', () => {
+    expect(ownUnitGroups([99], new Map(), [])).toEqual([]);
+  });
+});
 
 describe('creationRoles (eigene Rollen beim Anlegen)', () => {
   it('zeigt Bezeichnung und Gruppe und ob die Rolle als Leitung zählt', () => {

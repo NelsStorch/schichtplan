@@ -12,7 +12,7 @@ import {
   type PasswordlessAccountsDto,
   getOrganizationByDbType,
 } from '@schichtplan/shared';
-import { creationRoles } from '../../services/hitobito.js';
+import { creationRoles, ownUnitGroups } from '../../services/hitobito.js';
 import { autoCreateCeviDbDepartmentStufen, ceviDbGroupPeople, NO_HOME_CONFIRMATION } from '../../services/homeDepartment.js';
 import { isDepartmentInsider, } from '../../services/departmentVisibility.js';
 import { canGrantPermissions, departmentAccess, } from '../../services/permissions.js';
@@ -217,23 +217,40 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
         select: {
           provider: true,
           providerId: true,
-          ortsgruppeId: true,
-          ortsgruppeName: true,
-          jungscharIds: true,
-          hitobitoRoles: { select: { roleClass: true, roleName: true, groupName: true }, orderBy: [{ groupName: 'asc' }, { roleClass: 'asc' }] },
+          hitobitoRoles: {
+            select: { roleClass: true, roleName: true, groupId: true, groupName: true },
+            orderBy: [{ groupName: 'asc' }, { roleClass: 'asc' }],
+          },
         },
       });
       if (!user || user.providerId === null || user.provider !== request.organization) return result;
-      // Eigene Gruppe (Schar, Abteilung …) und ob sie schon einen Schichtplan hat: bei Cevi zuerst die Jungschar
-      const groupIds = [...user.jungscharIds, ...(user.ortsgruppeId !== null ? [user.ortsgruppeId] : [])];
-      const existing = groupIds.length
-        ? await fastify.prisma.department.findFirst({
-            where: { organization: user.provider, hitobitoGroupId: { in: groupIds } },
-            select: { name: true, slug: true },
+      const provider = user.provider;
+
+      // Alle eigenen Gruppen (Scharen, Abteilungen …) aus den Rollen und ob sie schon einen Schichtplan haben
+      const roleGroupIds = [...new Set(user.hitobitoRoles.flatMap((r) => (r.groupId !== null ? [r.groupId] : [])))];
+      const roleGroups = roleGroupIds.length
+        ? await fastify.prisma.hitobitoGroup.findMany({ where: { provider, id: { in: roleGroupIds } } })
+        : [];
+      const parentIds = [...new Set(roleGroups.flatMap((g) => [g.jungscharId, g.ortsgruppeId]))].filter(
+        (id): id is number => id !== null && !roleGroupIds.includes(id)
+      );
+      const parents = parentIds.length
+        ? await fastify.prisma.hitobitoGroup.findMany({ where: { provider, id: { in: parentIds } } })
+        : [];
+      const groups = new Map([...roleGroups, ...parents].map((g) => [g.id, g]));
+      const candidateIds = [...new Set([...roleGroupIds, ...parentIds])];
+      const departments = candidateIds.length
+        ? await fastify.prisma.department.findMany({
+            where: { organization: provider, hitobitoGroupId: { in: candidateIds } },
+            select: { name: true, slug: true, hitobitoGroupId: true },
           })
-        : null;
-      const ownGroup = groupIds.length ? { name: user.ortsgruppeName, existingDepartment: existing } : null;
-      return { ...result, myRoles: creationRoles(user.hitobitoRoles, user.provider), ownGroup };
+        : [];
+
+      return {
+        ...result,
+        myRoles: creationRoles(user.hitobitoRoles, provider),
+        ownGroups: ownUnitGroups(roleGroupIds, groups, departments),
+      };
     }
   );
 
