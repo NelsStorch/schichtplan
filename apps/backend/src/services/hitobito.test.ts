@@ -159,6 +159,11 @@ describe('Hitobito & Vokabular (Multi-Verband)', () => {
       expect(isDepartmentLeaderRole('Group::RegionalBoard::Leader', 'JUBLA')).toBe(true);
       expect(isDepartmentLeaderRole('Group::StateBoard::Leader', 'JUBLA')).toBe(true);
       expect(isDepartmentLeaderRole('Group::StateAgency::Leader', 'JUBLA')).toBe(true);
+      expect(isDepartmentLeaderRole('Group::FederalBoard::Member', 'JUBLA')).toBe(true);
+      expect(isDepartmentLeaderRole('Group::FederalBoard::President', 'JUBLA')).toBe(true);
+      expect(isDepartmentLeaderRole('Group::FederalBoard::Treasurer', 'JUBLA')).toBe(false);
+      expect(isDepartmentLeaderRole('Group::FederalWorkGroup::Leader', 'JUBLA')).toBe(false);
+      expect(isDepartmentLeaderRole('Group::OrganizationBoard::Leader', 'JUBLA')).toBe(false);
       // Präses darf in der Jubla-DB nur lesen
       expect(isDepartmentLeaderRole('Group::Flock::President', 'JUBLA')).toBe(false);
       expect(isDepartmentLeaderRole('Group::RegionalBoard::Member', 'JUBLA')).toBe(false);

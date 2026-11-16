@@ -181,8 +181,9 @@ export const HITOBITO_JUBLA_CONFIG: HitobitoConfig = {
   // Struktur laut hitobito_jubla: Bund → Kanton → Region → Schar (Flock) → Kindergruppen. Scharen hängen unter einer
   // Region oder direkt unter dem Kanton. Die Leitung von Region und Kanton sitzt in einer eigenen Untergruppe
   // (Regionalleitung / Kantonsleitung), die Rolle zählt darum für die Region bzw. den Kanton darüber.
-  departmentGroupTypes: ['Group::Flock', 'Group::Region', 'Group::State'],
-  departmentGroupLabels: ['Schar', 'Region', 'Kanton'],
+  // Der Bund hat einen eigenen Schichtplan für nationale Anlässe, geleitet von der Bundesleitung
+  departmentGroupTypes: ['Group::Flock', 'Group::Region', 'Group::State', 'Group::Federation'],
+  departmentGroupLabels: ['Schar', 'Region', 'Kanton', 'Bund'],
   jungscharGroupLabels: [],
   // Präses (President) darf in der Jubla-DB nur lesen und wird darum hier nicht Leitung. Lagerleitung (CampLeader)
   // hat zwar Schreibrechte, leitet aber nur das Lager und nicht die Schar: Sie ist im Schichtplan Mitglied, keine Leitung.
@@ -191,12 +192,16 @@ export const HITOBITO_JUBLA_CONFIG: HitobitoConfig = {
     'Group::RegionalBoard::Leader',
     'Group::StateBoard::Leader',
     'Group::StateAgency::Leader',
+    'Group::FederalBoard::Member',
+    'Group::FederalBoard::President',
   ],
   departmentLeaderSuffixes: [
     '::flock::leader',
     '::regionalboard::leader',
     '::stateboard::leader',
     '::stateagency::leader',
+    '::federalboard::member',
+    '::federalboard::president',
   ],
   unitRoleClassPrefixes: ['Group::ChildGroup::'],
   unitLeaderRoles: ['Leader'],

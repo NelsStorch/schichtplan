@@ -166,7 +166,10 @@ describe('parseCeviDbGroup für Pfadi (MiData)', () => {
 describe('parseCeviDbGroup für Jubla', () => {
   const linked = [
     { id: '1', name: 'Jubla Schweiz', group_type: 'Bund' },
+    { id: '2', name: 'Bundesleitung', group_type: 'Bundesleitung' },
+    { id: '3', name: 'Projektgruppe Bundesanlass', group_type: 'Arbeitsgruppe' },
     { id: '10', name: 'Jubla Zürich', group_type: 'Kanton' },
+    { id: '11', name: 'Kantonsleitung', group_type: 'Kantonsleitung' },
     { id: '20', name: 'Region Oberland', group_type: 'Region' },
     { id: '21', name: 'Regionalleitung', group_type: 'Regionalleitung' },
     { id: '30', name: 'Jubla Uster', group_type: 'Schar' },
@@ -192,6 +195,18 @@ describe('parseCeviDbGroup für Jubla', () => {
     expect(parseCeviDbGroup(jubla('20', 'Region', ['1', '10', '20']), 20, 'JUBLA')).toMatchObject({
       ortsgruppeId: 20,
       jungscharCount: 0,
+    });
+  });
+
+  it('ordnet Bundesleitung und nationale Projektgruppen dem Bund zu', () => {
+    expect(parseCeviDbGroup(jubla('2', 'Bundesleitung', ['1', '2']), 2, 'JUBLA')).toMatchObject({ ortsgruppeId: 1 });
+    expect(parseCeviDbGroup(jubla('3', 'Arbeitsgruppe', ['1', '3']), 3, 'JUBLA')).toMatchObject({ ortsgruppeId: 1 });
+    expect(parseCeviDbGroup(jubla('1', 'Bund', ['1']), 1, 'JUBLA')).toMatchObject({ ortsgruppeId: 1, jungscharCount: 0 });
+  });
+
+  it('ordnet die Kantonsleitung dem Kanton zu, nicht dem Bund', () => {
+    expect(parseCeviDbGroup(jubla('11', 'Kantonsleitung', ['1', '10', '11']), 11, 'JUBLA')).toMatchObject({
+      ortsgruppeId: 10,
     });
   });
 });
