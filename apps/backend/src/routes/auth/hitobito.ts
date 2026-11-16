@@ -17,6 +17,7 @@ import {
 import { mergeCeviNameProfilesInto } from '../../services/mergeProfiles.js';
 import { trackUsage } from '../../services/usageStats.js';
 import { syncCeviDbLeadership } from '../../services/departmentLeaders.js';
+import { departmentCreationEligibility } from '../departments/shared.js';
 import { hitobitoCircuitBreaker } from '../../services/hitobitoCircuitBreaker.js';
 import { needsSecondFactor, setChallengeCookie } from '../../services/twoFactor.js';
 
@@ -516,8 +517,13 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
     const target = returnTo ?? defaultDestination(homeDepartment?.slug ?? null, reply.request?.hostname, homeDepartment?.organization ?? provider);
 
     let redirectUrl = target;
-    // Abteilungsleitung, deren Ortsgruppe noch keinen Schichtplan hat: Abteilung anlegen anbieten
-    if (!homeDepartment && derived.isDepartmentLeader && derived.ortsgruppeId !== null) {
+    // Leitung einer Ebene ohne Schichtplan (Abteilung, Region, Kanton, Bund): Anlegen anbieten. Geprüft wird über die
+    // Gruppen der Leitungsrollen, nicht über `ortsgruppe_id`/`schar_id`: Das fehlt z. B. der Bundesleitung ganz.
+    if (
+      !homeDepartment &&
+      derived.isDepartmentLeader &&
+      (await departmentCreationEligibility(fastify.prisma, user.id, provider)).eligible
+    ) {
       redirectUrl = loginPageUrl('/abteilung-erstellen', target, reply.request?.hostname);
     } else if (!homeDepartment) {
       // Ohne passende Abteilung im Schichtplan: Abteilung und Stufe einmal nachfragen (auch nach einem Abteilungswechsel)
