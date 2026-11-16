@@ -14,7 +14,12 @@ import {
   NO_HOME_CONFIRMATION,
   syncCeviDbStufen,
 } from '../../services/homeDepartment.js';
-import { checkDepartmentJoin, markMembershipJoined, replaceSelfStufen } from '../../services/departmentJoin.js';
+import {
+  checkDepartmentJoin,
+  markMembershipJoined,
+  ownProviderDepartmentIds,
+  replaceSelfStufen,
+} from '../../services/departmentJoin.js';
 import { applyProfileUpdate } from '../../services/profileUpdate.js';
 import { trackUsage } from '../../services/usageStats.js';
 import { createRateLimiter } from '../../services/rateLimit.js';
@@ -51,6 +56,30 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.status(404).send({ error: 'Person nicht gefunden' });
       }
       return user;
+    }
+  );
+
+  // 6. Abteilungen der eigenen Gruppen in der Verbands-DB: nur diese bietet die Auswahl ohne Link an
+  fastify.get(
+    '/api/auth/me/own-departments',
+    {
+      schema: {
+        tags: ['Auth'],
+        summary: 'Abteilungen der eigenen Verbands-Gruppen',
+        description:
+          'IDs der Abteilungen, die laut Verbands-DB zu den eigenen Gruppen gehören. Ohne Verbands-Login leer.',
+        security: [{ bearerAuth: [] }],
+      },
+      preHandler: [fastify.authenticate],
+    },
+    async (request, reply) => {
+      reply.header('Cache-Control', 'no-store');
+      const user = await fastify.prisma.user.findUnique({
+        where: { id: request.user.id },
+        select: { provider: true, providerId: true },
+      });
+      if (!user || user.providerId === null) return { departmentIds: [] };
+      return { departmentIds: [...(await ownProviderDepartmentIds(fastify.prisma, request.user.id, user.provider))] };
     }
   );
 

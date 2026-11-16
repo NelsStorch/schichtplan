@@ -8,7 +8,44 @@ import { normalizePermissions, type DepartmentPermission } from '@schichtplan/sh
 import { verifyDepartmentInviteToken } from './inviteToken.js';
 import { isCeviNameProfile } from './nicknameLogin.js';
 
-type Db = Pick<PrismaClient, 'department' | 'departmentMember' | 'eventOrganizer'>;
+type Db = Pick<PrismaClient, 'department' | 'departmentMember' | 'eventOrganizer' | 'userHitobitoRole' | 'hitobitoGroup'>;
+
+/**
+ * Abteilungen, die laut Verbands-DB zu den eigenen Gruppen gehören: an der Gruppe einer Rolle, ihrer Jungschar oder
+ * Ortsgruppe, dazu die Jungscharen der eigenen Ortsgruppen (geteilte Ortsgruppe, Rolle z. B. nur im Vorstand).
+ * Nur diese darf ein Verbands-Konto ohne Link aus der Liste wählen; fremde nur per Link oder Einladung.
+ */
+export async function ownProviderDepartmentIds(
+  prisma: Pick<PrismaClient, 'userHitobitoRole' | 'hitobitoGroup' | 'department'>,
+  userId: string,
+  provider: OrganizationType
+): Promise<Set<string>> {
+  const roles = await prisma.userHitobitoRole.findMany({ where: { userId }, select: { groupId: true } });
+  const roleGroupIds = [...new Set(roles.flatMap((r) => (r.groupId !== null ? [r.groupId] : [])))];
+  if (roleGroupIds.length === 0) return new Set();
+  const groups = await prisma.hitobitoGroup.findMany({ where: { provider, id: { in: roleGroupIds } } });
+  const ortsgruppeIds = [...new Set(groups.flatMap((g) => (g.ortsgruppeId !== null ? [g.ortsgruppeId] : [])))];
+  const jungscharen = ortsgruppeIds.length
+    ? await prisma.hitobitoGroup.findMany({
+        where: { provider, ortsgruppeId: { in: ortsgruppeIds }, jungscharId: { not: null } },
+        select: { jungscharId: true },
+      })
+    : [];
+  const candidateIds = [
+    ...new Set(
+      [
+        ...roleGroupIds,
+        ...groups.flatMap((g) => [g.jungscharId, g.ortsgruppeId]),
+        ...jungscharen.map((j) => j.jungscharId),
+      ].filter((id): id is number => id !== null)
+    ),
+  ];
+  const departments = await prisma.department.findMany({
+    where: { organization: provider, hitobitoGroupId: { in: candidateIds } },
+    select: { id: true },
+  });
+  return new Set(departments.map((d) => d.id));
+}
 type Tx = Pick<PrismaClient, 'departmentMember' | 'userStufe'>;
 
 export type JoinCheck =
@@ -77,16 +114,16 @@ export async function checkDepartmentJoin(
       error: 'Beitritt nur per Einladung möglich. Bitte nutze einen gültigen Einladungs-Link.',
     };
   }
-  // Personen mit Verbands-Login (Cevi.DB, MiData, Jubla.DB) werden nach dem OAuth-Login direkt auf
-  // login.<domain>/abteilung geleitet, wenn ihre Rollen keine eindeutige Jungschar ergeben (z. B.
-  // geteilte Ortsgruppe). Sie kommen dort ohne Abteilungs-Subdomain an und dürfen bei LINK_ONLY wählen.
-  const hasProviderLogin = user.providerId !== null && (!user.provider || user.provider === dept.organization);
-
   // LINK_ONLY ist bewusst keine Zugriffsschranke: Der Abteilungs-Link (Subdomain) ist öffentlich,
   // und viaLink setzt der Browser selbst. Die Prüfung hält die Abteilung nur aus der allgemeinen
   // Auswahl heraus. Ein Beitritt ohne Einladung bleibt unbestätigt; wer wirklich geschlossen sein
   // will, wählt INVITE_ONLY (dort zählt nur Einladung oder Bestätigung durch die Leitung).
-  if (dept.joinMode === 'LINK_ONLY' && !params.viaLink && params.tenantId !== departmentId && !hasProviderLogin) {
+  if (dept.joinMode === 'LINK_ONLY' && !params.viaLink && params.tenantId !== departmentId) {
+    // Verbands-Konten, deren Rollen keine eindeutige Abteilung ergeben (z. B. geteilte Ortsgruppe), landen ohne
+    // Subdomain auf login.<domain>/abteilung. Dort dürfen sie nur Abteilungen ihrer eigenen Gruppen wählen.
+    const sameProvider = user.providerId !== null && (!user.provider || user.provider === dept.organization);
+    const own = sameProvider && (await ownProviderDepartmentIds(prisma, userId, dept.organization)).has(dept.id);
+    if (own) return { ok: true, invited: false, grantedPermissions: [] };
     return {
       ok: false,
       status: 403,

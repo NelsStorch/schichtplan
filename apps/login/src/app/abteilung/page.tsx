@@ -27,6 +27,8 @@ function DepartmentSetup() {
 
   const [user, setUser] = useState<UserDto | null>(null);
   const [departments, setDepartments] = useState<DepartmentDirectoryItemDto[] | null>(null);
+  // Abteilungen der eigenen Gruppen in der Verbands-DB: nur diese sind bei LINK_ONLY ohne Link wählbar
+  const [ownDepartmentIds, setOwnDepartmentIds] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
   const [stufen, setStufen] = useState<Record<string, StufeRole>>({});
@@ -57,8 +59,13 @@ function DepartmentSetup() {
       else if (!me.needsDepartmentSetup) setSelected(NONE);
       setStufen(Object.fromEntries((me.stufen ?? []).map((s) => [s.stufeId, s.role])));
 
-      const dirRes = await fetch('/api/departments/directory');
+      const [dirRes, ownRes] = await Promise.all([
+        fetch('/api/departments/directory'),
+        fetch('/api/auth/me/own-departments', { cache: 'no-store' }),
+      ]);
       const dirList: DepartmentDirectoryItemDto[] = dirRes.ok ? await dirRes.json() : [];
+      const own = ownRes.ok ? ((await ownRes.json()) as { departmentIds: string[] }) : { departmentIds: [] };
+      setOwnDepartmentIds(new Set(own.departmentIds));
       setDepartments(dirList);
 
       let target = returnToSlug ? dirList.find((d) => d.slug === returnToSlug) : undefined;
@@ -160,17 +167,18 @@ function DepartmentSetup() {
   );
   const selectedDepartment = departments?.find((d) => d.id === selected) ?? null;
 
-  // Wählbar: offene Abteilungen, die eigene, die des Links, die der Einladung und bei Verbands-Login LINK_ONLY
+  // Wählbar: offene Abteilungen, die eigene, die des Links, die der Einladung und bei LINK_ONLY die der eigenen
+  // Gruppen in der Verbands-DB (fremde nur über ihren Link oder eine Einladung)
   const selectable = useMemo(
     () =>
       (departments ?? []).filter((d) => {
         if (d.id === user?.homeDepartment?.id) return true;
         if (d.id === inviteDeptId) return true;
         if (d.joinMode === 'LINK_ONLY' && returnToSlug && d.slug === returnToSlug) return true;
-        if (d.joinMode === 'LINK_ONLY' && user?.hasProviderAuth) return true;
+        if (d.joinMode === 'LINK_ONLY' && ownDepartmentIds.has(d.id)) return true;
         return !d.joinMode || d.joinMode === 'OPEN';
       }),
-    [departments, user?.homeDepartment?.id, user?.hasProviderAuth, inviteDeptId, returnToSlug]
+    [departments, user?.homeDepartment?.id, ownDepartmentIds, inviteDeptId, returnToSlug]
   );
 
   const visible = useMemo(() => {
