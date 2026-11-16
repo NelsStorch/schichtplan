@@ -388,16 +388,22 @@ function CreateDepartment() {
                       Um einen neuen Verein anzulegen, melde dich bitte mit deinem E-Mail- und Passwort-Konto an.
                     </p>
                   ) : (
-                    <>
-                      <p className="text-[14px] leading-relaxed">
-                        Du bist selbst nicht als {org.unitTerm}-Leitung in {org.authProviderShort} eingetragen – deshalb kannst du die {org.unitTerm} nicht direkt selbst eröffnen.
-                      </p>
-                      <p className="mt-2 text-[14px] leading-relaxed">
-                        <strong>So klappt es trotzdem sofort:</strong> Schicke deiner {org.unitTerm}-Leitung den Einrichtungslink. Sobald sie den Schichtplan mit einem Klick angelegt hat, kann sie dir unter <em>{org.unitTerm} → Personen</em> das Recht <strong>Anlässe erstellen</strong> geben.
-                      </p>
-                    </>
+                    <p className="text-[14px] leading-relaxed">
+                      Du bist selbst nicht als {org.unitTerm}-Leitung in {org.authProviderShort} eingetragen – deshalb kannst du die {org.unitTerm} nicht direkt selbst eröffnen.
+                    </p>
                   )}
                 </Callout>
+
+                {/* Erst der Beleg (eigene Rollen), dann der Ausweg über die Leitung */}
+                {eligibility.myRoles && <MyRoles roles={eligibility.myRoles} org={org} />}
+
+                {org.slug !== 'verein' && (
+                  <p className="text-[14px] leading-relaxed text-fg-muted">
+                    <strong className="text-fg">So klappt es trotzdem sofort:</strong> Schicke deiner {org.unitTerm}-Leitung den
+                    Einrichtungslink. Sobald sie den Schichtplan mit einem Klick angelegt hat, kann sie dir unter{' '}
+                    <em>{org.unitTerm} → Personen</em> das Recht <strong className="text-fg">Anlässe erstellen</strong> geben.
+                  </p>
+                )}
 
                 {org.slug !== 'verein' && (
                   <div className="space-y-2.5">
@@ -413,7 +419,8 @@ function CreateDepartment() {
                 )}
               </div>
             )}
-            {eligibility.myRoles && <MyRoles roles={eligibility.myRoles} org={org} />}
+            {/* Bei fehlender Leitung steht die Liste schon oben, direkt unter dem Grund */}
+            {eligibility.myRoles && eligibility.reason !== 'NOT_LEADER' && <MyRoles roles={eligibility.myRoles} org={org} />}
             <Button variant="ghost" className="w-full" onClick={later}>
               Weiter
             </Button>
