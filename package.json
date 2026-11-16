@@ -35,7 +35,7 @@
     "test:e2e": "playwright test -c e2e/playwright.config.ts"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.6.6",
+    "@biomejs/biome": "2.6.7",
     "@playwright/test": "1.65.0",
     "typescript": "^7.0.2"
   },
