@@ -18,6 +18,7 @@ import { mergeCeviNameProfilesInto } from '../../services/mergeProfiles.js';
 import { trackUsage } from '../../services/usageStats.js';
 import { syncCeviDbLeadership } from '../../services/departmentLeaders.js';
 import { departmentCreationEligibility } from '../departments/shared.js';
+import { findSimPersona, simProfile, simulationEnabled, storeSimGroups } from '../../services/hitobitoSimulation.js';
 import { hitobitoCircuitBreaker } from '../../services/hitobitoCircuitBreaker.js';
 import { needsSecondFactor, setChallengeCookie } from '../../services/twoFactor.js';
 
@@ -89,7 +90,7 @@ const HITOBITO_PROVIDERS: readonly unknown[] = ['CEVI', 'PFADI', 'JUBLA'];
 /** Anmeldung über Hitobito (Cevi.DB, PBS MiData, Jubla-DB), inkl. Verknüpfen mit einem bestehenden Passwort-Konto */
 const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
   // 1. Cevi.DB OAuth Login Redirect
-  fastify.get<{ Querystring: { returnTo?: string; tenantSlug?: string; org?: string } }>(
+  fastify.get<{ Querystring: { returnTo?: string; tenantSlug?: string; org?: string; real?: string } }>(
     '/api/auth/cevidb/login',
     {
       schema: {
@@ -100,6 +101,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
           returnTo: z.string().optional().describe('Ziel-URL nach erfolgreicher Anmeldung'),
           tenantSlug: z.string().optional().describe('Subdomain der Abteilung'),
           org: z.string().optional().describe('Verbands-Kürzel (cevi, pfadi, jubla)'),
+          real: z.string().optional().describe('Nur Dev: 1 = direkt zur echten Verbands-DB statt zur Simulation'),
         }),
       },
     },
@@ -115,6 +117,38 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
         : request.tenant
           ? defaultDestination(request.tenant.slug, reqHost, request.tenant.organization)
           : null;
+
+      // Dev mit Simulation: zuerst die Auswahl (erfundene Person oder weiter zur echten Verbands-DB)
+      if (request.query.real !== '1' && simulationEnabled(reqHost)) {
+        const simState = Buffer.from(
+          JSON.stringify({
+            token: crypto.randomBytes(16).toString('hex'),
+            returnTo,
+            tenantSlug: request.query.tenantSlug || request.tenant?.slug || null,
+            provider: providerConfig.type,
+            sim: true,
+          })
+        ).toString('base64url');
+        reply.setCookie('cevidb_oauth_state', simState, {
+          path: '/',
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 10,
+        });
+        const realParams = new URLSearchParams();
+        for (const [key, value] of Object.entries(request.query)) {
+          if (key !== 'real' && typeof value === 'string') realParams.set(key, value);
+        }
+        realParams.set('real', '1');
+        const pick = new URLSearchParams({
+          state: simState,
+          provider: providerConfig.type,
+          redirect_uri: redirectUri,
+          real: `/api/auth/cevidb/login?${realParams.toString()}`,
+        });
+        return reply.redirect(`/api/auth/hitobito-sim/authorize?${pick.toString()}`);
+      }
 
       if (!providerConfig.clientId) {
         fastify.log.error(`${providerConfig.type} OAuth ist nicht konfiguriert (CLIENT_ID fehlt in der Umgebung)`);
@@ -177,6 +211,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
       let returnTo: string | null = null;
       let tenantSlug: string | null = null;
       let providerType: OrganizationType = 'CEVI';
+      let simulated = false;
 
       try {
         if (state) {
@@ -184,6 +219,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
           returnTo = parsedState.returnTo ? cleanReturnTo(parsedState.returnTo, '/', request.hostname) : null;
           tenantSlug = typeof parsedState.tenantSlug === 'string' ? parsedState.tenantSlug : null;
           if (HITOBITO_PROVIDERS.includes(parsedState.provider)) providerType = parsedState.provider;
+          simulated = parsedState.sim === true;
         }
       } catch {
         // Fallback default
@@ -201,6 +237,28 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
       if (!code || !state || state !== request.cookies.cevidb_oauth_state) {
         fastify.log.warn('Hitobito Callback ohne gültigen Code oder state');
         return reply.redirect(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerConfig.type));
+      }
+
+      // Simulierte Person (nur Dev/lokal): Profil und Gruppenstruktur kommen aus der Simulation, nicht von Hitobito
+      if (simulated) {
+        const persona = simulationEnabled(request.hostname) ? findSimPersona(providerConfig.type, code) : null;
+        if (!persona) {
+          fastify.log.warn({ provider: providerConfig.type }, 'Simulierter Login ohne gültige Person oder ausserhalb von Dev');
+          return reply.redirect(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerConfig.type));
+        }
+        const simulatedProfile: any = simProfile(providerConfig.type, persona);
+        simulatedProfile._meta = {
+          fetchedAt: new Date().toISOString(),
+          grantedScopes: getHitobitoConfig(providerConfig.type).oauthScopes,
+          tokenType: 'Bearer',
+          simulated: true,
+        };
+        await storeSimGroups(fastify.prisma, providerConfig.type);
+        fastify.log.info({ provider: providerConfig.type, persona: persona.key }, 'Simulierter Verbands-Login');
+        reply.clearCookie('cevidb_oauth_state', { path: '/' });
+        return reply.redirect(
+          await finishCeviDbLogin(reply, simulatedProfile, returnTo, tenantSlug, undefined, providerConfig.type)
+        );
       }
 
       // Ohne eigene Zugangsdaten des Verbands nichts an dessen Hitobito schicken

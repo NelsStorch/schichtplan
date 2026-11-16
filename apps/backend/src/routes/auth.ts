@@ -4,6 +4,7 @@ import nicknameAuthRoutes from './auth/nickname.js';
 import passwordAuthRoutes from './auth/password.js';
 import accountRoutes from './auth/account.js';
 import twoFactorRoutes from './auth/twoFactor.js';
+import hitobitoSimulationRoutes from './auth/hitobitoSimulation.js';
 
 export { hashVerificationToken } from './auth/password.js';
 
@@ -17,6 +18,8 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
   await fastify.register(passwordAuthRoutes);
   await fastify.register(accountRoutes);
   await fastify.register(twoFactorRoutes);
+  // Simulierte Verbands-DB: nur mit HITOBITO_SIMULATION=true registriert, und auch dann nur auf Dev-/lokalen Hosts aktiv
+  if (process.env.HITOBITO_SIMULATION === 'true') await fastify.register(hitobitoSimulationRoutes);
 };
 
 export default authRoutes;
