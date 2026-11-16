@@ -5,6 +5,7 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import bcrypt from 'bcryptjs';
+import { parseCeviDbGroup } from '../src/services/hitobitoGroups.js';
 import { createDepartment, createTestApp, createUser, hasTestDb, inject, resetDb } from './helpers.js';
 
 const groupJson = (id: number, name: string, type: string, hierarchy: [number, string][], children: [number, string][] = []) => ({
@@ -113,6 +114,20 @@ describe.skipIf(!hasTestDb)('Cevi.DB: Abteilung aus Rollen und Gruppenstruktur',
     createDepartment(app, { slug }).then((d) =>
       app.prisma.department.update({ where: { id: d.id }, data: { hitobitoGroupId: ceviDbGroupId } })
     );
+
+  /**
+   * Gruppe im Zwischenspeicher, wie nach dem Login einer Person aus dieser Jungschar. Die Auswahl ohne Link bietet nur
+   * Jungscharen an, die der Zwischenspeicher der eigenen Ortsgruppe zuordnet.
+   */
+  const cacheGroup = async (id: number) => {
+    const info = parseCeviDbGroup(cevidbGroups[id], id)!;
+    const fetchedAt = new Date();
+    await app.prisma.hitobitoGroup.upsert({
+      where: { provider_id: { provider: 'CEVI', id } },
+      update: { ...info, fetchedAt },
+      create: { provider: 'CEVI', ...info, fetchedAt },
+    });
+  };
 
   beforeAll(async () => {
     process.env.CEVIDB_CLIENT_ID = 'test-client';
@@ -317,6 +332,7 @@ describe.skipIf(!hasTestDb)('Cevi.DB: Abteilung aus Rollen und Gruppenstruktur',
 
   it('fragt Personen ohne Jungschar in einer geteilten Ortsgruppe nach ihrer Abteilung', async () => {
     const illnau = await department('illnau', 295);
+    await cacheGroup(295);
     const verein = person(101, 161, 163, [{ role_class: 'Group::Verein::Mitglied', group_id: 163 }]);
     const first = await login(verein);
     expect(first.user).toMatchObject({ homeDepartmentId: null, homeDepartmentSource: null });
@@ -517,12 +533,14 @@ describe.skipIf(!hasTestDb)('Cevi.DB: Abteilung aus Rollen und Gruppenstruktur',
       const { leitung, member } = await setup();
       await confirmAs(leitung.cookie, member.user.id);
       const other = await department('effretikon', 726);
-      await inject(app, {
+      await cacheGroup(726);
+      const moved = await inject(app, {
         method: 'PUT',
         url: '/api/auth/me/department',
         cookie: member.cookie,
         payload: { departmentId: other.id, stufen: [] },
       });
+      expect(moved.statusCode).toBe(200);
       expect(await source(member.user.id)).toBe('SELF');
       const stored = await app.prisma.user.findUniqueOrThrow({ where: { id: member.user.id } });
       expect(stored.homeDepartmentConfirmedById).toBeNull();
