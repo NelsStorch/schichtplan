@@ -72,6 +72,7 @@ const JUBLA: SimOrg = {
     { n: 31, name: 'Blauring 3. Klasse', type: 'Kindergruppe', parent: 30 },
     { n: 40, name: 'Jubla Sim-Wetzikon', type: 'Schar', parent: 20 },
     { n: 41, name: 'Jungwacht 5. Klasse', type: 'Kindergruppe', parent: 40 },
+    { n: 42, name: 'Ehemalige Sim-Wetzikon', type: 'Ehemalige', parent: 40 },
   ],
   personas: [
     {
@@ -149,6 +150,15 @@ const JUBLA: SimOrg = {
       roles: [
         { group: 31, roleClass: 'Group::ChildGroup::Leader', roleName: 'Leiter*in' },
         { group: 41, roleClass: 'Group::ChildGroup::Leader', roleName: 'Leiter*in' },
+      ],
+    },
+    {
+      key: 'leiterin-ehemalige',
+      label: 'Leiterin, Ehemalige anderswo',
+      description: 'Leiterin in Sim-Uster, Ehemalige von Sim-Wetzikon (zählt dort nicht)',
+      roles: [
+        { group: 31, roleClass: 'Group::ChildGroup::Leader', roleName: 'Leiter*in' },
+        { group: 42, roleClass: 'Group::FlockAlumnusGroup::Member', roleName: 'Mitglied' },
       ],
     },
     {

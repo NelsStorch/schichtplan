@@ -330,6 +330,33 @@ export function isDepartmentLeaderRole(
   return false;
 }
 
+/** Gruppen ohne aktive Mitgliedschaft: Ehemalige, Externe, Spender, Eltern (Cevi, Pfadi, Jubla) */
+const PASSIVE_GROUP_PATTERN = /alumnus|ehemalige|externe|spender|elternrat|erziehungsberechtigt/i;
+/** Rollen ohne aktive Mitgliedschaft (letzter Teil der Rollenklasse) */
+const PASSIVE_ROLE_NAMES = new Set([
+  'alumnus',
+  'external',
+  'externer',
+  'dispatchaddress',
+  'ehrenmitglied',
+  'passivmitglied',
+  'selbstregistriert',
+  'spender',
+]);
+
+/**
+ * Passive Rolle: Ehemalige, Externe, Versandadresse, Ehren- und Passivmitglieder, Spender, Eltern. Sie zeigt in der
+ * Verbands-DB eine Verbindung, aber keine aktive Mitgliedschaft. Für die Zuordnung zu Abteilungen (Heimabteilung,
+ * automatische Beitritte) zählt sie darum nicht.
+ */
+export function isPassiveRoleClass(roleClass: string): boolean {
+  if (!roleClass) return false;
+  const parts = roleClass.split('::');
+  const roleName = (parts[parts.length - 1] ?? '').toLowerCase();
+  const groupName = parts.length >= 3 ? parts[parts.length - 2] : '';
+  return PASSIVE_ROLE_NAMES.has(roleName) || PASSIVE_GROUP_PATTERN.test(groupName);
+}
+
 /**
  * Prüft, ob eine Rolle (`role_class`) zu einer Einheit / Stufe / Kindergruppe gehört.
  */

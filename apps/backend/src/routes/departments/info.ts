@@ -11,6 +11,7 @@ import {
   type DepartmentPermission,
   type PasswordlessAccountsDto,
   getOrganizationByDbType,
+  isPassiveRoleClass,
 } from '@schichtplan/shared';
 import { creationRoles, ownUnitGroups } from '../../services/hitobito.js';
 import { autoCreateCeviDbDepartmentStufen, ceviDbGroupPeople, NO_HOME_CONFIRMATION } from '../../services/homeDepartment.js';
@@ -227,7 +228,12 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
       const provider = user.provider;
 
       // Alle eigenen Gruppen (Scharen, Abteilungen …) aus den Rollen und ob sie schon einen Schichtplan haben
-      const roleGroupIds = [...new Set(user.hitobitoRoles.flatMap((r) => (r.groupId !== null ? [r.groupId] : [])))];
+      // Ehemalige, Externe, Versandadressen … zählen nicht als eigene Schar
+      const roleGroupIds = [
+        ...new Set(
+          user.hitobitoRoles.flatMap((r) => (r.groupId !== null && !isPassiveRoleClass(r.roleClass) ? [r.groupId] : []))
+        ),
+      ];
       const roleGroups = roleGroupIds.length
         ? await fastify.prisma.hitobitoGroup.findMany({ where: { provider, id: { in: roleGroupIds } } })
         : [];

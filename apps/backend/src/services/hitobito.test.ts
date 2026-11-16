@@ -8,6 +8,7 @@ import {
   getVocabulary,
   getVocabularyFromHost,
   isDepartmentLeaderRole,
+  isPassiveRoleClass,
   isUnitRoleClass,
 } from '@schichtplan/shared';
 import { creationRoles, deriveCeviDbFields, hitobitoRoleKind, hitobitoRoles, ownUnitGroups, type CeviDbGroupInfo } from './hitobito.js';
@@ -55,6 +56,43 @@ describe('ownUnitGroups (eigene Scharen beim Anlegen)', () => {
 
   it('übergeht Gruppen ohne bekannte Struktur', () => {
     expect(ownUnitGroups([99], new Map(), [])).toEqual([]);
+  });
+});
+
+describe('Passive Rollen (Ehemalige, Externe …)', () => {
+  it('erkennt passive Rollen in allen Verbänden', () => {
+    expect(isPassiveRoleClass('Group::Flock::Alumnus')).toBe(true);
+    expect(isPassiveRoleClass('Group::FederalAlumnusGroup::Member')).toBe(true);
+    expect(isPassiveRoleClass('Group::FlockAlumnusGroup::Leader')).toBe(true);
+    expect(isPassiveRoleClass('Group::Flock::External')).toBe(true);
+    expect(isPassiveRoleClass('Group::Flock::DispatchAddress')).toBe(true);
+    expect(isPassiveRoleClass('Group::Ehemalige::Mitglied')).toBe(true);
+    expect(isPassiveRoleClass('Group::Abteilung::Passivmitglied')).toBe(true);
+    expect(isPassiveRoleClass('Group::JungscharExterne::Externer')).toBe(true);
+    expect(isPassiveRoleClass('Group::Elternrat::Mitglied')).toBe(true);
+    // Aktive Rollen
+    expect(isPassiveRoleClass('Group::Flock::Leader')).toBe(false);
+    expect(isPassiveRoleClass('Group::ChildGroup::Leader')).toBe(false);
+    expect(isPassiveRoleClass('Group::FederalBoard::Member')).toBe(false);
+    expect(isPassiveRoleClass('Group::Stufe::Teilnehmer')).toBe(false);
+  });
+
+  it('ordnet über passive Rollen keiner Abteilung zu', () => {
+    const derived = deriveCeviDbFields(
+      {
+        primary_group_id: 90,
+        roles: [
+          { role_class: 'Group::FlockAlumnusGroup::Member', group_id: 90 },
+          { role_class: 'Group::ChildGroup::Leader', group_id: 31 },
+        ],
+      },
+      'JUBLA'
+    );
+    expect(derived.roleGroupIds).toEqual([31]);
+    // Hauptgruppe ist die Ehemaligen-Gruppe: zählt nicht
+    expect(derived.primaryGroupId).toBeNull();
+    // Für die Diagnose bleiben alle Rollen sichtbar
+    expect(derived.roles).toHaveLength(2);
   });
 });
 

@@ -16,6 +16,7 @@ import {
   type OrganizationType,
   getHitobitoConfig,
   isDepartmentLeaderRole as isDepartmentLeaderRoleShared,
+  isPassiveRoleClass,
   isUnitRoleClass,
   getUnitRoleKey,
   classifyUnitRole,
@@ -271,6 +272,18 @@ export function ceviDbRoleGroupIds(profile: unknown): number[] {
   return uniqueIds(profileRoles(profile).map((role) => parseCeviDbGroupId(role.group_id)));
 }
 
+/** Gruppen der aktiven Rollen (ohne Ehemalige, Externe, Versandadressen …): nur sie ordnen einer Abteilung zu */
+export function activeRoleGroupIds(profile: unknown): number[] {
+  return uniqueIds(
+    profileRoles(profile)
+      .filter((role) => {
+        const roleClass = roleClassOf(role);
+        return roleClass === null || !isPassiveRoleClass(roleClass);
+      })
+      .map((role) => parseCeviDbGroupId(role.group_id))
+  );
+}
+
 /** Name der Ortsgruppe / Schar / Abteilung aus den Rollen des Profils */
 function ortsgruppeNameFromProfile(profile: unknown, ortsgruppeId: number | null): string | null {
   if (ortsgruppeId === null) return null;
@@ -284,8 +297,9 @@ export interface CeviDbDerived {
   isDepartmentLeader: boolean;
   leaderGroupName: string | null;
   leaderGroupIds: number[];
-  /** Gruppen aller Rollen der Person */
+  /** Gruppen der aktiven Rollen (ohne Ehemalige, Externe, Versandadressen …): ordnen Abteilungen zu */
   roleGroupIds: number[];
+  /** Hauptgruppe, nur wenn dort eine aktive Rolle liegt */
   primaryGroupId: number | null;
   stufen: CeviDbStufeDto[];
   /** Alle Rollen (nur Rollentyp und Gruppe), für die Berechtigungs-Diagnose */
@@ -298,14 +312,17 @@ export interface CeviDbDerived {
  */
 export function deriveCeviDbFields(profile: unknown, orgType: OrganizationType = 'CEVI'): CeviDbDerived {
   const leadership = ceviDbLeadership(profile, orgType);
+  const roleGroupIds = activeRoleGroupIds(profile);
+  const primaryGroupId = isRecord(profile) ? parseCeviDbGroupId(profile.primary_group_id) : null;
   return {
     ortsgruppeId: leadership.ortsgruppeId,
     ortsgruppeName: ortsgruppeNameFromProfile(profile, leadership.ortsgruppeId),
     isDepartmentLeader: leadership.isLeader,
     leaderGroupName: leadership.leaderGroupName,
     leaderGroupIds: leadership.leaderGroupIds,
-    roleGroupIds: ceviDbRoleGroupIds(profile),
-    primaryGroupId: isRecord(profile) ? parseCeviDbGroupId(profile.primary_group_id) : null,
+    roleGroupIds,
+    // Hauptgruppe nur, wenn dort eine aktive Rolle liegt (sonst würde z. B. die Ehemaligen-Gruppe zur Heimabteilung)
+    primaryGroupId: primaryGroupId !== null && roleGroupIds.includes(primaryGroupId) ? primaryGroupId : null,
     stufen: ceviDbStufen(profile, orgType),
     roles: hitobitoRoles(profile),
   };

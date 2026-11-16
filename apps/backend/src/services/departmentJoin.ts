@@ -4,7 +4,7 @@
  * beide Wege gelten: Beitrittsmodus (OPEN, LINK_ONLY, INVITE_ONLY), Einladungs-Token und Stufen.
  */
 import type { OrganizationType, PrismaClient } from '../db.js';
-import { normalizePermissions, type DepartmentPermission } from '@schichtplan/shared';
+import { isPassiveRoleClass, normalizePermissions, type DepartmentPermission } from '@schichtplan/shared';
 import { verifyDepartmentInviteToken } from './inviteToken.js';
 import { isCeviNameProfile } from './nicknameLogin.js';
 
@@ -29,8 +29,11 @@ export async function ownProviderDepartments(
   userId: string,
   provider: OrganizationType
 ): Promise<ProviderDepartments> {
-  const roles = await prisma.userHitobitoRole.findMany({ where: { userId }, select: { groupId: true } });
-  const roleGroupIds = [...new Set(roles.flatMap((r) => (r.groupId !== null ? [r.groupId] : [])))];
+  const roles = await prisma.userHitobitoRole.findMany({ where: { userId }, select: { groupId: true, roleClass: true } });
+  // Ehemalige, Externe, Versandadressen … ordnen keiner Abteilung zu
+  const roleGroupIds = [
+    ...new Set(roles.flatMap((r) => (r.groupId !== null && !isPassiveRoleClass(r.roleClass) ? [r.groupId] : []))),
+  ];
   if (roleGroupIds.length === 0) return { verified: new Set(), candidates: new Set() };
   const groups = await prisma.hitobitoGroup.findMany({ where: { provider, id: { in: roleGroupIds } } });
   const ortsgruppeIds = [...new Set(groups.flatMap((g) => (g.ortsgruppeId !== null ? [g.ortsgruppeId] : [])))];
