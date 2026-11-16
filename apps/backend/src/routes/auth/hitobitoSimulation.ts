@@ -50,8 +50,9 @@ function checkFlow(request: FastifyRequest, reply: FastifyReply, flow: Flow): UR
   return callback;
 }
 
+/** Anmelden als simulierte Person: eigener Callback der Simulation auf demselben Host wie der echte */
 function callbackLink(callback: URL, state: string, code: string) {
-  const url = new URL(callback);
+  const url = new URL('/api/auth/hitobito-sim/callback', callback);
   url.searchParams.set('code', code);
   url.searchParams.set('state', state);
   return url.toString();

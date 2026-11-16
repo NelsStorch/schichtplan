@@ -127,7 +127,6 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
             returnTo,
             tenantSlug: request.query.tenantSlug || request.tenant?.slug || null,
             provider: providerConfig.type,
-            sim: true,
           })
         ).toString('base64url');
         reply.setCookie('cevidb_oauth_state', simState, {
@@ -212,7 +211,6 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
       let returnTo: string | null = null;
       let tenantSlug: string | null = null;
       let providerType: OrganizationType = 'CEVI';
-      let simulated = false;
 
       try {
         if (state) {
@@ -220,7 +218,6 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
           returnTo = parsedState.returnTo ? cleanReturnTo(parsedState.returnTo, '/', request.hostname) : null;
           tenantSlug = typeof parsedState.tenantSlug === 'string' ? parsedState.tenantSlug : null;
           if (HITOBITO_PROVIDERS.includes(parsedState.provider)) providerType = parsedState.provider;
-          simulated = parsedState.sim === true;
         }
       } catch {
         // Fallback default
@@ -238,35 +235,6 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
       if (!code || !state || state !== request.cookies.cevidb_oauth_state) {
         fastify.log.warn('Hitobito Callback ohne gültigen Code oder state');
         return reply.redirect(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerConfig.type));
-      }
-
-      // Simulierte Person (nur Dev/lokal). Ob simuliert werden darf, entscheidet allein der Server (Schalter in der
-      // .env und Dev-/lokaler Host). Den state kann jede Person selbst bauen (samt passendem Cookie im eigenen
-      // Browser): Ein «sim» darin ist nur ein Wunsch und führt ausserhalb der Simulation zu einem Fehler.
-      const simulationActive = simulationEnabled(request.hostname);
-      if (!simulationActive && simulated) {
-        fastify.log.warn({ provider: providerConfig.type }, 'Simulierter Login ausserhalb von Dev abgelehnt');
-        return reply.redirect(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerConfig.type));
-      }
-      if (simulationActive && simulated) {
-        const persona = findSimPersona(providerConfig.type, code);
-        if (!persona) {
-          fastify.log.warn({ provider: providerConfig.type }, 'Simulierter Login ohne gültige Person');
-          return reply.redirect(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerConfig.type));
-        }
-        const simulatedProfile: any = simProfile(providerConfig.type, persona);
-        simulatedProfile._meta = {
-          fetchedAt: new Date().toISOString(),
-          grantedScopes: getHitobitoConfig(providerConfig.type).oauthScopes,
-          tokenType: 'Bearer',
-          simulated: true,
-        };
-        await storeSimGroups(fastify.prisma, providerConfig.type);
-        fastify.log.info({ provider: providerConfig.type, persona: persona.key }, 'Simulierter Verbands-Login');
-        reply.clearCookie('cevidb_oauth_state', { path: '/' });
-        return reply.redirect(
-          await finishCeviDbLogin(reply, simulatedProfile, returnTo, tenantSlug, undefined, providerConfig.type)
-        );
       }
 
       // Ohne eigene Zugangsdaten des Verbands nichts an dessen Hitobito schicken
@@ -386,6 +354,56 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.redirect(await finishCeviDbLogin(reply, profile, returnTo, tenantSlug, undefined, providerConfig.type));
     }
   );
+
+  // 2c. Callback der simulierten Verbands-DB (nur Dev/lokal). Eigene Route statt eines Zweigs im echten Callback:
+  //     Sie existiert nur mit HITOBITO_SIMULATION=true und antwortet nur auf Dev-/lokalen Hosts.
+  if (process.env.HITOBITO_SIMULATION === 'true') {
+    fastify.get<{ Querystring: { code: string; state: string } }>(
+      '/api/auth/hitobito-sim/callback',
+      {
+        schema: {
+          tags: ['Auth'],
+          summary: 'Anmeldung als simulierte Person (nur Dev)',
+          querystring: z.object({ code: z.string().min(1).max(200), state: z.string().min(1).max(4000) }),
+        },
+      },
+      async (request, reply) => {
+        if (!simulationEnabled(request.hostname)) return reply.status(404).send({ error: 'Nicht gefunden' });
+        const { code, state } = request.query;
+
+        let returnTo: string | null = null;
+        let tenantSlug: string | null = null;
+        let providerType: OrganizationType = 'CEVI';
+        try {
+          const parsedState = JSON.parse(Buffer.from(state, 'base64url').toString('utf8'));
+          returnTo = parsedState.returnTo ? cleanReturnTo(parsedState.returnTo, '/', request.hostname) : null;
+          tenantSlug = typeof parsedState.tenantSlug === 'string' ? parsedState.tenantSlug : null;
+          if (HITOBITO_PROVIDERS.includes(parsedState.provider)) providerType = parsedState.provider;
+        } catch {
+          // Fallback default
+        }
+        if (state !== request.cookies.cevidb_oauth_state) {
+          return reply.redirect(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerType));
+        }
+        const persona = findSimPersona(providerType, code);
+        if (!persona) {
+          fastify.log.warn({ provider: providerType }, 'Simulierter Login ohne gültige Person');
+          return reply.redirect(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerType));
+        }
+        const simulatedProfile: any = simProfile(providerType, persona);
+        simulatedProfile._meta = {
+          fetchedAt: new Date().toISOString(),
+          grantedScopes: getHitobitoConfig(providerType).oauthScopes,
+          tokenType: 'Bearer',
+          simulated: true,
+        };
+        await storeSimGroups(fastify.prisma, providerType);
+        fastify.log.info({ provider: providerType, persona: persona.key }, 'Simulierter Verbands-Login');
+        reply.clearCookie('cevidb_oauth_state', { path: '/' });
+        return reply.redirect(await finishCeviDbLogin(reply, simulatedProfile, returnTo, tenantSlug, undefined, providerType));
+      }
+    );
+  }
 
   /**
    * Neue E-Mail aus Cevi.DB für ein bestehendes Konto übernehmen, wenn sie sich geändert hat und keinem
