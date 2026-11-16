@@ -528,7 +528,13 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
     } else if (!homeDepartment) {
       // Ohne passende Abteilung im Schichtplan: Abteilung und Stufe einmal nachfragen (auch nach einem Abteilungswechsel)
       const setup = await fastify.prisma.user.findUnique({ where: { id: user.id }, select: { departmentSetupAt: true } });
-      if (!setup?.departmentSetupAt) redirectUrl = loginPageUrl('/abteilung', target, reply.request?.hostname);
+      if (!setup?.departmentSetupAt) {
+        // Die eigene Gruppe (z. B. Schar) ist bekannt, hat aber noch keinen Schichtplan: Statt der leeren Auswahl die
+        // Seite «Anlegen» zeigen. Dort sieht die Person, warum sie nicht selbst anlegen kann (eigene Rollen), und kann
+        // der Leitung den Einrichtungslink schicken.
+        const ownGroupWithoutPlan = placement.verified && placement.departmentIds.length === 0;
+        redirectUrl = loginPageUrl(ownGroupWithoutPlan ? '/abteilung-erstellen' : '/abteilung', target, reply.request?.hostname);
+      }
     }
 
     // Zwei-Faktor: beim Verbands-Login nur, wenn die Person es so eingestellt hat. Beim Verknüpfen
