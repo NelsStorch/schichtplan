@@ -10,6 +10,7 @@ import { AppShell } from '@/components/AppShell';
 import { DepartmentSettingsDialog } from '@/components/DepartmentSettingsDialog';
 import { EventFormDialog } from '@/components/EventFormDialog';
 import { EventTile, eventStatus } from '@/components/EventTile';
+import { OtherLevelsHint } from '@/components/OtherLevelsHint';
 import { api, useDepartmentSetupHref, useLoginHref } from '@/lib/api';
 import { fmtDayMonth, fmtRelativeDay, fmtShortDate, fmtTimeRange, fmtWeekday } from '@/lib/format';
 import { displayName, usePortal } from '@/lib/portal';
@@ -123,6 +124,7 @@ export default function DepartmentHomePage() {
                   )}
                 </div>
               )}
+              <OtherLevelsHint />
             </>
           )}
         </div>
