@@ -2,6 +2,7 @@ import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { getOrganizationByDbType, type OrganizationType } from '@schichtplan/shared';
 import {
+  isDevOrLocalHost,
   resetSimulation,
   simCustomCode,
   simPersonas,
@@ -34,7 +35,11 @@ function checkFlow(request: FastifyRequest, reply: FastifyReply, flow: Flow): UR
     reply.status(400).send({ error: 'Ungültige redirect_uri' });
     return null;
   }
-  if (callback.hostname !== request.hostname || callback.pathname !== '/api/auth/cevidb/callback') {
+  // Lokal kommt der Aufruf über den Proxy (anderer Hostname): dann nur ein lokaler Rücksprung
+  const sameHost =
+    callback.hostname === request.hostname ||
+    (process.env.NODE_ENV === 'development' && isDevOrLocalHost(callback.hostname));
+  if (!sameHost || callback.pathname !== '/api/auth/cevidb/callback') {
     reply.status(400).send({ error: 'Ungültige redirect_uri' });
     return null;
   }

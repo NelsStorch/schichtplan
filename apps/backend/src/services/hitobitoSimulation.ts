@@ -17,10 +17,13 @@ import { parseCeviDbGroup } from './hitobitoGroups.js';
 export const SIM_ID_BASE = 900_000_000;
 const gid = (n: number) => SIM_ID_BASE + n;
 
-/** Simulation eingeschaltet (Server-.env) und Host ist Dev oder lokal */
+/**
+ * Simulation eingeschaltet (Server-.env) und Host ist Dev oder lokal. Lokal (NODE_ENV=development) kommt der Aufruf
+ * über den Proxy des Login-Portals mit dem Docker-Hostnamen an: dort reicht der Schalter.
+ */
 export function simulationEnabled(host: string | undefined | null): boolean {
   if (process.env.HITOBITO_SIMULATION !== 'true') return false;
-  return isDevOrLocalHost(host);
+  return process.env.NODE_ENV === 'development' || isDevOrLocalHost(host);
 }
 
 /** login.dev.jubla-schichtplan.ch, dev.cevi-schichtplan.ch, localhost … aber nie eine Prod-Domain */

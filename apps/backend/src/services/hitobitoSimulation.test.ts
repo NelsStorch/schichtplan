@@ -29,6 +29,15 @@ describe('Simulierte Verbands-DB: Schranken', () => {
     expect(simulationEnabled(undefined)).toBe(false);
   });
 
+  it('lässt lokal (NODE_ENV=development) jeden Host zu, auf Prod-Builds nie eine Prod-Domain', () => {
+    vi.stubEnv('HITOBITO_SIMULATION', 'true');
+    vi.stubEnv('NODE_ENV', 'development');
+    expect(simulationEnabled('backend')).toBe(true);
+    vi.stubEnv('NODE_ENV', 'production');
+    expect(simulationEnabled('backend')).toBe(false);
+    expect(simulationEnabled('login.cevi-schichtplan.ch')).toBe(false);
+  });
+
   it('ist ohne Schalter auch auf Dev aus', () => {
     vi.stubEnv('HITOBITO_SIMULATION', '');
     expect(simulationEnabled('login.dev.jubla-schichtplan.ch')).toBe(false);
