@@ -3,6 +3,9 @@ import { deriveCeviDbFields, placeCeviDbPerson } from './hitobito.js';
 import {
   SIM_ID_BASE,
   findSimPersona,
+  simCustomCode,
+  simPersonId,
+  simRoleOptions,
   isDevOrLocalHost,
   simGroupInfos,
   simPersonas,
@@ -89,5 +92,36 @@ describe('Simulierte Verbands-DB: Daten', () => {
     expect(deriveCeviDbFields(simProfile('PFADI', findSimPersona('PFADI', 'bund-geschaeftsleitung')!), 'PFADI').isDepartmentLeader).toBe(false);
     expect(deriveCeviDbFields(simProfile('CEVI', findSimPersona('CEVI', 'al-dorf')!), 'CEVI').isDepartmentLeader).toBe(true);
     expect(deriveCeviDbFields(simProfile('CEVI', findSimPersona('CEVI', 'stufenleiterin')!), 'CEVI').isDepartmentLeader).toBe(false);
+  });
+});
+
+describe('Simulierte Verbands-DB: eigene Rollen', () => {
+  it('baut aus der Auswahl einen normalisierten Code und daraus eine Person', () => {
+    const options = simRoleOptions('JUBLA');
+    const bund = options.findIndex((o) => o.roleClass === 'Group::FederalBoard::Member');
+    const kind = options.findIndex((o) => o.roleClass === 'Group::ChildGroup::Child');
+    const code = simCustomCode('JUBLA', [kind, bund, kind, 999])!;
+    expect(code).toBe(`custom.${Math.min(bund, kind)}-${Math.max(bund, kind)}`);
+    const persona = findSimPersona('JUBLA', code)!;
+    expect(persona.roles.map((r) => r.roleClass).sort()).toEqual(['Group::ChildGroup::Child', 'Group::FederalBoard::Member']);
+    expect(deriveCeviDbFields(simProfile('JUBLA', persona), 'JUBLA').isDepartmentLeader).toBe(true);
+  });
+
+  it('lehnt leere, ungültige oder nicht normalisierte Codes ab', () => {
+    expect(simCustomCode('JUBLA', [])).toBeNull();
+    expect(simCustomCode('JUBLA', [9999])).toBeNull();
+    expect(findSimPersona('JUBLA', 'custom.')).toBeNull();
+    expect(findSimPersona('JUBLA', 'custom.9999')).toBeNull();
+    expect(findSimPersona('JUBLA', 'custom.1-0')).toBeNull();
+    expect(findSimPersona('JUBLA', 'custom.abc')).toBeNull();
+  });
+
+  it('gibt eigenen Rollen eine stabile ID ausserhalb der festen Personas', () => {
+    const fixed = simPersonas('JUBLA').map((p) => simPersonId('JUBLA', p.key));
+    const custom = simPersonId('JUBLA', 'custom.0-2');
+    expect(custom).toBe(simPersonId('JUBLA', 'custom.0-2'));
+    expect(fixed).not.toContain(custom);
+    expect(custom).toBeGreaterThan(SIM_ID_BASE);
+    expect(simPersonId('PFADI', 'custom.0-2')).not.toBe(custom);
   });
 });

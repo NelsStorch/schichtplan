@@ -321,16 +321,97 @@ export function simPersonas(provider: OrganizationType): SimPersona[] {
   return simOrg(provider)?.personas ?? [];
 }
 
+/** Präfix des Codes für selbst zusammengestellte Rollen: «custom.» + Indizes in simRoleOptions, z. B. custom.0-3 */
+export const SIM_CUSTOM_PREFIX = 'custom.';
+
+/** Alle Rollen, die in der Simulation vorkommen: Auswahl für «eigene Rollen zusammenstellen» */
+export function simRoleOptions(provider: OrganizationType): (SimRole & { groupName: string })[] {
+  const org = simOrg(provider);
+  if (!org) return [];
+  const seen = new Set<string>();
+  const options: (SimRole & { groupName: string })[] = [];
+  for (const persona of org.personas) {
+    for (const role of persona.roles) {
+      const id = `${role.group}|${role.roleClass}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      options.push({ ...role, groupName: org.groups.find((g) => g.n === role.group)?.name ?? `Gruppe ${role.group}` });
+    }
+  }
+  return options;
+}
+
+/** Code für eigene Rollen aus den gewählten Indizes (sortiert, ohne Doppelte), null bei ungültiger Auswahl */
+export function simCustomCode(provider: OrganizationType, indices: number[]): string | null {
+  const options = simRoleOptions(provider);
+  const valid = [...new Set(indices)].filter((i) => Number.isInteger(i) && i >= 0 && i < options.length).sort((a, b) => a - b);
+  return valid.length ? `${SIM_CUSTOM_PREFIX}${valid.join('-')}` : null;
+}
+
 export function findSimPersona(provider: OrganizationType, key: string): SimPersona | null {
+  if (key.startsWith(SIM_CUSTOM_PREFIX)) {
+    const options = simRoleOptions(provider);
+    const indices = key.slice(SIM_CUSTOM_PREFIX.length).split('-').map(Number);
+    if (indices.length === 0 || indices.some((i) => !Number.isInteger(i) || i < 0 || i >= options.length)) return null;
+    // Nur die eigene, normalisierte Schreibweise: sonst gäbe es zur gleichen Auswahl mehrere Konten
+    if (simCustomCode(provider, indices) !== key) return null;
+    const roles = indices.map((i) => ({ group: options[i].group, roleClass: options[i].roleClass, roleName: options[i].roleName }));
+    return {
+      key,
+      label: 'Eigene Rollen',
+      description: roles.map((r) => r.roleClass).join(', '),
+      roles,
+    };
+  }
   return simPersonas(provider).find((p) => p.key === key) ?? null;
 }
 
-/** Stabile Personen-ID je Verband und Persona, im eigenen ID-Bereich */
+/** Stabile Personen-ID je Verband und Persona (auch für eigene Rollen), im eigenen ID-Bereich */
 export function simPersonId(provider: OrganizationType, key: string): number {
   const personas = simPersonas(provider);
   const index = personas.findIndex((p) => p.key === key);
   const orgOffset = provider === 'CEVI' ? 1000 : provider === 'PFADI' ? 2000 : 3000;
-  return SIM_ID_BASE + 100_000 + orgOffset + Math.max(0, index);
+  if (index >= 0) return SIM_ID_BASE + 100_000 + orgOffset + index;
+  // Eigene Rollen: gleiche Auswahl, gleiches Konto (Hash über den Code)
+  let hash = 0;
+  for (const ch of key) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  return SIM_ID_BASE + 200_000 + orgOffset * 100 + (hash % 90_000);
+}
+
+/** E-Mail-Endung simulierter Konten */
+export const SIM_EMAIL_DOMAIN = 'simulation.invalid';
+
+/**
+ * Simulation eines Verbands zurücksetzen: simulierte Konten und die Schichtpläne der simulierten Gruppen (mit ihren
+ * Anlässen) löschen. Echte Konten und Abteilungen bleiben unberührt.
+ */
+export async function resetSimulation(
+  prisma: PrismaClient,
+  provider: OrganizationType
+): Promise<{ users: number; departments: number }> {
+  return prisma.$transaction(async (tx) => {
+    const departments = await tx.department.deleteMany({
+      where: { organization: provider, hitobitoGroupId: { gte: SIM_ID_BASE } },
+    });
+    const simUsers = await tx.user.findMany({
+      where: { provider, email: { endsWith: `@${SIM_EMAIL_DOMAIN}` } },
+      select: { id: true, providerId: true },
+    });
+    // Nur Konten mit Personen-ID aus dem Simulations-Bereich
+    const ids = simUsers.filter((u) => Number(u.providerId) >= SIM_ID_BASE).map((u) => u.id);
+    if (ids.length) {
+      // Wie beim Löschen des eigenen Kontos: Verweise lösen, die nicht mitgelöscht werden
+      await tx.eventAccessLink.updateMany({ where: { boundUserId: { in: ids } }, data: { boundUserId: null } });
+      await tx.eventAccessLink.updateMany({ where: { createdById: { in: ids } }, data: { createdById: null } });
+      await tx.eventDeregistration.updateMany({ where: { createdById: { in: ids } }, data: { createdById: null } });
+      await tx.cateringToken.updateMany({
+        where: { status: 'REDEEMED', OR: [{ userId: { in: ids } }, { signup: { userId: { in: ids } } }] },
+        data: { userId: null, shiftSignupId: null },
+      });
+      await tx.user.deleteMany({ where: { id: { in: ids } } });
+    }
+    return { users: ids.length, departments: departments.count };
+  });
 }
 
 /** Profil wie `/oauth/profile` mit Scope with_roles */
@@ -341,7 +422,7 @@ export function simProfile(provider: OrganizationType, persona: SimPersona): Rec
   const ortsgruppeField = getHitobitoConfig(provider).ortsgruppeField;
   return {
     id: simPersonId(provider, persona.key),
-    email: `${persona.key}.${provider.toLowerCase()}@simulation.invalid`,
+    email: `${persona.key}.${provider.toLowerCase()}@${SIM_EMAIL_DOMAIN}`,
     first_name: persona.label,
     last_name: '(Simulation)',
     nickname: `Sim ${persona.label}`,
