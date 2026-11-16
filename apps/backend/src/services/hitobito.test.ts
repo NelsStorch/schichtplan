@@ -151,9 +151,11 @@ describe('Hitobito & Vokabular (Multi-Verband)', () => {
       expect(isDepartmentLeaderRole('Group::Pfadi::Einheitsleitung', 'PFADI')).toBe(false);
     });
 
-    it('erkennt Jubla-Leitungsrollen (Scharleitung, Lagerleitung, Regional- und Kantonsleitung)', () => {
+    it('erkennt Jubla-Leitungsrollen (Scharleitung, Regional- und Kantonsleitung)', () => {
       expect(isDepartmentLeaderRole('Group::Flock::Leader', 'JUBLA')).toBe(true);
-      expect(isDepartmentLeaderRole('Group::Flock::CampLeader', 'JUBLA')).toBe(true);
+      // Lagerleitung leitet das Lager, nicht die Schar
+      expect(isDepartmentLeaderRole('Group::Flock::CampLeader', 'JUBLA')).toBe(false);
+      expect(isDepartmentLeaderRole('Group::Flock::CampLeader')).toBe(false);
       expect(isDepartmentLeaderRole('Group::RegionalBoard::Leader', 'JUBLA')).toBe(true);
       expect(isDepartmentLeaderRole('Group::StateBoard::Leader', 'JUBLA')).toBe(true);
       expect(isDepartmentLeaderRole('Group::StateAgency::Leader', 'JUBLA')).toBe(true);

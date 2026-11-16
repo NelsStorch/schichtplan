@@ -184,17 +184,16 @@ export const HITOBITO_JUBLA_CONFIG: HitobitoConfig = {
   departmentGroupTypes: ['Group::Flock', 'Group::Region', 'Group::State'],
   departmentGroupLabels: ['Schar', 'Region', 'Kanton'],
   jungscharGroupLabels: [],
-  // Präses (President) darf in der Jubla-DB nur lesen und wird darum hier nicht Leitung
+  // Präses (President) darf in der Jubla-DB nur lesen und wird darum hier nicht Leitung. Lagerleitung (CampLeader)
+  // hat zwar Schreibrechte, leitet aber nur das Lager und nicht die Schar: Sie ist im Schichtplan Mitglied, keine Leitung.
   departmentLeaderRoleClasses: [
     'Group::Flock::Leader',
-    'Group::Flock::CampLeader',
     'Group::RegionalBoard::Leader',
     'Group::StateBoard::Leader',
     'Group::StateAgency::Leader',
   ],
   departmentLeaderSuffixes: [
     '::flock::leader',
-    '::flock::campleader',
     '::regionalboard::leader',
     '::stateboard::leader',
     '::stateagency::leader',
