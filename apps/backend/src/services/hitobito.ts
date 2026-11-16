@@ -10,6 +10,7 @@
  */
 import {
   type CeviDbStufeDto,
+  type DepartmentCreationRoleDto,
   type HitobitoRoleKindDto,
   type OrganizationType,
   getHitobitoConfig,
@@ -94,6 +95,18 @@ export function isLeaderRoleFor(roleClass: string, orgType: OrganizationType = '
       ? cevidbConfig().departmentLeaderRoleClasses
       : getHitobitoConfig(orgType).departmentLeaderRoleClasses;
   return isDepartmentLeaderRole(roleClass, configuredRoles) || isDepartmentLeaderRoleShared(roleClass, orgType);
+}
+
+/** Eigene Rollen für die Seite «Abteilung anlegen»: Bezeichnung, Gruppe und ob sie wie beim Login als Leitung zählt */
+export function creationRoles(
+  roles: { roleClass: string; roleName: string | null; groupName: string | null }[],
+  orgType: OrganizationType
+): DepartmentCreationRoleDto[] {
+  return roles.map((r) => ({
+    roleName: r.roleName ?? r.roleClass.split('::').pop() ?? r.roleClass,
+    groupName: r.groupName,
+    isLeader: isLeaderRoleFor(r.roleClass, orgType),
+  }));
 }
 
 export function ceviDbLeadership(profile: unknown, orgType: OrganizationType = 'CEVI'): CeviDbLeadership {

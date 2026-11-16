@@ -3,8 +3,8 @@
 import { Suspense, useEffect, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ArrowUpRight, Building2, Check, Copy, Share2 } from 'lucide-react';
-import type { DepartmentCreationEligibilityDto, UserDto } from '@schichtplan/shared';
-import { getDepartmentUrl } from '@schichtplan/shared/redirect';
+import type { DepartmentCreationEligibilityDto, DepartmentCreationRoleDto, UserDto } from '@schichtplan/shared';
+import { getDepartmentUrl, helpUrl } from '@schichtplan/shared/redirect';
 import { type OrganizationConfig } from '@schichtplan/shared';
 import { Button, Callout, BrandLogo, Field, Input, ThemeToggle, buttonClasses, useOrganization } from '@schichtplan/ui';
 import { afterLogin, cleanReturnTo } from '@/lib/destination';
@@ -32,6 +32,54 @@ const suggestedName = (e: DepartmentCreationEligibilityDto, org: OrganizationCon
 
 const slugFromName = (name: string, org: OrganizationConfig) =>
   slugify(name.replace(new RegExp(`^${org.orgName}\\s+`, 'i'), ''));
+
+/** Eigene Rollen aus der Verbands-DB: zeigt, welche als Leitung zählen und welche nicht */
+function MyRoles({ roles, org }: { roles: DepartmentCreationRoleDto[]; org: OrganizationConfig }) {
+  const rulesLink = (
+    <a
+      href={helpUrl('/abteilung/gruppen-und-rollen/', org.domain)}
+      className="inline-flex items-center gap-0.5 font-medium text-accent-ink underline-offset-2 hover:underline"
+    >
+      Welche Rollen zählen? <ArrowUpRight className="size-3.5" aria-hidden />
+    </a>
+  );
+  return (
+    <section aria-labelledby="meine-rollen" className="space-y-2.5">
+      <h2 id="meine-rollen" className="text-[13px] font-semibold text-fg">
+        Deine Rollen in {org.authProviderShort}
+      </h2>
+      {roles.length === 0 ? (
+        <p className="text-[14px] leading-relaxed text-fg-muted">
+          Wir haben beim letzten Login keine Rollen gefunden. Melde dich nochmals mit {org.authProviderShort} an. {rulesLink}
+        </p>
+      ) : (
+        <>
+          <ul className="divide-y divide-line overflow-hidden rounded-card border border-line bg-surface">
+            {roles.map((role, i) => (
+              <li key={`${role.roleName}-${role.groupName ?? ''}-${i}`} className="flex items-center justify-between gap-3 px-4 py-2.5">
+                <span className="min-w-0">
+                  <span className="block text-[14px] font-medium text-fg">{role.roleName}</span>
+                  {role.groupName && <span className="block text-[13px] text-fg-muted">{role.groupName}</span>}
+                </span>
+                {role.isLeader ? (
+                  <span className="shrink-0 rounded-full bg-success/12 px-2 py-0.5 text-[12px] font-medium text-success-ink">
+                    Leitung
+                  </span>
+                ) : (
+                  <span className="shrink-0 text-[12px] text-fg-subtle">keine Leitung</span>
+                )}
+              </li>
+            ))}
+          </ul>
+          <p className="text-[13px] leading-relaxed text-fg-muted">
+            Stimmt eine Rolle nicht, ändert sie die Mitgliederverwaltung in {org.authProviderShort}. Danach einmal ab- und
+            wieder anmelden. {rulesLink}
+          </p>
+        </>
+      )}
+    </section>
+  );
+}
 
 /**
  * Abteilung anlegen: erscheint nach dem Cevi.DB-Login einer Abteilungsleitung, deren Ortsgruppe
@@ -365,6 +413,7 @@ function CreateDepartment() {
                 )}
               </div>
             )}
+            {eligibility.myRoles && <MyRoles roles={eligibility.myRoles} org={org} />}
             <Button variant="ghost" className="w-full" onClick={later}>
               Weiter
             </Button>

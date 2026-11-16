@@ -12,6 +12,7 @@ import {
   type PasswordlessAccountsDto,
   getOrganizationByDbType,
 } from '@schichtplan/shared';
+import { creationRoles } from '../../services/hitobito.js';
 import { autoCreateCeviDbDepartmentStufen, ceviDbGroupPeople, NO_HOME_CONFIRMATION } from '../../services/homeDepartment.js';
 import { isDepartmentInsider, } from '../../services/departmentVisibility.js';
 import { canGrantPermissions, departmentAccess, } from '../../services/permissions.js';
@@ -208,7 +209,19 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       reply.header('Cache-Control', 'no-store');
-      return departmentCreationEligibility(fastify.prisma, request.user.id, request.organization);
+      const result = await departmentCreationEligibility(fastify.prisma, request.user.id, request.organization);
+      // Darf die Person nicht anlegen, sieht sie ihre eigenen Rollen (vom letzten Login) und welche als Leitung zählen
+      if (result.eligible || result.reason === 'EXISTS' || request.organization === 'OTHER') return result;
+      const user = await fastify.prisma.user.findUnique({
+        where: { id: request.user.id },
+        select: {
+          provider: true,
+          providerId: true,
+          hitobitoRoles: { select: { roleClass: true, roleName: true, groupName: true }, orderBy: [{ groupName: 'asc' }, { roleClass: 'asc' }] },
+        },
+      });
+      if (!user || user.providerId === null || user.provider !== request.organization) return result;
+      return { ...result, myRoles: creationRoles(user.hitobitoRoles, user.provider) };
     }
   );
 

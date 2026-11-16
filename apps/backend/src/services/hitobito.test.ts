@@ -10,7 +10,33 @@ import {
   isDepartmentLeaderRole,
   isUnitRoleClass,
 } from '@schichtplan/shared';
-import { deriveCeviDbFields, hitobitoRoleKind, hitobitoRoles } from './hitobito.js';
+import { creationRoles, deriveCeviDbFields, hitobitoRoleKind, hitobitoRoles } from './hitobito.js';
+
+describe('creationRoles (eigene Rollen beim Anlegen)', () => {
+  it('zeigt Bezeichnung und Gruppe und ob die Rolle als Leitung zählt', () => {
+    expect(
+      creationRoles(
+        [
+          { roleClass: 'Group::FederalBoard::Member', roleName: 'Mitglied', groupName: 'Bundesleitung' },
+          { roleClass: 'Group::FederalBoard::Treasurer', roleName: 'Kassier*in', groupName: 'Bundesleitung' },
+          { roleClass: 'Group::Flock::CampLeader', roleName: null, groupName: null },
+        ],
+        'JUBLA'
+      )
+    ).toEqual([
+      { roleName: 'Mitglied', groupName: 'Bundesleitung', isLeader: true },
+      { roleName: 'Kassier*in', groupName: 'Bundesleitung', isLeader: false },
+      // Ohne Bezeichnung: letzter Teil der Rollenklasse
+      { roleName: 'CampLeader', groupName: null, isLeader: false },
+    ]);
+  });
+
+  it('wertet Cevi-Rollen wie beim Login aus', () => {
+    expect(creationRoles([{ roleClass: 'Group::Jungschar::Abteilungsleiter', roleName: 'AL', groupName: 'JS Illnau' }], 'CEVI')).toEqual([
+      { roleName: 'AL', groupName: 'JS Illnau', isLeader: true },
+    ]);
+  });
+});
 
 describe('Hitobito & Vokabular (Multi-Verband)', () => {
   describe('Vokabular-Definitionen', () => {

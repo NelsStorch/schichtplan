@@ -1117,6 +1117,18 @@ export interface DepartmentCreationEligibilityDto {
    * `existingDepartment` lässt sich dort ein Schichtplan anlegen. Bei mehreren wählt die Person beim Anlegen.
    */
   options?: DepartmentCreationOptionDto[];
+  /**
+   * Nur für die eigene Person und nur, wenn sie nicht anlegen darf: ihre Rollen aus der Verbands-DB vom letzten Login
+   * und ob sie als Leitung zählen. So sieht sie selbst, woran es liegt.
+   */
+  myRoles?: DepartmentCreationRoleDto[];
+}
+
+export interface DepartmentCreationRoleDto {
+  roleName: string;
+  groupName: string | null;
+  /** Zählt als Leitung (Abteilung, Schar, Region, Kanton, Bund …) */
+  isLeader: boolean;
 }
 
 export interface DepartmentCreationOptionDto {
