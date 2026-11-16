@@ -355,6 +355,8 @@ export interface CeviDbPlacement {
   selfDeclaredDepartmentId: string | null;
   ortsgruppeId: number | null;
   ortsgruppeName: string | null;
+  /** Alle Ortsgruppen, in denen nachweislich eine Rolle liegt (`ortsgruppeId` ist nur die erste davon) */
+  ortsgruppeIds: number[];
   jungscharIds: number[];
 }
 
@@ -418,9 +420,8 @@ export function placeCeviDbPerson(
   }
 
   const anchorIds = [person.primaryGroupId, ...person.leaderGroupIds, ...person.roleGroupIds];
-  const anchor = anchorIds
-    .flatMap((id) => (id !== null ? (groups.get(id) ?? []) : []))
-    .find((g) => g.ortsgruppeId !== null);
+  const anchors = anchorIds.flatMap((id) => (id !== null ? (groups.get(id) ?? []) : []));
+  const anchor = anchors.find((g) => g.ortsgruppeId !== null);
   const ortsgruppeId = anchor?.ortsgruppeId ?? null;
 
   return {
@@ -432,6 +433,7 @@ export function placeCeviDbPerson(
     selfDeclaredDepartmentId: selfDeclared,
     ortsgruppeId,
     ortsgruppeName: ortsgruppeId !== null ? (groups.get(ortsgruppeId)?.name ?? null) : null,
+    ortsgruppeIds: uniqueIds(anchors.map((g) => g.ortsgruppeId)),
     jungscharIds: uniqueIds(known.map((g) => g.jungscharId)),
   };
 }

@@ -19,6 +19,7 @@ import { trackUsage } from '../services/usageStats.js';
 import { accessFrom } from '../services/permissions.js';
 import { createRateLimiter } from '../services/rateLimit.js';
 import { isTwoFactorConfigured } from '../services/twoFactor.js';
+import { isProviderJoinSource } from '../services/departmentJoin.js';
 
 /** Passwort-Login: höchstens 30 Fehlversuche pro IP in 10 Minuten, 10 pro E-Mail in 15 Minuten */
 export const loginFailuresByIp = createRateLimiter(10 * 60 * 1000, 30);
@@ -111,13 +112,16 @@ export function cleanReturnTo(value: unknown, fallback = '/', reqHost?: string):
 
 /** Zurück zur Login-Seite mit Fehlercode, statt rohes JSON im Browser anzuzeigen. */
 export function loginErrorUrl(
-  code: 'cevidb_unavailable' | 'cevidb_denied' | 'cevidb_failed' | 'cevidb_email_taken',
+  code: 'cevidb_unavailable' | 'cevidb_denied' | 'cevidb_failed' | 'cevidb_email_taken' | 'cevidb_email_other_provider',
   returnTo: string | null,
   reqHost?: string,
-  organization?: OrganizationType | string
+  organization?: OrganizationType | string,
+  /** Bei `cevidb_email_other_provider`: Verband, mit dessen DB das Konto schon verbunden ist */
+  otherProvider?: OrganizationType | null
 ) {
   const base = getLoginPortalBaseUrl(process.env, reqHost, organization);
-  return `${base}/?error=${code}${returnTo ? `&return_to=${encodeURIComponent(returnTo)}` : ''}`;
+  const other = otherProvider ? `&other=${encodeURIComponent(otherProvider)}` : '';
+  return `${base}/?error=${code}${other}${returnTo ? `&return_to=${encodeURIComponent(returnTo)}` : ''}`;
 }
 
 /**
@@ -341,7 +345,7 @@ export async function loadUserDto(
       confirmed: Boolean(m.confirmedAt),
       // Unbestätigt bei INVITE_ONLY: Beitritt zählt erst nach Bestätigung durch die Leitung
       counts: Boolean(m.confirmedAt) || m.department.joinMode !== 'INVITE_ONLY',
-      fromProvider: m.joinSource === 'CEVIDB',
+      fromProvider: isProviderJoinSource(m.joinSource),
     })),
     ortsgruppeId: user.ortsgruppeId,
     ceviDbOrtsgruppeId: user.ortsgruppeId,

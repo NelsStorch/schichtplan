@@ -4,6 +4,7 @@ import {
   SIM_ID_BASE,
   findSimPersona,
   simCustomCode,
+  SIM_MAX_CUSTOM_ROLES,
   simPersonId,
   simRoleOptions,
   isDevOrLocalHost,
@@ -132,5 +133,20 @@ describe('Simulierte Verbands-DB: eigene Rollen', () => {
     expect(fixed).not.toContain(custom);
     expect(custom).toBeGreaterThan(SIM_ID_BASE);
     expect(simPersonId('PFADI', 'custom.0-2')).not.toBe(custom);
+  });
+
+  it('gibt jeder Auswahl eigener Rollen ein anderes Konto (keine Kollision)', () => {
+    for (const provider of ['CEVI', 'PFADI', 'JUBLA'] as const) {
+      const n = simRoleOptions(provider).length;
+      expect(n).toBeLessThanOrEqual(SIM_MAX_CUSTOM_ROLES);
+      const ids = new Set<number>();
+      for (let mask = 1; mask < 2 ** n; mask++) {
+        const picked = [...Array(n).keys()].filter((i) => mask & (1 << i));
+        ids.add(simPersonId(provider, simCustomCode(provider, picked)!));
+      }
+      expect(ids.size).toBe(2 ** n - 1);
+      // Bereiche der Verbände überschneiden sich nicht
+      expect(Math.max(...ids)).toBeLessThan(SIM_ID_BASE + 200_000 + (provider === 'JUBLA' ? 400_000 : provider === 'PFADI' ? 300_000 : 200_000));
+    }
   });
 });

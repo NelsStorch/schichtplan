@@ -16,7 +16,7 @@ import { hashResetToken } from './passwordReset.js';
 import { getLoginPortalBaseUrl } from '../services/authSession.js';
 import { toCeviDbStufeDto } from '../services/homeDepartment.js';
 import { hitobitoRoleKind } from '../services/hitobito.js';
-import { ownProviderDepartments, PROVIDER_JOIN_SOURCE } from '../services/departmentJoin.js';
+import { isProviderJoinSource, ownProviderDepartments } from '../services/departmentJoin.js';
 import { departmentCreationEligibility } from './departments/shared.js';
 import { recordAdminAction } from '../services/adminAudit.js';
 import { trackUsage } from '../services/usageStats.js';
@@ -556,7 +556,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           homeSource: m.department.id === user.homeDepartmentId ? user.homeDepartmentSource : null,
           joined: Boolean(m.joinedAt),
           confirmed: Boolean(m.confirmedAt),
-          fromProvider: m.joinSource === PROVIDER_JOIN_SOURCE,
+          fromProvider: isProviderJoinSource(m.joinSource),
         })),
         // Abteilungen, die laut Rollen zu den eigenen Gruppen gehören (mit aktueller Konfiguration berechnet)
         providerDepartments: hasProvider

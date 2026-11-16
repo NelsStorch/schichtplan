@@ -29,6 +29,8 @@ function DepartmentSetup() {
   const [departments, setDepartments] = useState<DepartmentDirectoryItemDto[] | null>(null);
   // Abteilungen der eigenen Gruppen in der Verbands-DB: nur diese sind bei LINK_ONLY ohne Link wählbar
   const [ownDepartmentIds, setOwnDepartmentIds] = useState<Set<string>>(new Set());
+  // Davon laut Rollen belegt: Beitritt auch bei INVITE_ONLY ohne Einladung (bestätigt durch die DB)
+  const [verifiedDepartmentIds, setVerifiedDepartmentIds] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
   const [stufen, setStufen] = useState<Record<string, StufeRole>>({});
@@ -64,8 +66,12 @@ function DepartmentSetup() {
         fetch('/api/auth/me/own-departments', { cache: 'no-store' }),
       ]);
       const dirList: DepartmentDirectoryItemDto[] = dirRes.ok ? await dirRes.json() : [];
-      const own = ownRes.ok ? ((await ownRes.json()) as { departmentIds: string[] }) : { departmentIds: [] };
+      const own = ownRes.ok
+        ? ((await ownRes.json()) as { departmentIds: string[]; verifiedIds?: string[] })
+        : { departmentIds: [], verifiedIds: [] };
+      const verified = new Set(own.verifiedIds ?? []);
       setOwnDepartmentIds(new Set(own.departmentIds));
+      setVerifiedDepartmentIds(verified);
       setDepartments(dirList);
 
       let target = returnToSlug ? dirList.find((d) => d.slug === returnToSlug) : undefined;
@@ -113,7 +119,7 @@ function DepartmentSetup() {
           }
           setError(data.error || 'Der Einladungslink konnte nicht eingelöst werden.');
         }
-        setExtraBlocked(!inviteToken && target.joinMode === 'INVITE_ONLY');
+        setExtraBlocked(!inviteToken && target.joinMode === 'INVITE_ONLY' && !verified.has(target.id));
         setExtraTarget(target);
         setSelected(target.id);
         setStufen(Object.fromEntries(stufenOf(target).map((s) => [s.stufeId, s.role])));
@@ -154,7 +160,11 @@ function DepartmentSetup() {
           setSelected(target.id);
           setInviteLocked(true);
         }
-      } else if (!me.homeDepartment && target && (target.joinMode === 'OPEN' || target.joinMode === 'LINK_ONLY')) {
+      } else if (
+        !me.homeDepartment &&
+        target &&
+        (target.joinMode === 'OPEN' || target.joinMode === 'LINK_ONLY' || verified.has(target.id))
+      ) {
         setSelected(target.id);
       }
     })().catch(() => setError('Die Angaben konnten nicht geladen werden. Bitte lade die Seite neu.'));
@@ -167,8 +177,8 @@ function DepartmentSetup() {
   );
   const selectedDepartment = departments?.find((d) => d.id === selected) ?? null;
 
-  // Wählbar: offene Abteilungen, die eigene, die des Links, die der Einladung und bei LINK_ONLY die der eigenen
-  // Gruppen in der Verbands-DB (fremde nur über ihren Link oder eine Einladung)
+  // Wählbar: offene Abteilungen, die eigene, die des Links, die der Einladung, bei LINK_ONLY die der eigenen Gruppen
+  // in der Verbands-DB und die laut eigenen Rollen belegten (fremde nur über ihren Link oder eine Einladung)
   const selectable = useMemo(
     () =>
       (departments ?? []).filter((d) => {
@@ -176,9 +186,11 @@ function DepartmentSetup() {
         if (d.id === inviteDeptId) return true;
         if (d.joinMode === 'LINK_ONLY' && returnToSlug && d.slug === returnToSlug) return true;
         if (d.joinMode === 'LINK_ONLY' && ownDepartmentIds.has(d.id)) return true;
+        // Laut eigenen Rollen belegt: auch «nur per Einladung»
+        if (verifiedDepartmentIds.has(d.id)) return true;
         return !d.joinMode || d.joinMode === 'OPEN';
       }),
-    [departments, user?.homeDepartment?.id, ownDepartmentIds, inviteDeptId, returnToSlug]
+    [departments, user?.homeDepartment?.id, ownDepartmentIds, verifiedDepartmentIds, inviteDeptId, returnToSlug]
   );
 
   const visible = useMemo(() => {

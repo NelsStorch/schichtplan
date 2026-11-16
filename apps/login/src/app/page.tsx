@@ -30,6 +30,7 @@ import {
   type StufeRole,
   type UserDto,
   type OrganizationConfig,
+  getOrganizationByDbType,
 } from '@schichtplan/shared';
 import { afterLogin, cleanReturnTo, departmentSlugFromReturnTo, withReturnTo } from '@/lib/destination';
 import { AuthShell } from '@/components/AuthShell';
@@ -75,7 +76,7 @@ function getPasswordStrength(pwd: string): {
 }
 
 // Dynamische Fehlermeldungen für Hitobito & Verbands-Logins
-function getLoginErrorMessage(code: string, org: OrganizationConfig): string | null {
+function getLoginErrorMessage(code: string, org: OrganizationConfig, other?: string | null): string | null {
   switch (code) {
     case 'cevidb_unavailable':
     case 'hitobito_unavailable':
@@ -89,6 +90,12 @@ function getLoginErrorMessage(code: string, org: OrganizationConfig): string | n
     case 'cevidb_email_taken':
     case 'hitobito_email_taken':
       return `Die E-Mail aus deinem ${org.authProviderShort}-Profil gehört schon zu einem anderen Konto. Melde dich bitte bei den Betreibern des Schichtplans.`;
+    case 'cevidb_email_other_provider': {
+      // Ein Konto hängt an genau einer Verbands-DB: Mit derselben E-Mail geht nur die, mit der es verbunden ist
+      const otherOrg = other ? getOrganizationByDbType(other) : null;
+      const otherDb = otherOrg && otherOrg.dbType !== org.dbType ? otherOrg.authProviderShort : 'einer anderen Verbands-DB';
+      return `Mit der E-Mail aus deinem ${org.authProviderShort}-Profil gibt es schon ein Konto, das mit ${otherDb} verbunden ist. Ein Konto kann nur mit einer Verbands-DB verbunden sein. Melde dich mit ${otherDb} an oder trage in ${org.authProviderShort} eine andere E-Mail-Adresse ein.`;
+    }
     default:
       return null;
   }
@@ -179,7 +186,7 @@ function LoginContent() {
   useEffect(() => {
     const errCode = searchParams.get('error');
     if (errCode) {
-      setError(getLoginErrorMessage(errCode, org) ?? 'Ein Fehler ist aufgetreten.');
+      setError(getLoginErrorMessage(errCode, org, searchParams.get('other')) ?? 'Ein Fehler ist aufgetreten.');
       setHitobitoDown(
         errCode === 'cevidb_failed' ||
         errCode === 'hitobito_failed' ||

@@ -156,7 +156,7 @@ ${flow.notice ? `<div class="notice" role="status">${escapeHtml(flow.notice)}</d
 </form>
 
 <div class="row">
-  <form method="get" action="/api/auth/hitobito-sim/reset" onsubmit="return confirm('Alle simulierten Konten und die Schichtpläne der simulierten Gruppen (mit ihren Anlässen) löschen?')">
+  <form method="post" action="/api/auth/hitobito-sim/reset" onsubmit="return confirm('Alle simulierten Konten und die Schichtpläne der simulierten Gruppen (mit ihren Anlässen) löschen?')">
     ${hidden}
     <button type="submit" class="secondary">Simulation zurücksetzen</button>
   </form>
@@ -191,25 +191,35 @@ ${flow.notice ? `<div class="notice" role="status">${escapeHtml(flow.notice)}</d
     }
   );
 
-  // Simulation zurücksetzen: simulierte Konten und Schichtpläne der simulierten Gruppen löschen
-  fastify.get<{ Querystring: Flow }>(
+  // Formular «Zurücksetzen» (application/x-www-form-urlencoded); gilt nur für die Routen dieses Plugins
+  fastify.addContentTypeParser('application/x-www-form-urlencoded', { parseAs: 'string' }, (_request, body, done) => {
+    done(null, Object.fromEntries(new URLSearchParams(body as string)));
+  });
+
+  // Simulation zurücksetzen: simulierte Konten und Schichtpläne der simulierten Gruppen löschen. Nur per POST aus dem
+  // laufenden Login (state = Cookie): Das Cookie ist SameSite=Lax und fehlt bei einem fremden Formular oder Bild.
+  fastify.post<{ Body: Flow }>(
     '/api/auth/hitobito-sim/reset',
     {
       schema: {
         tags: ['Auth'],
         summary: 'Simulation eines Verbands zurücksetzen (nur Dev)',
-        querystring: FlowQuery,
+        body: FlowQuery,
       },
     },
     async (request, reply) => {
-      const flow = request.query;
+      const flow = request.body;
       const callback = checkFlow(request, reply, flow);
       if (!callback) return reply;
+      if (flow.state !== request.cookies.cevidb_oauth_state) {
+        return reply.status(403).send({ error: 'Bitte starte die Anmeldung neu und setze dann zurück.' });
+      }
       const result = await resetSimulation(fastify.prisma, flow.provider as OrganizationType);
       fastify.log.info({ provider: flow.provider, ...result }, 'Simulation zurückgesetzt');
       const back = flowParams(flow);
       back.set('notice', `Zurückgesetzt: ${result.users} Konten und ${result.departments} Schichtpläne gelöscht.`);
-      return reply.redirect(`/api/auth/hitobito-sim/authorize?${back.toString()}`);
+      // 303: nach dem POST die Auswahlseite per GET laden
+      return reply.redirect(`/api/auth/hitobito-sim/authorize?${back.toString()}`, 303);
     }
   );
 };

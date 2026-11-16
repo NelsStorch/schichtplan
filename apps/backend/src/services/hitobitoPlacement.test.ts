@@ -142,6 +142,18 @@ describe('placeCeviDbPerson', () => {
     });
   });
 
+  it('kennt alle Ortsgruppen der Rollen, nicht nur die erste', () => {
+    const zweiOrte = {
+      id: 2,
+      primary_group_id: 805,
+      roles: [
+        { role_class: 'Group::Stufe::Stufenleiter', group_id: 805, group_name: 'Falken' },
+        { role_class: 'Group::Stufe::Gruppenleiter', group_id: 817, group_name: 'Stufe Sirius' },
+      ],
+    };
+    expect(place(zweiOrte)).toMatchObject({ ortsgruppeId: 161, ortsgruppeIds: [161, 219] });
+  });
+
   it('ordnet eine normale Leiterin über ihre Stufe zu', () => {
     expect(place(leiterinIllnau)).toMatchObject({ homeDepartmentId: 'illnau', leaderDepartmentIds: [], jungscharIds: [295] });
   });

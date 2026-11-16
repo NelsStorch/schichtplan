@@ -17,8 +17,8 @@ import {
 import {
   checkDepartmentJoin,
   markMembershipJoined,
-  ownProviderDepartmentIds,
-  PROVIDER_JOIN_SOURCE,
+  ownProviderDepartments,
+  isProviderJoinSource,
   replaceSelfStufen,
 } from '../../services/departmentJoin.js';
 import { applyProfileUpdate } from '../../services/profileUpdate.js';
@@ -68,7 +68,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
         tags: ['Auth'],
         summary: 'Abteilungen der eigenen Verbands-Gruppen',
         description:
-          'IDs der Abteilungen, die laut Verbands-DB zu den eigenen Gruppen gehören. Ohne Verbands-Login leer.',
+          'IDs der Abteilungen, die laut Verbands-DB zu den eigenen Gruppen gehören (ohne Link wählbar) und davon die laut Rollen belegten (Beitritt auch bei «nur per Einladung»). Ohne Verbands-Login leer.',
         security: [{ bearerAuth: [] }],
       },
       preHandler: [fastify.authenticate],
@@ -79,8 +79,9 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
         where: { id: request.user.id },
         select: { provider: true, providerId: true },
       });
-      if (!user || user.providerId === null) return { departmentIds: [] };
-      return { departmentIds: [...(await ownProviderDepartmentIds(fastify.prisma, request.user.id, user.provider))] };
+      if (!user || user.providerId === null) return { departmentIds: [], verifiedIds: [] };
+      const own = await ownProviderDepartments(fastify.prisma, request.user.id, user.provider);
+      return { departmentIds: [...own.candidates], verifiedIds: [...own.verified] };
     }
   );
 
@@ -554,7 +555,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
       });
       if (!member?.joinedAt) return reply.status(404).send({ error: 'Du bist dort nicht beigetreten.' });
       // Beitritt aus der Verbands-DB: käme beim nächsten Login zurück, ändern lässt er sich nur dort
-      if (member.joinSource === PROVIDER_JOIN_SOURCE) {
+      if (isProviderJoinSource(member.joinSource)) {
         return reply.status(400).send({
           code: 'FROM_PROVIDER',
           error: 'Diese Zugehörigkeit kommt aus der Verbandsdatenbank und lässt sich nur dort ändern.',

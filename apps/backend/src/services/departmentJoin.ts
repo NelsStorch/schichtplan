@@ -59,14 +59,6 @@ export async function ownProviderDepartments(
   };
 }
 
-/** Kurzform: alle Abteilungen der eigenen Gruppen, die ohne Link wählbar sind */
-export async function ownProviderDepartmentIds(
-  prisma: Pick<PrismaClient, 'userHitobitoRole' | 'hitobitoGroup' | 'department'>,
-  userId: string,
-  provider: OrganizationType
-): Promise<Set<string>> {
-  return (await ownProviderDepartments(prisma, userId, provider)).candidates;
-}
 type Tx = Pick<PrismaClient, 'departmentMember' | 'userStufe'>;
 
 export type JoinCheck =
@@ -165,6 +157,11 @@ export async function checkDepartmentJoin(
  * Beitritt speichern: joined_at setzen (bestehenden Zeitpunkt behalten), bei Einladung bestätigen
  * (eine frühere Bestätigung bleibt mit Zeitpunkt und Person) und Rechte aus der Einladung ergänzen.
  * Mit join: false nur Rechte ergänzen (z. B. Einladung in die eigene Heimabteilung).
+ *
+ * Beitritt laut Rollen der Verbands-DB (`fromProvider`): Ohne bestehenden Beitritt entsteht er mit Herkunft
+ * PROVIDER_JOIN_SOURCE und endet wieder, wenn die Rolle fehlt. Einen selbst gewählten Beitritt übernimmt die DB nicht:
+ * Ist er unbestätigt, bestätigt sie ihn nur (PROVIDER_CONFIRM_SOURCE); fehlt die Rolle, fällt nur diese Bestätigung weg.
+ * Eine Bestätigung durch Einladung oder Leitung bleibt immer unberührt.
  */
 export async function markMembershipJoined(
   tx: Pick<PrismaClient, 'departmentMember'>,
@@ -175,19 +172,28 @@ export async function markMembershipJoined(
     confirmed: boolean;
     confirmedById?: string | null;
     grantedPermissions?: DepartmentPermission[];
-    /** Beitritt laut Rollen der Verbands-DB: Herkunft CEVIDB, der Login nimmt ihn wieder weg, wenn die Rolle fehlt */
+    /** Beitritt laut Rollen der Verbands-DB */
     fromProvider?: boolean;
   }
-) {
+): Promise<{ created: boolean }> {
   const join = opts.join ?? true;
   const existing = await tx.departmentMember.findUnique({
     where: { departmentId_userId: { departmentId, userId } },
-    select: { joinedAt: true, confirmedAt: true, permissions: true },
+    select: { joinedAt: true, confirmedAt: true, permissions: true, joinSource: true },
   });
   const now = new Date();
   const permissions = normalizePermissions([...(existing?.permissions ?? []), ...(opts.grantedPermissions ?? [])]);
   const confirm = join && opts.confirmed && !existing?.confirmedAt;
-  const source = join && opts.fromProvider ? { joinSource: PROVIDER_JOIN_SOURCE } : {};
+  const wasJoined = Boolean(existing?.joinedAt);
+  // Herkunft nur setzen, wenn die DB den Beitritt anlegt oder (bei einem eigenen) die Bestätigung beisteuert
+  const source =
+    join && opts.fromProvider && !isProviderJoinSource(existing?.joinSource)
+      ? !wasJoined
+        ? { joinSource: PROVIDER_JOIN_SOURCE }
+        : confirm
+          ? { joinSource: PROVIDER_CONFIRM_SOURCE }
+          : {}
+      : {};
   await tx.departmentMember.upsert({
     where: { departmentId_userId: { departmentId, userId } },
     update: {
@@ -207,16 +213,26 @@ export async function markMembershipJoined(
       ...source,
     },
   });
+  return { created: join && !wasJoined };
 }
 
-/** Herkunft eines Beitritts laut Rollen der Verbands-DB */
+/** Herkunft eines Beitritts, den die Verbands-DB laut Rollen angelegt hat (endet, wenn die Rolle fehlt) */
 export const PROVIDER_JOIN_SOURCE = 'CEVIDB';
+/** Selbst gewählter Beitritt, den die Verbands-DB laut Rollen bestätigt (nur die Bestätigung endet mit der Rolle) */
+export const PROVIDER_CONFIRM_SOURCE = 'CEVIDB_CONFIRMED';
+
+/** Hängt der Beitritt (oder seine Bestätigung) an den Rollen der Verbands-DB? Dann lässt er sich nur dort ändern. */
+export function isProviderJoinSource(source: string | null | undefined): boolean {
+  return source === PROVIDER_JOIN_SOURCE || source === PROVIDER_CONFIRM_SOURCE;
+}
 
 /**
  * Beim Verbands-Login: In jeder Abteilung, zu der laut Rollen eine Gruppe gehört (ausser der Heimabteilung), gilt die
- * Person als bestätigt beigetreten, auch bei INVITE_ONLY. Beitritte aus der DB, deren Rolle fehlt, enden wieder
- * (nur mit vollständiger Gruppenstruktur, sonst wäre ein fehlender Treffer keine Aussage). Selbst gewählte Beitritte
- * und Rechte bleiben unberührt.
+ * Person als bestätigt beigetreten, auch bei INVITE_ONLY. Was die DB beigesteuert hat und deren Rolle fehlt, endet
+ * wieder (nur mit vollständiger Gruppenstruktur, sonst wäre ein fehlender Treffer keine Aussage). Selbst gewählte
+ * Beitritte, Bestätigungen durch Einladung oder Leitung und Rechte bleiben unberührt.
+ * Ist eine solche Abteilung inzwischen die Heimabteilung, verliert der Eintrag still seine Herkunft: Die Person gehört
+ * über die Heimabteilung dazu, ein «Ausgetreten» im Protokoll wäre falsch.
  */
 export async function syncProviderMemberships(
   prisma: Pick<PrismaClient, 'departmentMember' | 'user' | 'departmentAuditLog'>,
@@ -228,11 +244,6 @@ export async function syncProviderMemberships(
   providerName: string
 ) {
   const wanted = roleDepartmentIds.filter((id) => id !== homeDepartmentId);
-  const before = await prisma.departmentMember.findMany({
-    where: { userId, joinSource: PROVIDER_JOIN_SOURCE },
-    select: { departmentId: true },
-  });
-  const hadFromProvider = new Set(before.map((m) => m.departmentId));
   const person = await prisma.user.findUnique({
     where: { id: userId },
     select: { firstName: true, lastName: true, nickname: true },
@@ -240,9 +251,9 @@ export async function syncProviderMemberships(
   const targetLabel = person ? personLabel(person) : 'Unbekannt';
 
   for (const departmentId of wanted) {
-    await markMembershipJoined(prisma, departmentId, userId, { confirmed: true, fromProvider: true });
-    // Ins Protokoll der Abteilung, damit die Leitung sieht, warum jemand dazugehört
-    if (!hadFromProvider.has(departmentId)) {
+    const { created } = await markMembershipJoined(prisma, departmentId, userId, { confirmed: true, fromProvider: true });
+    // Ins Protokoll der Abteilung, damit die Leitung sieht, warum jemand dazugehört (nur neue Beitritte)
+    if (created) {
       await recordDepartmentAction(prisma, log, {
         departmentId,
         actorId: null,
@@ -254,22 +265,51 @@ export async function syncProviderMemberships(
       });
     }
   }
-  if (!complete) return;
-  const ended = [...hadFromProvider].filter((id) => !wanted.includes(id));
-  if (ended.length === 0) return;
-  await prisma.departmentMember.updateMany({
-    where: { userId, joinSource: PROVIDER_JOIN_SOURCE, departmentId: { in: ended } },
-    data: { joinedAt: null, confirmedAt: null, confirmedById: null, joinSource: null },
+
+  const fromProvider = await prisma.departmentMember.findMany({
+    where: { userId, joinSource: { in: [PROVIDER_JOIN_SOURCE, PROVIDER_CONFIRM_SOURCE] } },
+    select: { departmentId: true, joinSource: true },
   });
-  for (const departmentId of ended) {
-    await recordDepartmentAction(prisma, log, {
-      departmentId,
-      actorId: null,
-      automaticBy: providerName,
-      action: 'MEMBER_LEAVE',
-      targetUserId: userId,
-      targetLabel,
-      details: { reason: 'NO_ROLE' },
+  const notWanted = fromProvider.filter((m) => !wanted.includes(m.departmentId));
+  const atHome = notWanted.filter((m) => m.departmentId === homeDepartmentId);
+  const ended = complete ? notWanted.filter((m) => m.departmentId !== homeDepartmentId) : [];
+  const ids = (list: typeof notWanted, source: string) =>
+    list.filter((m) => m.joinSource === source).map((m) => m.departmentId);
+
+  // Heimabteilung: kein zusätzlicher Beitritt mehr, ohne Protokoll
+  if (atHome.length) {
+    await prisma.departmentMember.updateMany({
+      where: { userId, departmentId: { in: atHome.map((m) => m.departmentId) } },
+      data: { joinedAt: null, confirmedAt: null, confirmedById: null, joinSource: null },
+    });
+  }
+  if (ended.length === 0) return;
+
+  // Von der DB angelegt: Beitritt endet
+  const leave = ids(ended, PROVIDER_JOIN_SOURCE);
+  if (leave.length) {
+    await prisma.departmentMember.updateMany({
+      where: { userId, joinSource: PROVIDER_JOIN_SOURCE, departmentId: { in: leave } },
+      data: { joinedAt: null, confirmedAt: null, confirmedById: null, joinSource: null },
+    });
+    for (const departmentId of leave) {
+      await recordDepartmentAction(prisma, log, {
+        departmentId,
+        actorId: null,
+        automaticBy: providerName,
+        action: 'MEMBER_LEAVE',
+        targetUserId: userId,
+        targetLabel,
+        details: { reason: 'NO_ROLE' },
+      });
+    }
+  }
+  // Selbst gewählt, von der DB bestätigt: Beitritt bleibt, nur die Bestätigung der DB fällt weg
+  const unconfirm = ids(ended, PROVIDER_CONFIRM_SOURCE);
+  if (unconfirm.length) {
+    await prisma.departmentMember.updateMany({
+      where: { userId, joinSource: PROVIDER_CONFIRM_SOURCE, departmentId: { in: unconfirm } },
+      data: { confirmedAt: null, confirmedById: null, joinSource: null },
     });
   }
 }

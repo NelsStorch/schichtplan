@@ -19,7 +19,13 @@ import { trackUsage } from '../../services/usageStats.js';
 import { syncCeviDbLeadership } from '../../services/departmentLeaders.js';
 import { syncProviderMemberships } from '../../services/departmentJoin.js';
 import { departmentCreationEligibility } from '../departments/shared.js';
-import { findSimPersona, simProfile, simulationEnabled, storeSimGroups } from '../../services/hitobitoSimulation.js';
+import {
+  adoptSimAccount,
+  findSimPersona,
+  simProfile,
+  simulationEnabled,
+  storeSimGroups,
+} from '../../services/hitobitoSimulation.js';
 import { hitobitoCircuitBreaker } from '../../services/hitobitoCircuitBreaker.js';
 import { needsSecondFactor, setChallengeCookie } from '../../services/twoFactor.js';
 
@@ -398,6 +404,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
           simulated: true,
         };
         await storeSimGroups(fastify.prisma, providerType);
+        await adoptSimAccount(fastify.prisma, providerType, String(simulatedProfile.email), String(simulatedProfile.id));
         fastify.log.info({ provider: providerType, persona: persona.key }, 'Simulierter Verbands-Login');
         reply.clearCookie('cevidb_oauth_state', { path: '/' });
         return reply.redirect(await finishCeviDbLogin(reply, simulatedProfile, returnTo, tenantSlug, undefined, providerType));
@@ -480,9 +487,16 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
         byEmail = null;
       }
       if (byEmail && byEmail.providerId !== null) {
-        // E-Mail gehört schon zu einer anderen Person des Providers: nicht überschreiben
-        fastify.log.warn({ userId: byEmail.id, ceviDbId }, `${provider}-Login: E-Mail gehört zu anderem Provider-Konto`);
-        return loginErrorUrl('cevidb_email_taken', returnTo, reply.request?.hostname, provider);
+        // E-Mail gehört schon zu einem Konto mit Verbands-DB: nicht überschreiben. Ein Konto hängt an genau einer
+        // Verbands-DB; ist es ein anderer Verband (z. B. Cevi und Jubla), sagt die Meldung, mit welchem es verbunden ist.
+        const otherProvider = byEmail.provider !== provider ? byEmail.provider : null;
+        fastify.log.warn(
+          { userId: byEmail.id, ceviDbId, otherProvider },
+          `${provider}-Login: E-Mail gehört zu anderem Provider-Konto`
+        );
+        return otherProvider
+          ? loginErrorUrl('cevidb_email_other_provider', returnTo, reply.request?.hostname, provider, otherProvider)
+          : loginErrorUrl('cevidb_email_taken', returnTo, reply.request?.hostname, provider);
       }
       if (byEmail?.passwordHash && byEmail.id !== linkConfirmedUserId) {
         // Passwort-Konto mit gleicher E-Mail: erst nach Passwort verknüpfen (login.<domain>/konto-verknuepfen)

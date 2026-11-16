@@ -339,30 +339,34 @@ export async function syncCeviDbHomeDepartment(
     if (current?.homeDepartmentId) {
       await autoCreateCeviDbDepartmentStufen(prisma, current.homeDepartmentId, user.id);
     }
-    // Bestätigt ist eine Person nur, solange ihre Rollen in der Ortsgruppe der Abteilung liegen
+    // Bestätigt ist eine Person nur, solange eine ihrer Rollen in der Ortsgruppe der Abteilung liegt
+    // (bei Rollen in mehreren Ortsgruppen zählt jede, nicht nur die erste)
     if (current?.homeDepartmentId && user.homeDepartmentSource === 'CONFIRMED' && placement.complete) {
       const home = await prisma.department.findUnique({
         where: { id: current.homeDepartmentId },
         select: { organization: true, hitobitoGroupId: true },
       });
-      if ((await departmentOrtsgruppeId(prisma, home?.hitobitoGroupId ?? null, home?.organization ?? provider)) !== placement.ortsgruppeId) {
+      const homeOrtsgruppeId = await departmentOrtsgruppeId(prisma, home?.hitobitoGroupId ?? null, home?.organization ?? provider);
+      const roleOrtsgruppen = placement.ortsgruppeIds ?? (placement.ortsgruppeId !== null ? [placement.ortsgruppeId] : []);
+      if (homeOrtsgruppeId === null || !roleOrtsgruppen.includes(homeOrtsgruppeId)) {
         await prisma.user.update({
           where: { id: user.id },
           data: { homeDepartmentSource: 'SELF', ...NO_HOME_CONFIRMATION },
         });
       }
     }
-    if (placement.verified && placement.complete) {
-      if (user.homeDepartmentSource === 'CEVIDB') {
-        // Abteilung gewechselt oder gelöscht: erneut nachfragen
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { homeDepartmentId: null, homeDepartmentSource: null, departmentSetupAt: null },
-        });
-      }
+    const rolesSayNowhere = placement.verified && placement.complete;
+    if (rolesSayNowhere && user.homeDepartmentSource === 'CEVIDB') {
+      // Abteilung aus der DB gewechselt oder gelöscht: erneut nachfragen
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { homeDepartmentId: null, homeDepartmentSource: null, departmentSetupAt: null },
+      });
     } else if (current?.homeDepartmentId) {
+      // Selbst gewählte oder von der Leitung bestätigte Heimabteilung bleibt (auch wenn die Rollen zu keinem
+      // Schichtplan führen, z. B. weil die eigene Schar noch keinen hat)
       department = await prisma.department.findUnique({ where: { id: current.homeDepartmentId }, select });
-    } else if (placement.selfDeclaredDepartmentId) {
+    } else if (!rolesSayNowhere && placement.selfDeclaredDepartmentId) {
       department = await prisma.department.findUnique({ where: { id: placement.selfDeclaredDepartmentId }, select });
       if (department) {
         await prisma.user.update({

@@ -102,19 +102,26 @@ describe('departmentCreationEligibility für Vereine und Verbände', () => {
       // Jubla: Regionalleitung 21 ist eine Untergruppe der Region 20
       { provider: 'JUBLA', id: 21, name: 'Regionalleitung', jungscharId: null, ortsgruppeId: 20, jungscharCount: null },
       { provider: 'JUBLA', id: 20, name: 'Region Oberland', jungscharId: null, ortsgruppeId: 20, jungscharCount: 0, groupType: 'Region' },
+      // Cevi: Ortsgruppe 161 hat (inzwischen) nur noch die Jungschar 295
+      { provider: 'CEVI', id: 161, name: 'Illnau', jungscharId: null, ortsgruppeId: 161, jungscharCount: 1, groupType: 'Ortsgruppe' },
+      { provider: 'CEVI', id: 295, name: 'JS Illnau', jungscharId: 295, ortsgruppeId: 161, jungscharCount: null },
     ];
     const hitobitoPrisma = (user: object, existing: number[] = []) =>
       ({
         user: { findUnique: async () => user },
         hitobitoGroup: {
           findMany: async ({ where }: any) =>
-            groupRows.filter((g) => g.provider === where.provider && where.id.in.includes(g.id)),
+            groupRows.filter(
+              (g) =>
+                g.provider === where.provider &&
+                (where.id ? where.id.in.includes(g.id) : g.ortsgruppeId === where.ortsgruppeId && g.jungscharId !== null)
+            ),
           findUnique: async ({ where }: any) =>
             groupRows.find((g) => g.provider === where.provider_id.provider && g.id === where.provider_id.id) ?? null,
         },
         department: {
-          findUnique: async ({ where }: any) =>
-            existing.includes(where.organization_hitobitoGroupId.hitobitoGroupId) ? { name: 'Bestehend', slug: 'bestehend' } : null,
+          findFirst: async ({ where }: any) =>
+            where.hitobitoGroupId.in.some((id: number) => existing.includes(id)) ? { name: 'Bestehend', slug: 'bestehend' } : null,
         },
       }) as unknown as PrismaClient;
     const leader = (provider: string, leaderGroupIds: number[]) => ({
@@ -139,6 +146,13 @@ describe('departmentCreationEligibility für Vereine und Verbände', () => {
     it('meldet eine bereits angelegte Region', async () => {
       const result = await departmentCreationEligibility(hitobitoPrisma(leader('PFADI', [906]), [906]), 'user-1', 'PFADI');
       expect(result).toMatchObject({ eligible: false, reason: 'EXISTS' });
+    });
+
+    it('erkennt einen Schichtplan an der einzigen Jungschar der Ortsgruppe (kein zweiter für dieselbe Gruppe)', async () => {
+      const result = await departmentCreationEligibility(hitobitoPrisma(leader('CEVI', [295]), [295]), 'user-1', 'CEVI');
+      expect(result).toMatchObject({ eligible: false, reason: 'EXISTS', existingDepartment: { slug: 'bestehend' } });
+      const free = await departmentCreationEligibility(hitobitoPrisma(leader('CEVI', [295])), 'user-1', 'CEVI');
+      expect(free).toMatchObject({ eligible: true, ortsgruppeId: 161 });
     });
 
     it('ordnet die Jubla-Regionalleitung der Region darüber zu', async () => {

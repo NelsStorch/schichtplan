@@ -188,11 +188,20 @@ describe('checkDepartmentJoin', () => {
 
 describe('syncProviderMemberships', () => {
   const log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
-  function memberDb(fromProviderBefore: string[] = []) {
+  /** `fromProviderBefore`: Einträge mit Herkunft aus der DB; `existing`: bestehende Mitgliedschaften pro Abteilung */
+  function memberDb(
+    fromProviderBefore: (string | { departmentId: string; joinSource: string })[] = [],
+    existing: Record<string, { joinedAt: Date | null; confirmedAt: Date | null; joinSource: string | null }> = {}
+  ) {
     return {
       departmentMember: {
-        findUnique: vi.fn().mockResolvedValue(null),
-        findMany: vi.fn().mockResolvedValue(fromProviderBefore.map((departmentId) => ({ departmentId }))),
+        findUnique: vi.fn(async ({ where }: any) => {
+          const m = existing[where.departmentId_userId.departmentId];
+          return m ? { permissions: [], ...m } : null;
+        }),
+        findMany: vi.fn().mockResolvedValue(
+          fromProviderBefore.map((m) => (typeof m === 'string' ? { departmentId: m, joinSource: 'CEVIDB' } : m))
+        ),
         upsert: vi.fn().mockResolvedValue({}),
         updateMany: vi.fn().mockResolvedValue({ count: 0 }),
       },
@@ -219,10 +228,25 @@ describe('syncProviderMemberships', () => {
   });
 
   it('protokolliert bestehende DB-Beitritte nicht erneut', async () => {
-    const db = memberDb(['dept-2']);
+    const db = memberDb(['dept-2'], { 'dept-2': { joinedAt: new Date(), confirmedAt: new Date(), joinSource: 'CEVIDB' } });
     await syncProviderMemberships(db, log, 'u-1', null, ['dept-2'], true, 'Jubla-DB');
     expect(db.departmentAuditLog.create).not.toHaveBeenCalled();
     expect(db.departmentMember.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('übernimmt einen selbst gewählten Beitritt nicht: unbestätigt nur bestätigen, bestätigt gar nicht anfassen', async () => {
+    const db = memberDb([], {
+      'dept-self': { joinedAt: new Date('2026-01-01'), confirmedAt: null, joinSource: null },
+      'dept-invited': { joinedAt: new Date('2026-01-01'), confirmedAt: new Date('2026-01-02'), joinSource: null },
+    });
+    await syncProviderMemberships(db, log, 'u-1', null, ['dept-self', 'dept-invited'], true, 'Cevi.DB');
+    const [self, invited] = db.departmentMember.upsert.mock.calls.map((c: any) => c[0].update);
+    expect(self).toMatchObject({ joinSource: 'CEVIDB_CONFIRMED' });
+    expect(self.confirmedAt).toBeInstanceOf(Date);
+    expect(invited.joinSource).toBeUndefined();
+    expect(invited.confirmedAt).toBeUndefined();
+    // Kein «Dazugekommen»: die Person war schon dabei
+    expect(db.departmentAuditLog.create).not.toHaveBeenCalled();
   });
 
   it('beendet DB-Beitritte ohne Rolle nur mit vollständiger Gruppenstruktur', async () => {
@@ -240,5 +264,25 @@ describe('syncProviderMemberships', () => {
     const incomplete = memberDb(['dept-alt']);
     await syncProviderMemberships(incomplete, log, 'u-1', null, [], false, 'Cevi.DB');
     expect(incomplete.departmentMember.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('nimmt bei selbst gewählten Beitritten ohne Rolle nur die Bestätigung der DB weg', async () => {
+    const db = memberDb([{ departmentId: 'dept-self', joinSource: 'CEVIDB_CONFIRMED' }]);
+    await syncProviderMemberships(db, log, 'u-1', null, [], true, 'Cevi.DB');
+    expect(db.departmentMember.updateMany).toHaveBeenCalledWith({
+      where: { userId: 'u-1', joinSource: 'CEVIDB_CONFIRMED', departmentId: { in: ['dept-self'] } },
+      data: { confirmedAt: null, confirmedById: null, joinSource: null },
+    });
+    expect(db.departmentAuditLog.create).not.toHaveBeenCalled();
+  });
+
+  it('schreibt kein «Ausgetreten», wenn der DB-Beitritt zur Heimabteilung geworden ist', async () => {
+    const db = memberDb(['dept-neu-home']);
+    await syncProviderMemberships(db, log, 'u-1', 'dept-neu-home', ['dept-neu-home'], true, 'Cevi.DB');
+    expect(db.departmentMember.updateMany).toHaveBeenCalledWith({
+      where: { userId: 'u-1', departmentId: { in: ['dept-neu-home'] } },
+      data: { joinedAt: null, confirmedAt: null, confirmedById: null, joinSource: null },
+    });
+    expect(db.departmentAuditLog.create).not.toHaveBeenCalled();
   });
 });

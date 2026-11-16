@@ -341,7 +341,7 @@ export function simRoleOptions(provider: OrganizationType): (SimRole & { groupNa
       options.push({ ...role, groupName: org.groups.find((g) => g.n === role.group)?.name ?? `Gruppe ${role.group}` });
     }
   }
-  return options;
+  return options.slice(0, SIM_MAX_CUSTOM_ROLES);
 }
 
 /** Code für eigene Rollen aus den gewählten Indizes (sortiert, ohne Doppelte), null bei ungültiger Auswahl */
@@ -375,10 +375,33 @@ export function simPersonId(provider: OrganizationType, key: string): number {
   const index = personas.findIndex((p) => p.key === key);
   const orgOffset = provider === 'CEVI' ? 1000 : provider === 'PFADI' ? 2000 : 3000;
   if (index >= 0) return SIM_ID_BASE + 100_000 + orgOffset + index;
-  // Eigene Rollen: gleiche Auswahl, gleiches Konto (Hash über den Code)
-  let hash = 0;
-  for (const ch of key) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-  return SIM_ID_BASE + 200_000 + orgOffset * 100 + (hash % 90_000);
+  // Eigene Rollen: gleiche Auswahl, gleiches Konto. Die Auswahl als Bitmaske ergibt eine eindeutige Nummer
+  // (keine Kollision wie bei einem Hash), solange es höchstens SIM_MAX_CUSTOM_ROLES Rollen zur Auswahl gibt.
+  let mask = 0;
+  for (const part of key.slice(SIM_CUSTOM_PREFIX.length).split('-')) mask += 2 ** Number(part);
+  return SIM_ID_BASE + 200_000 + orgOffset * 100 + mask;
+}
+
+/** Höchstens so viele Rollen bietet «eigene Rollen» pro Verband an (Bitmaske passt in den Nummernbereich von 90 000) */
+export const SIM_MAX_CUSTOM_ROLES = 16;
+
+/**
+ * Simuliertes Konto mit derselben E-Mail, aber anderer Personen-ID (z. B. aus einer älteren Nummerierung der
+ * eigenen Rollen): auf die neue ID umstellen, sonst bräche der Login mit «E-Mail gehört zu anderem Konto» ab.
+ */
+export async function adoptSimAccount(
+  prisma: Pick<PrismaClient, 'user'>,
+  provider: OrganizationType,
+  email: string,
+  providerId: string
+): Promise<void> {
+  if (!email.endsWith(`@${SIM_EMAIL_DOMAIN}`)) return;
+  const taken = await prisma.user.findUnique({ where: { provider_providerId: { provider, providerId } }, select: { id: true } });
+  if (taken) return;
+  await prisma.user.updateMany({
+    where: { provider, email, providerId: { not: providerId } },
+    data: { providerId },
+  });
 }
 
 /** E-Mail-Endung simulierter Konten */

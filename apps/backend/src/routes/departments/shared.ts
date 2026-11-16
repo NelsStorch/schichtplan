@@ -180,9 +180,26 @@ export async function departmentCreationEligibility(
     // Unbekannter Typ (Eintrag von vor dem Gruppentyp): wie die unterste Ebene, das war bisher die einzige
     const level = perJungschar || groupType === null ? 0 : Math.max(0, levels.indexOf(groupType));
 
-    const existing = await prisma.department.findUnique({
-      where: { organization_hitobitoGroupId: { organization: provider, hitobitoGroupId: groupId } },
+    // Bestehender Schichtplan: wie bei der Zuordnung (placeCeviDbPerson) auch an der Jungschar einer Ortsgruppe mit nur
+    // einer Jungschar, z. B. aus der Zeit, als sie noch zwei hatte. Sonst entstünde für dieselbe Gruppe ein zweiter.
+    const jungscharen =
+      !perJungschar && ortsgruppe.jungscharCount > 0
+        ? await prisma.hitobitoGroup.findMany({
+            where: { provider, ortsgruppeId: ortsgruppe.id, jungscharId: { not: null } },
+            select: { jungscharId: true },
+          })
+        : [];
+    const sameGroupIds = perJungschar
+      ? [groupId]
+      : [
+          ...new Set(
+            [groupId, group.jungscharId, ...jungscharen.map((j) => j.jungscharId)].filter((id): id is number => id !== null)
+          ),
+        ];
+    const existing = await prisma.department.findFirst({
+      where: { organization: provider, hitobitoGroupId: { in: sameGroupIds } },
       select: { name: true, slug: true },
+      orderBy: { createdAt: 'asc' },
     });
     options.push({ hitobitoGroupId: groupId, name, groupType, level, existingDepartment: existing ?? null });
   }
