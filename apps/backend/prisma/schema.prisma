@@ -57,6 +57,7 @@ model Department {
   // Anlässe anderer Abteilungen, die diese Abteilung freigeschaltet haben (Whitelist)
   allowedInEvents EventAllowedDepartment[]
   auditLogs    DepartmentAuditLog[]
+  inviteRedemptions DepartmentInviteRedemption[]
 
   @@unique([organization, slug])
   @@unique([organization, hitobitoGroupId])
@@ -179,6 +180,9 @@ model User {
   homeDepartmentConfirmedAt   DateTime? @map("home_department_confirmed_at")
   homeDepartmentConfirmedById String?   @map("home_department_confirmed_by_id")
   homeDepartmentConfirmedBy   User?     @relation("HomeDepartmentConfirmedBy", fields: [homeDepartmentConfirmedById], references: [id], onDelete: SetNull)
+  // Woher die Bestätigung kommt: INVITE (Einladung, bleibt), CEVIDB (Rollen der Verbands-DB, endet mit der Rolle),
+  // null = Abteilungsleitung (homeDepartmentConfirmedById) oder ältere Einträge
+  homeDepartmentConfirmSource String?   @map("home_department_confirm_source")
   confirmedHomeDepartments    User[]    @relation("HomeDepartmentConfirmedBy")
   // Gesetzt, sobald die Person ihre Abteilung angegeben hat (auch «keine Abteilung»). Null = nachfragen.
   departmentSetupAt    DateTime?   @map("department_setup_at")
@@ -243,6 +247,7 @@ model User {
   performedSignupLogs     ShiftSignupLog[]   @relation("PerformedByUser")
   pushSubscriptions       PushSubscription[]
   cateringTokens          CateringToken[]
+  inviteRedemptions       DepartmentInviteRedemption[]
 
   @@unique([provider, providerId])
   @@index([lastSeenOn])
@@ -269,6 +274,8 @@ model DepartmentMember {
   // Woher der Beitritt kommt: CEVIDB = aus den Rollen der Verbands-DB (der Login trägt ein und nimmt wieder weg),
   // null = selbst oder per Einladung
   joinSource   String?    @map("join_source")
+  // Von der Leitung entfernt: Einladungen von vorher gelten für diese Person nicht mehr (nur eine neuere)
+  removedAt    DateTime?  @map("removed_at")
   createdAt    DateTime   @default(now())
   department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -276,6 +283,20 @@ model DepartmentMember {
   @@unique([departmentId, userId])
   @@index([userId])
   @@map("department_members")
+}
+
+// Eingelöste persönliche Einladungen mit Rechten: jede nur einmal (Token nur als SHA-256)
+model DepartmentInviteRedemption {
+  id           String     @id @default(uuid())
+  departmentId String     @map("department_id")
+  tokenHash    String     @unique @map("token_hash")
+  userId       String?    @map("user_id")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  user         User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([departmentId])
+  @@map("department_invite_redemptions")
 }
 
 model Event {

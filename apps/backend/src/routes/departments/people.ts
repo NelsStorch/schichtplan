@@ -11,6 +11,7 @@ import {
 } from '@schichtplan/shared';
 import { departmentOrtsgruppeId, NO_HOME_CONFIRMATION } from '../../services/homeDepartment.js';
 import { personLabel } from '../../services/profile.js';
+import { isProviderJoinSource } from '../../services/departmentJoin.js';
 import { UNRELATED_PERSON_ERROR, isDepartmentManager } from '../../services/departmentVisibility.js';
 import { canGrantPermissions, } from '../../services/permissions.js';
 import { recordDepartmentAction, toDepartmentAuditDto } from '../../services/departmentAudit.js';
@@ -109,6 +110,7 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
               joinedAt: true,
               confirmedAt: true,
               confirmedById: true,
+              joinSource: true,
             },
           },
           stufen: {
@@ -150,9 +152,12 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
           source: isHome
             ? homeSource(u.homeDepartmentSource)
             : isAdditional
-              ? membership?.confirmedAt
-                ? 'CONFIRMED'
-                : 'SELF'
+              ? // Laut Rollen der Verbands-DB: wie eine Heimabteilung aus der DB (hier nicht entfernbar)
+                isProviderJoinSource(membership?.joinSource)
+                ? 'CEVIDB'
+                : membership?.confirmedAt
+                  ? 'CONFIRMED'
+                  : 'SELF'
               : null,
           canConfirmHome: isAdditional
             ? access.hasFullAccess && u.id !== request.user.id && !membership?.confirmedAt
@@ -483,6 +488,7 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
           homeDepartmentSource: 'CONFIRMED',
           homeDepartmentConfirmedAt: new Date(),
           homeDepartmentConfirmedById: request.user.id,
+          homeDepartmentConfirmSource: null,
         },
       });
       await recordDepartmentAction(fastify.prisma, request.log, {
@@ -598,7 +604,10 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
           nickname: true,
           firstName: true,
           lastName: true,
-          memberships: { where: { departmentId: tenant.id }, select: { role: true, permissions: true } },
+          memberships: {
+            where: { departmentId: tenant.id },
+            select: { role: true, permissions: true, joinSource: true },
+          },
         },
       });
       if (!user) return reply.status(404).send({ error: 'Person nicht gefunden' });
@@ -626,6 +635,14 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
           .status(400)
           .send({ error: `Diese Zuordnung kommt aus ${providerName} und lässt sich hier nicht ändern.` });
       }
+      // Beitritt laut Rollen der Verbands-DB: Der nächste Login trüge ihn still wieder ein (wie beim Selbst-Austritt)
+      if (isProviderJoinSource(membership?.joinSource)) {
+        const providerName = getOrganizationByDbType(tenant.organization).authProviderShort;
+        return reply.status(400).send({
+          code: 'FROM_PROVIDER',
+          error: `Diese Zugehörigkeit kommt aus den Rollen in ${providerName} und lässt sich nur dort ändern.`,
+        });
+      }
       const removesLeader = membership?.role === 'ADMIN';
       try {
         await fastify.prisma.$transaction(async (tx) => {
@@ -635,12 +652,15 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
           });
           // Eine entfernte Vereinsleitung verliert auch die Leitung (sonst bliebe der Vollzugriff bestehen)
           // Beitritt endet mit (Heimabteilung bleibt bei Zusatz-Mitgliedern unberührt)
-          const leave = { joinedAt: null, confirmedAt: null, confirmedById: null };
-          await tx.departmentMember.updateMany({
-            where: { departmentId: tenant.id, userId: user.id },
-            data: removesLeader
+          // removedAt: Einladungen von vorher (auch der Abteilungs-Link) bringen die Person nicht wieder hinein
+          const removedAt = new Date();
+          const leave = { joinedAt: null, confirmedAt: null, confirmedById: null, removedAt };
+          await tx.departmentMember.upsert({
+            where: { departmentId_userId: { departmentId: tenant.id, userId: user.id } },
+            update: removesLeader
               ? { permissions: [], role: 'HELPER', leaderSource: null, ...leave }
               : { permissions: [], ...leave },
+            create: { departmentId: tenant.id, userId: user.id, role: 'HELPER', removedAt },
           });
           if (isHome) {
             await tx.user.update({

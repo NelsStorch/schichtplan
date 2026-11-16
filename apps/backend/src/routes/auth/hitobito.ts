@@ -45,6 +45,8 @@ import {
   bootstrapAdminCeviDbIds,
   getCeviDbRedirectUri,
   loginPageUrl,
+  cleanInviteParam,
+  withInviteParam,
   PENDING_LINK_COOKIE,
   PENDING_LINK_TTL_SECONDS,
   pendingLinks,
@@ -97,7 +99,7 @@ const HITOBITO_PROVIDERS: readonly unknown[] = ['CEVI', 'PFADI', 'JUBLA'];
 /** Anmeldung über Hitobito (Cevi.DB, PBS MiData, Jubla-DB), inkl. Verknüpfen mit einem bestehenden Passwort-Konto */
 const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
   // 1. Cevi.DB OAuth Login Redirect
-  fastify.get<{ Querystring: { returnTo?: string; tenantSlug?: string; org?: string; real?: string } }>(
+  fastify.get<{ Querystring: { returnTo?: string; tenantSlug?: string; org?: string; real?: string; invite?: string } }>(
     '/api/auth/cevidb/login',
     {
       schema: {
@@ -109,6 +111,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
           tenantSlug: z.string().optional().describe('Subdomain der Abteilung'),
           org: z.string().optional().describe('Verbands-Kürzel (cevi, pfadi, jubla)'),
           real: z.string().optional().describe('Nur Dev: 1 = direkt zur echten Verbands-DB statt zur Simulation'),
+          invite: z.string().max(200).optional().describe('Einladungs-Token vom Login-Link (wird nach dem Login eingelöst)'),
         }),
       },
     },
@@ -124,6 +127,8 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
         : request.tenant
           ? defaultDestination(request.tenant.slug, reqHost, request.tenant.organization)
           : null;
+      // Einladung vom Login-Link: im state mitführen, sonst ginge sie beim Umweg über die Verbands-DB verloren
+      const invite = cleanInviteParam(request.query.invite);
 
       // Dev mit Simulation: zuerst die Auswahl (erfundene Person oder weiter zur echten Verbands-DB)
       if (request.query.real !== '1' && simulationEnabled(reqHost)) {
@@ -133,6 +138,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
             returnTo,
             tenantSlug: request.query.tenantSlug || request.tenant?.slug || null,
             provider: providerConfig.type,
+            invite,
           })
         ).toString('base64url');
         reply.setCookie('cevidb_oauth_state', simState, {
@@ -158,13 +164,13 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
 
       if (!providerConfig.clientId) {
         fastify.log.error(`${providerConfig.type} OAuth ist nicht konfiguriert (CLIENT_ID fehlt in der Umgebung)`);
-        return reply.redirect(loginErrorUrl('cevidb_unavailable', returnTo, reqHost, providerConfig.type));
+        return reply.redirect(withInviteParam(loginErrorUrl('cevidb_unavailable', returnTo, reqHost, providerConfig.type), invite));
       }
 
       // Bei aktiver Störung von Hitobito gar nicht erst weiterleiten, sondern sofort Ausweich-Login anbieten
       if (hitobitoCircuitBreaker.isOpen(providerConfig.type)) {
         fastify.log.warn(`${providerConfig.type} Circuit Breaker ist aktiv (Hitobito temporär nicht erreichbar)`);
-        return reply.redirect(loginErrorUrl('cevidb_unavailable', returnTo, reqHost, providerConfig.type));
+        return reply.redirect(withInviteParam(loginErrorUrl('cevidb_unavailable', returnTo, reqHost, providerConfig.type), invite));
       }
 
       const stateObj = {
@@ -172,6 +178,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
         returnTo,
         tenantSlug: request.query.tenantSlug || request.tenant?.slug || null,
         provider: providerConfig.type,
+        invite,
       };
 
       const stateEncoded = Buffer.from(JSON.stringify(stateObj)).toString('base64url');
@@ -217,6 +224,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
       let returnTo: string | null = null;
       let tenantSlug: string | null = null;
       let providerType: OrganizationType = 'CEVI';
+      let invite: string | null = null;
 
       try {
         if (state) {
@@ -224,6 +232,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
           returnTo = parsedState.returnTo ? cleanReturnTo(parsedState.returnTo, '/', request.hostname) : null;
           tenantSlug = typeof parsedState.tenantSlug === 'string' ? parsedState.tenantSlug : null;
           if (HITOBITO_PROVIDERS.includes(parsedState.provider)) providerType = parsedState.provider;
+          invite = cleanInviteParam(parsedState.invite);
         }
       } catch {
         // Fallback default
@@ -234,19 +243,19 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
 
       // Abbruch durch die Person auf Hitobito (z. B. Zugriff verweigert)
       if (error) {
-        return reply.redirect(loginErrorUrl('cevidb_denied', returnTo, request.hostname, providerConfig.type));
+        return reply.redirect(withInviteParam(loginErrorUrl('cevidb_denied', returnTo, request.hostname, providerConfig.type), invite));
       }
 
       // state muss zum Cookie aus /cevidb/login passen, sonst könnte ein fremder Code untergeschoben werden
       if (!code || !state || state !== request.cookies.cevidb_oauth_state) {
         fastify.log.warn('Hitobito Callback ohne gültigen Code oder state');
-        return reply.redirect(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerConfig.type));
+        return reply.redirect(withInviteParam(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerConfig.type), invite));
       }
 
       // Ohne eigene Zugangsdaten des Verbands nichts an dessen Hitobito schicken
       if (!providerConfig.clientId || !providerConfig.clientSecret) {
         fastify.log.error(`${providerConfig.type} OAuth ist nicht konfiguriert (CLIENT_ID/SECRET fehlt)`);
-        return reply.redirect(loginErrorUrl('cevidb_unavailable', returnTo, request.hostname, providerConfig.type));
+        return reply.redirect(withInviteParam(loginErrorUrl('cevidb_unavailable', returnTo, request.hostname, providerConfig.type), invite));
       }
 
       let profile: any;
@@ -274,7 +283,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
           // Nur Serverfehler zählen als Störung; 4xx (z. B. abgelaufener Code) liegt nicht an Hitobito
           if (tokenRes.status >= 500) hitobitoCircuitBreaker.recordFailure(providerConfig.type);
           trackCeviDbFailure(providerConfig.type);
-          return reply.redirect(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerConfig.type));
+          return reply.redirect(withInviteParam(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerConfig.type), invite));
         }
 
         const tokenData = (await tokenRes.json()) as {
@@ -300,7 +309,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
           fastify.log.error(`${providerConfig.type} Profilabruf fehlgeschlagen`);
           if (profileRes.status >= 500) hitobitoCircuitBreaker.recordFailure(providerConfig.type);
           trackCeviDbFailure(providerConfig.type);
-          return reply.redirect(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerConfig.type));
+          return reply.redirect(withInviteParam(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerConfig.type), invite));
         }
 
         profile = await profileRes.json();
@@ -352,12 +361,12 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
         fastify.log.error(err, `${providerConfig.type} nicht erreichbar`);
         hitobitoCircuitBreaker.recordFailure(providerConfig.type);
         trackCeviDbFailure(providerConfig.type);
-        return reply.redirect(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerConfig.type));
+        return reply.redirect(withInviteParam(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerConfig.type), invite));
       }
 
       trackHitobitoSuccess(providerConfig.type);
       reply.clearCookie('cevidb_oauth_state', { path: '/' });
-      return reply.redirect(await finishCeviDbLogin(reply, profile, returnTo, tenantSlug, undefined, providerConfig.type));
+      return reply.redirect(await finishCeviDbLogin(reply, profile, returnTo, tenantSlug, undefined, providerConfig.type, invite));
     }
   );
 
@@ -380,21 +389,23 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
         let returnTo: string | null = null;
         let tenantSlug: string | null = null;
         let providerType: OrganizationType = 'CEVI';
+        let invite: string | null = null;
         try {
           const parsedState = JSON.parse(Buffer.from(state, 'base64url').toString('utf8'));
           returnTo = parsedState.returnTo ? cleanReturnTo(parsedState.returnTo, '/', request.hostname) : null;
           tenantSlug = typeof parsedState.tenantSlug === 'string' ? parsedState.tenantSlug : null;
           if (HITOBITO_PROVIDERS.includes(parsedState.provider)) providerType = parsedState.provider;
+          invite = cleanInviteParam(parsedState.invite);
         } catch {
           // Fallback default
         }
         if (state !== request.cookies.cevidb_oauth_state) {
-          return reply.redirect(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerType));
+          return reply.redirect(withInviteParam(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerType), invite));
         }
         const persona = findSimPersona(providerType, code);
         if (!persona) {
           fastify.log.warn({ provider: providerType }, 'Simulierter Login ohne gültige Person');
-          return reply.redirect(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerType));
+          return reply.redirect(withInviteParam(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerType), invite));
         }
         const simulatedProfile: any = simProfile(providerType, persona);
         simulatedProfile._meta = {
@@ -407,7 +418,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
         await adoptSimAccount(fastify.prisma, providerType, String(simulatedProfile.email), String(simulatedProfile.id));
         fastify.log.info({ provider: providerType, persona: persona.key }, 'Simulierter Verbands-Login');
         reply.clearCookie('cevidb_oauth_state', { path: '/' });
-        return reply.redirect(await finishCeviDbLogin(reply, simulatedProfile, returnTo, tenantSlug, undefined, providerType));
+        return reply.redirect(await finishCeviDbLogin(reply, simulatedProfile, returnTo, tenantSlug, undefined, providerType, invite));
       }
     );
   }
@@ -448,7 +459,9 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
     returnTo: string | null,
     tenantSlug: string | null,
     linkConfirmedUserId?: string,
-    targetProvider: OrganizationType = 'CEVI'
+    targetProvider: OrganizationType = 'CEVI',
+    /** Einladungs-Token vom Login-Link: danach auf /abteilung einlösen */
+    invite: string | null = null
   ): Promise<string> {
     const ceviDbId = profile.id;
     const providerId = String(profile.id);
@@ -494,13 +507,16 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
           { userId: byEmail.id, ceviDbId, otherProvider },
           `${provider}-Login: E-Mail gehört zu anderem Provider-Konto`
         );
-        return otherProvider
-          ? loginErrorUrl('cevidb_email_other_provider', returnTo, reply.request?.hostname, provider, otherProvider)
-          : loginErrorUrl('cevidb_email_taken', returnTo, reply.request?.hostname, provider);
+        return withInviteParam(
+          otherProvider
+            ? loginErrorUrl('cevidb_email_other_provider', returnTo, reply.request?.hostname, provider, otherProvider)
+            : loginErrorUrl('cevidb_email_taken', returnTo, reply.request?.hostname, provider),
+          invite
+        );
       }
       if (byEmail?.passwordHash && byEmail.id !== linkConfirmedUserId) {
         // Passwort-Konto mit gleicher E-Mail: erst nach Passwort verknüpfen (login.<domain>/konto-verknuepfen)
-        const token = createPendingLink({ profile, returnTo, tenantSlug, userId: byEmail.id, provider });
+        const token = createPendingLink({ profile, returnTo, tenantSlug, userId: byEmail.id, provider, invite });
         reply.setCookie(PENDING_LINK_COOKIE, token, {
           path: '/',
           httpOnly: true,
@@ -508,7 +524,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
           sameSite: 'lax',
           maxAge: PENDING_LINK_TTL_SECONDS,
         });
-        return loginPageUrl('/konto-verknuepfen', returnTo ?? '', reply.request?.hostname);
+        return loginPageUrl('/konto-verknuepfen', returnTo ?? '', reply.request?.hostname, invite);
       }
       user = byEmail;
     }
@@ -625,9 +641,12 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
     const target = returnTo ?? defaultDestination(homeDepartment?.slug ?? null, reply.request?.hostname, homeDepartment?.organization ?? provider);
 
     let redirectUrl = target;
-    // Leitung einer Ebene ohne Schichtplan (Abteilung, Region, Kanton, Bund): Anlegen anbieten. Geprüft wird über die
-    // Gruppen der Leitungsrollen, nicht über `ortsgruppe_id`/`schar_id`: Das fehlt z. B. der Bundesleitung ganz.
-    if (
+    if (invite) {
+      // Mit Einladung: zuerst einlösen (Abteilungsseite im Login-Portal), auch wenn die Heimabteilung schon feststeht
+      redirectUrl = loginPageUrl('/abteilung', target, reply.request?.hostname, invite);
+    } else if (
+      // Leitung einer Ebene ohne Schichtplan (Abteilung, Region, Kanton, Bund): Anlegen anbieten. Geprüft wird über
+      // die Gruppen der Leitungsrollen, nicht über `ortsgruppe_id`/`schar_id`: Das fehlt z. B. der Bundesleitung ganz.
       !homeDepartment &&
       derived.isDepartmentLeader &&
       (await departmentCreationEligibility(fastify.prisma, user.id, provider)).eligible
@@ -649,7 +668,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
     // wurde eben das Passwort des Kontos verwendet: dann gilt die Regel für den Passwort-Login.
     if (needsSecondFactor(user, linkConfirmedUserId ? 'password' : 'provider')) {
       setChallengeCookie(reply, { uid: user.id, amr, next: redirectUrl });
-      return loginPageUrl('/zwei-faktor', returnTo ?? '', reply.request?.hostname);
+      return loginPageUrl('/zwei-faktor', returnTo ?? '', reply.request?.hostname, invite);
     }
 
     const token = fastify.signAuthToken({
@@ -725,7 +744,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
 
     pendingLinks.delete(token!);
     reply.clearCookie(PENDING_LINK_COOKIE, { path: '/' });
-    const redirectUrl = await finishCeviDbLogin(reply, link.profile, link.returnTo, link.tenantSlug, user.id, link.provider || 'CEVI');
+    const redirectUrl = await finishCeviDbLogin(reply, link.profile, link.returnTo, link.tenantSlug, user.id, link.provider || 'CEVI', link.invite ?? null);
     fastify.log.info({ userId: user.id }, 'Passwort-Konto mit Provider verknüpft');
     trackUsage('ACCOUNT_LINK');
     return { redirectUrl };

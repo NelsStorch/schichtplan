@@ -97,7 +97,7 @@ function ForgotPassword() {
               type="button"
               variant="ghost"
               className="w-full"
-              onClick={() => (window.location.href = withReturnTo('/', returnTo))}
+              onClick={() => (window.location.href = withReturnTo('/', returnTo, inviteToken))}
             >
               Zurück zur Anmeldung
             </Button>

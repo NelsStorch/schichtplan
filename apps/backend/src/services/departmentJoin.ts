@@ -6,12 +6,15 @@
 import type { OrganizationType, PrismaClient } from '../db.js';
 import { isPassiveRoleClass, normalizePermissions, type DepartmentPermission } from '@schichtplan/shared';
 import type { FastifyBaseLogger } from 'fastify';
-import { verifyDepartmentInviteToken } from './inviteToken.js';
+import { INVITE_REASON_ERRORS, verifyDepartmentInviteToken } from './inviteToken.js';
 import { recordDepartmentAction } from './departmentAudit.js';
 import { personLabel } from './profile.js';
 import { isCeviNameProfile } from './nicknameLogin.js';
 
-type Db = Pick<PrismaClient, 'department' | 'departmentMember' | 'eventOrganizer' | 'userHitobitoRole' | 'hitobitoGroup'>;
+type Db = Pick<
+  PrismaClient,
+  'department' | 'departmentMember' | 'eventOrganizer' | 'userHitobitoRole' | 'hitobitoGroup' | 'departmentInviteRedemption'
+>;
 
 export interface ProviderDepartments {
   /**
@@ -71,11 +74,17 @@ export type JoinCheck =
       fromProvider?: boolean;
       /** Rechte aus einer Einladung mit Rechte-Vorlage (nie für Spitznamen-Profile) */
       grantedPermissions: DepartmentPermission[];
+      /** Einladung mit Rechten: beim Speichern als eingelöst vermerken (recordInviteRedemption), nur einmal gültig */
+      redeemTokenHash?: string;
     };
 
 /**
  * Darf die Person der Abteilung beitreten (als Heimabteilung oder zusätzlich)?
  * Wer schon dazugehört (Heimabteilung, Beitritt, Rechte, OK), darf immer; sonst entscheidet der Beitrittsmodus.
+ *
+ * Einladungen: Der Abteilungs-Link gilt für alle als Mitglied. Persönliche Einladungen laufen ab, mit Rechten gelten
+ * sie nur für die eingeladene (bestätigte) E-Mail und nur einmal. Hat die Leitung die Person entfernt, gilt nur eine
+ * Einladung, die danach ausgestellt wurde (der Abteilungs-Link nicht mehr).
  */
 export async function checkDepartmentJoin(
   prisma: Db,
@@ -86,6 +95,9 @@ export async function checkDepartmentJoin(
       passwordHash: string | null;
       providerId: string | null;
       provider?: OrganizationType | null;
+      /** Für Einladungen mit Rechten: zählt nur bestätigt */
+      email?: string | null;
+      emailVerified?: boolean | null;
     };
     departmentId: string;
     inviteToken?: string | null;
@@ -100,13 +112,35 @@ export async function checkDepartmentJoin(
   });
   if (!dept) return { ok: false, status: 400, error: 'Diese Abteilung gibt es nicht' };
 
-  const invite = verifyDepartmentInviteToken(dept.id, dept.inviteToken, params.inviteToken);
+  const member = await prisma.departmentMember.findUnique({
+    where: { departmentId_userId: { departmentId, userId } },
+    select: { removedAt: true },
+  });
+  const removedAt = member?.removedAt ?? null;
+
+  const invite = verifyDepartmentInviteToken(dept.id, dept.inviteToken, params.inviteToken, {
+    email: user.emailVerified ? user.email : null,
+  });
+  // Warum eine angegebene Einladung nicht gilt (abgelaufen, andere E-Mail, schon eingelöst, nach dem Entfernen)
+  let inviteProblem: keyof typeof INVITE_REASON_ERRORS | null = invite.reason ?? null;
   if (invite.valid) {
-    return {
-      ok: true,
-      invited: true,
-      grantedPermissions: !isCeviNameProfile(user) && invite.permissions.length > 0 ? invite.permissions : [],
-    };
+    // Ausstellungszeit hat Sekunden-Genauigkeit: eine Einladung aus derselben Sekunde wie das Entfernen zählt als neuer
+    if (removedAt && (!invite.issuedAt || invite.issuedAt.getTime() < Math.floor(removedAt.getTime() / 1000) * 1000)) {
+      inviteProblem = 'REMOVED';
+    } else if (
+      invite.tokenHash &&
+      (await prisma.departmentInviteRedemption.count({ where: { tokenHash: invite.tokenHash } })) > 0
+    ) {
+      inviteProblem = 'USED';
+    } else {
+      const grantedPermissions = !isCeviNameProfile(user) && invite.permissions.length > 0 ? invite.permissions : [];
+      return {
+        ok: true,
+        invited: true,
+        grantedPermissions,
+        ...(grantedPermissions.length > 0 && invite.tokenHash ? { redeemTokenHash: invite.tokenHash } : {}),
+      };
+    }
   }
 
   const alreadyMember =
@@ -127,7 +161,13 @@ export async function checkDepartmentJoin(
   // Laut Rollen belegt: Beitritt auch bei INVITE_ONLY, bestätigt durch die DB
   if (own?.verified.has(dept.id)) return { ok: true, invited: false, fromProvider: true, grantedPermissions: [] };
 
+  // Angegebene Einladung gilt nicht: lieber sagen warum, als still ohne Bestätigung und Rechte aufzunehmen
+  if (inviteProblem) {
+    return { ok: false, status: 403, code: `INVITE_${inviteProblem}`, error: INVITE_REASON_ERRORS[inviteProblem] };
+  }
+
   if (dept.joinMode === 'INVITE_ONLY') {
+    if (removedAt) return { ok: false, status: 403, code: 'INVITE_REMOVED', error: INVITE_REASON_ERRORS.REMOVED };
     return {
       ok: false,
       status: 403,
@@ -214,6 +254,20 @@ export async function markMembershipJoined(
     },
   });
   return { created: join && !wasJoined };
+}
+
+/**
+ * Einladung mit Rechten als eingelöst vermerken (in derselben Transaktion wie der Beitritt). Wurde sie gleichzeitig
+ * schon eingelöst, scheitert das am eindeutigen Hash (Prisma P2002) und die Transaktion fällt zurück.
+ */
+export async function recordInviteRedemption(
+  tx: Pick<PrismaClient, 'departmentInviteRedemption'>,
+  departmentId: string,
+  userId: string,
+  tokenHash: string | undefined
+) {
+  if (!tokenHash) return;
+  await tx.departmentInviteRedemption.create({ data: { departmentId, userId, tokenHash } });
 }
 
 /** Herkunft eines Beitritts, den die Verbands-DB laut Rollen angelegt hat (endet, wenn die Rolle fehlt) */

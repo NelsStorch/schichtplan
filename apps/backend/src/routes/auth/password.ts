@@ -26,14 +26,33 @@ import {
   setAuthCookie,
   getLoginPortalBaseUrl,
   loadUserDto,
-  ensureHelperMembership,
   registrationAccepted,
   cleanReturnTo,
+  cleanInviteParam,
 } from '../../services/authSession.js';
 
 
 export function hashVerificationToken(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+/**
+ * Link aus der Bestätigungsmail: Ziel (return_to) und Einladung bleiben erhalten, auch beim erneuten Senden.
+ * Sonst landete die Person nach der Bestätigung ohne Einladung im Login.
+ */
+function verifyEmailUrl(
+  loginPortalUrl: string,
+  token: string,
+  returnTo: string | undefined,
+  inviteToken: string | undefined,
+  host: string | undefined
+): string {
+  const params = new URLSearchParams({ token });
+  const safeReturnTo = returnTo ? cleanReturnTo(returnTo, '', host) : '';
+  if (safeReturnTo) params.set('return_to', safeReturnTo);
+  const invite = cleanInviteParam(inviteToken);
+  if (invite) params.set('invite', invite);
+  return `${loginPortalUrl}/verify-email?${params.toString()}`;
 }
 
 /** Vergleichswert für Logins ohne Konto (gleich viel Rechenzeit wie ein echter Passwortvergleich) */
@@ -199,9 +218,8 @@ const passwordAuthRoutes: FastifyPluginAsync = async (fastify) => {
       throw err;
     }
 
-    if (request.tenant) {
-      await ensureHelperMembership(fastify.prisma, request.tenant.id, user.id);
-    }
+    // Bewusst kein Gast-Eintrag in der Abteilung: Das Konto ist noch unbestätigt (vielleicht fremde E-Mail).
+    // Die Abteilung wählt die Person nach dem ersten Login auf /abteilung.
     trackUsage('REGISTER', { dim: 'password', departmentId: request.tenant?.id });
 
     // Token erzeugen & altes löschen (in der DB nur der SHA-256-Hash, wie beim Passwort-Reset)
@@ -220,11 +238,7 @@ const passwordAuthRoutes: FastifyPluginAsync = async (fastify) => {
 
     // Bestätigungs-E-Mail versenden
     const loginPortalUrl = getLoginPortalBaseUrl(process.env, request.headers.host, request.organization);
-    const verifyParams = new URLSearchParams({ token: verificationToken });
-    const safeReturnTo = input.returnTo ? cleanReturnTo(input.returnTo, '', request.headers.host) : '';
-    if (safeReturnTo) verifyParams.set('return_to', safeReturnTo);
-    if (input.inviteToken) verifyParams.set('invite', input.inviteToken);
-    const verificationUrl = `${loginPortalUrl}/verify-email?${verifyParams.toString()}`;
+    const verificationUrl = verifyEmailUrl(loginPortalUrl, verificationToken, input.returnTo, input.inviteToken, request.headers.host);
     await sendVerificationEmail({
       to: cleanEmail,
       name: user.nickname || user.firstName,
@@ -289,7 +303,7 @@ const passwordAuthRoutes: FastifyPluginAsync = async (fastify) => {
     });
 
     const loginPortalUrl = getLoginPortalBaseUrl(process.env, request.headers.host, request.organization);
-    const verificationUrl = `${loginPortalUrl}/verify-email?token=${verificationToken}`;
+    const verificationUrl = verifyEmailUrl(loginPortalUrl, verificationToken, input.returnTo, input.inviteToken, request.headers.host);
     await sendVerificationEmail({
       to: cleanEmail,
       name: user.nickname || user.firstName,

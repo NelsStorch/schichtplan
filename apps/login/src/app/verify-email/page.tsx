@@ -101,7 +101,11 @@ function VerifyEmailContent() {
       const res = await fetch('/api/auth/resend-verification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: resendEmail.trim() }),
+        body: JSON.stringify({
+          email: resendEmail.trim(),
+          returnTo: returnTo ?? undefined,
+          inviteToken: inviteToken || undefined,
+        }),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -195,7 +199,7 @@ function VerifyEmailContent() {
 
             <div className="mt-6 text-center">
               <Link
-                href={withReturnTo('/', returnTo)}
+                href={withReturnTo('/', returnTo, inviteToken)}
                 className="text-sm font-medium text-accent-ink underline-offset-4 hover:underline"
               >
                 Zurück zur Anmeldung

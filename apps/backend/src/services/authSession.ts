@@ -235,10 +235,27 @@ export function getCeviDbRedirectUri(env: NodeJS.ProcessEnv = process.env, reqHo
 }
 
 /** Login-Seite (login.<domain>), z. B. für die Abfrage der Abteilung nach dem Cevi.DB-Login */
-export function loginPageUrl(path: string, returnTo: string, reqHost?: string) {
+export function loginPageUrl(path: string, returnTo: string, reqHost?: string, invite?: string | null) {
   const base = getLoginPortalBaseUrl(process.env, reqHost);
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return returnTo ? `${base}${cleanPath}?return_to=${encodeURIComponent(returnTo)}` : `${base}${cleanPath}`;
+  const url = returnTo ? `${base}${cleanPath}?return_to=${encodeURIComponent(returnTo)}` : `${base}${cleanPath}`;
+  return withInviteParam(url, invite);
+}
+
+/**
+ * Einladungs-Token aus Query oder OAuth-state: nur die Zeichen, die ein Token haben kann (base64url und Punkte).
+ * Alles andere fällt weg, damit nichts Fremdes in Weiterleitungen landet.
+ */
+export function cleanInviteParam(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const clean = value.trim();
+  return clean.length >= 8 && clean.length <= 128 && /^[A-Za-z0-9._-]+$/.test(clean) ? clean : null;
+}
+
+/** Hängt `invite=…` an eine URL (Login-Portal), damit die Einladung den Umweg über Login oder Fehlerseite übersteht */
+export function withInviteParam(url: string, invite?: string | null): string {
+  if (!invite) return url;
+  return `${url}${url.includes('?') ? '&' : '?'}invite=${encodeURIComponent(invite)}`;
 }
 
 /* ------------------------------------------------------------------ Konto verknüpfen */
@@ -260,6 +277,8 @@ export interface PendingLink {
   expires: number;
   failedAttempts: number;
   provider?: OrganizationType;
+  /** Einladungs-Token vom Login-Link: nach dem Verknüpfen auf /abteilung einlösen */
+  invite?: string | null;
 }
 export const pendingLinks = new Map<string, PendingLink>();
 

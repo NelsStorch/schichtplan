@@ -258,7 +258,11 @@ function LoginContent() {
       const res = await fetch('/api/auth/resend-verification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: targetEmail.trim() }),
+        body: JSON.stringify({
+          email: targetEmail.trim(),
+          returnTo: returnTo ?? undefined,
+          inviteToken: inviteToken || undefined,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Fehler beim Senden.');
@@ -415,6 +419,8 @@ function LoginContent() {
   const cevidbAuthParams = new URLSearchParams();
   if (returnTo) cevidbAuthParams.set('returnTo', returnTo);
   if (org.slug) cevidbAuthParams.set('org', org.slug);
+  // Einladung durch den Umweg über die Verbands-DB mitnehmen (wird danach auf /abteilung eingelöst)
+  if (inviteToken) cevidbAuthParams.set('invite', inviteToken);
   const cevidbAuthUrl = `/api/auth/cevidb/login${cevidbAuthParams.toString() ? `?${cevidbAuthParams.toString()}` : ''}`;
 
   const feedback = (

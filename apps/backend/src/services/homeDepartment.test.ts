@@ -90,7 +90,23 @@ describe('syncCeviDbHomeDepartment', () => {
     );
     expect(prisma.user.update).toHaveBeenCalledWith({
       where: { id: 'u-1' },
-      data: { homeDepartmentSource: 'SELF', homeDepartmentConfirmedAt: null, homeDepartmentConfirmedById: null },
+      data: {
+        homeDepartmentSource: 'SELF',
+        homeDepartmentConfirmedAt: null,
+        homeDepartmentConfirmedById: null,
+        homeDepartmentConfirmSource: null,
+      },
     });
+  });
+
+  it('lässt eine Bestätigung per Einladung auch ohne Rolle in der Ortsgruppe bestehen', async () => {
+    const prisma = db({ id: 'dept-confirmed', hitobitoGroupId: 31 });
+    await syncCeviDbHomeDepartment(
+      prisma,
+      { id: 'u-1', homeDepartmentSource: 'CONFIRMED', homeDepartmentConfirmSource: 'INVITE', departmentSetupAt: new Date() },
+      placement({ ortsgruppeIds: [10] }),
+      'JUBLA'
+    );
+    expect(prisma.user.update).not.toHaveBeenCalled();
   });
 });

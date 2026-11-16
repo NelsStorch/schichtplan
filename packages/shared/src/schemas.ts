@@ -734,6 +734,9 @@ export type VerifyEmailInput = z.infer<typeof VerifyEmailSchema>;
 
 export const ResendVerificationSchema = z.object({
   email: z.string().email('Ungültige E-Mail-Adresse'),
+  /** Wie bei der Registrierung: Ziel und Einladung kommen in den neuen Link */
+  returnTo: z.string().max(500).optional(),
+  inviteToken: z.string().trim().max(128).optional(),
 });
 
 export type ResendVerificationInput = z.infer<typeof ResendVerificationSchema>;

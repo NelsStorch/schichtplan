@@ -23,9 +23,12 @@ function LinkAccount() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  // Einladung vom Login-Link: bleibt auch beim Abbrechen erhalten
+  const [inviteToken, setInviteToken] = useState('');
 
   useEffect(() => {
     setReturnTo(cleanReturnTo(searchParams.get('return_to')));
+    setInviteToken(searchParams.get('invite')?.trim() || '');
     fetch('/api/auth/cevidb/link', { cache: 'no-store' })
       .then(async (res) => {
         if (!res.ok) throw new Error();
@@ -56,7 +59,7 @@ function LinkAccount() {
 
   const cancel = async () => {
     await fetch('/api/auth/cevidb/link', { method: 'DELETE' }).catch(() => undefined);
-    window.location.href = withReturnTo('/', returnTo);
+    window.location.href = withReturnTo('/', returnTo, inviteToken);
   };
 
   return (
@@ -80,7 +83,7 @@ function LinkAccount() {
             <p className="text-[15px] leading-relaxed text-fg-muted">
               Melde dich bitte nochmals mit {org.authProviderShort} an. Danach fragen wir wieder nach deinem Passwort.
             </p>
-            <Button size="lg" className="w-full" onClick={() => (window.location.href = withReturnTo('/', returnTo))}>
+            <Button size="lg" className="w-full" onClick={() => (window.location.href = withReturnTo('/', returnTo, inviteToken))}>
               Zur Anmeldung
             </Button>
           </div>
@@ -126,7 +129,8 @@ function LinkAccount() {
                 <a
                   href={withReturnTo(
                     `/passwort-vergessen${info.email ? `?email=${encodeURIComponent(info.email)}` : ''}`,
-                    returnTo
+                    returnTo,
+                    inviteToken
                   )}
                   className="font-medium text-accent-ink underline-offset-4 hover:underline"
                 >

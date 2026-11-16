@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { checkDepartmentJoin, syncProviderMemberships } from './departmentJoin.js';
+import { createDepartmentInviteToken } from './inviteToken.js';
 
 function makePrisma(
   dept: {
@@ -13,7 +14,8 @@ function makePrisma(
     groups?: { id: number; jungscharId: number | null; ortsgruppeId: number | null }[];
     /** Abteilungen mit ihrer Hitobito-Gruppe */
     departments?: { id: string; hitobitoGroupId: number }[];
-  } = {}
+  } = {},
+  extra: { removedAt?: Date | null; redeemed?: boolean } = {}
 ) {
   const groups = hitobito.groups ?? [];
   return {
@@ -45,9 +47,13 @@ function makePrisma(
     },
     departmentMember: {
       count: vi.fn().mockResolvedValue(0),
+      findUnique: vi.fn().mockResolvedValue(extra.removedAt ? { removedAt: extra.removedAt } : null),
     },
     eventOrganizer: {
       count: vi.fn().mockResolvedValue(0),
+    },
+    departmentInviteRedemption: {
+      count: vi.fn().mockResolvedValue(extra.redeemed ? 1 : 0),
     },
   } as any;
 }
@@ -183,6 +189,77 @@ describe('checkDepartmentJoin', () => {
     });
     expect(res).toMatchObject({ ok: false, status: 403, code: 'INVITE_REQUIRED' });
     expect(prisma.userHitobitoRole.findMany).not.toHaveBeenCalled();
+  });
+});
+
+describe('checkDepartmentJoin mit Einladungen', () => {
+  const BASE = 'basis-token-abcdefghijkl';
+  const dept = { id: 'dept-1', joinMode: 'INVITE_ONLY', organization: 'CEVI', inviteToken: BASE };
+  const passwordUser = (email: string) => ({
+    homeDepartmentId: null,
+    passwordHash: 'hash',
+    providerId: null,
+    provider: 'CEVI' as const,
+    email,
+    emailVerified: true,
+  });
+
+  it('gibt Rechte aus einer persönlichen Einladung an die eingeladene Adresse (einmal einzulösen)', async () => {
+    const token = createDepartmentInviteToken('dept-1', BASE, 'ADMINISTRATION', 'Anna@Beispiel.ch');
+    const res = await checkDepartmentJoin(makePrisma(dept), {
+      userId: 'u-1',
+      user: passwordUser('anna@beispiel.ch'),
+      departmentId: 'dept-1',
+      inviteToken: token,
+    });
+    expect(res).toMatchObject({ ok: true, invited: true });
+    if (!res.ok) throw new Error('erwartet ok');
+    expect(res.grantedPermissions.length).toBeGreaterThan(0);
+    expect(res.redeemTokenHash).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it('lehnt eine weitergeleitete Einladung mit Rechten ab (andere E-Mail)', async () => {
+    const token = createDepartmentInviteToken('dept-1', BASE, 'ADMINISTRATION', 'anna@beispiel.ch');
+    const res = await checkDepartmentJoin(makePrisma(dept), {
+      userId: 'u-2',
+      user: passwordUser('mallory@beispiel.ch'),
+      departmentId: 'dept-1',
+      inviteToken: token,
+    });
+    expect(res).toMatchObject({ ok: false, status: 403, code: 'INVITE_OTHER_EMAIL' });
+  });
+
+  it('lehnt eine schon eingelöste Einladung mit Rechten ab', async () => {
+    const token = createDepartmentInviteToken('dept-1', BASE, 'ADMINISTRATION', 'anna@beispiel.ch');
+    const res = await checkDepartmentJoin(makePrisma(dept, {}, { redeemed: true }), {
+      userId: 'u-1',
+      user: passwordUser('anna@beispiel.ch'),
+      departmentId: 'dept-1',
+      inviteToken: token,
+    });
+    expect(res).toMatchObject({ ok: false, status: 403, code: 'INVITE_USED' });
+  });
+
+  it('lässt eine entfernte Person mit dem alten Abteilungs-Link nicht wieder hinein', async () => {
+    const res = await checkDepartmentJoin(makePrisma(dept, {}, { removedAt: new Date() }), {
+      userId: 'u-1',
+      user: passwordUser('anna@beispiel.ch'),
+      departmentId: 'dept-1',
+      inviteToken: BASE,
+    });
+    expect(res).toMatchObject({ ok: false, status: 403, code: 'INVITE_REMOVED' });
+  });
+
+  it('nimmt eine entfernte Person mit einer neueren Einladung wieder auf', async () => {
+    const removedAt = new Date(Date.now() - 60 * 60 * 1000);
+    const token = createDepartmentInviteToken('dept-1', BASE, 'MEMBER', 'anna@beispiel.ch');
+    const res = await checkDepartmentJoin(makePrisma(dept, {}, { removedAt }), {
+      userId: 'u-1',
+      user: passwordUser('anna@beispiel.ch'),
+      departmentId: 'dept-1',
+      inviteToken: token,
+    });
+    expect(res).toEqual({ ok: true, invited: true, grantedPermissions: [] });
   });
 });
 

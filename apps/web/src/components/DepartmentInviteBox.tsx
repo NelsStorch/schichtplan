@@ -84,6 +84,8 @@ export function DepartmentInviteBox({ onError }: { onError?: (msg: string) => vo
           <p className="text-xs font-bold text-fg">Personen einladen &amp; Einladungs-Link</p>
           <p className="text-2xs text-fg-muted">
             Wer diesen Link nutzt oder per E-Mail eingeladen wird, wird direkt als bestätigtes Mitglied aufgenommen.
+            Einladungen per E-Mail sind 14 Tage gültig; mit Rechten gelten sie nur für die eingeladene Adresse und
+            einmal. «Neu erzeugen» macht alle bisherigen Links und Einladungen ungültig.
           </p>
         </div>
         <div className="flex items-center gap-2">

@@ -15,7 +15,7 @@ import {
   tooManyRequests,
 } from '../../services/nicknameLogin.js';
 import { trackUsage } from '../../services/usageStats.js';
-import { verifyDepartmentInviteToken } from '../../services/inviteToken.js';
+import { INVITE_REASON_ERRORS, verifyDepartmentInviteToken } from '../../services/inviteToken.js';
 
 import {
   setAuthCookie,
@@ -142,11 +142,15 @@ const nicknameAuthRoutes: FastifyPluginAsync = async (fastify) => {
         error: 'Die passwortlose Anmeldung ist hier deaktiviert. Bitte melde dich mit E-Mail und Passwort oder Verbands-Login an.',
       });
     }
-    const validInvite = verifyDepartmentInviteToken(department.id, department.inviteToken, inviteToken).valid;
+    // Ohne E-Mail: Einladungen mit Rechten (an eine E-Mail gebunden) gelten hier nicht, Spitznamen-Profile haben keine Rechte
+    const inviteCheck = verifyDepartmentInviteToken(department.id, department.inviteToken, inviteToken);
+    const validInvite = inviteCheck.valid;
     if (department.joinMode === 'INVITE_ONLY' && !validInvite) {
       return reply.status(403).send({
-        code: 'INVITE_REQUIRED',
-        error: 'Für diese Abteilung brauchst du einen gültigen Einladungslink.',
+        code: inviteCheck.reason ? `INVITE_${inviteCheck.reason}` : 'INVITE_REQUIRED',
+        error: inviteCheck.reason
+          ? INVITE_REASON_ERRORS[inviteCheck.reason]
+          : 'Für diese Abteilung brauchst du einen gültigen Einladungslink.',
       });
     }
 
@@ -192,6 +196,7 @@ const nicknameAuthRoutes: FastifyPluginAsync = async (fastify) => {
           homeDepartmentId: department.id,
           homeDepartmentSource: validInvite ? 'CONFIRMED' : 'SELF',
           homeDepartmentConfirmedAt: validInvite ? new Date() : null,
+          homeDepartmentConfirmSource: validInvite ? 'INVITE' : null,
           departmentSetupAt: new Date(),
         },
       });

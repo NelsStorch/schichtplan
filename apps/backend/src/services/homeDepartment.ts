@@ -244,7 +244,23 @@ export async function syncCeviDbStufen(prisma: Db, userId: string, provider?: Or
 }
 
 /** Gehört in jedes Schreiben von homeDepartmentSource, das eine Bestätigung beendet */
-export const NO_HOME_CONFIRMATION = { homeDepartmentConfirmedAt: null, homeDepartmentConfirmedById: null };
+export const NO_HOME_CONFIRMATION = {
+  homeDepartmentConfirmedAt: null,
+  homeDepartmentConfirmedById: null,
+  homeDepartmentConfirmSource: null,
+};
+
+/**
+ * Herkunft einer bestätigten Heimabteilung (users.home_department_confirm_source):
+ * INVITE = Einladung, FOUNDER = Verein selbst angelegt (beides bleibt, unabhängig von Rollen),
+ * CEVIDB = laut Rollen der Verbands-DB selbst gewählt, null = Abteilungsleitung (beides endet ohne passende Rolle).
+ */
+export type HomeConfirmSource = 'INVITE' | 'FOUNDER' | 'CEVIDB' | null;
+
+/** Hängt die Bestätigung an den Rollen der Verbands-DB (Leitung oder DB)? Dann prüft sie jeder Login neu. */
+export function homeConfirmationFollowsRoles(source: string | null | undefined): boolean {
+  return source !== 'INVITE' && source !== 'FOUNDER';
+}
 
 /** Ortsgruppe zur Hitobito-Gruppe einer Abteilung: die Gruppe selbst oder die Ortsgruppe ihrer Jungschar */
 export async function departmentOrtsgruppeId(
@@ -309,7 +325,12 @@ export async function ceviDbGroupPeople(
  */
 export async function syncCeviDbHomeDepartment(
   prisma: Db,
-  user: { id: string; homeDepartmentSource: string | null; departmentSetupAt: Date | null },
+  user: {
+    id: string;
+    homeDepartmentSource: string | null;
+    homeDepartmentConfirmSource?: string | null;
+    departmentSetupAt: Date | null;
+  },
   placement: CeviDbPlacement,
   provider: OrganizationType = 'CEVI'
 ): Promise<{ id: string; slug: string; organization: OrganizationType } | null> {
@@ -340,8 +361,14 @@ export async function syncCeviDbHomeDepartment(
       await autoCreateCeviDbDepartmentStufen(prisma, current.homeDepartmentId, user.id);
     }
     // Bestätigt ist eine Person nur, solange eine ihrer Rollen in der Ortsgruppe der Abteilung liegt
-    // (bei Rollen in mehreren Ortsgruppen zählt jede, nicht nur die erste)
-    if (current?.homeDepartmentId && user.homeDepartmentSource === 'CONFIRMED' && placement.complete) {
+    // (bei Rollen in mehreren Ortsgruppen zählt jede, nicht nur die erste). Eine Einladung oder ein selbst
+    // angelegter Verein hängt nicht an Rollen und bleibt.
+    if (
+      current?.homeDepartmentId &&
+      user.homeDepartmentSource === 'CONFIRMED' &&
+      homeConfirmationFollowsRoles(user.homeDepartmentConfirmSource) &&
+      placement.complete
+    ) {
       const home = await prisma.department.findUnique({
         where: { id: current.homeDepartmentId },
         select: { organization: true, hitobitoGroupId: true },

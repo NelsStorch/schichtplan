@@ -1,6 +1,7 @@
 import { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import { Prisma } from '../../db.js';
 import {
   JoinDepartmentSchema,
   SetHomeDepartmentSchema,
@@ -19,11 +20,18 @@ import {
   markMembershipJoined,
   ownProviderDepartments,
   isProviderJoinSource,
+  recordInviteRedemption,
   replaceSelfStufen,
 } from '../../services/departmentJoin.js';
+import { INVITE_REASON_ERRORS } from '../../services/inviteToken.js';
 import { applyProfileUpdate } from '../../services/profileUpdate.js';
 import { trackUsage } from '../../services/usageStats.js';
 import { createRateLimiter } from '../../services/rateLimit.js';
+
+/** Gleichzeitig schon eingelöste Einladung mit Rechten (eindeutiger Hash in department_invite_redemptions) */
+function isInviteAlreadyUsed(err: unknown): boolean {
+  return err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002';
+}
 
 /** Bremse gegen das Durchprobieren des aktuellen Passworts bei der Passwort-Änderung (pro Konto) */
 const passwordChangeFailures = createRateLimiter(15 * 60 * 1000, 10);
@@ -340,6 +348,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
           provider: true,
           passwordHash: true,
           email: true,
+          emailVerified: true,
         },
       });
       if (!current) return reply.status(404).send({ error: 'Person nicht gefunden' });
@@ -353,6 +362,9 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
       let invited = false;
       // Laut Rollen der Verbands-DB belegt: zählt wie eine Einladung (bestätigt), Herkunft CEVIDB
       let fromProvider = false;
+      // Bestätigt durch eine Einladung (nicht durch die Rollen): bleibt auch ohne passende Rolle
+      let viaInvite = false;
+      let redeemTokenHash: string | undefined;
       let grantedPermissions: DepartmentPermission[] = [];
 
       if (inviteTargetDeptId && (!fromCeviDb || input.inviteToken)) {
@@ -370,8 +382,10 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
         }
         if (check.ok) {
           fromProvider = Boolean(check.fromProvider);
+          viaInvite = check.invited;
           invited = check.invited || fromProvider;
           grantedPermissions = check.grantedPermissions;
+          redeemTokenHash = check.redeemTokenHash;
         }
       }
       const inviteIsForHome = invited && inviteTargetDeptId === departmentId;
@@ -382,7 +396,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
         departmentId && !fromCeviDb && !staysConfirmed && !confirmedByInvite
           ? await fastify.prisma.departmentMember.findFirst({
               where: { departmentId, userId, joinedAt: { not: null }, confirmedAt: { not: null } },
-              select: { confirmedAt: true, confirmedById: true },
+              select: { confirmedAt: true, confirmedById: true, joinSource: true },
             })
           : null;
 
@@ -404,64 +418,79 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
       });
       const keepStufenOf = otherJoined.map((m) => m.departmentId);
 
-      await fastify.prisma.$transaction(async (tx) => {
-        await tx.user.update({
-          where: { id: userId },
-          data: {
-            homeDepartmentId: departmentId,
-            ...(staysConfirmed
-              ? {}
-              : confirmedByInvite
-                ? {
-                    homeDepartmentSource: 'CONFIRMED',
-                    homeDepartmentConfirmedAt: new Date(),
-                    homeDepartmentConfirmedById: null,
-                  }
-                : carriedConfirmation
+      try {
+        await fastify.prisma.$transaction(async (tx) => {
+          await tx.user.update({
+            where: { id: userId },
+            data: {
+              homeDepartmentId: departmentId,
+              ...(staysConfirmed
+                ? {}
+                : confirmedByInvite
                   ? {
                       homeDepartmentSource: 'CONFIRMED',
-                      homeDepartmentConfirmedAt: carriedConfirmation.confirmedAt,
-                      homeDepartmentConfirmedById: carriedConfirmation.confirmedById,
+                      homeDepartmentConfirmedAt: new Date(),
+                      homeDepartmentConfirmedById: null,
+                      homeDepartmentConfirmSource: viaInvite ? 'INVITE' : 'CEVIDB',
                     }
-                  : {
-                      homeDepartmentSource: departmentId ? (fromCeviDb ? 'CEVIDB' : 'SELF') : null,
-                      ...NO_HOME_CONFIRMATION,
-                    }),
-            departmentSetupAt: new Date(),
-          },
-        });
-        // Selbst angegebene Stufen ersetzen; Stufen aus Cevi.DB und weiterer Abteilungen bleiben
-        const ceviDbStufen = await tx.userStufe.findMany({
-          where: { userId, source: 'CEVIDB' },
-          select: { stufeId: true },
-        });
-        const locked = new Set(ceviDbStufen.map((s) => s.stufeId));
-        await tx.userStufe.deleteMany({
-          where: {
-            userId,
-            source: 'SELF',
-            ...(keepStufenOf.length ? { stufe: { departmentId: { notIn: keepStufenOf } } } : {}),
-          },
-        });
-        const selfStufen = wanted.filter((s) => !locked.has(s.stufeId));
-        if (selfStufen.length) {
-          await tx.userStufe.createMany({
-            data: selfStufen.map((s) => ({ userId, stufeId: s.stufeId, role: s.role, source: 'SELF' })),
-            skipDuplicates: true,
+                  : carriedConfirmation
+                    ? {
+                        homeDepartmentSource: 'CONFIRMED',
+                        homeDepartmentConfirmedAt: carriedConfirmation.confirmedAt,
+                        homeDepartmentConfirmedById: carriedConfirmation.confirmedById,
+                        // Bestätigung des Beitritts übernehmen: aus der Verbands-DB, von der Leitung oder per Einladung
+                        homeDepartmentConfirmSource: isProviderJoinSource(carriedConfirmation.joinSource)
+                          ? 'CEVIDB'
+                          : carriedConfirmation.confirmedById
+                            ? null
+                            : 'INVITE',
+                      }
+                    : {
+                        homeDepartmentSource: departmentId ? (fromCeviDb ? 'CEVIDB' : 'SELF') : null,
+                        ...NO_HOME_CONFIRMATION,
+                      }),
+              departmentSetupAt: new Date(),
+            },
           });
-        }
-        // Einladung in eine andere Abteilung (Cevi.DB-Heimabteilung bleibt): dort bestätigt beitreten
-        if (invited && inviteTargetDeptId && inviteTargetDeptId !== departmentId) {
-          await markMembershipJoined(tx, inviteTargetDeptId, userId, { confirmed: true, grantedPermissions, fromProvider });
-        } else if (inviteTargetDeptId && grantedPermissions.length > 0) {
-          // Rechte aus der Einladung in der Heimabteilung (kein zusätzlicher Beitritt)
-          await markMembershipJoined(tx, inviteTargetDeptId, userId, {
-            join: false,
-            confirmed: false,
-            grantedPermissions,
+          // Selbst angegebene Stufen ersetzen; Stufen aus Cevi.DB und weiterer Abteilungen bleiben
+          const ceviDbStufen = await tx.userStufe.findMany({
+            where: { userId, source: 'CEVIDB' },
+            select: { stufeId: true },
           });
+          const locked = new Set(ceviDbStufen.map((s) => s.stufeId));
+          await tx.userStufe.deleteMany({
+            where: {
+              userId,
+              source: 'SELF',
+              ...(keepStufenOf.length ? { stufe: { departmentId: { notIn: keepStufenOf } } } : {}),
+            },
+          });
+          const selfStufen = wanted.filter((s) => !locked.has(s.stufeId));
+          if (selfStufen.length) {
+            await tx.userStufe.createMany({
+              data: selfStufen.map((s) => ({ userId, stufeId: s.stufeId, role: s.role, source: 'SELF' })),
+              skipDuplicates: true,
+            });
+          }
+          // Einladung in eine andere Abteilung (Cevi.DB-Heimabteilung bleibt): dort bestätigt beitreten
+          if (invited && inviteTargetDeptId && inviteTargetDeptId !== departmentId) {
+            await markMembershipJoined(tx, inviteTargetDeptId, userId, { confirmed: true, grantedPermissions, fromProvider });
+          } else if (inviteTargetDeptId && grantedPermissions.length > 0) {
+            // Rechte aus der Einladung in der Heimabteilung (kein zusätzlicher Beitritt)
+            await markMembershipJoined(tx, inviteTargetDeptId, userId, {
+              join: false,
+              confirmed: false,
+              grantedPermissions,
+            });
+          }
+          if (inviteTargetDeptId) await recordInviteRedemption(tx, inviteTargetDeptId, userId, redeemTokenHash);
+        });
+      } catch (err) {
+        if (isInviteAlreadyUsed(err)) {
+          return reply.status(409).send({ code: 'INVITE_USED', error: INVITE_REASON_ERRORS.USED });
         }
-      });
+        throw err;
+      }
 
       if (departmentId) {
         if (current.providerId !== null) {
@@ -493,7 +522,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
       const userId = request.user.id;
       const current = await fastify.prisma.user.findUnique({
         where: { id: userId },
-        select: { homeDepartmentId: true, passwordHash: true, providerId: true, provider: true },
+        select: { homeDepartmentId: true, passwordHash: true, providerId: true, provider: true, email: true, emailVerified: true },
       });
       if (!current) return reply.status(404).send({ error: 'Person nicht gefunden' });
       if (current.homeDepartmentId === input.departmentId) {
@@ -520,14 +549,22 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
         }
       }
 
-      await fastify.prisma.$transaction(async (tx) => {
-        await markMembershipJoined(tx, input.departmentId, userId, {
-          confirmed: check.invited || Boolean(check.fromProvider),
-          grantedPermissions: check.grantedPermissions,
-          fromProvider: check.fromProvider,
+      try {
+        await fastify.prisma.$transaction(async (tx) => {
+          await markMembershipJoined(tx, input.departmentId, userId, {
+            confirmed: check.invited || Boolean(check.fromProvider),
+            grantedPermissions: check.grantedPermissions,
+            fromProvider: check.fromProvider,
+          });
+          await replaceSelfStufen(tx, userId, input.departmentId, input.stufen);
+          await recordInviteRedemption(tx, input.departmentId, userId, check.redeemTokenHash);
         });
-        await replaceSelfStufen(tx, userId, input.departmentId, input.stufen);
-      });
+      } catch (err) {
+        if (isInviteAlreadyUsed(err)) {
+          return reply.status(409).send({ code: 'INVITE_USED', error: INVITE_REASON_ERRORS.USED });
+        }
+        throw err;
+      }
       return loadUserDto(fastify.prisma, userId, request.tenant?.id ?? null);
     }
   );

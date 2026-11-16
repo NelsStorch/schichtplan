@@ -109,7 +109,7 @@ function TwoFactor() {
             <p className="text-[15px] leading-relaxed text-fg-muted">
               Der Code muss innert 10 Minuten nach dem Passwort eingegeben werden. Melde dich bitte nochmals an.
             </p>
-            <Button size="lg" className="w-full" onClick={() => (window.location.href = withReturnTo('/', returnTo))}>
+            <Button size="lg" className="w-full" onClick={() => (window.location.href = withReturnTo('/', returnTo, inviteToken))}>
               Zur Anmeldung
             </Button>
           </div>

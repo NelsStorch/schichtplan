@@ -21,6 +21,8 @@ import { canGrantPermissions, departmentAccess, } from '../../services/permissio
 import {
   createDepartmentInviteToken,
   extractBaseInviteToken,
+  INVITE_REASON_ERRORS,
+  PERSONAL_INVITE_TTL_DAYS,
   verifyDepartmentInviteToken,
   type InvitePreset,
 } from '../../services/inviteToken.js';
@@ -351,7 +353,7 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
                 homeDepartmentId: created.id,
                 homeDepartmentSource: isOther ? 'CONFIRMED' : 'CEVIDB',
                 ...(isOther
-                  ? { homeDepartmentConfirmedAt: new Date(), homeDepartmentConfirmedById: null }
+                  ? { homeDepartmentConfirmedAt: new Date(), homeDepartmentConfirmedById: null, homeDepartmentConfirmSource: 'FOUNDER' }
                   : NO_HOME_CONFIRMATION),
                 departmentSetupAt: new Date(),
               },
@@ -525,7 +527,21 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
             select: { id: true, organization: true, inviteToken: true },
           })
         : null;
-      const verified = dept ? verifyDepartmentInviteToken(dept.id, dept.inviteToken, token) : null;
+      const viewer = dept
+        ? await fastify.prisma.user.findUnique({
+            where: { id: request.user.id },
+            select: { email: true, emailVerified: true },
+          })
+        : null;
+      const verified = dept
+        ? verifyDepartmentInviteToken(dept.id, dept.inviteToken, token, {
+            email: viewer?.emailVerified ? viewer.email : null,
+          })
+        : null;
+      // Abgelaufen oder für eine andere E-Mail: gleich hier sagen (Ob sie schon eingelöst ist, prüft der Beitritt)
+      if (dept && dept.organization === request.organization && verified?.reason) {
+        return reply.status(404).send({ code: `INVITE_${verified.reason}`, error: INVITE_REASON_ERRORS[verified.reason] });
+      }
       const item =
         dept && verified?.valid && dept.organization === request.organization
           ? (await departmentCache.getDirectory(fastify.prisma, request.organization)).find((d) => d.id === dept.id)
@@ -730,13 +746,19 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
       const org = getOrganizationByDbType(request.tenant.organization);
       const portalUrl = `https://${request.tenant.slug}.${rootDomain(request.headers.host)}`;
       const loginUrl = getLoginPortalBaseUrl(process.env, request.headers.host, request.tenant.organization);
-      const signedInvite = createDepartmentInviteToken(request.tenant.id, inviteToken, preset);
-      const inviteUrl = `${loginUrl}/?return_to=${encodeURIComponent(portalUrl)}&invite=${encodeURIComponent(signedInvite)}`;
+      // Persönlich je Adresse: läuft ab, mit Rechten nur für diese Adresse und nur einmal einlösbar
+      const tenantId = request.tenant.id;
+      const baseToken = inviteToken;
+      const inviteUrlFor = (addr: string) => {
+        const personal = createDepartmentInviteToken(tenantId, baseToken, preset, addr);
+        return `${loginUrl}/?return_to=${encodeURIComponent(portalUrl)}&invite=${encodeURIComponent(personal)}`;
+      };
       const name = request.tenant.name;
       const presetNote =
         preset !== 'MEMBER'
-          ? `<p>Dir wurde dabei direkt die Berechtigung <strong>${escapeHtml(DEPARTMENT_PERMISSION_PRESETS[preset].label)}</strong> zugewiesen.</p>`
+          ? `<p>Mit dieser Einladung bekommst du die Berechtigung <strong>${escapeHtml(DEPARTMENT_PERMISSION_PRESETS[preset].label)}</strong>. Sie gilt nur für diese E-Mail-Adresse und lässt sich einmal einlösen. Bitte leite sie nicht weiter.</p>`
           : '';
+      const validityNote = `<p>Die Einladung ist ${PERSONAL_INVITE_TTL_DAYS} Tage gültig.</p>`;
 
       let sentCount = 0;
       for (const addr of toSend) {
@@ -745,9 +767,9 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
           subject: `Einladung zu ${name} (${org.name})`,
           eyebrow: name,
           title: `Du wurdest zu ${name} eingeladen`,
-          messageHtml: `<p>Du wurdest eingeladen, <strong>${escapeHtml(name)}</strong> beizutreten, um dich für Schichten einzutragen.</p>${presetNote}<p>Klicke auf den Button unten, um dich anzumelden oder ein Konto zu erstellen. Danach bestätigst du den Beitritt.</p>`,
+          messageHtml: `<p>Du wurdest eingeladen, <strong>${escapeHtml(name)}</strong> beizutreten, um dich für Schichten einzutragen.</p>${presetNote}<p>Klicke auf den Button unten, um dich anzumelden oder ein Konto zu erstellen. Danach bestätigst du den Beitritt.</p>${validityNote}`,
           ctaText: `${name} beitreten`,
-          ctaUrl: inviteUrl,
+          ctaUrl: inviteUrlFor(addr),
           organization: request.tenant.organization,
         });
         if (ok) sentCount++;
