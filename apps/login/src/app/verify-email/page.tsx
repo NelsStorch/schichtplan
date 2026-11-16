@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
@@ -35,6 +35,10 @@ function VerifyEmailContent() {
   const [landingHref, setLandingHref] = useState('/');
   useEffect(() => setLandingHref(getLandingUrl()), []);
 
+  const verifyRef = useRef<{ token: string; result: Promise<{ ok: boolean; data: { message?: string; error?: string } }> } | null>(
+    null
+  );
+
   useEffect(() => {
     if (!token) {
       setLoading(false);
@@ -43,19 +47,27 @@ function VerifyEmailContent() {
 
     let isMounted = true;
 
-    async function verify() {
-      try {
-        const res = await fetch('/api/auth/verify-email', {
+    // Der Token gilt nur einmal: Läuft der Effekt zweimal (React StrictMode lokal), denselben Aufruf
+    // weiterverwenden statt ein zweites Mal abzuschicken (der zweite Aufruf meldete sonst «ungültig»).
+    if (verifyRef.current?.token !== token) {
+      verifyRef.current = {
+        token,
+        result: fetch('/api/auth/verify-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token }),
-        });
+        }).then(async (res) => ({ ok: res.ok, data: await res.json().catch(() => ({})) })),
+      };
+    }
+    const pending = verifyRef.current.result;
 
-        const data = await res.json().catch(() => ({}));
+    async function verify() {
+      try {
+        const { ok, data } = await pending;
 
         if (!isMounted) return;
 
-        if (res.ok) {
+        if (ok) {
           setSuccess(data.message || 'Deine E-Mail-Adresse wurde erfolgreich bestätigt.');
         } else {
           setError(data.error || 'Der Bestätigungslink ist ungültig oder abgelaufen.');
