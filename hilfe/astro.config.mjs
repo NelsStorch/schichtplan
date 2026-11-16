@@ -119,6 +119,7 @@ export default defineConfig({
             'abteilung/rechte',
             'abteilung/hitobito',
             'abteilung/gruppen-und-rollen',
+            'abteilung/ebenen',
           ],
         },
         {
