@@ -37,7 +37,7 @@ async function main() {
       email: 'admin@example.com',
       firstName: 'Demo',
       lastName: 'Admin',
-      ceviName: 'Demo-Admin',
+      nickname: 'Demo-Admin',
       birthDate: new Date('2000-01-01'),
       isGlobalAdmin: true,
       passwordHash: defaultPasswordHash,
@@ -73,7 +73,7 @@ async function main() {
     email: `helfer${n}@example.com`,
     firstName: 'Helfer',
     lastName: String(n),
-    ceviName: `Helfer ${n}`,
+    nickname: `Helfer ${n}`,
     birthDate: new Date(['2000-01-01', '2009-01-01', '2012-01-01'][i]),
   }));
 
@@ -88,7 +88,7 @@ async function main() {
         email: h.email,
         firstName: h.firstName,
         lastName: h.lastName,
-        ceviName: h.ceviName,
+        nickname: h.nickname,
         birthDate: h.birthDate,
         passwordHash: defaultPasswordHash,
         emailVerified: true,
