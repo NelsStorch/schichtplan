@@ -25,6 +25,7 @@ import {
   ThemeToggle,
   buttonClasses,
   cn,
+  isStandaloneDisplay,
   useOrganization,
 } from '@schichtplan/ui';
 import {
@@ -40,6 +41,7 @@ import {
 import { api, useDepartmentSetupHref, useLoginHref } from '@/lib/api';
 import { displayName, usePortal } from '@/lib/portal';
 import { useInstallPrompt } from '@/lib/offline';
+import { usePushHint } from '@/lib/pushHint';
 import { CommandPaletteButton } from './command';
 import { OfflineBanner } from './OfflineBanner';
 
@@ -55,6 +57,11 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
   const [accountOpen, setAccountOpen] = useState(false);
   const loginHref = useLoginHref();
   const departmentSetupHref = useDepartmentSetupHref();
+  const { show: pushHintShown, markSeen: markPushHintSeen } = usePushHint(user?.id);
+  const openAccount = () => {
+    setAccountOpen(true);
+    markPushHintSeen();
+  };
 
   // `?konto=push` (z. B. von der Profilseite auf der Startseite) öffnet den Konto-Dialog mit dem Push-Schalter
   useEffect(() => {
@@ -62,9 +69,10 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
     const url = new URL(window.location.href);
     if (!url.searchParams.has('konto')) return;
     setAccountOpen(true);
+    markPushHintSeen();
     url.searchParams.delete('konto');
     window.history.replaceState(window.history.state, '', url.toString());
-  }, [user]);
+  }, [user, markPushHintSeen]);
 
   return (
     <div className="grain flex min-h-[100dvh] flex-col bg-campfire bg-no-repeat">
@@ -106,11 +114,14 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
             {user ? (
               <button
                 type="button"
-                onClick={() => setAccountOpen(true)}
+                onClick={openAccount}
                 className="hidden items-center gap-2.5 rounded-full py-1 pl-1 pr-3.5 transition hover:bg-surface-2 md:flex"
-                aria-label="Konto öffnen"
+                aria-label={pushHintShown ? 'Konto öffnen, Push ist auf diesem Gerät noch aus' : 'Konto öffnen'}
               >
-                <Avatar name={displayName(user)} size="sm" highlight />
+                <span className="relative">
+                  <Avatar name={displayName(user)} size="sm" highlight />
+                  {pushHintShown && <HintDot />}
+                </span>
                 <span className="max-w-32 truncate text-sm font-semibold text-fg">{displayName(user)}</span>
               </button>
             ) : (
@@ -206,11 +217,13 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
           {user ? (
             <button
               type="button"
-              onClick={() => setAccountOpen(true)}
+              onClick={openAccount}
+              aria-label={pushHintShown ? 'Konto, Push ist auf diesem Gerät noch aus' : undefined}
               className="flex flex-col items-center justify-center gap-1 text-2xs font-semibold text-fg-subtle"
             >
-              <span className="flex h-7 w-12 items-center justify-center">
+              <span className="relative flex h-7 w-12 items-center justify-center">
                 <Avatar name={displayName(user)} size="sm" className="size-6 text-[9px]" />
+                {pushHintShown && <HintDot />}
               </span>
               Konto
             </button>
@@ -230,6 +243,15 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
   );
 }
 
+function HintDot() {
+  return (
+    <span
+      aria-hidden
+      className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-accent ring-2 ring-canvas"
+    />
+  );
+}
+
 /**
  * Kleiner Konto-Dialog der Abteilungs-App. Alle grösseren Einstellungen (Angaben, Benachrichtigungen,
  * Sicherheit, Daten herunterladen, Konto löschen) liegen auf der Startseite unter /profil. Hier bleibt das
@@ -240,6 +262,17 @@ function AccountSheet({ open, onClose }: { open: boolean; onClose: () => void })
   const org = useOrganization();
   const { canInstall, install } = useInstallPrompt();
   const [stats, setStats] = useState<MyHoursSummaryDto | null>(null);
+  const [standalone, setStandalone] = useState(false);
+  const [profileHref, setProfileHref] = useState(() => getLandingUrl('/profil'));
+
+  useEffect(() => {
+    if (!open) return;
+    setStandalone(isStandaloneDisplay());
+    // Die Profilseite bietet damit «Zurück zu <Abteilung>» an die aktuelle Seite an
+    const params = new URLSearchParams({ von: window.location.href });
+    if (department?.name) params.set('name', department.name);
+    setProfileHref(getLandingUrl(`/profil?${params.toString()}`));
+  }, [open, department?.name]);
 
   useEffect(() => {
     if (!open || !user) return;
@@ -294,10 +327,11 @@ function AccountSheet({ open, onClose }: { open: boolean; onClose: () => void })
               <span className="ml-auto text-xs font-medium text-fg-subtle">{stats.totalHours} Std.</span>
             )}
           </Link>
-          <a href={getLandingUrl('/profil')} className={buttonClasses({ variant: 'secondary', className: 'justify-start' })}>
+          <a href={profileHref} className={buttonClasses({ variant: 'secondary', className: 'justify-start' })}>
             <Settings className="size-4 text-accent" />
             <span>Profil &amp; Einstellungen</span>
-            <ArrowUpRight className="ml-auto size-4 text-fg-subtle" />
+            {standalone && <span className="ml-auto text-xs font-medium text-fg-subtle">öffnet im Browser</span>}
+            <ArrowUpRight className={cn('size-4 text-fg-subtle', !standalone && 'ml-auto')} />
           </a>
           {canInstall && (
             <Button variant="secondary" className="justify-start" onClick={() => void install()}>

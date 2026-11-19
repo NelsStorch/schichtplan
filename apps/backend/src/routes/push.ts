@@ -1,9 +1,17 @@
 import { FastifyPluginAsync, FastifyReply } from 'fastify';
 import { z } from 'zod';
-import { PushSubscribeSchema, PushUnsubscribeSchema, getDepartmentUrl, getLandingUrl } from '@schichtplan/shared';
+import {
+  PushResubscribeSchema,
+  PushSubscribeSchema,
+  PushUnsubscribeSchema,
+  getDepartmentUrl,
+  getLandingUrl,
+  type PushDeviceDto,
+} from '@schichtplan/shared';
 import {
   getVapidPublicKey,
   isAllowedPushEndpoint,
+  pushDeviceLabel,
   pushOriginHost,
   isValidP256dhKey,
   sendPushNotification,
@@ -14,6 +22,8 @@ import { getCookieDomain } from '../services/authSession.js';
 
 // Max 5 test notifications per user within 5 minutes
 const testPushLimiter = createRateLimiter(5 * 60 * 1000, 5);
+// Erneuern ohne Anmeldung (aus dem Service Worker): höchstens 20 pro Stunde und IP
+const resubscribeLimiter = createRateLimiter(60 * 60 * 1000, 20);
 
 const PUSH_DEVICE_COOKIE =
   process.env.COOKIE_NAME === 'token_dev' ? 'push_sub_dev' : 'push_sub_id';
@@ -140,7 +150,7 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       const input = request.body as z.output<typeof PushSubscribeSchema>;
-      const { endpoint, keys } = input;
+      const { endpoint, keys, standalone } = input;
       if (!isAllowedPushEndpoint(endpoint)) {
         return reply.status(400).send({ error: 'Dieser Push-Dienst wird nicht unterstützt.' });
       }
@@ -151,6 +161,7 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
       const userId = request.user.id;
       const cookieSubId = request.cookies?.[PUSH_DEVICE_COOKIE]?.trim();
       const origin = pushOriginHost(request.headers.origin, request.headers.host);
+      const label = pushDeviceLabel(request.headers['user-agent'], standalone);
 
       // Falls derselbe Browser schon unter einer anderen Subdomain ein Abo angelegt hatte,
       // ersetzen wir das alte Abo dieses Geräts, damit dasselbe Gerät nie doppelt benachrichtigt wird.
@@ -173,6 +184,7 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
           p256dh: keys.p256dh,
           auth: keys.auth,
           origin,
+          label,
         },
         create: {
           userId,
@@ -180,6 +192,7 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
           p256dh: keys.p256dh,
           auth: keys.auth,
           origin,
+          label,
         },
         select: { id: true },
       });
@@ -273,6 +286,103 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
       const count = await fastify.prisma.pushSubscription.count({ where: { userId } });
       return { ok: true, subscriptionCount: count, deviceSubscribed: false };
     },
+  );
+
+  // 4b. Geräteliste fürs Profil
+  fastify.get<{ Querystring: { endpoint?: string } }>(
+    '/api/push/devices',
+    {
+      schema: {
+        tags: ['Push'],
+        summary: 'Eigene Push-Geräte auflisten',
+        description: 'Listet alle Push-Abos der angemeldeten Person mit Gerätebezeichnung, Adresse und Datum.',
+        security: [{ bearerAuth: [] }],
+        querystring: z.object({
+          endpoint: z.string().optional().describe('Push-Subscription-Endpoint dieses Browsers'),
+        }),
+      },
+      preHandler: [fastify.authenticate],
+    },
+    async (request, reply): Promise<PushDeviceDto[]> => {
+      reply.header('Cache-Control', 'no-store');
+      const endpoint = request.query.endpoint?.trim();
+      const cookieSubId = request.cookies?.[PUSH_DEVICE_COOKIE]?.trim();
+      const subs = await fastify.prisma.pushSubscription.findMany({
+        where: { userId: request.user.id },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, endpoint: true, label: true, origin: true, createdAt: true },
+      });
+      return subs.map((s) => ({
+        id: s.id,
+        label: s.label,
+        origin: s.origin,
+        createdAt: s.createdAt.toISOString(),
+        current: s.id === cookieSubId || (Boolean(endpoint) && s.endpoint === endpoint),
+      }));
+    }
+  );
+
+  // 4c. Einzelnes Gerät entfernen (z. B. verlorenes Handy oder doppeltes Abo)
+  fastify.delete<{ Params: { id: string } }>(
+    '/api/push/devices/:id',
+    {
+      schema: {
+        tags: ['Push'],
+        summary: 'Push-Gerät entfernen',
+        description: 'Löscht ein eigenes Push-Abo. Das Gerät bekommt danach keine Mitteilungen mehr.',
+        security: [{ bearerAuth: [] }],
+        params: z.object({ id: z.string().uuid().describe('ID des Push-Abos') }),
+      },
+      preHandler: [fastify.authenticate],
+    },
+    async (request, reply) => {
+      const userId = request.user.id;
+      const { count: deleted } = await fastify.prisma.pushSubscription.deleteMany({
+        where: { id: request.params.id, userId },
+      });
+      if (deleted === 0) return reply.status(404).send({ error: 'Gerät nicht gefunden' });
+      if (request.cookies?.[PUSH_DEVICE_COOKIE]?.trim() === request.params.id) clearPushDeviceCookie(reply);
+      const count = await fastify.prisma.pushSubscription.count({ where: { userId } });
+      return { ok: true, subscriptionCount: count };
+    }
+  );
+
+  // 4d. Browser hat das Abo von sich aus erneuert (Service Worker, `pushsubscriptionchange`).
+  // Ohne Anmeldung, weil der Service Worker im Hintergrund läuft: Wer den alten Endpoint kennt (eine
+  // geheime, zufällige URL des Push-Dienstes), darf ihn durch den neuen ersetzen.
+  fastify.post(
+    '/api/push/resubscribe',
+    {
+      schema: {
+        tags: ['Push'],
+        summary: 'Erneuertes Push-Abo übernehmen',
+        description: 'Ersetzt ein bestehendes Abo (alter Endpoint) durch das vom Browser erneuerte Abo.',
+        body: PushResubscribeSchema,
+      },
+    },
+    async (request, reply) => {
+      if (resubscribeLimiter.hit(`ip:${request.ip}`)) {
+        return reply.status(429).send({ error: 'Zu viele Anfragen' });
+      }
+      const { oldEndpoint, endpoint, keys } = request.body as z.output<typeof PushResubscribeSchema>;
+      if (!isAllowedPushEndpoint(endpoint)) {
+        return reply.status(400).send({ error: 'Dieser Push-Dienst wird nicht unterstützt.' });
+      }
+      if (!isValidP256dhKey(keys.p256dh)) {
+        return reply.status(400).send({ error: 'Ungültiger Push-Schlüssel (p256dh)' });
+      }
+      const old = await fastify.prisma.pushSubscription.findUnique({ where: { endpoint: oldEndpoint }, select: { id: true } });
+      if (!old) return reply.status(404).send({ error: 'Abo nicht gefunden' });
+      if (oldEndpoint !== endpoint) {
+        // Falls der neue Endpoint schon existiert, das Duplikat entfernen
+        await fastify.prisma.pushSubscription.deleteMany({ where: { endpoint, id: { not: old.id } } });
+      }
+      await fastify.prisma.pushSubscription.update({
+        where: { id: old.id },
+        data: { endpoint, p256dh: keys.p256dh, auth: keys.auth },
+      });
+      return { ok: true };
+    }
   );
 
   // 5. Send a test notification to all subscribed devices of the current user

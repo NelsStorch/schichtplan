@@ -364,6 +364,8 @@ export const PushSubscribeSchema = z.object({
     p256dh: z.string().trim().min(10).max(300),
     auth: z.string().trim().min(6).max(200),
   }),
+  /** Läuft die Seite als installierte App (Home-Bildschirm)? Nur für die Gerätebezeichnung. */
+  standalone: z.boolean().optional(),
 });
 
 export type PushSubscribeInput = z.infer<typeof PushSubscribeSchema>;
@@ -373,6 +375,28 @@ export const PushUnsubscribeSchema = z.object({
 });
 
 export type PushUnsubscribeInput = z.infer<typeof PushUnsubscribeSchema>;
+
+/** Vom Service Worker bei `pushsubscriptionchange`: neues Abo ersetzt das alte (ohne Anmeldung) */
+export const PushResubscribeSchema = z.object({
+  oldEndpoint: z.string().trim().url('Ungültige Push-Endpoint-URL').max(2000),
+  endpoint: z.string().trim().url('Ungültige Push-Endpoint-URL').max(2000),
+  keys: z.object({
+    p256dh: z.string().trim().min(10).max(300),
+    auth: z.string().trim().min(6).max(200),
+  }),
+});
+
+export type PushResubscribeInput = z.infer<typeof PushResubscribeSchema>;
+
+/** Eintrag der Geräteliste im Profil */
+export interface PushDeviceDto {
+  id: string;
+  label: string | null;
+  origin: string | null;
+  createdAt: string;
+  /** Dieses Gerät (über Endpoint oder Geräte-Cookie erkannt) */
+  current: boolean;
+}
 
 export const EventParticipationSchema = z.object({
   profile: UpdateProfileSchema.optional(),

@@ -16,6 +16,8 @@ import { Button } from './Button';
 import { Switch } from './Field';
 import { Callout, useToast } from './Feedback';
 import { cn } from '../utils/cn';
+import { isAppleMobile, isPushSupported, isStandaloneDisplay } from '../utils/device';
+import { PushDeviceList } from './PushDeviceList';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -73,12 +75,6 @@ function waitForSwPushShown(timeoutMs = 2500): Promise<boolean> {
   });
 }
 
-/** iPhone/iPad (auch iPadOS im Desktop-Modus): Web Push nur in der zum Home-Bildschirm hinzugefügten App */
-function isAppleMobile(): boolean {
-  if (typeof navigator === 'undefined') return false;
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-}
-
 export interface NotificationSettingsProps {
   user: UserDto;
   onUserChange: (updated: UserDto) => void;
@@ -116,6 +112,10 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
   const [deviceSubscribed, setDeviceSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
   const [testingPush, setTestingPush] = useState(false);
+  /** Endpoint des Abos dieses Browsers auf dieser Adresse (für die Geräteliste) */
+  const [localEndpoint, setLocalEndpoint] = useState<string | null>(null);
+  const [devicesKey, setDevicesKey] = useState(0);
+  const [standalone, setStandalone] = useState(false);
 
   const hasRealEmail = Boolean(user.email && !PLACEHOLDER_EMAIL_REGEX.test(user.email));
   const emailUsable = hasRealEmail && Boolean(user.emailVerified);
@@ -137,8 +137,9 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
     void user.id;
     if (typeof window === 'undefined') return;
     setAppleMobile(isAppleMobile());
+    setStandalone(isStandaloneDisplay());
 
-    const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+    const supported = isPushSupported();
     setPushSupported(supported);
     if (!supported) return;
 
@@ -148,6 +149,7 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
       try {
         const reg = await ensureActiveServiceWorker();
         const sub = await reg.pushManager.getSubscription();
+        setLocalEndpoint(sub?.endpoint ?? null);
         // Das Backend erkennt das Gerät zusätzlich über ein Cookie der ganzen Domain, damit ein auf einer
         // anderen Adresse (Startseite oder andere Abteilung) eingerichtetes Abo hier als aktiv gilt.
         const url = sub ? `/api/push/status?endpoint=${encodeURIComponent(sub.endpoint)}` : '/api/push/status';
@@ -242,10 +244,13 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
       body: JSON.stringify({
         endpoint: sub.endpoint,
         keys: { p256dh, auth },
+        standalone: isStandaloneDisplay(),
       }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'Aktivierung fehlgeschlagen');
+    setLocalEndpoint(sub.endpoint);
+    setDevicesKey((k) => k + 1);
     return data as { subscriptionCount?: number };
   };
 
@@ -305,6 +310,8 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
           await sub.unsubscribe().catch(() => {});
         }
         setDeviceSubscribed(false);
+        setLocalEndpoint(null);
+        setDevicesKey((k) => k + 1);
         onUserChange({
           ...user,
           pushSubscriptionCount:
@@ -420,6 +427,14 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
   const box = compact ? 'rounded-field border border-line bg-surface-1' : 'rounded-card border border-line bg-surface';
   const pad = compact ? 'p-4' : 'p-4 sm:p-5';
 
+  /**
+   * Auf iPhone/iPad gibt es Push nur in der App auf dem Home-Bildschirm. Auf der Profilseite der Startseite
+   * (mit `appUrl`) bieten wir den Schalter im Browser darum nicht an, sondern schicken in die Abteilungs-App.
+   * Ein bereits aktives Abo lässt sich trotzdem ausschalten.
+   */
+  const appOnly = appleMobile && Boolean(appUrl) && !standalone && !deviceSubscribed;
+  const showSwitch = pushSupported && !appOnly;
+
   const deviceCard = (
     <div className={cn('space-y-3', box, pad)}>
       <div className="flex items-start justify-between gap-3">
@@ -441,7 +456,7 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
             Auch bei geschlossenem Browser. Gilt für dieses Gerät im ganzen Schichtplan, für alle Abteilungen.
           </p>
         </div>
-        {pushSupported && (
+        {showSwitch && (
           <Switch
             checked={deviceSubscribed}
             disabled={subscribing}
@@ -451,7 +466,7 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
         )}
       </div>
 
-      {!pushSupported && (
+      {(!pushSupported || appOnly) && (
         <Callout tone="info">
           {appleMobile ? (
             <>
@@ -473,7 +488,7 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
         </Callout>
       )}
 
-      {pushSupported && permission === 'denied' && !deviceSubscribed && (
+      {showSwitch && permission === 'denied' && !deviceSubscribed && (
         <Callout tone="warning">
           Du hast Benachrichtigungen im Browser blockiert. Erlaube sie über das Schloss-Symbol in der Adresszeile.
         </Callout>
@@ -495,6 +510,17 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
             </Button>
           )}
         </div>
+      )}
+
+      {!compact && subscriptionCount > 0 && (
+        <PushDeviceList
+          localEndpoint={localEndpoint}
+          refreshKey={devicesKey}
+          onRemoved={({ subscriptionCount: count, wasCurrent }) => {
+            if (wasCurrent) setDeviceSubscribed(false);
+            onUserChange({ ...user, pushSubscriptionCount: count });
+          }}
+        />
       )}
     </div>
   );

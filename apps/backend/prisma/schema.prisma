@@ -711,6 +711,8 @@ model PushSubscription {
   auth      String
   /// Hostname, auf dem das Abo eingerichtet wurde (Service Worker gehört zu genau dieser Adresse)
   origin    String?
+  /// Grobe Gerätebezeichnung für die Geräteliste im Profil, z. B. «iPhone · App» oder «Windows · Chrome»
+  label     String?
   createdAt DateTime @default(now()) @map("created_at")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 

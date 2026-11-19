@@ -64,3 +64,43 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
+
+// Der Browser kann ein Push-Abo von sich aus erneuern (abgelaufen, Schlüsselwechsel). Ohne diesen Handler
+// fiele Push still aus, bis man den Schalter neu betätigt. Wir melden das neue Abo dem Backend, das alte
+// Abo dient dabei als Nachweis (kein Login nötig, der Service Worker läuft im Hintergrund).
+function toBase64Url(buffer) {
+  if (!buffer) return '';
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+self.addEventListener('pushsubscriptionchange', (event) => {
+  const oldSub = event.oldSubscription;
+  event.waitUntil(
+    (async () => {
+      let newSub = event.newSubscription;
+      if (!newSub && oldSub && oldSub.options) {
+        newSub = await self.registration.pushManager.subscribe(oldSub.options).catch(() => null);
+      }
+      if (!newSub) return;
+      const keys = { p256dh: toBase64Url(newSub.getKey('p256dh')), auth: toBase64Url(newSub.getKey('auth')) };
+      if (oldSub && oldSub.endpoint) {
+        const res = await fetch('/api/push/resubscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ oldEndpoint: oldSub.endpoint, endpoint: newSub.endpoint, keys }),
+        }).catch(() => null);
+        if (res && res.ok) return;
+      }
+      // Ohne altes Abo: mit dem Login-Cookie neu anmelden, falls die Person noch angemeldet ist
+      await fetch('/api/push/subscribe', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ endpoint: newSub.endpoint, keys }),
+      }).catch(() => null);
+    })()
+  );
+});

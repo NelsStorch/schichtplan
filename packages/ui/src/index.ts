@@ -1,4 +1,5 @@
 export { cn } from './utils/cn';
+export { isAppleMobile, isPushSupported, isStandaloneDisplay } from './utils/device';
 
 export {
   accentVars,
@@ -61,6 +62,7 @@ export { UsageTracker } from './stats/UsageTracker';
 export { UmamiScript, umamiConfig, umamiEnabled } from './stats/UmamiScript';
 export { ConsoleBanner, printConsoleBanner } from './console/ConsoleBanner';
 export { NotificationSettings, type NotificationSettingsProps } from './components/NotificationSettings';
+export { PushDeviceList, type PushDeviceListProps } from './components/PushDeviceList';
 export { PasswordSettings, type PasswordSettingsProps } from './components/PasswordSettings';
 export { TwoFactorSettings, type TwoFactorSettingsProps } from './components/TwoFactorSettings';
 export { ProfileView, PROFILE_TABS, type ProfileTab, type ProfileViewProps } from './components/ProfileView';

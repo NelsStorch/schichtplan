@@ -61,6 +61,47 @@ export function pushOriginHost(origin: string | undefined, host: string | undefi
   }
 }
 
+/**
+ * Grobe Gerätebezeichnung aus dem User-Agent für die Geräteliste, z. B. «iPhone · App» oder «Windows · Chrome».
+ * Bewusst ohne Versionen: Wir speichern nur, was zum Wiedererkennen reicht.
+ */
+export function pushDeviceLabel(userAgent: string | undefined, standalone?: boolean): string | null {
+  const ua = userAgent ?? '';
+  if (!ua) return standalone ? 'App' : null;
+  const device = /iPhone|iPod/.test(ua)
+    ? 'iPhone'
+    : /iPad/.test(ua)
+      ? 'iPad'
+      : /Android/.test(ua)
+        ? 'Android'
+        : /CrOS/.test(ua)
+          ? 'ChromeOS'
+          : /Windows/.test(ua)
+            ? 'Windows'
+            : /Macintosh|Mac OS X/.test(ua)
+              ? 'Mac'
+              : /Linux/.test(ua)
+                ? 'Linux'
+                : null;
+  const browser = standalone
+    ? 'App'
+    : /Edg(e|A|iOS)?\//.test(ua)
+      ? 'Edge'
+      : /SamsungBrowser\//.test(ua)
+        ? 'Samsung Internet'
+        : /OPR\/|Opera/.test(ua)
+          ? 'Opera'
+          : /Firefox\/|FxiOS\//.test(ua)
+            ? 'Firefox'
+            : /Chrome\/|CriOS\//.test(ua)
+              ? 'Chrome'
+              : /Safari\//.test(ua)
+                ? 'Safari'
+                : null;
+  const label = [device, browser].filter(Boolean).join(' · ');
+  return label || null;
+}
+
 export function isAllowedPushEndpoint(endpoint: string): boolean {
   return parseAllowedPushEndpoint(endpoint) !== null;
 }

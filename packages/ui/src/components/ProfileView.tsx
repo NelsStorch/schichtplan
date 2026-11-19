@@ -705,6 +705,37 @@ function SecurityTab({ user, onUserChange }: { user: UserDto; onUserChange: (use
   const confirm = useConfirm();
   const toast = useToast();
   const [deleting, setDeleting] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  /** Download im Hintergrund, damit Fehler (z. B. zu viele Downloads) als Meldung statt als rohe Seite erscheinen */
+  const downloadData = async () => {
+    setExporting(true);
+    try {
+      const res = await fetch('/api/auth/me/export', { cache: 'no-store' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Download hat nicht geklappt.');
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'schichtplan-meine-daten.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast({ title: 'Daten heruntergeladen', tone: 'success' });
+    } catch (err) {
+      toast({
+        title: 'Download fehlgeschlagen',
+        description: err instanceof Error ? err.message : undefined,
+        tone: 'error',
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   /** Konten nur mit Cevi-Name/Spitzname können sich nicht selbst löschen: Antrag an die Datenschutz-Kontaktadresse */
   const requestDeletion = async () => {
@@ -772,13 +803,9 @@ function SecurityTab({ user, onUserChange }: { user: UserDto; onUserChange: (use
         icon={Database}
         description="Alle Personendaten, die der Schichtplan zu deinem Konto speichert, als JSON-Datei."
         action={
-          <a
-            href="/api/auth/me/export"
-            download="schichtplan-meine-daten.json"
-            className={buttonClasses({ variant: 'secondary', size: 'sm' })}
-          >
+          <Button variant="secondary" size="sm" loading={exporting} onClick={() => void downloadData()}>
             <Download /> Meine Daten herunterladen
-          </a>
+          </Button>
         }
       />
       {user.canSelfDelete ? (

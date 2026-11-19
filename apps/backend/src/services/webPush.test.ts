@@ -6,6 +6,7 @@ import {
   getVapidKeys,
   getVapidPublicKey,
   isValidP256dhKey,
+  pushDeviceLabel,
   pushOriginHost,
 } from './webPush.js';
 
@@ -102,5 +103,30 @@ describe('pushOriginHost', () => {
   it('liefert null ohne brauchbare Angabe', () => {
     expect(pushOriginHost(undefined, undefined)).toBeNull();
     expect(pushOriginHost('kein origin', undefined)).toBeNull();
+  });
+});
+
+describe('pushDeviceLabel', () => {
+  const iphone =
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
+  const windowsChrome =
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+  const windowsEdge = `${windowsChrome} Edg/130.0.0.0`;
+  const macFirefox = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14.0; rv:132.0) Gecko/20100101 Firefox/132.0';
+  const android =
+    'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36';
+
+  it('erkennt Gerät und Browser grob, ohne Versionen', () => {
+    expect(pushDeviceLabel(iphone)).toBe('iPhone · Safari');
+    expect(pushDeviceLabel(windowsChrome)).toBe('Windows · Chrome');
+    expect(pushDeviceLabel(windowsEdge)).toBe('Windows · Edge');
+    expect(pushDeviceLabel(macFirefox)).toBe('Mac · Firefox');
+    expect(pushDeviceLabel(android)).toBe('Android · Chrome');
+  });
+
+  it('nennt installierte Apps «App»', () => {
+    expect(pushDeviceLabel(iphone, true)).toBe('iPhone · App');
+    expect(pushDeviceLabel(undefined, true)).toBe('App');
+    expect(pushDeviceLabel(undefined)).toBeNull();
   });
 });

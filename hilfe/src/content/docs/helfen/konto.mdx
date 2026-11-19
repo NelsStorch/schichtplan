@@ -14,7 +14,7 @@ Tippe im Schichtplan deiner Abteilung unten rechts auf **Konto** (auf dem Comput
 - **Farbschema**: hell, dunkel oder wie dein Gerät
 - **Push auf diesem Gerät** (siehe [unten](#push-gilt-pro-gerät))
 - <Btn>Meine Schichten</Btn> mit deinen Helferstunden
-- <Btn>Profil & Einstellungen</Btn>, öffnet die Profilseite auf der Startseite
+- <Btn>Profil & Einstellungen</Btn>, öffnet die Profilseite auf der Startseite. Oben links führt **Zurück zu …** wieder in deinen Schichtplan. In der installierten App öffnet sich die Profilseite im Browser.
 - <Btn>App installieren</Btn>, wenn dein Browser das anbietet
 - <Btn variant="ghost">Hilfe</Btn> und <Btn variant="ghost">Abmelden</Btn>
 
@@ -77,6 +77,7 @@ Melde dich mit einem Wiederherstellungscode an (auf der Code-Seite **Wiederherst
 Im Tab **Benachrichtigungen** der Profilseite stellst du ein, wie und wann du erinnert werden möchtest. Alles wird sofort gespeichert.
 
 - **Push auf diesem Gerät**: Schaltet Push-Mitteilungen für den Browser ein, mit dem du gerade surfst (auch für Cevi-Name-Profile ohne E-Mail). Mit **Test senden** prüfst du, ob alles klappt.
+- **Geräte mit Push**: Alle Geräte, auf denen Push eingeschaltet ist, etwa «iPhone · App» oder «Windows · Chrome». Mit **Entfernen** nimmst du ein Gerät heraus, zum Beispiel ein verlorenes Handy oder ein doppelt eingerichtetes iPhone (Safari und App).
 - **Was per E-Mail, was per Push**: Eine Tabelle mit den Spalten E-Mail und Push für Schicht-Erinnerung, offene Verpflegungs-Bons, «Ersatz gefunden» und Mitteilungen vom OK. E-Mails brauchen eine bestätigte Adresse.
 - **Wann erinnern?**: Zu welchen Zeitpunkten vor Schichtbeginn die Erinnerung kommt (z. B. 1 Woche, 2 Tage, 1 Tag oder 2 Stunden vorher, auch mehrere gleichzeitig). E-Mail-Erinnerungen enthalten einen Kalender-Eintrag (`.ics`).
 
@@ -84,10 +85,14 @@ Im Tab **Benachrichtigungen** der Profilseite stellst du ein, wie und wann du er
 
 Push schaltest du einmal pro Gerät und Browser ein, egal ob im **Konto-Fenster** im Schichtplan einer Abteilung oder auf der Profilseite. Danach bekommst du Mitteilungen aus allen Abteilungen und Anlässen, und der Schalter steht überall auf **Aktiv**. Ausschalten kannst du Push ebenfalls überall. Auf deinem Handy und anderen Computern schaltest du Push separat ein.
 
+Solange auf einem Gerät noch kein Push eingeschaltet ist, zeigt ein kleiner Punkt am **Konto**-Knopf darauf hin. Nach dem ersten Öffnen des Konto-Fensters verschwindet er.
+
+Erneuert dein Browser ein Push-Abo von sich aus, übernimmt der Schichtplan das automatisch. Du musst nichts neu einschalten.
+
 Als Absender zeigt dein Gerät die Adresse, auf der du Push eingeschaltet hast. Tippst du auf eine Mitteilung, öffnet sich trotzdem der passende Anlass, auch wenn er zu einer anderen Abteilung gehört.
 
 :::note[iPhone und iPad]
-Push funktioniert auf iPhone und iPad nur in der App auf dem Home-Bildschirm. Öffne den Schichtplan deiner Abteilung, füge ihn über **Teilen → Zum Home-Bildschirm** hinzu und schalte Push in der App im **Konto-Fenster** ein.
+Push funktioniert auf iPhone und iPad nur in der App auf dem Home-Bildschirm. Auf der Profilseite im Browser gibt es dort darum keinen Push-Schalter, sondern einen Link in den Schichtplan deiner Abteilung. Füge ihn über **Teilen → Zum Home-Bildschirm** hinzu und schalte Push in der App im **Konto-Fenster** ein.
 :::
 
 ## Konto löschen
@@ -97,7 +102,7 @@ Löschen entfernt dein Konto mit allen Schicht-Eintragungen, Abteilungs- und OK-
 - Konten mit **Cevi.DB** oder **Passwort** löschen sich selbst, auf der Profilseite im Tab **Sicherheit & Daten**.
 - Profile nur mit **Cevi-Name** können sich nicht selbst löschen. Sie sind als kurzfristige Helferprofile gedacht. Im selben Tab stellst du mit **Löschung beantragen** einen Antrag, das Konto wird dann innert 30 Tagen gelöscht.
 
-Unter **Meine Daten herunterladen** bekommst du vorher alle Daten, die der Schichtplan zu deinem Konto speichert, als JSON-Datei.
+Unter **Meine Daten herunterladen** (Tab **Sicherheit & Daten**) bekommst du vorher alle Daten, die der Schichtplan zu deinem Konto speichert, als JSON-Datei.
 
 :::caution[Vorher austragen ist netter]
 Das Löschen nimmt dich aus allen kommenden Schichten. Sag dem OK Bescheid, wenn du für bald eingetragen warst.
