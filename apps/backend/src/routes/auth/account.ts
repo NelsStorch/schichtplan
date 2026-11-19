@@ -89,9 +89,24 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
         where: { id: request.user.id },
         select: { provider: true, providerId: true },
       });
-      if (!user || user.providerId === null) return { departmentIds: [], verifiedIds: [] };
+      // Auch Abteilungen/Vereine einbeziehen, bei denen die Person bereits Mitglied oder Leitung ist
+      const memberships = await fastify.prisma.departmentMember.findMany({
+        where: { userId: request.user.id, removedAt: null },
+        select: { departmentId: true, role: true, confirmedAt: true },
+      });
+      const memberDeptIds = memberships.map((m) => m.departmentId);
+      const verifiedMemberDeptIds = memberships
+        .filter((m) => m.confirmedAt !== null || m.role === 'ADMIN')
+        .map((m) => m.departmentId);
+
+      if (!user || user.providerId === null) {
+        return { departmentIds: memberDeptIds, verifiedIds: verifiedMemberDeptIds };
+      }
       const own = await ownProviderDepartments(fastify.prisma, request.user.id, user.provider);
-      return { departmentIds: [...own.candidates], verifiedIds: [...own.verified] };
+      return {
+        departmentIds: [...new Set([...own.candidates, ...memberDeptIds])],
+        verifiedIds: [...new Set([...own.verified, ...verifiedMemberDeptIds])],
+      };
     }
   );
 

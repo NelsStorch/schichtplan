@@ -184,6 +184,7 @@ function DepartmentSetup() {
     () =>
       (departments ?? []).filter((d) => {
         if (d.id === user?.homeDepartment?.id) return true;
+        if (user?.joinedDepartments?.some((j) => j.id === d.id)) return true;
         if (d.id === inviteDeptId) return true;
         if (d.joinMode === 'LINK_ONLY' && returnToSlug && d.slug === returnToSlug) return true;
         if (d.joinMode === 'LINK_ONLY' && ownDepartmentIds.has(d.id)) return true;
@@ -191,7 +192,7 @@ function DepartmentSetup() {
         if (verifiedDepartmentIds.has(d.id)) return true;
         return !d.joinMode || d.joinMode === 'OPEN';
       }),
-    [departments, user?.homeDepartment?.id, ownDepartmentIds, verifiedDepartmentIds, inviteDeptId, returnToSlug]
+    [departments, user?.homeDepartment?.id, user?.joinedDepartments, ownDepartmentIds, verifiedDepartmentIds, inviteDeptId, returnToSlug]
   );
 
   const visible = useMemo(() => {
@@ -273,6 +274,14 @@ function DepartmentSetup() {
   const loading = !user || !departments;
   const rootHost = typeof window === 'undefined' ? '' : window.location.hostname.replace(/^login\./, '');
 
+  const isMasculine = org.unitTerm === 'Verein';
+  const toWhichUnit = isMasculine ? `Zu welchem ${org.unitTerm}` : `Zu welcher ${org.unitTerm}`;
+  const forAUnit = isMasculine ? `für einen ${org.unitTerm}` : `für eine ${org.unitTerm}`;
+  const joinAUnit = isMasculine ? `einem ${org.unitTerm}` : `einer ${org.unitTerm}`;
+  const yourUnitGenitive = isMasculine ? `deines ${org.unitTerm}s` : `deiner ${org.unitTerm}`;
+  const noUnitFound = isMasculine ? `Keinen ${org.unitTerm} gefunden.` : `Keine ${org.unitTerm} gefunden.`;
+  const belongsToNoUnit = isMasculine ? `Ich gehöre zu keinem ${org.unitTerm}` : `Ich gehöre zu keiner ${org.unitTerm}`;
+
   return (
     <div className="grain flex min-h-[100dvh] flex-col">
       <div aria-hidden className="bg-campfire pointer-events-none fixed inset-x-0 top-0 h-[60vh] opacity-70" />
@@ -287,10 +296,10 @@ function DepartmentSetup() {
 
       <main id="inhalt" className="relative mx-auto w-full max-w-[30rem] flex-1 px-5 pb-16 pt-6 sm:pt-10">
         <h1 className="font-display text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-fg text-balance">
-          {user ? `Hallo ${user.nickname || user.ceviName || user.firstName}.` : `Deine ${org.unitTerm}`} Zu welcher {org.unitTerm} gehörst du?
+          {user ? `Hallo ${user.nickname || user.ceviName || user.firstName}.` : `Deine ${org.unitTerm}`} {toWhichUnit} gehörst du?
         </h1>
         <p className="mt-3 text-[15px] leading-relaxed text-fg-muted">
-          Manche Anlässe sind nur für eine {org.unitTerm} oder einzelne Stufen. Du kannst das später jederzeit ändern.
+          Manche Anlässe sind nur {forAUnit} oder einzelne Stufen. Du kannst das später jederzeit ändern.
         </p>
 
         <div className="mt-8 space-y-6">
@@ -410,19 +419,19 @@ function DepartmentSetup() {
                         />
                       ))}
                       {visible.length === 0 && (
-                        <p className="px-5 py-4 text-sm text-fg-subtle">Keine {org.unitTerm} gefunden.</p>
+                        <p className="px-5 py-4 text-sm text-fg-subtle">{noUnitFound}</p>
                       )}
                     </div>
                   ) : (
                     <Callout tone="info">
-                      Um einer {org.unitTerm} beizutreten, öffne bitte den direkten Link oder Einladungslink deiner {org.unitTerm}.
+                      Um {joinAUnit} beizutreten, öffne bitte den direkten Link oder Einladungslink {yourUnitGenitive}.
                     </Callout>
                   )}
                   <div role="radiogroup" className="overflow-hidden rounded-card border border-line bg-surface/70">
                     <DepartmentOption
                       selected={selected === NONE}
                       onSelect={() => choose(NONE)}
-                      title={`Ich gehöre zu keiner ${org.unitTerm}`}
+                      title={belongsToNoUnit}
                       subtitle="Eltern, Ehemalige, Freund*innen und Gäste"
                       icon={<UsersRound className="size-[18px]" />}
                     />
