@@ -102,9 +102,9 @@ export function Dialog({
               type="button"
               onClick={onClose}
               aria-label="Schliessen"
-              className="-mr-2 -mt-1 flex size-10 shrink-0 items-center justify-center rounded-full text-fg-subtle transition hover:bg-surface-2 hover:text-fg"
+              className="-mr-2 -mt-1 flex size-10 shrink-0 items-center justify-center rounded-full text-fg-subtle transition hover:bg-surface-2 hover:text-fg focus-visible:ring-2 focus-visible:ring-accent"
             >
-              <X className="size-5" />
+              <X className="size-5" aria-hidden />
             </button>
           </header>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-5 sm:px-7 sm:pb-6">

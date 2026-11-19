@@ -524,7 +524,7 @@ export function UsersPanel({
                           e.stopPropagation();
                           onOpenUser(user);
                         }}
-                        className="w-full text-left outline-none focus-visible:underline"
+                        className="w-full text-left outline-none focus-visible:underline focus-visible:ring-2 focus-visible:ring-accent"
                         aria-label={`${fullName(user)} anzeigen`}
                       >
                         <PersonCell user={user} />
@@ -574,7 +574,7 @@ export function UsersPanel({
                   <button
                     type="button"
                     onClick={() => onOpenUser(user)}
-                    className="flex min-w-0 flex-1 flex-col gap-2 px-4 py-3.5 text-left focus-visible:bg-surface-2 focus-visible:outline-none"
+                    className="flex min-w-0 flex-1 flex-col gap-2 px-4 py-3.5 text-left focus-visible:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
                   >
                     <span className="flex items-center justify-between gap-3">
                       <PersonCell user={user} />

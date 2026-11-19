@@ -21,6 +21,7 @@ export { Card, type CardProps } from './components/Card';
 export { Field, Input, Select, Switch, Textarea, type FieldProps, type SwitchProps } from './components/Field';
 export { PasswordInput, type PasswordInputProps } from './components/PasswordInput';
 export { Dialog, type DialogProps } from './components/Dialog';
+export { SkipLink } from './components/SkipLink';
 export {
   Callout,
   FeedbackProvider,

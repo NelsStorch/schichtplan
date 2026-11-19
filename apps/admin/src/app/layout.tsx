@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import { ConsoleBanner, FeedbackProvider, OrganizationProvider, ThemeScript, accentVars } from '@schichtplan/ui';
+import { ConsoleBanner, FeedbackProvider, OrganizationProvider, SkipLink, ThemeScript, accentVars } from '@schichtplan/ui';
 import { fontVariables } from '@schichtplan/ui/fonts';
 import { getRequestOrigin } from '@schichtplan/ui/og';
 import { getOrganization, getOrganizationSlugFromHost } from '@schichtplan/shared';
@@ -47,6 +47,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ThemeScript />
       </head>
       <body className="min-h-[100dvh]">
+        <SkipLink />
         <OrganizationProvider slug={getOrganizationSlugFromHost(host)}>
           <ConsoleBanner />
           <FeedbackProvider>{children}</FeedbackProvider>

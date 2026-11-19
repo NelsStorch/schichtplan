@@ -217,7 +217,7 @@ export function ErrorView({
       </header>
 
       {/* Hauptbereich */}
-      <main className="relative z-10 mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-center px-4 py-6 sm:py-12 text-center">
+      <main id="inhalt" className="relative z-10 mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-center px-4 py-6 sm:py-12 text-center">
         {/* Hinterer sanfter Lichtschein (in Alarm-Orange/Rot) */}
         <div
           aria-hidden="true"

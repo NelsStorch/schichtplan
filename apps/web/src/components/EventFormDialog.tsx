@@ -930,7 +930,7 @@ export function EventForm({
                     setSelectedMemberUserId(e.target.value);
                     if (e.target.value) setCustomWho('');
                   }}
-                  className="w-full rounded-field border border-line bg-surface-1 px-2.5 py-1.5 text-xs text-fg focus:border-accent focus:outline-none"
+                  className="w-full rounded-field border border-line bg-surface-1 px-2.5 py-1.5 text-xs text-fg focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                 >
                   <option value="">-- Mitglied wählen --</option>
                   {availableMembers.map((m) => (
@@ -953,7 +953,7 @@ export function EventForm({
                     setCustomWho(e.target.value);
                     if (e.target.value) setSelectedMemberUserId('');
                   }}
-                  className="w-full rounded-field border border-line bg-surface-1 px-2.5 py-1.5 text-xs text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none"
+                  className="w-full rounded-field border border-line bg-surface-1 px-2.5 py-1.5 text-xs text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                 />
               </div>
             </div>
@@ -964,7 +964,7 @@ export function EventForm({
                 <select
                   value={newRole}
                   onChange={(e) => setNewRole(e.target.value as 'OK_LEAD' | 'OK_MEMBER')}
-                  className="w-full rounded-field border border-line bg-surface-1 px-2.5 py-1.5 text-xs text-fg focus:border-accent focus:outline-none"
+                  className="w-full rounded-field border border-line bg-surface-1 px-2.5 py-1.5 text-xs text-fg focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                 >
                   <option value="OK_MEMBER">OK-Mitglied (Schichten planen und Helfende einteilen)</option>
                   <option value="OK_LEAD">OK-Leitung (zusätzlich Einstellungen und OK-Team)</option>
@@ -978,7 +978,7 @@ export function EventForm({
                   placeholder="z. B. Bau & Technik, Kasse, Grill"
                   value={newRoleTitle}
                   onChange={(e) => setNewRoleTitle(e.target.value)}
-                  className="w-full rounded-field border border-line bg-surface-1 px-2.5 py-1.5 text-xs text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none"
+                  className="w-full rounded-field border border-line bg-surface-1 px-2.5 py-1.5 text-xs text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                 />
               </div>
             </div>
@@ -1363,10 +1363,11 @@ export function EventForm({
                           <button
                             type="button"
                             onClick={() => removeCateringItem(idx)}
-                            className="hover:text-danger-ink focus:outline-none p-0.5 rounded"
+                            className="hover:text-danger-ink focus-visible:ring-2 focus-visible:ring-accent p-0.5 rounded"
                             title="Entfernen"
+                            aria-label={`${item} entfernen`}
                           >
-                            <X className="size-3" />
+                            <X className="size-3" aria-hidden />
                           </button>
                         </Badge>
                       ))}

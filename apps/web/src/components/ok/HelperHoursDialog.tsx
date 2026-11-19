@@ -278,12 +278,12 @@ export function HelperHoursDialog({
               <table className="w-full text-left text-xs">
                 <thead className="sticky top-0 bg-surface-subtle border-b border-line text-fg-muted uppercase tracking-wider text-[10px] font-semibold">
                   <tr>
-                    <th className="py-2.5 px-3">Helfende Person</th>
-                    <th className="py-2.5 px-3">Abteilung / Stufe</th>
-                    <th className="py-2.5 px-3 text-center">Schichten</th>
-                    <th className="py-2.5 px-3 text-right">Anlass</th>
-                    <th className="py-2.5 px-3 text-right">Auf-/Abbau</th>
-                    <th className="py-2.5 px-3 text-right">Gesamtzeit</th>
+                    <th scope="col" className="py-2.5 px-3">Helfende Person</th>
+                    <th scope="col" className="py-2.5 px-3">Abteilung / Stufe</th>
+                    <th scope="col" className="py-2.5 px-3 text-center">Schichten</th>
+                    <th scope="col" className="py-2.5 px-3 text-right">Anlass</th>
+                    <th scope="col" className="py-2.5 px-3 text-right">Auf-/Abbau</th>
+                    <th scope="col" className="py-2.5 px-3 text-right">Gesamtzeit</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line/60">

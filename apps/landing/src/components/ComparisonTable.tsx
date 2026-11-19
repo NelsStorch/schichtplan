@@ -104,7 +104,7 @@ export function ComparisonTable({ org }: { org?: OrganizationConfig }) {
               <thead>
                 <tr className="border-b border-line bg-surface-2/70">
                   {/* Sticky First Column Header on Mobile */}
-                  <th className="sticky left-0 z-20 py-4 px-4 sm:px-6 text-xs font-bold uppercase tracking-wider text-fg-subtle w-2/5 bg-surface-2 border-r border-line sm:border-r-0 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
+                  <th scope="col" className="sticky left-0 z-20 py-4 px-4 sm:px-6 text-xs font-bold uppercase tracking-wider text-fg-subtle w-2/5 bg-surface-2 border-r border-line sm:border-r-0 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
                     <div className="flex items-center justify-between gap-2">
                       <span>Funktion / Kriterium</span>
                       <span className="sm:hidden text-[10px] font-normal normal-case text-fg-subtle">
@@ -112,13 +112,13 @@ export function ComparisonTable({ org }: { org?: OrganizationConfig }) {
                       </span>
                     </div>
                   </th>
-                  <th className="py-4 px-3 sm:px-4 text-xs font-bold text-fg-muted text-center w-1/5">
+                  <th scope="col" className="py-4 px-3 sm:px-4 text-xs font-bold text-fg-muted text-center w-1/5">
                     Excel / Sheets
                   </th>
-                  <th className="py-4 px-3 sm:px-4 text-xs font-bold text-fg-muted text-center w-1/5">
+                  <th scope="col" className="py-4 px-3 sm:px-4 text-xs font-bold text-fg-muted text-center w-1/5">
                     WhatsApp / Doodle
                   </th>
-                  <th className="py-4 px-4 sm:px-6 text-xs font-bold text-accent text-center w-1/5 bg-accent/8 border-l border-r border-accent/20">
+                  <th scope="col" className="py-4 px-4 sm:px-6 text-xs font-bold text-accent text-center w-1/5 bg-accent/8 border-l border-r border-accent/20">
                     <div className="inline-flex items-center gap-1.5 font-display text-sm font-extrabold text-accent-ink">
                       <span>{name}</span>
                       <ShieldCheck className="size-4 text-accent shrink-0" />

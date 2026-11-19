@@ -150,8 +150,8 @@ export function DailyBars({
         <caption>{label}</caption>
         <thead>
           <tr>
-            <th>Tag</th>
-            <th>Anzahl</th>
+            <th scope="col">Tag</th>
+            <th scope="col">Anzahl</th>
           </tr>
         </thead>
         <tbody>

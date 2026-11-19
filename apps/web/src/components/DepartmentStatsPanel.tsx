@@ -614,13 +614,13 @@ export function DepartmentStatsPanel() {
                 <table className="w-full text-left text-xs sm:text-sm">
                   <thead className="border-b border-border bg-surface-2 text-fg-muted">
                     <tr>
-                      <th className="py-2.5 px-3 font-semibold w-12 text-center">#</th>
-                      <th className="py-2.5 px-3 font-semibold">Name / {org.nicknameTerm}</th>
-                      <th className="py-2.5 px-3 font-semibold">Stufen</th>
-                      <th className="py-2.5 px-3 font-semibold text-right">Anlässe</th>
-                      <th className="py-2.5 px-3 font-semibold text-right">Schichten</th>
-                      <th className="py-2.5 px-3 font-semibold text-right">Bestätigt</th>
-                      <th className="py-2.5 px-3 font-semibold text-right">Stunden</th>
+                      <th scope="col" className="py-2.5 px-3 font-semibold w-12 text-center">#</th>
+                      <th scope="col" className="py-2.5 px-3 font-semibold">Name / {org.nicknameTerm}</th>
+                      <th scope="col" className="py-2.5 px-3 font-semibold">Stufen</th>
+                      <th scope="col" className="py-2.5 px-3 font-semibold text-right">Anlässe</th>
+                      <th scope="col" className="py-2.5 px-3 font-semibold text-right">Schichten</th>
+                      <th scope="col" className="py-2.5 px-3 font-semibold text-right">Bestätigt</th>
+                      <th scope="col" className="py-2.5 px-3 font-semibold text-right">Stunden</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
@@ -692,13 +692,13 @@ export function DepartmentStatsPanel() {
               <table className="w-full text-left text-xs sm:text-sm">
                 <thead className="border-b border-border bg-surface-2 text-fg-muted">
                   <tr>
-                    <th className="py-2.5 px-3 font-semibold">Anlass</th>
-                    <th className="py-2.5 px-3 font-semibold">Datum</th>
-                    <th className="py-2.5 px-3 font-semibold text-right">Helfende</th>
-                    <th className="py-2.5 px-3 font-semibold text-right">Schichten</th>
-                    <th className="py-2.5 px-3 font-semibold text-right">Besetzungsgrad</th>
-                    <th className="py-2.5 px-3 font-semibold text-right">Anwesenheit</th>
-                    <th className="py-2.5 px-3 font-semibold text-right">Stunden</th>
+                    <th scope="col" className="py-2.5 px-3 font-semibold">Anlass</th>
+                    <th scope="col" className="py-2.5 px-3 font-semibold">Datum</th>
+                    <th scope="col" className="py-2.5 px-3 font-semibold text-right">Helfende</th>
+                    <th scope="col" className="py-2.5 px-3 font-semibold text-right">Schichten</th>
+                    <th scope="col" className="py-2.5 px-3 font-semibold text-right">Besetzungsgrad</th>
+                    <th scope="col" className="py-2.5 px-3 font-semibold text-right">Anwesenheit</th>
+                    <th scope="col" className="py-2.5 px-3 font-semibold text-right">Stunden</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">

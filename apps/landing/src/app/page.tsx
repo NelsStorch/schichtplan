@@ -93,7 +93,7 @@ export default async function LandingPage() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 relative z-10">
+        <main id="inhalt" className="flex-1 relative z-10">
           {/* Hero Section */}
           <section className="relative pt-12 pb-20 md:pt-20 md:pb-32 overflow-hidden">
             <div className="mx-auto max-w-6xl px-4">

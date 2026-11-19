@@ -706,7 +706,7 @@ function LoginContent() {
                       <button
                         type="button"
                         onClick={() => goTo('password')}
-                        className="group flex w-full items-center gap-3.5 px-4 py-3.5 text-left transition-colors duration-200 hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none"
+                        className="group flex w-full items-center gap-3.5 px-4 py-3.5 text-left transition-colors duration-200 hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
                       >
                         <span className="flex size-10 shrink-0 items-center justify-center rounded-tile bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 transition-colors group-hover:bg-emerald-500/20">
                           <KeyRound className="size-[18px]" />
@@ -733,7 +733,7 @@ function LoginContent() {
                           setAuthMode('register');
                           goTo('password');
                         }}
-                        className="group flex w-full items-center gap-3.5 px-4 py-3.5 text-left transition-colors duration-200 hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none"
+                        className="group flex w-full items-center gap-3.5 px-4 py-3.5 text-left transition-colors duration-200 hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
                       >
                         <span className="flex size-10 shrink-0 items-center justify-center rounded-tile bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 transition-colors group-hover:bg-emerald-500/20">
                           <KeyRound className="size-[18px]" />
@@ -760,7 +760,7 @@ function LoginContent() {
                       <button
                         type="button"
                         onClick={() => goTo('ceviname')}
-                        className="group flex w-full items-center gap-3.5 px-4 py-3 text-left transition-colors duration-200 hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none opacity-85 hover:opacity-100"
+                        className="group flex w-full items-center gap-3.5 px-4 py-3 text-left transition-colors duration-200 hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent opacity-85 hover:opacity-100"
                       >
                         <span className="flex size-10 shrink-0 items-center justify-center rounded-tile bg-surface-2 text-fg-muted transition-colors group-hover:bg-surface-3 group-hover:text-fg">
                           <UserRound className="size-[18px]" />

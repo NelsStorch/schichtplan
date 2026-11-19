@@ -242,7 +242,7 @@ export function QuestionsEditor({
                 placeholder={'Eine Antwort pro Zeile, z. B.\nS\nM\nL'}
                 aria-label="Antwortmöglichkeiten"
                 disabled={disabled}
-                className="w-full rounded-field border border-line bg-surface px-3 py-2 text-sm text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none"
+                className="w-full rounded-field border border-line bg-surface px-3 py-2 text-sm text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
               />
             )}
           </div>

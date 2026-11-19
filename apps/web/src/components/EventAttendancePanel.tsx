@@ -262,7 +262,7 @@ export function EventAttendancePanel({
         (s) => `
         <h2>${escapeHtml(s.title || fmtTimeRange(s.startTime, s.endTime))} <small>${escapeHtml(fmtWeekday(s.startTime))}, ${fmtTimeRange(s.startTime, s.endTime)}</small></h2>
         <table>
-          <thead><tr><th class="box">Da</th><th>Name</th><th>Arbeit</th><th>Status</th><th>Erfasst</th></tr></thead>
+          <thead><tr><th scope="col" class="box">Da</th><th scope="col">Name</th><th scope="col">Arbeit</th><th scope="col">Status</th><th scope="col">Erfasst</th></tr></thead>
           <tbody>${s.signups
             .map(
               (su) => `<tr>

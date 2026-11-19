@@ -567,7 +567,7 @@ function DepartmentOption({
         aria-checked={selected}
         onClick={onSelect}
         className={cn(
-          'flex w-full items-center gap-4 px-5 py-3.5 text-left transition-colors duration-200 hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none',
+          'flex w-full items-center gap-4 px-5 py-3.5 text-left transition-colors duration-200 hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent',
           selected && 'bg-accent/8'
         )}
       >

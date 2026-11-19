@@ -3,6 +3,7 @@ import { fontVariables } from '@schichtplan/ui/fonts';
 import {
   FeedbackProvider,
   OrganizationProvider,
+  SkipLink,
   ThemeScript,
   ConsoleBanner,
   UsageTracker,
@@ -106,6 +107,7 @@ export default async function RootLayout({
         <link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Full LLM context" />
       </head>
       <body className="min-h-[100dvh] bg-canvas text-fg antialiased flex flex-col selection:bg-accent selection:text-white grain">
+        <SkipLink />
         <OrganizationProvider slug={getOrganizationSlugFromHost(host)}>
           <FeedbackProvider>{children}</FeedbackProvider>
         </OrganizationProvider>

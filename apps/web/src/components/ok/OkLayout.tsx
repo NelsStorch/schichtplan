@@ -302,7 +302,7 @@ function OkFrame({ children }: { children: ReactNode }) {
             <OkNav />
           </div>
         </aside>
-        <main className="min-w-0">{children}</main>
+        <main id="inhalt" className="min-w-0">{children}</main>
       </div>
     </div>
   );

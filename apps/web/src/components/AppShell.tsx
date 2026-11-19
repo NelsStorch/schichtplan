@@ -132,7 +132,7 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
         </div>
       )}
 
-      <main className="flex-1 pb-12 md:pb-20">{children}</main>
+      <main id="inhalt" className="flex-1 pb-12 md:pb-20">{children}</main>
 
       {/* Mobil Platz für die fixe Tab-Leiste lassen, damit Hilfe/Datenschutz erreichbar bleiben */}
       <footer className="border-t border-line/70 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">

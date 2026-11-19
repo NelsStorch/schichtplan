@@ -558,11 +558,11 @@ function Participants({ event }: { event: EventDetails }) {
               <table className="w-full min-w-[40rem] text-left text-sm">
                 <thead className="bg-surface-2 text-xs font-semibold text-fg-subtle">
                   <tr>
-                    <th className="px-4 py-2.5">Person</th>
-                    <th className="px-4 py-2.5">Kontakt</th>
-                    <th className="px-4 py-2.5">Schichten</th>
+                    <th scope="col" className="px-4 py-2.5">Person</th>
+                    <th scope="col" className="px-4 py-2.5">Kontakt</th>
+                    <th scope="col" className="px-4 py-2.5">Schichten</th>
                     {event.questions.map((q) => (
-                      <th key={q.id} className="px-4 py-2.5">
+                      <th scope="col" key={q.id} className="px-4 py-2.5">
                         {q.label}
                         <span className="block font-normal text-fg-subtle">{retentionNotice(q.retentionDays)}</span>
                       </th>

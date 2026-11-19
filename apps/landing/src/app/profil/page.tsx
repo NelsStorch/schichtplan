@@ -35,7 +35,7 @@ export default function ProfilePage() {
         <ThemeToggle />
       </header>
 
-      <main className="mx-auto w-full max-w-3xl px-4 pb-16 sm:px-6">
+      <main id="inhalt" className="mx-auto w-full max-w-3xl px-4 pb-16 sm:px-6">
         {user ? (
           <ProfileView user={user} onUserChange={setUser} />
         ) : error ? (
