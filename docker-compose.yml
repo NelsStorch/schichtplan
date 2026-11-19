@@ -81,7 +81,7 @@ services:
       # API Endpunkte haben Vorrang auf allen Domains, Login und Subdomains (status.* hat eigene Uptime-Kuma-API)
       - "traefik.http.routers.schichtplan-api.rule=(Host(`cevi-schichtplan.ch`) || Host(`pfadi-schichtplan.ch`) || Host(`jubla-schichtplan.ch`) || Host(`vereins-schichtplan.ch`) || Host(`www.cevi-schichtplan.ch`) || Host(`www.pfadi-schichtplan.ch`) || Host(`www.jubla-schichtplan.ch`) || Host(`www.vereins-schichtplan.ch`) || Host(`login.cevi-schichtplan.ch`) || Host(`login.pfadi-schichtplan.ch`) || Host(`login.jubla-schichtplan.ch`) || Host(`login.vereins-schichtplan.ch`) || Host(`admin.cevi-schichtplan.ch`) || HostRegexp(`^[a-z0-9-]+[.](cevi-schichtplan[.]ch|pfadi-schichtplan[.]ch|jubla-schichtplan[.]ch|vereins-schichtplan[.]ch)$$`)) && !Host(`status.cevi-schichtplan.ch`) && !Host(`status.pfadi-schichtplan.ch`) && !Host(`status.jubla-schichtplan.ch`) && !Host(`status.vereins-schichtplan.ch`) && !Host(`dev.cevi-schichtplan.ch`) && !Host(`dev.pfadi-schichtplan.ch`) && !Host(`dev.jubla-schichtplan.ch`) && !Host(`dev.vereins-schichtplan.ch`) && (PathPrefix(`/api`) || Path(`/health`))"
       - "traefik.http.routers.schichtplan-api.entrypoints=websecure"
-      - "traefik.http.routers.schichtplan-api.tls.certresolver=myresolver"
+      - "traefik.http.routers.schichtplan-api.tls.certresolver=dnsresolver"
       - "traefik.http.routers.schichtplan-api.priority=100"
       - "traefik.http.routers.schichtplan-api.service=schichtplan-api"
       - "traefik.http.services.schichtplan-api.loadbalancer.server.port=4000"
@@ -152,7 +152,7 @@ services:
       # Hauptdomain (Marketing & Abteilungsauswahl)
       - "traefik.http.routers.schichtplan-landing.rule=Host(`cevi-schichtplan.ch`) || Host(`pfadi-schichtplan.ch`) || Host(`jubla-schichtplan.ch`) || Host(`vereins-schichtplan.ch`)"
       - "traefik.http.routers.schichtplan-landing.entrypoints=websecure"
-      - "traefik.http.routers.schichtplan-landing.tls.certresolver=myresolver"
+      - "traefik.http.routers.schichtplan-landing.tls.certresolver=dnsresolver"
       - "traefik.http.routers.schichtplan-landing.priority=20"
       - "traefik.http.routers.schichtplan-landing.service=schichtplan-landing"
       - "traefik.http.services.schichtplan-landing.loadbalancer.server.port=3001"
@@ -161,7 +161,7 @@ services:
       # www leitet dauerhaft (301) auf die Hauptdomain um, damit es keine doppelte Seite gibt (SEO)
       - "traefik.http.routers.schichtplan-landing-www.rule=Host(`www.cevi-schichtplan.ch`) || Host(`www.pfadi-schichtplan.ch`) || Host(`www.jubla-schichtplan.ch`) || Host(`www.vereins-schichtplan.ch`)"
       - "traefik.http.routers.schichtplan-landing-www.entrypoints=websecure"
-      - "traefik.http.routers.schichtplan-landing-www.tls.certresolver=myresolver"
+      - "traefik.http.routers.schichtplan-landing-www.tls.certresolver=dnsresolver"
       - "traefik.http.routers.schichtplan-landing-www.priority=20"
       - "traefik.http.routers.schichtplan-landing-www.service=schichtplan-landing"
       - "traefik.http.routers.schichtplan-landing-www.middlewares=schichtplan-www-redirect"
@@ -189,7 +189,7 @@ services:
       # Zentrales Login-Portal (Single Sign-On für alle Abteilungen)
       - "traefik.http.routers.schichtplan-login.rule=Host(`login.cevi-schichtplan.ch`) || Host(`login.pfadi-schichtplan.ch`) || Host(`login.jubla-schichtplan.ch`) || Host(`login.vereins-schichtplan.ch`)"
       - "traefik.http.routers.schichtplan-login.entrypoints=websecure"
-      - "traefik.http.routers.schichtplan-login.tls.certresolver=myresolver"
+      - "traefik.http.routers.schichtplan-login.tls.certresolver=dnsresolver"
       - "traefik.http.routers.schichtplan-login.priority=30"
       - "traefik.http.routers.schichtplan-login.service=schichtplan-login"
       - "traefik.http.services.schichtplan-login.loadbalancer.server.port=3002"
@@ -218,7 +218,7 @@ services:
       # Admin-Portal: Verwaltung für globale Admins (Zugriff wird im Backend geprüft)
       - "traefik.http.routers.schichtplan-admin.rule=Host(`admin.cevi-schichtplan.ch`) || Host(`admin.pfadi-schichtplan.ch`) || Host(`admin.jubla-schichtplan.ch`) || Host(`admin.vereins-schichtplan.ch`)"
       - "traefik.http.routers.schichtplan-admin.entrypoints=websecure"
-      - "traefik.http.routers.schichtplan-admin.tls.certresolver=myresolver"
+      - "traefik.http.routers.schichtplan-admin.tls.certresolver=dnsresolver"
       - "traefik.http.routers.schichtplan-admin.priority=30"
       - "traefik.http.routers.schichtplan-admin.service=schichtplan-admin"
       - "traefik.http.services.schichtplan-admin.loadbalancer.server.port=3003"
@@ -239,7 +239,7 @@ services:
       # Hilfe-Center (hilfe.cevi-schichtplan.ch, pfadi, jubla, verein), schlägt den Abteilungs-Wildcard (Priorität 10)
       - "traefik.http.routers.schichtplan-hilfe.rule=Host(`hilfe.cevi-schichtplan.ch`) || Host(`hilfe.pfadi-schichtplan.ch`) || Host(`hilfe.jubla-schichtplan.ch`) || Host(`hilfe.vereins-schichtplan.ch`)"
       - "traefik.http.routers.schichtplan-hilfe.entrypoints=websecure"
-      - "traefik.http.routers.schichtplan-hilfe.tls.certresolver=myresolver"
+      - "traefik.http.routers.schichtplan-hilfe.tls.certresolver=dnsresolver"
       - "traefik.http.routers.schichtplan-hilfe.priority=30"
       - "traefik.http.routers.schichtplan-hilfe.service=schichtplan-hilfe"
       - "traefik.http.services.schichtplan-hilfe.loadbalancer.server.port=3004"
