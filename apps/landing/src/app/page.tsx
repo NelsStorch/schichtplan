@@ -7,7 +7,9 @@ import {
   LifeBuoy,
   ShieldCheck,
   ChevronDown,
+  ArrowRight,
   ArrowUpRight,
+  Building2,
   Heart,
   Users,
 } from 'lucide-react';
@@ -16,6 +18,8 @@ import {
   statusUrl,
   getOrganization,
   organizationSiteUrl,
+  getDepartmentCreationUrl,
+  getLandingUrl,
   VERBAND_ORGANIZATIONS,
 } from '@schichtplan/shared';
 import { getRequestOrigin } from '@schichtplan/ui/og';
@@ -38,6 +42,8 @@ const PRIMARY_CTA_CLASS = 'justify-center text-sm font-semibold h-12 px-6 gap-2 
 export default async function LandingPage() {
   const { host } = await getRequestOrigin();
   const org = getOrganization(host);
+  const landingUrl = getLandingUrl('/', host);
+  const createDepartmentUrl = getDepartmentCreationUrl(landingUrl, host);
   // Nur auf der neutralen Vereins-Seite: Verweis auf die Verbandsinstanzen mit eigenem Verbands-Login
   const verbandLinks =
     org.slug === 'verein'
@@ -85,6 +91,18 @@ export default async function LandingPage() {
               >
                 <LifeBuoy className="size-3.5 text-fg-muted" />
                 <span>Hilfe</span>
+              </a>
+
+              <a
+                href={createDepartmentUrl}
+                className={buttonClasses({
+                  variant: 'ghost',
+                  size: 'sm',
+                  className: 'hidden md:inline-flex gap-1.5 text-xs font-semibold text-fg-muted hover:text-fg',
+                })}
+              >
+                <Building2 className="size-3.5 text-accent" />
+                <span>{org.unitTerm} erfassen</span>
               </a>
 
               <HeaderAccount />
@@ -150,9 +168,9 @@ export default async function LandingPage() {
                         erhältst du direkt von deinem Leitungsteam per Mail oder WhatsApp.
                       </span>
                     </div>
-                    <div className="text-fg-subtle pt-1">
-                      {org.slug === 'verein' ? 'Du leitest einen Verein?' : `Du leitest eine ${org.orgName}-${org.unitTerm}?`}{' '}
-                      <CreateDepartmentButton unitTerm={org.unitTerm} />
+                    <div className="text-fg-subtle pt-1 flex items-center gap-1.5 flex-wrap">
+                      <span>{org.slug === 'verein' ? 'Du leitest einen Verein?' : `Du leitest eine ${org.orgName}-${org.unitTerm}?`}</span>{' '}
+                      <CreateDepartmentButton unitTerm={org.unitTerm} href={createDepartmentUrl} />
                     </div>
                   </div>
 
@@ -293,17 +311,28 @@ export default async function LandingPage() {
                   </p>
                 </Reveal>
 
-                <Reveal delay={200} className="rounded-2xl border border-line bg-surface/70 p-5 shadow-sm">
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-500">
-                    <ShieldCheck className="size-3.5" />
-                    <span>Für die {org.unitTerm}sleitung</span>
+                <Reveal delay={200} className="rounded-2xl border border-line bg-surface/70 p-5 shadow-sm flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-500">
+                      <ShieldCheck className="size-3.5" />
+                      <span>Für die {org.unitTerm}sleitung</span>
+                    </div>
+                    <h3 className="font-display text-base font-bold text-fg mt-2">
+                      Eigene Adresse, {org.authProviderShort} synchron
+                    </h3>
+                    <p className="mt-1.5 text-xs text-fg-muted leading-relaxed">
+                      Feste Subdomain mit Logo und Farbe eurer {org.unitTerm}. Leitungsrechte werden direkt aus {org.authProviderShort} übernommen.
+                    </p>
                   </div>
-                  <h3 className="font-display text-base font-bold text-fg mt-2">
-                    Eigene Adresse, {org.authProviderShort} synchron
-                  </h3>
-                  <p className="mt-1.5 text-xs text-fg-muted leading-relaxed">
-                    Feste Subdomain mit Logo und Farbe eurer {org.unitTerm}. Leitungsrechte werden direkt aus {org.authProviderShort} übernommen.
-                  </p>
+                  <div className="mt-3 pt-2.5 border-t border-line/60">
+                    <a
+                      href={createDepartmentUrl}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
+                    >
+                      <span>{org.unitTerm} jetzt einrichten</span>
+                      <ArrowRight className="size-3" />
+                    </a>
+                  </div>
                 </Reveal>
               </div>
 
@@ -359,6 +388,13 @@ export default async function LandingPage() {
                       <span className="font-mono text-accent font-bold break-all sm:break-normal text-2xs sm:text-xs">
                         eure-{org.unitTerm.toLowerCase()}.{org.domain}
                       </span>
+                      <a
+                        href={createDepartmentUrl}
+                        className="inline-flex items-center gap-1 font-semibold text-accent hover:underline text-2xs sm:text-xs"
+                      >
+                        <span>{org.unitTerm} einrichten</span>
+                        <ArrowRight className="size-3" />
+                      </a>
                     </div>
                   </div>
                 </Reveal>
@@ -445,15 +481,27 @@ export default async function LandingPage() {
                     />
 
                     <a
-                      href={helpUrl('/', host)}
+                      href={createDepartmentUrl}
                       className={buttonClasses({
                         variant: 'secondary',
                         size: 'md',
                         className: 'h-12 justify-center font-semibold text-sm px-6 gap-2',
                       })}
                     >
+                      <Building2 className="size-4 text-accent" />
+                      <span>{org.unitTerm} erfassen</span>
+                    </a>
+
+                    <a
+                      href={helpUrl('/', host)}
+                      className={buttonClasses({
+                        variant: 'ghost',
+                        size: 'md',
+                        className: 'h-12 justify-center font-semibold text-sm px-4 gap-1.5 text-fg-muted hover:text-fg',
+                      })}
+                    >
                       <LifeBuoy className="size-4" />
-                      <span>Zum Hilfe-Center</span>
+                      <span>Hilfe</span>
                       <ExternalLink className="size-3.5 text-fg-subtle" />
                     </a>
                   </div>
@@ -479,6 +527,9 @@ export default async function LandingPage() {
             </div>
 
             <div className="flex flex-wrap items-center justify-center sm:justify-end gap-4 sm:gap-5">
+              <a href={createDepartmentUrl} className="hover:text-fg transition font-medium text-fg">
+                {org.unitTerm} erfassen
+              </a>
               <a href={helpUrl('/', host)} className="hover:text-fg transition">
                 Hilfe
               </a>

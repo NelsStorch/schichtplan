@@ -25,6 +25,11 @@ export const LANDING_PAGES = {
     description: `Deine Angaben, ${org.unitTerm}, Stufen und eigenen Schichten im ${org.name} verwalten.`,
     subtitle: `Angaben, ${org.unitTerm} und eigene Schichten verwalten.`,
   }),
+  'abteilung-erstellen': (org: Org) => ({
+    title: `${org.unitTerm} erfassen`,
+    description: `Schichtplan für deine ${org.unitTerm} auf ${org.name} einrichten.`,
+    subtitle: `Schichtplan für deine ${org.unitTerm} einrichten.`,
+  }),
 } satisfies Record<string, (org: Org) => OgSubpage>;
 
 export type LandingPageKey = keyof typeof LANDING_PAGES;

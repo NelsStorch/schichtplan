@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { ArrowRight, LogIn } from 'lucide-react';
-import { getDepartmentUrl, getLandingUrl, getLoginUrl, type UserDto } from '@schichtplan/shared';
+import { getDepartmentCreationUrl, getDepartmentUrl, getLandingUrl, getLoginUrl, type UserDto } from '@schichtplan/shared';
 import { Avatar, buttonClasses } from '@schichtplan/ui';
 
 /**
@@ -119,16 +119,33 @@ export function PrimaryCta({
 }
 
 /** Abteilung/Schar anlegen passiert im Login-Portal (nur Leitung mit Verband-Login) */
-export function CreateDepartmentButton({ unitTerm = 'Abteilung' }: { unitTerm?: string }) {
+export function CreateDepartmentButton({
+  unitTerm = 'Abteilung',
+  className,
+  href,
+}: {
+  unitTerm?: string;
+  className?: string;
+  href?: string;
+}) {
+  const [targetHref, setTargetHref] = useState(href || '/abteilung-erstellen');
+
+  useEffect(() => {
+    if (!href) {
+      setTargetHref(getDepartmentCreationUrl(getLandingUrl()));
+    }
+  }, [href]);
+
   return (
-    <button
-      type="button"
-      onClick={() => {
-        window.location.href = getLoginUrl(getLandingUrl(), '/abteilung-erstellen');
-      }}
-      className="font-semibold text-accent hover:underline inline-flex items-center gap-0.5"
+    <a
+      href={href || targetHref}
+      className={
+        className ??
+        'font-semibold text-accent hover:underline inline-flex items-center gap-1'
+      }
     >
-      Schichtplan für deine {unitTerm} einrichten <ArrowRight className="size-3" />
-    </button>
+      <span>Schichtplan für deine {unitTerm} einrichten</span>
+      <ArrowRight className="size-3" />
+    </a>
   );
 }

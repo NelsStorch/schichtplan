@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { getDepartmentCreationUrl, getLoginUrl } from '@schichtplan/shared';
 import { afterLogin, cleanReturnTo, departmentSlugFromReturnTo, finalDestination, withReturnTo } from './destination';
 
 function onHost(hostname: string) {
@@ -79,5 +80,35 @@ describe('Ziel nach dem Login', () => {
     expect(withReturnTo('/zwei-faktor', null)).toBe('/zwei-faktor');
     expect(withReturnTo('/zwei-faktor', 'https://a.b/')).toBe(`/zwei-faktor?return_to=${encodeURIComponent('https://a.b/')}`);
     expect(withReturnTo('/x?y=1', 'z')).toBe('/x?y=1&return_to=z');
+  });
+});
+
+describe('getDepartmentCreationUrl & getLoginUrl', () => {
+  it('erzeugt serverseitig saubere Login- und Abteilung-Erstellen-URLs für Cevi', () => {
+    expect(getDepartmentCreationUrl('https://cevi-schichtplan.ch/', 'cevi-schichtplan.ch')).toBe(
+      'https://login.cevi-schichtplan.ch/abteilung-erstellen?return_to=https%3A%2F%2Fcevi-schichtplan.ch%2F'
+    );
+  });
+
+  it('erzeugt serverseitig saubere URLs für andere Verbände (Pfadi, Dev)', () => {
+    expect(getDepartmentCreationUrl('https://pfadi-schichtplan.ch/', 'pfadi-schichtplan.ch')).toBe(
+      'https://login.pfadi-schichtplan.ch/abteilung-erstellen?return_to=https%3A%2F%2Fpfadi-schichtplan.ch%2F'
+    );
+    expect(getDepartmentCreationUrl('https://dev.cevi-schichtplan.ch/', 'dev.cevi-schichtplan.ch')).toBe(
+      'https://login.dev.cevi-schichtplan.ch/abteilung-erstellen?return_to=https%3A%2F%2Fdev.cevi-schichtplan.ch%2F'
+    );
+  });
+
+  it('erzeugt serverseitig saubere URLs für localhost', () => {
+    expect(getDepartmentCreationUrl('http://localhost:3001/', 'localhost:3001')).toBe(
+      'http://localhost:3002/abteilung-erstellen?return_to=http%3A%2F%2Flocalhost%3A3001%2F'
+    );
+  });
+
+  it('erzeugt browserseitig saubere URLs anhand von window.location', () => {
+    onHost('cevi-schichtplan.ch');
+    expect(getDepartmentCreationUrl('https://cevi-schichtplan.ch/')).toBe(
+      'https://login.cevi-schichtplan.ch/abteilung-erstellen?return_to=https%3A%2F%2Fcevi-schichtplan.ch%2F'
+    );
   });
 });

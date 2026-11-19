@@ -70,16 +70,45 @@ export function getRootDomain(hostname?: string): string {
 
 /**
  * Erzeugt die zentrale SSO-Login-URL (login.<rootDomain>) für den aktuellen Kontext.
+ * Unterstützt optional den `host` für serverseitig generierte URLs.
  */
-export function getLoginUrl(targetUrl?: string, path = '/'): string {
-  if (typeof window === 'undefined') return '/login';
-  const { hostname, protocol, href } = window.location;
+export function getLoginUrl(targetUrl?: string, path = '/', host?: string): string {
+  const cleanPath = path === '/' ? '' : path.startsWith('/') ? path : `/${path}`;
+  const currentHost = host || (typeof window !== 'undefined' ? window.location.host : '');
+
+  if (currentHost) {
+    const hostname = currentHost.split(':')[0].trim().toLowerCase();
+    const defaultTarget = typeof window !== 'undefined' ? window.location.href : '';
+    const resolvedTarget = targetUrl !== undefined ? targetUrl : defaultTarget;
+    const query = resolvedTarget ? `?return_to=${encodeURIComponent(resolvedTarget)}` : '';
+
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.localhost')) {
+      return `http://localhost:3002${cleanPath || '/'}${query}`;
+    }
+
+    const root = getRootDomain(hostname);
+    const protocol = typeof window !== 'undefined' && window.location?.protocol ? window.location.protocol : 'https:';
+    return `${protocol}//login.${root}${cleanPath || '/'}${query}`;
+  }
+
+  if (typeof window === 'undefined') return cleanPath || '/login';
+
+  const hostname = window.location.hostname;
+  const protocol = window.location.protocol || 'https:';
+  const href = window.location.href;
   const target = encodeURIComponent(targetUrl || href);
   if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.localhost')) {
-    return `http://localhost:3002${path}?return_to=${target}`;
+    return `http://localhost:3002${cleanPath || '/'}?return_to=${target}`;
   }
   const root = getRootDomain(hostname);
-  return `${protocol}//login.${root}${path}?return_to=${target}`;
+  return `${protocol}//login.${root}${cleanPath || '/'}?return_to=${target}`;
+}
+
+/**
+ * Link zum Formular zum Erstellen einer Abteilung / Schar / Organisation im Login-Portal.
+ */
+export function getDepartmentCreationUrl(targetUrl?: string, host?: string): string {
+  return getLoginUrl(targetUrl, '/abteilung-erstellen', host);
 }
 
 /** Seite im Login-Portal, auf der man Abteilung und Stufen angibt (mit Rücksprung) */
