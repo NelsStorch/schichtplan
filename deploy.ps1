@@ -5,6 +5,9 @@ param (
     # Ueberspringt das Datenbank-Dump vor dem Deployment
     [switch]$SkipBackup,
 
+    # Ueberspringt den lokalen Vorab-Check (Typecheck)
+    [switch]$SkipCheck,
+
     # Nur fuer Notfaelle: Prod auch ohne gepushten Stand und gruene CI deployen
     [switch]$Force
 )
@@ -81,7 +84,7 @@ function Send-DiscordNotification($title, $description, $color = 14753096, $fiel
         color = $color
         timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
         footer = @{
-            text = "Cevi Schichtplan V2 $Dot $Environment"
+            text = "Schichtplan V2 $Dot $Environment"
         }
     }
     if ($url) { $embed.url = $url }
@@ -138,8 +141,17 @@ Set-Location $PSScriptRoot
 Write-Host "Deploy nach $Environment ($RemoteDir auf $Server)" -ForegroundColor Cyan
 
 # Pruefe uncommitted Dateien
-$commit = git log --oneline -1 2>$null
 $dirty = @(git status --porcelain 2>$null)
+# Automatische Bereinigung fuer Next.js Typdateien (next-env.d.ts), die bei lokalen Tests/Dev oft veraendert werden
+if ($dirty.Count -gt 0) {
+    $onlyNextEnv = ($dirty | Where-Object { $_ -notmatch 'next-env\.d\.ts$' }).Count -eq 0
+    if ($onlyNextEnv) {
+        Write-Host "Bereinige automatisch generierte next-env.d.ts Dateien..." -ForegroundColor Cyan
+        git checkout -- apps/*/next-env.d.ts 2>$null
+        $dirty = @(git status --porcelain 2>$null)
+    }
+}
+$commit = git log --oneline -1 2>$null
 if ($commit) { Write-Host "Stand: $commit" }
 # Git-Stand fuer Image-Tags, REVISION und /health. Mit uncommitteten Dateien eindeutig markiert.
 $revision = git rev-parse --short HEAD 2>$null
@@ -202,8 +214,18 @@ if ($Environment -eq 'prod') {
     }
 }
 
+if (-not $SkipCheck) {
+    Step "0. Lokaler Pre-Flight Check (Typecheck)"
+    Write-Host "Pruefe TypeScript-Typen lokal (ueberspringen mit -SkipCheck)..." -ForegroundColor Cyan
+    npm run typecheck --silent
+    if ($LASTEXITCODE -ne 0) {
+        Stop-Deploy "Lokaler Typecheck fehlgeschlagen. Fehler zuerst beheben oder mit -SkipCheck ueberspringen."
+    }
+    Write-Host "Typecheck erfolgreich!" -ForegroundColor Green
+}
+
 Step "1. Archiv erstellen"
-tar.exe --exclude="node_modules" --exclude=".git" --exclude="dist" --exclude="out" --exclude=".next" --exclude=".env*" --exclude="backups" --exclude="*.dump" --exclude="*.sql.gz" --exclude="deploy.config.ps1" --exclude=$ArchiveName --exclude=$RemoteScript -czf $ArchiveName .
+tar.exe --exclude="node_modules" --exclude=".git" --exclude="dist" --exclude="out" --exclude=".next" --exclude=".env*" --exclude="backups" --exclude="*.dump" --exclude="*.sql.gz" --exclude="test-results" --exclude="playwright-report" --exclude=".turbo" --exclude="coverage" --exclude=".claude" --exclude="deploy.config.ps1" --exclude=$ArchiveName --exclude=$RemoteScript -czf $ArchiveName .
 if ($LASTEXITCODE -ne 0) { Stop-Deploy "Das Archiv konnte nicht erstellt werden." }
 
 # Server Script
@@ -365,6 +387,12 @@ docker network rm "$LegacyNetwork" > /dev/null 2>&1 || true
 domain=`$(grep -E '^(DOMAIN|DOMAIN_DEV)=' .env 2>/dev/null | head -n1 | cut -d= -f2- | tr -d '\r"' || true)
 domain=`${domain:-$DefaultDomain}
 
+if [ "$Environment" = "dev" ]; then
+  all_domains="dev.cevi-schichtplan.ch dev.pfadi-schichtplan.ch dev.jubla-schichtplan.ch dev.vereins-schichtplan.ch"
+else
+  all_domains="cevi-schichtplan.ch pfadi-schichtplan.ch jubla-schichtplan.ch vereins-schichtplan.ch"
+fi
+
 check() {
   for i in `$(seq 1 30); do
     code=`$(curl -s -o /dev/null -m 5 -w '%{http_code}' "`$1" || true)
@@ -390,6 +418,15 @@ if [ "$Environment" = "prod" ]; then
 else
   check "https://login.`$domain/" || echo "WARNUNG: login.`$domain nicht erreichbar (DNS oder Zertifikat noch in Arbeit?)"
 fi
+
+# Multi-Domain Verifikation aller weiteren Verbaende (Cevi, Pfadi, Jubla, Vereine)
+echo "Multi-Domain Verifikation..."
+for d in `$all_domains; do
+  if [ "`$d" != "`$domain" ]; then
+    check "https://`$d/health" || echo "WARNUNG: https://`$d/health nicht erreichbar (DNS oder Zertifikat noch in Arbeit?)"
+    check "https://`$d/" || echo "WARNUNG: https://`$d/ nicht erreichbar (DNS oder Zertifikat noch in Arbeit?)"
+  fi
+done
 
 # Admin-Portal und Hilfe: kein harter Fehler, damit ein fehlender DNS-Eintrag den restlichen Deploy nicht kippt
 check "https://admin.`$domain/" || echo "WARNUNG: admin.`$domain nicht erreichbar (DNS oder Zertifikat noch in Arbeit?)"
@@ -449,7 +486,11 @@ $deployInfo = "**Stand:** $(Get-CommitLink ($revision -replace '-dirty-\d+$', ''
 if ($dirty.Count -gt 0) {
     $deployInfo += "`n**Achtung:** $($dirty.Count) nicht committete Datei(en) mitgeliefert (``$revision``)"
 }
-$deployInfo += "`nhttps://$DefaultDomain $Dot unterbruchfrei online"
+if ($Environment -eq 'prod') {
+    $deployInfo += "`n[Cevi](https://cevi-schichtplan.ch) $Dot [Pfadi](https://pfadi-schichtplan.ch) $Dot [Jubla](https://jubla-schichtplan.ch) $Dot [Vereine](https://vereins-schichtplan.ch) $Dot unterbruchfrei online"
+} else {
+    $deployInfo += "`n[Dev Cevi](https://dev.cevi-schichtplan.ch) $Dot [Dev Pfadi](https://dev.pfadi-schichtplan.ch) $Dot [Dev Jubla](https://dev.jubla-schichtplan.ch) $Dot [Dev Vereine](https://dev.vereins-schichtplan.ch) $Dot online"
+}
 
 $fields = @()
 if ($changes.Count -gt 0) {
