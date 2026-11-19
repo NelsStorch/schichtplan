@@ -1053,6 +1053,63 @@ export async function sendAccountExistsEmail({
 }
 
 /**
+ * Hinweis vor der Löschung eines inaktiven Kontos (services/dataRetention.ts)
+ */
+export async function sendInactiveAccountEmail({
+  to,
+  name,
+  loginUrl,
+  deleteOn,
+  organization,
+}: {
+  to: string;
+  name?: string | null;
+  loginUrl: string;
+  /** Datum der Löschung, z. B. «19.12.2028» */
+  deleteOn: string;
+  organization?: OrganizationType;
+}): Promise<boolean> {
+  const org = getOrganization(organization);
+  const defaultGreeting = getDefaultGreeting(org.slug);
+  const displayName = name?.trim() ? name.trim() : defaultGreeting;
+  const subject = `Dein Konto wird gelöscht – ${org.name}`;
+
+  const contentHtml = `
+    <p style="margin: 0 0 16px 0;">Hallo <strong class="email-signature" style="color: #1c1917;">${escapeHtml(displayName)}</strong>,</p>
+    <p style="margin: 0 0 16px 0;">du hast dein Konto beim ${escapeHtml(org.name)} seit über zwei Jahren nicht mehr benutzt. Damit wir keine Daten länger als nötig aufbewahren, löschen wir es am <strong>${escapeHtml(deleteOn)}</strong>.</p>
+    <p style="margin: 0;">Möchtest du dein Konto behalten? Dann melde dich einfach vorher einmal an. Sonst musst du nichts tun.</p>
+  `;
+
+  const html = renderEmailTemplate({
+    preheader: `Dein Konto wird am ${deleteOn} gelöscht, wenn du dich nicht anmeldest.`,
+    eyebrow: 'Konto-Hinweis',
+    title: 'Dein Konto wird gelöscht',
+    contentHtml,
+    calloutBox: {
+      title: 'Was wird gelöscht?',
+      text: 'Dein Profil, deine Kontaktdaten und deine Antworten. In vergangenen Anlässen bleibt deine Schicht als «Gelöschte Person» stehen, ohne Namen.',
+      tone: 'info' as const,
+    },
+    ctaText: 'Jetzt anmelden',
+    ctaUrl: loginUrl,
+    organization: org.slug,
+  });
+
+  const text = `Hallo ${displayName},
+
+du hast dein Konto beim ${org.name} seit über zwei Jahren nicht mehr benutzt. Wir löschen es am ${deleteOn}.
+
+Möchtest du es behalten? Dann melde dich vorher einmal an: ${loginUrl}
+
+Sonst musst du nichts tun. Gelöscht werden Profil, Kontaktdaten und Antworten. In vergangenen Anlässen bleibt deine Schicht als «Gelöschte Person» stehen, ohne Namen.
+
+Herzliche Grüsse
+Dein ${org.name} Team`;
+
+  return sendEmail({ to, subject, html, text, organization: org.dbType, kind: 'ACCOUNT_INACTIVE' });
+}
+
+/**
  * 3. Schicht-Erinnerung (mit frei wählbarer Vorlaufzeit & optionalem OK-Hinweis)
  */
 export async function sendShiftReminderEmail({

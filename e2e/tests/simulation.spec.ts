@@ -64,6 +64,7 @@ test('Abteilungsleitung legt den Schichtplan an', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /Sim-Dorf hat noch keinen Schichtplan/ })).toBeVisible();
   const slug = `e2e-sim-${runId}`.slice(0, 30);
   await page.getByLabel('Subdomain').fill(slug);
+  await page.getByRole('checkbox', { name: /Nutzungsbedingungen/ }).check();
   await page.getByRole('button', { name: /anlegen$/ }).first().click();
   await page.waitForURL((url) => url.hostname.startsWith(`${slug}.`), { timeout: 60_000 });
 });

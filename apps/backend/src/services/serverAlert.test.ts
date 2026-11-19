@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   buildWebhookPayload,
   isDatabaseOverloadError,
+  redactPersonalData,
   resetAlertCooldowns,
   sendServerAlert,
 } from './serverAlert.js';
@@ -124,6 +125,33 @@ describe('serverAlert', () => {
 
       expect(res.webhookSent).toBe(true);
       expect(res.emailSent).toBe(false);
+    });
+  });
+
+  describe('Personendaten im Webhook', () => {
+    it('entfernt E-Mail-Adressen und Telefonnummern, lässt IDs und Zeitstempel stehen', () => {
+      expect(redactPersonalData('Unique constraint failed (email)=(max@beispiel.ch)')).toBe(
+        'Unique constraint failed (email)=([E-Mail])'
+      );
+      expect(redactPersonalData('Tel +41 79 123 45 67 oder 079 123 45 67')).toBe('Tel [Telefon] oder [Telefon]');
+      const id = 'id 8f3e0012-4000-8000-0000-123456789012 um 2026-11-19T00:00:00.000Z';
+      expect(redactPersonalData(id)).toBe(id);
+    });
+
+    it('schickt Fehler und Kontext ohne Personendaten an Discord', () => {
+      const body = buildWebhookPayload(
+        {
+          category: 'SERVER_ERROR',
+          title: 'Fehler für anna@beispiel.ch',
+          message: 'Kontakt 079 123 45 67',
+          error: new Error('duplicate key anna@beispiel.ch'),
+          context: { route: 'POST /api/auth/register', email: 'anna@beispiel.ch' },
+        },
+        { environment: 'test', domain: 'cevi-schichtplan.ch' }
+      );
+      expect(JSON.stringify(body)).not.toContain('anna@beispiel.ch');
+      expect(JSON.stringify(body)).not.toContain('079 123 45 67');
+      expect(body.context).toEqual({ route: 'POST /api/auth/register', email: '[E-Mail]' });
     });
   });
 });

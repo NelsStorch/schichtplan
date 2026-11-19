@@ -5,6 +5,7 @@ import { Prisma, } from '../../db.js';
 import {
   CreateDepartmentFromCeviDbSchema,
   DEPARTMENT_PERMISSION_PRESETS,
+  TERMS_VERSION,
   UpdateDepartmentSchema,
   type DepartmentDirectoryItemDto,
   type DepartmentJoinMode,
@@ -335,6 +336,8 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
               primaryColor: getOrganizationByDbType(provider).primaryColor,
               contactUserId: request.user.id,
               hitobitoGroupId: isOther ? null : ceviDbGroupId,
+              termsAcceptedAt: new Date(),
+              termsVersion: TERMS_VERSION,
             },
           });
           await tx.departmentMember.create({

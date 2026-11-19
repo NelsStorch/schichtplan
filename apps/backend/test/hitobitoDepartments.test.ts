@@ -266,7 +266,7 @@ describe.skipIf(!hasTestDb)('Cevi.DB: Abteilung aus Rollen und Gruppenstruktur',
       method: 'POST',
       url: '/api/departments/cevidb',
       cookie,
-      payload: { departmentName: 'Cevi Effretikon', slug: 'effretikon' },
+      payload: { departmentName: 'Cevi Effretikon', slug: 'effretikon', acceptTerms: true },
     });
     expect(created.statusCode).toBe(201);
     const effretikon = await app.prisma.department.findUniqueOrThrow({
@@ -303,7 +303,7 @@ describe.skipIf(!hasTestDb)('Cevi.DB: Abteilung aus Rollen und Gruppenstruktur',
       method: 'POST',
       url: '/api/departments/cevidb',
       cookie,
-      payload: { departmentName: 'Cevi Effretikon', slug: 'effretikon' },
+      payload: { departmentName: 'Cevi Effretikon', slug: 'effretikon', acceptTerms: true },
     });
     expect(created.statusCode).toBe(201);
     const effretikon = await app.prisma.department.findUniqueOrThrow({

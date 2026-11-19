@@ -42,6 +42,7 @@ describe.skipIf(!hasTestDb)('Vereins-Schichtplan: Erstellung und Verwaltung von 
       payload: {
         departmentName: 'Turnverein Muster',
         slug: 'tv-muster',
+        acceptTerms: true,
       },
     });
 

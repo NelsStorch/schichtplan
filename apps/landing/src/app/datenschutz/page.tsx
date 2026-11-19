@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import {
   ORGANIZATIONS,
   getOrganization,
@@ -10,9 +8,8 @@ import {
   type OrganizationConfig,
   type OrganizationSlug,
 } from "@schichtplan/shared";
-import { ThemeToggle } from "@schichtplan/ui";
 import { getRequestOrigin } from "@schichtplan/ui/og";
-import { BrandLogo } from "@/components/BrandLogo";
+import { LEGAL_ROBOTS, LegalPage, List, Section } from "@/components/LegalPage";
 import { ContactReveal } from "./ContactReveal";
 import { landingPageMetadata } from "@/lib/ogPages";
 
@@ -23,17 +20,11 @@ export async function generateMetadata(): Promise<Metadata> {
     // Eigener Canonical statt dem der Startseite (aus dem Layout), sonst widersprechen sich die Signale
     alternates: { canonical: "/datenschutz" },
     // Nicht in Suchmaschinen, keine Kopie im Cache (zusätzlich zu robots.txt)
-    robots: {
-      index: false,
-      follow: false,
-      nocache: true,
-      noarchive: true,
-      "max-snippet": 0,
-    },
+    robots: LEGAL_ROBOTS,
   };
 }
 
-const STAND = "13. November 2026";
+const STAND = "19. November 2026";
 
 /**
  * Betreiber der Verbandsdatenbank (Hitobito), über die man sich anmelden kann, samt deren Datenschutz-Seite.
@@ -89,33 +80,6 @@ function wording(org: OrganizationConfig) {
   };
 }
 
-function Section({
-  id,
-  title,
-  children,
-}: {
-  id: string;
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <section id={id} className="scroll-mt-6 space-y-3">
-      <h2 className="font-display text-xl font-bold tracking-tight text-fg">
-        {title}
-      </h2>
-      {children}
-    </section>
-  );
-}
-
-function List({ children }: { children: ReactNode }) {
-  return (
-    <ul className="list-disc space-y-1.5 pl-5 marker:text-fg-subtle">
-      {children}
-    </ul>
-  );
-}
-
 function StorageTable({
   rows,
 }: {
@@ -157,39 +121,19 @@ export default async function DatenschutzPage() {
   const fed = w.federation;
   const dbShort = org.authProviderShort;
   return (
-    <div className="min-h-[100dvh] bg-canvas text-fg">
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[420px] bg-campfire opacity-60"
-      />
-      <header className="mx-auto flex w-full max-w-3xl items-center justify-between px-4 py-5 sm:px-6">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-fg-muted transition hover:text-fg"
-        >
-          <ArrowLeft className="size-4" />{" "}
-          <BrandLogo logoUrl={org.logoUrl} alt={org.name} className="size-7" />{" "}
-          {org.name}
-        </Link>
-        <ThemeToggle />
-      </header>
-
-      <main
-        id="inhalt"
-        className="mx-auto w-full max-w-3xl space-y-10 px-4 pb-20 pt-4 text-[15px] leading-relaxed text-fg-muted sm:px-6 [&_a]:font-medium [&_a]:text-fg [&_a]:underline [&_a]:underline-offset-2 [&_strong]:text-fg"
-      >
-        <div className="space-y-3">
-          <h1 className="font-display text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
-            Datenschutzerklärung
-          </h1>
-          <p>
-            Diese Erklärung beschreibt, welche Personendaten wir beim Betrieb
-            des {org.name}s bearbeiten, wozu wir das tun und welche Rechte
-            du hast. Sie richtet sich nach dem Schweizer Bundesgesetz über den
-            Datenschutz (DSG) und der Datenschutzverordnung (DSV).
-          </p>
-          <p className="text-sm text-fg-subtle">Stand: {STAND}</p>
-        </div>
+    <LegalPage
+      org={org}
+      title="Datenschutzerklärung"
+      stand={STAND}
+      intro={
+        <p>
+          Diese Erklärung beschreibt, welche Personendaten wir beim Betrieb des{" "}
+          {org.name}s bearbeiten, wozu wir das tun und welche Rechte du hast.
+          Sie richtet sich nach dem Schweizer Bundesgesetz über den Datenschutz
+          (DSG) und der Datenschutzverordnung (DSV).
+        </p>
+      }
+    >
 
         <Section id="verantwortlich" title="1. Verantwortliche Stelle">
           <p>
@@ -243,7 +187,9 @@ export default async function DatenschutzPage() {
             von Helfenden verlangen und wen sie einteilen. Für diese Entscheide
             und für die Verwendung der Daten ausserhalb der Plattform
             (z.&nbsp;B. eine exportierte Helferliste) ist {w.respective}{" "}
-            verantwortlich.
+            verantwortlich. Wir bearbeiten diese Daten in ihrem Auftrag; die
+            Regeln dazu stehen in den{" "}
+            <Link href="/nutzungsbedingungen">Nutzungsbedingungen</Link>.
           </p>
         </Section>
 
@@ -254,7 +200,9 @@ export default async function DatenschutzPage() {
             <li>
               <strong>E-Mail und Passwort:</strong> E-Mail-Adresse, Passwort
               (nur als bcrypt-Hash, nie im Klartext), Vor- und Nachname, ob die
-              E-Mail bestätigt ist.
+              E-Mail bestätigt ist. Wer die Zwei-Faktor-Anmeldung einschaltet,
+              hat zusätzlich einen geheimen Schlüssel (verschlüsselt gespeichert)
+              und Wiederherstellungscodes (nur als Hash).
             </li>
             {fed && (
               <li>
@@ -307,7 +255,11 @@ export default async function DatenschutzPage() {
               Antworten auf Fragen, die ein OK zu seinem Anlass stellt
               (z.&nbsp;B. Adresse, Allergien, Notfallkontakt oder
               T-Shirt-Grösse). Beim Ausfüllen steht bei jeder Frage, wann die
-              Antwort gelöscht wird,
+              Antwort gelöscht wird. Fragen nach Gesundheitsangaben
+              (z.&nbsp;B. Allergien) sind als solche markiert: Diese besonders
+              schützenswerten Daten bearbeiten wir nur mit deiner ausdrücklichen
+              Einwilligung, die wir mit Zeitpunkt speichern, und sie werden immer
+              nach einer Frist gelöscht,
             </li>
             <li>
               Abmeldungen von einem Anlass mit freiwilligem Grund. Bitte gib
@@ -324,7 +276,19 @@ export default async function DatenschutzPage() {
               Personen, die ein OK von Hand einträgt (Name, allenfalls E-Mail
               und Telefon), auch ohne eigenes Konto,
             </li>
-            <li>Zugangs-Links zu Anlässen und wer sie eingelöst hat.</li>
+            <li>Zugangs-Links zu Anlässen und wer sie eingelöst hat,</li>
+            <li>
+              ein Protokoll der Ein- und Austragungen, Übernahmen und der
+              Anwesenheit (wer, wann, durch wen),
+            </li>
+            <li>
+              Nachrichten, die das OK über den Schichtplan an Helfende schickt,
+              samt Verlauf, wer sie erhalten hat,
+            </li>
+            <li>
+              Verpflegungs- und Getränke-Bons: welche Bons zu deiner Eintragung
+              gehören und wann sie eingelöst wurden.
+            </li>
           </List>
 
           <h3 className="pt-2 font-semibold text-fg">Inhalte von Planenden</h3>
@@ -414,9 +378,10 @@ export default async function DatenschutzPage() {
               Änderungen,
             </li>
             <li>
-              E-Mails: Bestätigung der E-Mail-Adresse, Zurücksetzen des
-              Passworts und Erinnerung 24 Stunden vor deinen Schichten (im
-              Profil abschaltbar),
+              E-Mails und, wenn du sie erlaubst, Push-Mitteilungen: Bestätigung
+              der E-Mail-Adresse, Zurücksetzen des Passworts, Erinnerungen vor
+              deinen Schichten, Nachrichten des OK und Hinweise zu Übernahmen und
+              Bons (im Profil einzeln abschaltbar),
             </li>
             <li>Betrieb, Sicherheit und Fehlerbehebung der Plattform,</li>
             <li>
@@ -486,6 +451,16 @@ export default async function DatenschutzPage() {
                     ],
                   ] as [string, string, string][])
                 : []),
+              [
+                "mfa_challenge",
+                "Angefangene Anmeldung mit Zwei-Faktor-Code (nur wenn eingeschaltet)",
+                "10 Minuten",
+              ],
+              [
+                "schichtplan_pwa_dismissed",
+                "Merkt sich, wenn der Installationshinweis für die App weggeklickt wurde (für alle Subdomains)",
+                "14 Tage",
+              ],
             ]}
           />
           <p>
@@ -504,12 +479,64 @@ export default async function DatenschutzPage() {
                 "bis du es löschst",
               ],
               [
+                "schichtplan.theme",
+                "Farbschema im Schichtplan einer " + w.unit,
+                "bis du es zurücksetzt",
+              ],
+              [
                 "schichtplan.pwa_install_dismissed",
                 "Merkt sich, wenn der Installationshinweis für die App («Zum Home-Bildschirm») weggeklickt wurde",
                 "14 Tage",
               ],
+              [
+                "ok-shift-view",
+                "Gewählte Ansicht der Schichten im OK-Bereich",
+                "bis du es löschst",
+              ],
+              [
+                "schichtplan.recent_commands",
+                "Zuletzt verwendete Befehle der Schnellsuche",
+                "bis du es löschst",
+              ],
+              [
+                "schichtplan:other-levels-hint-dismissed",
+                "Merkt sich, dass ein Hinweis weggeklickt wurde",
+                "bis du es löschst",
+              ],
+              [
+                "schichtplan.offline_owner",
+                "Kennung deines Kontos, damit Offline-Daten beim Wechsel der Person gelöscht werden",
+                "bis zur Abmeldung",
+              ],
+              [
+                "schichtplan.last_online_sync",
+                "Zeitpunkt des letzten Abgleichs für die Offline-Ansicht",
+                "bis zur Abmeldung",
+              ],
+              [
+                "sp_staff_pin_<anlass>",
+                "PIN fürs Einlösen von Bons an der Ausgabe (nur auf Geräten des OK)",
+                "bis du es löschst",
+              ],
+              [
+                "admin.orgFilter",
+                "Gewählter Verband im Admin-Portal (nur globale Admins)",
+                "bis du es löschst",
+              ],
             ]}
           />
+          <p>
+            Im Sitzungsspeicher (Session Storage) merkt sich{" "}
+            <code>schichtplan.pwa_dismissed_session</code> bis zum Schliessen
+            des Tabs, dass der Installationshinweis weggeklickt wurde.
+          </p>
+          <p>
+            Damit du deine Schichten auch ohne Internet sehen kannst, legt der
+            Schichtplan eine Kopie deiner Anlässe, Schichten und deines Profils
+            im Speicher des Browsers ab (Offline-Cache). Sie wird beim Abmelden
+            gelöscht und auch dann, wenn sich auf demselben Gerät eine andere
+            Person anmeldet.
+          </p>
           <p>
             Diese Einträge verlassen deinen Browser nicht. Du kannst Cookies und
             Local Storage in den Browser-Einstellungen löschen; ohne das Cookie{" "}
@@ -582,6 +609,22 @@ export default async function DatenschutzPage() {
               TLS-Zertifikate aus. Dabei werden nur Domainnamen übermittelt,
               keine Personendaten.
             </li>
+            <li>
+              <strong>Push-Dienste der Browser</strong> (Google Firebase Cloud
+              Messaging, Mozilla, Apple, Microsoft): Nur wenn du Push-Mitteilungen
+              einschaltest, schickt unser Server sie über den Push-Dienst deines
+              Browsers. Der Inhalt ist Ende-zu-Ende verschlüsselt; der Dienst
+              sieht nur die Geräteadresse, die dein Browser dafür erzeugt hat, und
+              den Zeitpunkt. Ausschalten kannst du das im Profil oder in den
+              Browser-Einstellungen.
+            </li>
+            <li>
+              <strong>Discord</strong> (Discord Inc., USA): Bei schweren
+              Betriebsstörungen schickt der Server eine Alarmmeldung an die
+              Betreiber. Sie enthält nur technische Angaben (Art des Fehlers,
+              Funktion des Servers, Zeitpunkt), keine Namen, E-Mail-Adressen,
+              Telefonnummern oder echten Adressen von Anlässen.
+            </li>
           </List>
           <p>
             Darüber hinaus geben wir Personendaten nur weiter, wenn wir
@@ -594,8 +637,9 @@ export default async function DatenschutzPage() {
             Irland. Google kann die verschlüsselte Sicherungskopie auch in
             Rechenzentren ausserhalb Europas, etwa in den USA, speichern; dort
             liegen nur verschlüsselte Daten, die ohne unseren Schlüssel nicht
-            lesbar sind. Let&apos;s Encrypt in den USA erhält keine
-            Personendaten.
+            lesbar sind. Let&apos;s Encrypt und Discord in den USA erhalten
+            keine Personendaten. Die Push-Dienste können ihre Server auch
+            ausserhalb Europas betreiben; sie sehen dabei keine Inhalte.
           </p>
         </Section>
 
@@ -606,12 +650,22 @@ export default async function DatenschutzPage() {
               {fed ? `${dbShort} oder Passwort` : "Passwort"} kannst du dein
               Konto jederzeit selbst löschen (Profil auf {org.domain} oder
               Konto-Menü im Schichtplan). Dabei werden auch deine Eintragungen, Rollen und
-              Antworten gelöscht.
+              Antworten gelöscht. In den Protokollen und im Nachrichtenverlauf
+              ersetzen wir deinen Namen durch «Gelöschte Person».
             </li>
             <li>
-              Profile, die nur über den {w.nickname}n angemeldet sind, bleiben
-              bestehen, bis sie gelöscht werden. Schreib uns, wenn wir dein
-              Profil löschen sollen.
+              Profile, die nur über den {w.nickname}n angemeldet sind, können
+              die Löschung im Konto-Menü beantragen («Löschung beantragen»); wir
+              löschen sie dann innert 30 Tagen.
+            </li>
+            <li>
+              Konten, die 24 Monate nicht genutzt wurden, löschen wir
+              automatisch. Haben wir eine E-Mail-Adresse, schicken wir vorher
+              einen Hinweis; meldest du dich innert 30 Tagen an, bleibt das
+              Konto bestehen. Deine Eintragungen in Anlässen bleiben dabei ohne
+              Namen und ohne Kontaktdaten als «Gelöschte Person» stehen, damit
+              die Planung des Anlasses stimmt. Ausgenommen sind die einzige
+              Leitung {w.ofThe} und globale Administrator*innen.
             </li>
             <li>
               Anlässe mit ihren Eintragungen bleiben bestehen, bis {w.the} sie
@@ -627,8 +681,18 @@ export default async function DatenschutzPage() {
               bestehen.
             </li>
             <li>
+              Das Protokoll der Ein- und Austragungen und den Nachrichtenverlauf
+              des OK löschen wir ein Jahr nach dem Ende des Anlasses.
+            </li>
+            <li>
+              Die Protokolle der Rechte in {w.unit} und im Admin-Portal löschen
+              wir nach zwei Jahren. Die IP-Adresse im Protokoll des Admin-Portals
+              entfernen wir schon nach 90 Tagen.
+            </li>
+            <li>
               Links zum Bestätigen der E-Mail und zum Zurücksetzen des Passworts
-              verfallen nach kurzer Zeit.
+              verfallen nach kurzer Zeit. Konten mit E-Mail und Passwort, deren
+              Adresse nicht innert 24 Stunden bestätigt wurde, löschen wir.
             </li>
             <li>
               Die anonyme Nutzungsstatistik bewahren wir zwei Jahre auf, die
@@ -686,6 +750,11 @@ export default async function DatenschutzPage() {
             im oben beschriebenen Umfang. Jugendliche unter 14 Jahren sollten
             ein Konto nur mit Einverständnis ihrer Eltern anlegen.
           </p>
+          <p>
+            Bei Schichten mit Mindestalter prüft der Schichtplan nur das selbst
+            angegebene Geburtsdatum. Ausweiskontrollen und den Jugendschutz vor
+            Ort verantwortet das OK.
+          </p>
         </Section>
 
         <Section id="rechte" title="11. Deine Rechte">
@@ -712,8 +781,13 @@ export default async function DatenschutzPage() {
             </li>
           </List>
           <p>
-            Schreib uns dazu an die E-Mail-Adresse unter Punkt 1. Wir können
-            verlangen, dass du dich ausweist. Ausserdem kannst du dich beim
+            Deine Daten kannst du jederzeit selbst herunterladen: im Konto-Menü
+            des Schichtplans unter «Meine Daten herunterladen» (als JSON-Datei).
+          </p>
+          <p>
+            Für alles andere schreib uns an die E-Mail-Adresse unter Punkt 1.
+            Wir antworten innert 30 Tagen und können verlangen, dass du dich
+            ausweist. Ausserdem kannst du dich beim
             Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten (EDÖB)
             beschweren:{" "}
             <a
@@ -735,7 +809,6 @@ export default async function DatenschutzPage() {
             <a href={helpUrl("/", host)}>Hilfe-Center</a>.
           </p>
         </Section>
-      </main>
-    </div>
+    </LegalPage>
   );
 }

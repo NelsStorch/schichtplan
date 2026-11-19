@@ -23,7 +23,7 @@ import {
   cn,
   useOrganization,
 } from '@schichtplan/ui';
-import { VERBAND_ORGANIZATIONS, getLandingUrl, organizationSiteUrl } from '@schichtplan/shared/redirect';
+import { VERBAND_ORGANIZATIONS, getLandingUrl, organizationSiteUrl, privacyUrl } from '@schichtplan/shared/redirect';
 import {
   type CeviNameLoginErrorCode,
   type DepartmentDirectoryItemDto,
@@ -665,7 +665,7 @@ function LoginContent() {
                         )}
                       </a>
                       <div className="mt-1.5 flex items-center justify-between px-1 text-[12px] text-fg-subtle">
-                        <span>Offizieller Verbands-Login</span>
+                        <span>Login über die {org.authProviderShort}</span>
                         <span className="font-mono text-[11px] text-fg-muted">
                           {org.slug === 'pfadi' ? 'db.scout.ch' : org.slug === 'jubla' ? 'db.jubla.ch' : 'db.cevi.ch'}
                         </span>
@@ -1261,9 +1261,13 @@ function LoginContent() {
         )}
       </div>
 
-      {/* Ehrlicher Datenschutzhinweis (ohne Schweizer Server Claim) */}
+      {/* Kurzer Datenschutzhinweis: muss mit der Datenschutzerklärung übereinstimmen (Dienstleister in Abschnitt 7) */}
       <p className="mt-5 text-center text-xs leading-relaxed text-fg-subtle px-2">
-        Deine Daten werden vertraulich behandelt, ausschliesslich für die Helferorganisation verwendet und niemals an Dritte weitergegeben.
+        Wir nutzen deine Daten nur für die Schichtplanung, ohne Werbung und ohne Tracking. Mehr dazu in der{' '}
+        <a href={privacyUrl(org.domain)} className="underline underline-offset-2 hover:text-fg">
+          Datenschutzerklärung
+        </a>
+        .
       </p>
     </AuthShell>
   );

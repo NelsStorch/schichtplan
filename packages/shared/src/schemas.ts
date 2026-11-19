@@ -32,9 +32,14 @@ const EventQuestionInputSchema = z
       })
       .nullable()
       .default(DEFAULT_QUESTION_RETENTION_DAYS),
+    /** Gesundheitsangaben (z. B. Allergien): ausdrückliche Einwilligung, «nie löschen» nicht erlaubt */
+    sensitive: z.boolean().default(false),
   })
   .refine((q) => q.type !== 'CHOICE' || q.options.length >= 2, {
     message: 'Eine Auswahl-Frage braucht mindestens zwei Antworten',
+  })
+  .refine((q) => !q.sensitive || q.retentionDays !== null, {
+    message: 'Antworten mit Gesundheitsangaben müssen nach einer Frist gelöscht werden',
   });
 
 export type EventQuestionInput = z.infer<typeof EventQuestionInputSchema>;
@@ -86,6 +91,8 @@ export const CreateDepartmentFromCeviDbSchema = z.object({
   slug: DepartmentSlugSchema,
   /** Gewählte Ebene, wenn die Person mehrere leitet (sonst die unterste ohne Schichtplan) */
   hitobitoGroupId: z.number().int().positive().max(2_147_483_647).optional(),
+  /** Zustimmung zu den Nutzungsbedingungen inkl. Auftragsbearbeitung (Art. 9 DSG) */
+  acceptTerms: z.literal(true, { error: 'Bitte stimme den Nutzungsbedingungen zu.' }),
 });
 
 export type CreateDepartmentFromCeviDbInput = z.infer<typeof CreateDepartmentFromCeviDbSchema>;
@@ -370,6 +377,8 @@ export type PushUnsubscribeInput = z.infer<typeof PushUnsubscribeSchema>;
 export const EventParticipationSchema = z.object({
   profile: UpdateProfileSchema.optional(),
   answers: z.record(z.string().uuid(), z.string().trim().max(1000)).optional(),
+  /** Ausdrückliche Einwilligung für Antworten auf sensible Fragen */
+  sensitiveConsent: z.boolean().optional(),
 });
 
 export type EventParticipationInput = z.infer<typeof EventParticipationSchema>;
@@ -551,6 +560,8 @@ export const SignupShiftSchema = z.object({
   guestPhone: z.string().trim().max(30).optional().nullable(),
   /** Antworten auf Fragen mit scope PER_SIGNUP (questionId -> Antwort) */
   answers: z.record(z.string().uuid(), z.string().trim().max(1000)).optional(),
+  /** Ausdrückliche Einwilligung für Antworten auf sensible Fragen */
+  sensitiveConsent: z.boolean().optional(),
   /** OK/Admin kann Zeitkollision nach Bestätigung der Warnung ignorieren */
   confirmCollision: z.boolean().optional(),
   /** Schicht übernehmen: diese Eintragung («Ersatz gesucht») wird durch die eigene ersetzt */

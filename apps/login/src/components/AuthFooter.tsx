@@ -1,6 +1,6 @@
 
 import { ArrowLeft } from 'lucide-react';
-import { helpUrl, privacyUrl, statusUrl } from '@schichtplan/shared/redirect';
+import { helpUrl, imprintUrl, privacyUrl, statusUrl, termsUrl } from '@schichtplan/shared/redirect';
 import { useOrganization } from '@schichtplan/ui';
 
 export interface AuthFooterProps {
@@ -30,6 +30,12 @@ export function AuthFooter({ returnTo, landingHref = '/', showBackLink = false }
         </a>
         <a href={privacyUrl(org.domain)} className="font-medium text-fg-muted transition hover:text-fg">
           Datenschutz
+        </a>
+        <a href={termsUrl(org.domain)} className="font-medium text-fg-muted transition hover:text-fg">
+          Nutzungsbedingungen
+        </a>
+        <a href={imprintUrl(org.domain)} className="font-medium text-fg-muted transition hover:text-fg">
+          Impressum
         </a>
         {showBackLink && (
           <a

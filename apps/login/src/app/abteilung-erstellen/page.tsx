@@ -9,7 +9,7 @@ import type {
   DepartmentCreationRoleDto,
   UserDto,
 } from '@schichtplan/shared';
-import { getDepartmentUrl, helpUrl } from '@schichtplan/shared/redirect';
+import { getDepartmentUrl, helpUrl, termsUrl } from '@schichtplan/shared/redirect';
 import { organizationForLevel, type OrganizationConfig } from '@schichtplan/shared';
 import { Button, Callout, BrandLogo, Field, Input, ThemeToggle, buttonClasses, useOrganization } from '@schichtplan/ui';
 import { afterLogin, cleanReturnTo } from '@/lib/destination';
@@ -139,6 +139,7 @@ function CreateDepartment() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiedShare, setCopiedShare] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -225,6 +226,7 @@ function CreateDepartment() {
         body: JSON.stringify({
           departmentName: name.trim(),
           slug,
+          acceptTerms,
           ...(org.slug !== 'verein' && groupId !== null ? { hitobitoGroupId: groupId } : {}),
         }),
       });
@@ -350,7 +352,31 @@ function CreateDepartment() {
                 </p>
               </Callout>
 
-              <Button type="submit" size="lg" className="w-full" loading={saving} disabled={name.trim().length < 2 || slug.length < 3}>
+              <label className="flex items-start gap-2.5 text-sm text-fg">
+                <input
+                  type="checkbox"
+                  checked={acceptTerms}
+                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                  required
+                  className="mt-0.5 size-4 shrink-0 accent-[rgb(var(--accent))]"
+                />
+                <span>
+                  Ich habe die{' '}
+                  <a href={termsUrl(org.domain)} target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">
+                    Nutzungsbedingungen
+                  </a>{' '}
+                  gelesen und stimme ihnen im Namen der {formOrg.unitTerm} zu, inklusive der Regeln zur
+                  Auftragsbearbeitung.
+                </span>
+              </label>
+
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full"
+                loading={saving}
+                disabled={!acceptTerms || name.trim().length < 2 || slug.length < 3}
+              >
                 {formOrg.unitTerm} anlegen
               </Button>
               <Button type="button" variant="ghost" className="w-full" onClick={later}>

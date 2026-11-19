@@ -49,6 +49,20 @@ export function validateAnswers(
   return null;
 }
 
+/**
+ * Gesundheitsangaben (sensible Fragen) nur mit ausdrücklicher Einwilligung (Art. 6 Abs. 7 DSG).
+ * Gibt eine Fehlermeldung zurück, wenn eine sensible Frage beantwortet wurde, aber die Einwilligung fehlt.
+ */
+export function missingSensitiveConsent(
+  questions: { id: string; sensitive: boolean }[],
+  answers: Record<string, string>,
+  consent: boolean | undefined
+): string | null {
+  const answered = questions.some((q) => q.sensitive && (answers[q.id] ?? '').trim());
+  if (answered && !consent) return 'Bitte bestätige die Einwilligung zu den Gesundheitsangaben.';
+  return null;
+}
+
 const displayNameOf = (u: { nickname?: string | null; ceviName?: string | null; firstName: string; lastName: string | null }) =>
   u.nickname || u.ceviName || `${u.firstName} ${u.lastName ?? ''}`.trim();
 
@@ -324,6 +338,9 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
       });
       const invalid = validateAnswers(questions, answers);
       if (invalid) return reply.status(400).send({ error: invalid });
+      const noConsent = missingSensitiveConsent(questions, answers, input.sensitiveConsent);
+      if (noConsent) return reply.status(400).send({ error: noConsent });
+      const consentAt = new Date();
 
       if (questions.length > 0) {
         await fastify.prisma.$transaction(async (tx) => {
@@ -331,10 +348,11 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
             const value = (answers[question.id] ?? '').trim();
             const where = { questionId_userId: { questionId: question.id, userId: request.user.id } };
             if (value) {
+              const consent = question.sensitive ? { consentAt } : {};
               await tx.eventAnswer.upsert({
                 where,
-                update: { value },
-                create: { eventId: event.id, questionId: question.id, userId: request.user.id, value },
+                update: { value, ...consent },
+                create: { eventId: event.id, questionId: question.id, userId: request.user.id, value, ...consent },
               });
             } else {
               await tx.eventAnswer.deleteMany({

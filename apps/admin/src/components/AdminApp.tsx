@@ -27,6 +27,7 @@ import {
 } from '@schichtplan/ui';
 import {
   getRootDomain,
+  imprintUrl,
   privacyUrl,
   statusUrl,
   type AdminDepartmentListItemDto,
@@ -138,6 +139,9 @@ function Shell({
             </a>
             <a href={privacyUrl(org.domain)} className="transition hover:text-fg">
               Datenschutz
+            </a>
+            <a href={imprintUrl(org.domain)} className="transition hover:text-fg">
+              Impressum
             </a>
           </div>
         </div>

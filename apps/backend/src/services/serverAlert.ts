@@ -87,16 +87,34 @@ export function extractErrorMessage(err: unknown): string | null {
   return String(err);
 }
 
+const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+// Nicht mitten in IDs oder Zeitstempeln (UUIDs, ISO-Daten) treffen
+const PHONE_RE = /(?<![\w.:-])(?:(?:\+|00)\d[\d\s/.-]{7,}\d|0\d{2}[\s/.-]?\d{3}[\s/.-]?\d{2}[\s/.-]?\d{2})(?![\w:-])/g;
+
 /**
- * Erzeugt das passende JSON-Payload für Discord, Slack oder generische Webhooks.
+ * Entfernt E-Mail-Adressen und Telefonnummern (z. B. aus Prisma-Fehlern zu Unique-Constraints).
+ * Der Webhook geht an einen Chat-Dienst in den USA (Discord): Dorthin dürfen keine Personendaten.
+ */
+export function redactPersonalData(text: string): string {
+  return text.replace(EMAIL_RE, '[E-Mail]').replace(PHONE_RE, '[Telefon]');
+}
+
+/**
+ * Erzeugt das passende JSON-Payload für Discord, Slack oder generische Webhooks (ohne Personendaten).
  */
 export function buildWebhookPayload(
   payload: ServerAlertPayload,
   envInfo: { environment: string; domain: string },
   suppressedNote?: string
 ): Record<string, unknown> {
-  const { category, level = 'CRITICAL', title, message, error, context } = payload;
-  const errorDetails = extractErrorMessage(error);
+  const { category, level = 'CRITICAL' } = payload;
+  const title = redactPersonalData(payload.title);
+  const message = redactPersonalData(payload.message);
+  const rawError = extractErrorMessage(payload.error);
+  const errorDetails = rawError ? redactPersonalData(rawError) : rawError;
+  const context = payload.context
+    ? (JSON.parse(redactPersonalData(JSON.stringify(payload.context))) as Record<string, unknown>)
+    : undefined;
   const fullMessage = suppressedNote ? `${message}\n\n${suppressedNote}` : message;
 
   const icon = level === 'CRITICAL' ? '🚨' : level === 'WARNING' ? '⚠️' : 'ℹ️';

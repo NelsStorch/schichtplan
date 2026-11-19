@@ -150,6 +150,16 @@ export function privacyUrl(host?: string): string {
   return `https://${root}/datenschutz`;
 }
 
+/** Nutzungsbedingungen auf der Landingpage der jeweiligen Verbandsdomain */
+export function termsUrl(host?: string): string {
+  return privacyUrl(host).replace(/\/datenschutz$/, '/nutzungsbedingungen');
+}
+
+/** Impressum auf der Landingpage der jeweiligen Verbandsdomain */
+export function imprintUrl(host?: string): string {
+  return privacyUrl(host).replace(/\/datenschutz$/, '/impressum');
+}
+
 /** Startseite des zentralen Logins der Verbandsdomain (z. B. https://login.pfadi-schichtplan.ch), ohne Rücksprung-Parameter */
 export function loginBaseUrl(host?: string): string {
   const currentHost = host || (typeof window !== 'undefined' ? window.location.host : '');

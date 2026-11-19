@@ -433,6 +433,13 @@ export function retentionLabel(days: number | null): string {
 }
 
 /** Hinweis im Formular: «Wird 30 Tage nach dem Anlass gelöscht.» */
+/** Fassung der Nutzungsbedingungen (apps/landing/src/app/nutzungsbedingungen). Bei Änderungen erhöhen. */
+export const TERMS_VERSION = '2026-11-19';
+
+/** Text der ausdrücklichen Einwilligung bei sensiblen Fragen (Art. 6 Abs. 7 DSG) */
+export const SENSITIVE_CONSENT_TEXT =
+  'Ich bin einverstanden, dass das OK meine Gesundheitsangaben (z. B. Allergien) für diesen Anlass verwendet. Sie werden nach der angegebenen Frist gelöscht.';
+
 export function retentionNotice(days: number | null): string {
   if (days === null) return 'Wird nicht automatisch gelöscht.';
   if (days === 0) return 'Wird direkt nach dem Anlass gelöscht.';
@@ -447,11 +454,13 @@ export interface EventQuestionPreset {
   options: string[];
   /** Kurze Erklärung im Auswahlmenü */
   hint: string;
+  /** Gesundheitsangaben: besonders schützenswert, Einwilligung nötig */
+  sensitive?: boolean;
 }
 
 export const EVENT_QUESTION_PRESETS: EventQuestionPreset[] = [
   { key: 'ADDRESS', label: 'Adresse (Strasse, PLZ, Ort)', type: 'TEXT', options: [], hint: 'z. B. für Versand oder Versicherung' },
-  { key: 'DIET', label: 'Allergien / Ernährung', type: 'TEXT', options: [], hint: 'z. B. vegetarisch, laktosefrei, Nüsse' },
+  { key: 'DIET', label: 'Allergien / Ernährung', type: 'TEXT', options: [], hint: 'z. B. vegetarisch, laktosefrei, Nüsse', sensitive: true },
   { key: 'TSHIRT', label: 'T-Shirt-Grösse', type: 'CHOICE', options: ['XS', 'S', 'M', 'L', 'XL', 'XXL'], hint: 'Auswahl XS bis XXL' },
   { key: 'EMERGENCY', label: 'Notfallkontakt (Name und Telefon)', type: 'TEXT', options: [], hint: 'Wen das OK im Notfall anruft' },
 ];

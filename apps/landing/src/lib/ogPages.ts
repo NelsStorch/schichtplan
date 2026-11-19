@@ -10,6 +10,16 @@ export const LANDING_PAGES = {
     description: `Welche Personendaten der ${org.name} bearbeitet, wozu und welche Rechte du hast (nDSG).`,
     subtitle: 'Welche Daten wir bearbeiten und welche Rechte du hast.',
   }),
+  nutzungsbedingungen: (org: Org) => ({
+    title: 'Nutzungsbedingungen',
+    description: `Regeln für ${org.unitTermPlural} und Planende im ${org.name}, inklusive Auftragsbearbeitung.`,
+    subtitle: `Regeln für ${org.unitTermPlural} und Planende.`,
+  }),
+  impressum: (org: Org) => ({
+    title: 'Impressum',
+    description: `Wer den ${org.name} betreibt und wie du uns erreichst.`,
+    subtitle: 'Betrieb und Kontakt.',
+  }),
   profil: (org: Org) => ({
     title: 'Mein Profil',
     description: `Deine Angaben, ${org.unitTerm}, Stufen und eigenen Schichten im ${org.name} verwalten.`,

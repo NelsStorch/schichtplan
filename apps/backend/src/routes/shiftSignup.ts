@@ -15,7 +15,7 @@ import {
   managerFlags,
 } from '../services/eventAccess.js';
 import { missingProfileFields } from '../services/profile.js';
-import { validateAnswers } from './eventParticipation.js';
+import { missingSensitiveConsent, validateAnswers } from './eventParticipation.js';
 import { OTHER_EVENT_SHIFT_TITLE, findShiftCollisions, hasShiftCollision } from '../services/shiftCollision.js';
 import { UNRELATED_PERSON_ERROR, allUsersRelatedToEvent } from '../services/departmentVisibility.js';
 import { trackUsage } from '../services/usageStats.js';
@@ -157,7 +157,7 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
           event: {
             include: {
               ...accessEventInclude,
-              questions: { select: { id: true, required: true, scope: true, label: true, type: true, options: true } },
+              questions: { select: { id: true, required: true, scope: true, label: true, type: true, options: true, sensitive: true } },
             },
           },
         },
@@ -201,6 +201,10 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
       );
       const invalidAnswer = validateAnswers(perSignupQuestions, signupAnswers);
       if (invalidAnswer) return reply.status(400).send({ error: invalidAnswer });
+      const noConsent = missingSensitiveConsent(perSignupQuestions, signupAnswers, parse.data.sensitiveConsent);
+      if (noConsent) return reply.status(400).send({ error: noConsent });
+      const sensitiveIds = new Set(perSignupQuestions.filter((q) => q.sensitive).map((q) => q.id));
+      const answeredAt = new Date();
 
       // Schicht übernehmen («Ersatz gesucht»): Die eigene Eintragung ersetzt die angebotene,
       // deren Platz gilt für alle Prüfungen als frei.
@@ -563,7 +567,11 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
             sentEmailReminders: pastReminderMinutes(shift.startTime, EMAIL_REMINDER_MINUTES),
             sentPushReminders: pastReminderMinutes(shift.startTime, PUSH_REMINDER_MINUTES),
             answers: {
-              create: Object.entries(signupAnswers).map(([questionId, value]) => ({ questionId, value })),
+              create: Object.entries(signupAnswers).map(([questionId, value]) => ({
+                questionId,
+                value,
+                consentAt: sensitiveIds.has(questionId) ? answeredAt : null,
+              })),
             },
           },
           include: {

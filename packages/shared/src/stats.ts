@@ -39,6 +39,8 @@ export const MAIL_KINDS = {
   VERIFICATION: 'E-Mail bestätigen',
   PASSWORD_RESET: 'Passwort zurücksetzen',
   ACCOUNT_EXISTS: 'Konto existiert schon',
+  ACCOUNT_INACTIVE: 'Konto inaktiv',
+  PRIVACY_REQUEST: 'Datenschutz-Anfrage',
   SHIFT_REMINDER: 'Schicht-Erinnerung',
   SHIFT_CANCELLED: 'Schicht abgesagt',
   REPLACEMENT_TAKEN: 'Ersatz gefunden',
@@ -54,6 +56,7 @@ export const STATS_JOBS = {
   ANSWER_RETENTION: 'Löschfristen der Antworten',
   STATS_MAINTENANCE: 'Statistik aufräumen',
   UNVERIFIED_ACCOUNTS: 'Unbestätigte Konten löschen',
+  DATA_RETENTION: 'Aufbewahrungsfristen',
 } as const;
 
 /** Unterseiten des OK-Bereichs (Pfad nach /ok/, '' = Übersicht) */
@@ -136,6 +139,7 @@ export const USAGE_METRICS = {
       ANSWER_RETENTION: 'Antworten gelöscht',
       STATS_MAINTENANCE: 'Zeilen zusammengefasst',
       UNVERIFIED_ACCOUNTS: 'Unbestätigte Konten gelöscht',
+      DATA_RETENTION: 'Protokolle, Hinweise und inaktive Konten',
     },
   },
   EXTERNAL: {

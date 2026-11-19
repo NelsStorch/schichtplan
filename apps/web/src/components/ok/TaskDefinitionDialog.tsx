@@ -125,6 +125,12 @@ export function TaskDefinitionDialog({
               </button>
             ))}
           </div>
+          {minAge > 0 && (
+            <p className="text-2xs text-fg-muted mt-1">
+              Geprüft wird das selbst angegebene Geburtsdatum. Ausweiskontrolle und Jugendschutz vor Ort bleiben
+              Sache des OK.
+            </p>
+          )}
         </div>
 
         {minAge > 0 && (

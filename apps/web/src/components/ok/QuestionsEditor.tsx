@@ -25,11 +25,17 @@ export interface QuestionDraft {
   required: boolean;
   scope: EventQuestionScope;
   retentionDays: QuestionRetentionDays;
+  /** Gesundheitsangaben: Einwilligung nötig, «nie löschen» gesperrt */
+  sensitive: boolean;
 }
 
 /** Gespeicherte Frage (Anlass oder Vorlage) -> Formular. Alte Vorlagen haben keine Aufbewahrung. */
 export function questionDraft(
-  q: Omit<EventQuestionDto, 'id' | 'retentionDays'> & { id?: string; retentionDays?: QuestionRetentionDays }
+  q: Omit<EventQuestionDto, 'id' | 'retentionDays' | 'sensitive'> & {
+    id?: string;
+    retentionDays?: QuestionRetentionDays;
+    sensitive?: boolean;
+  }
 ): QuestionDraft {
   return {
     id: q.id,
@@ -39,6 +45,7 @@ export function questionDraft(
     required: q.required,
     scope: q.scope ?? 'ONCE',
     retentionDays: q.retentionDays === undefined ? DEFAULT_QUESTION_RETENTION_DAYS : q.retentionDays,
+    sensitive: Boolean(q.sensitive),
   };
 }
 
@@ -59,7 +66,9 @@ export function questionsPayload(questions: QuestionDraft[]) {
           : [],
       required: q.required,
       scope: q.scope,
-      retentionDays: q.retentionDays,
+      // Gesundheitsangaben nie unbefristet (das Backend lehnt «nie» ab)
+      retentionDays: q.sensitive && q.retentionDays === null ? DEFAULT_QUESTION_RETENTION_DAYS : q.retentionDays,
+      sensitive: q.sensitive,
     }));
 }
 
@@ -70,10 +79,11 @@ const EMPTY_QUESTION: QuestionDraft = {
   required: false,
   scope: 'ONCE',
   retentionDays: DEFAULT_QUESTION_RETENTION_DAYS,
+  sensitive: false,
 };
 
 function fromPreset(preset: EventQuestionPreset): QuestionDraft {
-  return { ...EMPTY_QUESTION, label: preset.label, type: preset.type, optionsText: preset.options.join('\n') };
+  return { ...EMPTY_QUESTION, label: preset.label, type: preset.type, optionsText: preset.options.join('\n'), sensitive: Boolean(preset.sensitive) };
 }
 
 /** Eigene Fragen eines Anlasses bearbeiten: vorgefertigte oder eigene, je mit Aufbewahrungsdauer */
@@ -227,12 +237,33 @@ export function QuestionsEditor({
                 className="h-10 w-60"
                 disabled={disabled}
               >
-                {QUESTION_RETENTION_DAYS.map((days) => (
+                {QUESTION_RETENTION_DAYS.filter((days) => !(q.sensitive && days === null)).map((days) => (
                   <option key={days ?? 'never'} value={days === null ? 'never' : String(days)}>
                     {retentionLabel(days)}
                   </option>
                 ))}
               </Select>
+            </label>
+            <label className="flex items-start gap-2 text-sm text-fg">
+              <input
+                type="checkbox"
+                checked={q.sensitive}
+                onChange={(e) =>
+                  update(index, {
+                    sensitive: e.target.checked,
+                    ...(e.target.checked && q.retentionDays === null ? { retentionDays: DEFAULT_QUESTION_RETENTION_DAYS } : {}),
+                  })
+                }
+                className="mt-0.5 size-4 shrink-0 accent-[rgb(var(--accent))]"
+                disabled={disabled}
+              />
+              <span>
+                <span className="font-semibold">Gesundheitsangaben</span>{' '}
+                <span className="text-fg-muted">
+                  (z. B. Allergien, Medikamente). Helfende müssen ausdrücklich einwilligen, und die Antworten werden
+                  immer nach einer Frist gelöscht.
+                </span>
+              </span>
             </label>
             {q.type === 'CHOICE' && (
               <textarea

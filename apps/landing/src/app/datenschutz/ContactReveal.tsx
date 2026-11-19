@@ -40,6 +40,12 @@ export function ContactReveal() {
         >
           {state === "loading" ? "Wird geladen …" : "Kontaktdaten anzeigen"}
         </Button>
+        <noscript>
+          <p className="mt-2 text-sm">
+            Die Kontaktdaten werden zum Schutz vor automatischem Auslesen erst
+            per Klick geladen. Dafür braucht es JavaScript.
+          </p>
+        </noscript>
         {state === "error" && (
           <p className="mt-2 text-sm">
             Die Kontaktdaten konnten nicht geladen werden.

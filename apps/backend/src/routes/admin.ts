@@ -20,6 +20,7 @@ import { isProviderJoinSource, ownProviderDepartments } from '../services/depart
 import { departmentCreationEligibility } from './departments/shared.js';
 import { recordAdminAction } from '../services/adminAudit.js';
 import { trackUsage } from '../services/usageStats.js';
+import { DELETED_PERSON_LABEL, anonymizeUserTraces } from '../services/userErasure.js';
 
 const ListQuerySchema = z.object({
   q: z.string().trim().max(100).optional(),
@@ -649,22 +650,22 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           data: { userId: null, shiftSignupId: null },
         });
 
+        // Namen und IDs aus Protokollen und Nachrichtenverlauf entfernen (diese haben keine Kaskade)
+        await anonymizeUserTraces(tx, [targetUserId]);
+
         // Benutzer löschen (kaskadiert zu ShiftSignups, DepartmentMembers, UserStufen, UserHitobitoStufen, EventOrganizers, EventAnswers, EventAccessGrants, EventDeregistrations)
         await tx.user.delete({
           where: { id: targetUserId },
         });
       });
 
-      const userDisplayName = user.nickname
-        ? `${user.nickname} (${user.firstName} ${user.lastName})`
-        : `${user.firstName} ${user.lastName}`;
-
+      // Die Löschung bleibt nachvollziehbar, Name und E-Mail der gelöschten Person aber nicht
       await recordAdminAction(fastify.prisma, request, {
         action: 'USER_DELETE',
         targetType: 'USER',
         targetId: targetUserId,
-        targetLabel: userDisplayName,
-        details: { email: user.email, wasGlobalAdmin: user.isGlobalAdmin },
+        targetLabel: DELETED_PERSON_LABEL,
+        details: { wasGlobalAdmin: user.isGlobalAdmin },
       });
 
       return { success: true };
@@ -832,6 +833,8 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           },
           data: { userId: null, shiftSignupId: null },
         });
+        // Namen und IDs aus Protokollen und Nachrichtenverlauf entfernen (diese haben keine Kaskade)
+        await anonymizeUserTraces(tx, idsToDelete);
         await tx.user.deleteMany({
           where: { id: { in: idsToDelete } },
         });

@@ -450,7 +450,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
     shift: ShiftDto,
     task?: ShiftTaskDto,
     answers?: Record<string, string>,
-    replacesSignupId?: string
+    replacesSignupId?: string,
+    sensitiveConsent?: boolean
   ) => {
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
       toast({
@@ -464,7 +465,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
     try {
       await api(`/api/shifts/${shift.id}/signup`, {
         method: 'POST',
-        json: { taskId: task && task.id !== 'default' ? task.id : undefined, answers, replacesSignupId },
+        json: { taskId: task && task.id !== 'default' ? task.id : undefined, answers, replacesSignupId, sensitiveConsent },
       });
       const handover = findShiftHandover(shift);
       const handoverDesc = handover
@@ -1244,10 +1245,10 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
             : undefined
         }
         onClose={() => setParticipationFor(null)}
-        onSaved={async (answers) => {
+        onSaved={async (answers, sensitiveConsent) => {
           const pending = participationFor;
           setParticipationFor(null);
-          if (pending) await doSignup(pending.shift, pending.task, answers, pending.replacesSignupId);
+          if (pending) await doSignup(pending.shift, pending.task, answers, pending.replacesSignupId, sensitiveConsent);
           else await load();
         }}
       />

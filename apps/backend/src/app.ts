@@ -187,16 +187,17 @@ export async function buildApp(): Promise<FastifyInstance> {
       return reply.status(400).send({ statusCode: 400, code: 'FST_ERR_VALIDATION', error: message, message });
     }
 
+    // Nur das Routenmuster (z. B. /api/events/:slug), nie die echte Adresse mit Namen, Zugangs- oder Check-in-Codes
+    const route = `${request.method} ${request.routeOptions?.url ?? '(unbekannte Route)'}`;
     if (isDatabaseOverloadError(error)) {
       void sendServerAlert({
         category: 'DB_OVERLOAD',
         level: 'CRITICAL',
         title: 'Datenbank kurzzeitig überlastet / nicht erreichbar',
-        message: `Die Datenbank antwortet nicht oder der Connection-Pool ist erschöpft bei ${request.method} ${request.url}.`,
+        message: `Die Datenbank antwortet nicht oder der Connection-Pool ist erschöpft bei ${route}.`,
         error,
         context: {
-          method: request.method,
-          url: request.url,
+          route,
           host: request.headers.host,
         },
       }).catch(() => {});
@@ -204,12 +205,11 @@ export async function buildApp(): Promise<FastifyInstance> {
       void sendServerAlert({
         category: 'SERVER_ERROR',
         level: 'CRITICAL',
-        title: `Serverfehler 500 bei ${request.method} ${request.url}`,
+        title: `Serverfehler 500 bei ${route}`,
         message: error.message || 'Unerwarteter interner Serverfehler',
         error,
         context: {
-          method: request.method,
-          url: request.url,
+          route,
           host: request.headers.host,
         },
       }).catch(() => {});

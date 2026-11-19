@@ -148,6 +148,14 @@
       a.setAttribute('href', `https://${org.domain}/datenschutz`);
     });
 
+    document.querySelectorAll('[data-footer-terms-domain]').forEach((a) => {
+      a.setAttribute('href', `https://${org.domain}/nutzungsbedingungen`);
+    });
+
+    document.querySelectorAll('[data-footer-imprint-domain]').forEach((a) => {
+      a.setAttribute('href', `https://${org.domain}/impressum`);
+    });
+
     // Seitentitel im Tab aktualisieren (falls noetig)
     if (document.title.includes('Cevi Schichtplan') && org.slug !== 'cevi') {
       document.title = document.title.replace(/Cevi Schichtplan/g, org.name);

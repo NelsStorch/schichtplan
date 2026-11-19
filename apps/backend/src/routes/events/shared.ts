@@ -22,6 +22,7 @@ export function toQuestionDto(q: {
   required: boolean;
   scope: string;
   retentionDays: number | null;
+  sensitive?: boolean;
 }): EventQuestionDto {
   return {
     id: q.id,
@@ -31,6 +32,7 @@ export function toQuestionDto(q: {
     required: q.required,
     scope: q.scope === 'PER_SIGNUP' ? 'PER_SIGNUP' : 'ONCE',
     retentionDays: toRetentionDays(q.retentionDays),
+    sensitive: Boolean(q.sensitive),
   };
 }
 
@@ -109,6 +111,7 @@ export async function syncQuestions(tx: Tx, eventId: string, questions: EventQue
       required: q.required,
       scope: q.scope,
       retentionDays: q.retentionDays,
+      sensitive: q.sensitive,
       sortOrder: index,
     };
     if (q.id && existingIds.has(q.id)) {

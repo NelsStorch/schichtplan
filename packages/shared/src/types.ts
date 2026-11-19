@@ -276,7 +276,7 @@ export interface ShiftTemplateItem {
 export interface EventTemplateData {
   shifts: ShiftTemplateItem[];
   /** `retentionDays` fehlt bei Vorlagen von vor 2026-10-25 (dann gilt DEFAULT_QUESTION_RETENTION_DAYS) */
-  questions?: (Omit<EventQuestionDto, 'id' | 'retentionDays'> & { retentionDays?: QuestionRetentionDays })[];
+  questions?: (Omit<EventQuestionDto, 'id' | 'retentionDays' | 'sensitive'> & { retentionDays?: QuestionRetentionDays; sensitive?: boolean })[];
   allowedDepartmentIds?: string[];
   allowedStufeIds?: string[];
   attendanceMode?: AttendanceMode;
@@ -650,6 +650,8 @@ export interface EventQuestionDto {
   scope: EventQuestionScope;
   /** Tage nach dem Anlass, bis die Antworten gelöscht werden (null = nie) */
   retentionDays: QuestionRetentionDays;
+  /** Gesundheitsangaben: Einwilligung nötig, nie unbefristet */
+  sensitive: boolean;
 }
 
 /** Vorschau eines Zugangs-Links aus ?zugang= */

@@ -464,6 +464,10 @@ function AssignHelperForm({
               <Input type="tel" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} />
             </Field>
           </div>
+          <p className="text-xs text-fg-subtle">
+            Sag der Person, dass du sie hier einträgst und wofür ihr ihre Angaben braucht. Erfasse nur, was ihr für den
+            Anlass wirklich braucht.
+          </p>
         </div>
       )}
 

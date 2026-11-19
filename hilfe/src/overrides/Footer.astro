@@ -49,7 +49,7 @@ const isSplash = Astro.locals.starlightRoute.entry.data.template === 'splash';
       Hinweis: Die cevi-schichtplan.ch-URLs dienen nur als statischer Build-Fallback für Astro.
       Zur Laufzeit werden alle Links pro Verband dynamisch angepasst:
       1. Nginx sub_filter (hilfe/nginx.conf): Ersetzt https://*.cevi-schichtplan.ch direkt im HTTP-Stream durch $org_root.
-      2. Client-Branding (branding.js): Setzt data-footer-*-domain im Browser auf https://status.<org.domain> und https://<org.domain>/datenschutz.
+      2. Client-Branding (branding.js): Setzt data-footer-*-domain im Browser auf https://status.<org.domain> und https://<org.domain>/datenschutz (bzw. /nutzungsbedingungen, /impressum).
     */}
     <span data-footer-copyright>© {new Date().getFullYear()} Cevi Schichtplan · ehrenamtlich &amp; Open Source</span>
     <nav aria-label="Weitere Seiten des Schichtplans">
@@ -57,6 +57,8 @@ const isSplash = Astro.locals.starlightRoute.entry.data.template === 'splash';
       <a href="https://login.cevi-schichtplan.ch" data-footer-login-domain>Login</a>
       <a href="https://status.cevi-schichtplan.ch" data-footer-status-domain>Status</a>
       <a href="https://cevi-schichtplan.ch/datenschutz" data-footer-privacy-domain>Datenschutz</a>
+      <a href="https://cevi-schichtplan.ch/nutzungsbedingungen" data-footer-terms-domain>Nutzungsbedingungen</a>
+      <a href="https://cevi-schichtplan.ch/impressum" data-footer-imprint-domain>Impressum</a>
       <a href="https://github.com/NelsStorch/schichtplan_v2" rel="noopener">GitHub</a>
     </nav>
   </div>

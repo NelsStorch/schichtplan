@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Clock,
+  Download,
   LifeBuoy,
   LogIn,
   LogOut,
@@ -36,6 +37,7 @@ import {
   getLandingUrl,
   getRootDomain,
   helpUrl,
+  imprintUrl,
   privacyUrl,
   statusUrl,
   type MyHoursSummaryDto,
@@ -149,6 +151,9 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
             </a>
             <a href={privacyUrl(org.domain)} className="transition hover:text-fg">
               Datenschutz
+            </a>
+            <a href={imprintUrl(org.domain)} className="transition hover:text-fg">
+              Impressum
             </a>
             <a
               href={getLandingUrl('/', org.domain)}
@@ -266,6 +271,34 @@ function AccountSheet({ open, onClose }: { open: boolean; onClose: () => void })
             user.homeDepartment?.id === department?.id ||
             Boolean(user.joinedDepartments?.some((d) => d.id === department?.id && d.counts)),
         });
+
+  // Konten nur mit Cevi-Name/Spitzname können sich nicht selbst löschen: Antrag an die Datenschutz-Kontaktadresse
+  const handleDeletionRequest = async () => {
+    const confirmed = await confirm({
+      title: 'Löschung beantragen?',
+      description:
+        'Dein Profil ist nur mit Name und Geburtsdatum geschützt und kann darum nicht direkt gelöscht werden. Wir erhalten deinen Antrag und löschen dein Konto innert 30 Tagen.',
+      confirmLabel: 'Löschung beantragen',
+      cancelLabel: 'Abbrechen',
+      tone: 'danger',
+    });
+    if (!confirmed) return;
+    setDeleting(true);
+    try {
+      const res = await fetch('/api/auth/me/deletion-request', { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Antrag hat nicht geklappt.');
+      toast({ title: 'Antrag verschickt', description: data.message, tone: 'success' });
+    } catch (err) {
+      toast({
+        title: 'Antrag nicht verschickt',
+        description: err instanceof Error ? err.message : 'Antrag hat nicht geklappt.',
+        tone: 'error',
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handleDeleteAccount = async () => {
     const confirmed = await confirm({
@@ -519,6 +552,13 @@ function AccountSheet({ open, onClose }: { open: boolean; onClose: () => void })
               <a href={helpUrl('/', org.domain)} className={buttonClasses({ variant: 'secondary', className: 'justify-start' })}>
                 <LifeBuoy className="size-4 text-accent" /> Hilfe &amp; Anleitungen
               </a>
+              <a
+                href="/api/auth/me/export"
+                download="schichtplan-meine-daten.json"
+                className={buttonClasses({ variant: 'secondary', className: 'justify-start' })}
+              >
+                <Download className="size-4 text-accent" /> Meine Daten herunterladen
+              </a>
             </div>
           </div>
 
@@ -536,7 +576,16 @@ function AccountSheet({ open, onClose }: { open: boolean; onClose: () => void })
                 {deleting ? 'Löschen…' : 'Konto löschen'}
               </Button>
             ) : (
-              <span />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDeletionRequest}
+                disabled={deleting}
+                className="text-danger-ink hover:bg-danger/10 hover:text-danger-ink text-xs"
+              >
+                <Trash2 className="size-3.5" aria-hidden />
+                Löschung beantragen
+              </Button>
             )}
 
             <Button variant="ghost" size="sm" onClick={logout} disabled={deleting} className="text-xs">

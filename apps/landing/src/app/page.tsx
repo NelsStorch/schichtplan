@@ -488,6 +488,12 @@ export default async function LandingPage() {
               <Link href="/datenschutz" className="hover:text-fg transition">
                 Datenschutz
               </Link>
+              <Link href="/nutzungsbedingungen" className="hover:text-fg transition">
+                Nutzungsbedingungen
+              </Link>
+              <Link href="/impressum" className="hover:text-fg transition">
+                Impressum
+              </Link>
               <a
                 href="/llms.txt"
                 target="_blank"

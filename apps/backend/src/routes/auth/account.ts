@@ -43,6 +43,7 @@ import {
   clearAuthCookie,
   setAuthCookie,
 } from '../../services/authSession.js';
+import { anonymizeUserTraces } from '../../services/userErasure.js';
 
 
 /** Eigenes Konto: Profil lesen und ändern, Heimabteilung, Konto löschen, Abmelden */
@@ -309,6 +310,9 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
           data: { userId: null, shiftSignupId: null },
         });
 
+        // Namen und IDs aus Protokollen und Nachrichtenverlauf entfernen (diese haben keine Kaskade)
+        await anonymizeUserTraces(tx, [userId]);
+
         // Benutzer löschen (kaskadiert zu ShiftSignups, DepartmentMembers, UserStufen, UserHitobitoStufen, EventOrganizers, EventAnswers, EventAccessGrants, EventDeregistrations)
         await tx.user.delete({
           where: { id: userId },
@@ -318,14 +322,8 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
       clearAuthCookie(reply);
       trackUsage('ACCOUNT_DELETE');
 
-      const userDisplayName = user.nickname
-        ? `${user.nickname} (${user.firstName} ${user.lastName})`
-        : `${user.firstName} ${user.lastName}`;
-
-      request.log.info(
-        { userId, email: user.email, name: userDisplayName, providerId: user.providerId, hasPassword: Boolean(user.passwordHash) },
-        'Person hat ihr Konto selbst gelöscht'
-      );
+      // Ohne Namen und E-Mail: Das Protokoll soll die gelöschte Person nicht weiter enthalten
+      request.log.info({ userId, viaProvider: Boolean(user.providerId), hasPassword: Boolean(user.passwordHash) }, 'Person hat ihr Konto selbst gelöscht');
 
       return { success: true, message: 'Dein Konto wurde erfolgreich gelöscht.' };
     }

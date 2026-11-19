@@ -47,6 +47,7 @@ export const ORGANIZATIONS: Record<OrganizationSlug, OrganizationConfig> = {
     accentInkLight: '#be123c',
     accentInkDark: '#fb7185',
     logoUrl: '/images/cevi-logo.svg',
+    independentNotice: 'Kein offizielles Angebot von Cevi Schweiz.',
     metaDescription:
       'Kostenlose Helferliste online für Chilbi, Lager und Anlässe von Cevi-Abteilungen. Helfer*innen tragen sich per Link ein, ohne App und ohne Passwort.',
     heroHeadlineHighlight: 'für Cevi-Abteilungen',
@@ -95,6 +96,7 @@ export const ORGANIZATIONS: Record<OrganizationSlug, OrganizationConfig> = {
     accentInkLight: '#283583',
     accentInkDark: '#66b1e2',
     logoUrl: '/images/jubla-logo.svg',
+    independentNotice: 'Kein offizielles Angebot von Jungwacht Blauring Schweiz.',
     metaDescription:
       'Kostenlose Helferliste online für Lager, Scharanlässe und Feste von Jubla-Scharen. Helfer*innen tragen sich per Link ein, ohne App und ohne Passwort.',
     heroHeadlineHighlight: 'für Jubla-Scharen',

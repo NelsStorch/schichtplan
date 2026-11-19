@@ -10,6 +10,7 @@ import { trackUsage } from './services/usageStats.js';
 import { runExclusive } from './services/jobLock.js';
 import { UNVERIFIED_CLEANUP_INTERVAL_MS, deleteExpiredUnverifiedAccounts } from './services/unverifiedAccounts.js';
 import { purgeDisallowedPushSubscriptions } from './services/webPush.js';
+import { DATA_RETENTION_INTERVAL_MS, runDataRetention } from './services/dataRetention.js';
 
 const PORT = parseInt(process.env.PORT || '4000', 10);
 const HOST = process.env.HOST || '0.0.0.0';
@@ -147,6 +148,32 @@ async function main() {
   app.addHook('onClose', async () => {
     clearInterval(unverifiedTimer);
     clearTimeout(firstUnverified);
+  });
+
+  // Aufbewahrungsfristen: alte Protokolle löschen, inaktive Konten ankündigen und löschen (täglich)
+  const retention = () =>
+    runExclusive(app.prisma, 'data-retention', () => runDataRetention(app.prisma, app.log))
+      .then((res) => {
+        if (!res.ran) return;
+        const r = res.value;
+        trackUsage('JOB_RUN', { dim: 'DATA_RETENTION' });
+        const total = r.signupLogs + r.messages + r.auditLogs + r.auditIps + r.warned + r.deletedAccounts;
+        if (total > 0) {
+          trackUsage('JOB_ITEMS', { dim: 'DATA_RETENTION', n: total });
+          app.log.info(r, 'Aufbewahrungsfristen angewendet');
+        }
+      })
+      .catch((err) => {
+        trackUsage('JOB_FAILED', { dim: 'DATA_RETENTION' });
+        app.log.error(err, 'Aufbewahrungsfristen fehlgeschlagen');
+      });
+  const retentionTimer = setInterval(retention, DATA_RETENTION_INTERVAL_MS);
+  retentionTimer.unref();
+  const firstRetention = setTimeout(retention, 5 * 60 * 1000);
+  firstRetention.unref();
+  app.addHook('onClose', async () => {
+    clearInterval(retentionTimer);
+    clearTimeout(firstRetention);
   });
 
   // Push-Abos mit unerlaubten Adressen (aus der Zeit vor der Prüfung) einmal beim Start wegräumen

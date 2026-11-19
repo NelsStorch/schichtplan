@@ -5,6 +5,7 @@ import { ClipboardList } from 'lucide-react';
 import {
   PLACEHOLDER_LAST_NAME,
   REQUIRED_PROFILE_FIELDS,
+  SENSITIVE_CONSENT_TEXT,
   retentionNotice,
   type EventQuestionDto,
   type RequiredProfileField,
@@ -19,7 +20,8 @@ import type { EventDetails } from '@/lib/types';
  * - fehlende Pflichtangaben (im Konto gespeichert, gelten auch für andere Anlässe)
  * - Fragen «einmal pro Anlass» (beim ersten Eintragen bzw. wenn eine Pflichtfrage fehlt)
  * - Fragen «bei jeder Eintragung» (jedes Mal neu, Antwort gehört zur Schicht)
- * `onSaved` bekommt die Antworten pro Eintragung, die mit der Eintragung mitgeschickt werden.
+ * `onSaved` bekommt die Antworten pro Eintragung, die mit der Eintragung mitgeschickt werden,
+ * und ob die Person in die Bearbeitung von Gesundheitsangaben eingewilligt hat.
  */
 export function ParticipationDialog({
   open,
@@ -38,7 +40,7 @@ export function ParticipationDialog({
   /** Schicht, für die gerade eingetragen wird (für die Fragen pro Eintragung) */
   shiftLabel?: string;
   onClose: () => void;
-  onSaved: (signupAnswers: Record<string, string>) => void;
+  onSaved: (signupAnswers: Record<string, string>, sensitiveConsent: boolean) => void;
 }) {
   const hasOnceStuff = event.viewer.missingFields.length > 0 || extraMissingFields.length > 0 || showOnceQuestions;
   return (
@@ -80,7 +82,7 @@ function ParticipationForm({
   extraMissingFields: RequiredProfileField[];
   shiftLabel?: string;
   onCancel: () => void;
-  onSaved: (signupAnswers: Record<string, string>) => void;
+  onSaved: (signupAnswers: Record<string, string>, sensitiveConsent: boolean) => void;
 }) {
   const { user, refresh } = usePortal();
   const missing = new Set<RequiredProfileField>([...event.viewer.missingFields, ...extraMissingFields]);
@@ -97,6 +99,9 @@ function ParticipationForm({
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Ausdrückliche Einwilligung, sobald eine Frage mit Gesundheitsangaben beantwortet ist (Art. 6 Abs. 7 DSG)
+  const [consent, setConsent] = useState(false);
+  const needsConsent = [...onceQuestions, ...signupQuestions].some((q) => q.sensitive && (answers[q.id] ?? '').trim());
 
   const setField = (key: keyof typeof profile, value: string) => setProfile((p) => ({ ...p, [key]: value }));
 
@@ -120,6 +125,7 @@ function ParticipationForm({
           json: {
             profile: Object.keys(profilePayload).length ? profilePayload : undefined,
             answers: Object.fromEntries(onceQuestions.map((q) => [q.id, (answers[q.id] ?? '').trim()])),
+            sensitiveConsent: needsConsent ? consent : undefined,
           },
         });
       }
@@ -127,7 +133,8 @@ function ParticipationForm({
       onSaved(
         Object.fromEntries(
           signupQuestions.map((q) => [q.id, (answers[q.id] ?? '').trim()]).filter(([, v]) => v)
-        )
+        ),
+        needsConsent && consent
       );
     } catch (err) {
       setError(errorMessage(err));
@@ -250,6 +257,19 @@ function ParticipationForm({
         </div>
       )}
 
+      {needsConsent && (
+        <label className="flex items-start gap-2.5 rounded-field border border-line bg-surface-2/60 p-3 text-sm text-fg">
+          <input
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            required
+            className="mt-0.5 size-4 shrink-0 accent-[rgb(var(--accent))]"
+          />
+          <span>{SENSITIVE_CONSENT_TEXT}</span>
+        </label>
+      )}
+
       <div className="flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:justify-end">
         <Button variant="ghost" onClick={onCancel}>
           Abbrechen
@@ -257,9 +277,10 @@ function ParticipationForm({
         <Button
           type="submit"
           loading={saving}
-          disabled={[...onceQuestions, ...signupQuestions].some(
-            (q) => q.required && q.type === 'YES_NO' && !answers[q.id]
-          )}
+          disabled={
+            (needsConsent && !consent) ||
+            [...onceQuestions, ...signupQuestions].some((q) => q.required && q.type === 'YES_NO' && !answers[q.id])
+          }
         >
           Speichern und eintragen
         </Button>
