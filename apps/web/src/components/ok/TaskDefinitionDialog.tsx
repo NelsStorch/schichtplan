@@ -27,6 +27,7 @@ export function TaskDefinitionDialog({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    void open;
     if (task) {
       setTitle(task.title);
       setDescription(task.description || '');

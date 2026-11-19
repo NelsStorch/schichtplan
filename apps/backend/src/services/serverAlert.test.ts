@@ -67,7 +67,7 @@ describe('serverAlert', () => {
       expect(payload.text).toContain('cevi-schichtplan.ch');
       expect(payload.embeds).toBeDefined();
 
-      const embeds = payload.embeds as any[];
+      const embeds = payload.embeds as Array<{ color: number; fields: Array<{ name: string; value: string; inline?: boolean }> }>;
       expect(embeds[0].color).toBe(0xed4245); // Rot für CRITICAL
       expect(embeds[0].fields).toContainEqual({ name: 'Kategorie', value: 'DB_OVERLOAD', inline: true });
     });

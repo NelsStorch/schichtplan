@@ -389,7 +389,11 @@ export function DepartmentsPanel({
       {loading && !departments ? (
         <div className="grid gap-4 md:grid-cols-2">
           {Array.from({ length: 4 }, (_, i) => (
-            <Skeleton key={i} className="h-36 rounded-card" />
+            <Skeleton
+              // biome-ignore lint/suspicious/noArrayIndexKey: Skeleton loader placeholder items
+              key={i}
+              className="h-36 rounded-card"
+            />
           ))}
         </div>
       ) : visible.length === 0 ? (

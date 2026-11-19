@@ -12,12 +12,12 @@ type Db = Pick<
   PrismaClient,
   'department' | 'departmentStufe' | 'user' | 'userStufe' | 'userHitobitoStufe' | 'hitobitoGroup'
 > & {
-  $transaction?: any;
+  $transaction?: unknown;
 };
 
-async function runInTransaction<T>(prisma: Db, fn: (tx: any) => Promise<T>): Promise<T> {
+async function runInTransaction<T>(prisma: Db, fn: (tx: Db) => Promise<T>): Promise<T> {
   if (typeof prisma.$transaction === 'function') {
-    return prisma.$transaction(fn);
+    return (prisma.$transaction as (cb: (tx: Db) => Promise<T>) => Promise<T>)(fn);
   }
   return fn(prisma);
 }

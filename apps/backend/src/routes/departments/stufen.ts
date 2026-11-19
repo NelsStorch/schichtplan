@@ -3,6 +3,7 @@ import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import {
   StufeInputSchema,
   type DepartmentPermission,
+  type OrganizationType,
 } from '@schichtplan/shared';
 import { autoCreateAllCeviDbDepartmentStufen, backfillCeviDbStufen, } from '../../services/homeDepartment.js';
 import { toStufeDto, stufenSyncDue, isUniqueViolation, requireDepartmentPermission, } from './shared.js';
@@ -15,7 +16,7 @@ const departmentStufenRoutes: FastifyPluginAsync = async (fastify) => {
 
   /** Prüft, ob eine Hitobito-Gruppen-ID tatsächlich zur Verbands-Gruppe dieser Abteilung gehört */
   async function canLinkHitobitoGroup(
-    tenant: { organization: any; hitobitoGroupId: number | null },
+    tenant: { organization: OrganizationType; hitobitoGroupId: number | null },
     hitobitoGroupId: number | null | undefined
   ): Promise<string | null> {
     if (hitobitoGroupId === null || hitobitoGroupId === undefined) return null;

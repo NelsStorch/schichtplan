@@ -226,16 +226,29 @@ describe('parseCeviDbGroup für Jubla', () => {
 describe('refreshCeviDbGroups', () => {
   const log = { warn: vi.fn() } as unknown as FastifyBaseLogger;
 
+  type FakeRow = {
+    id: number;
+    fetchedAt: Date;
+    jungscharId?: number | null;
+    ortsgruppeId?: number | null;
+    jungscharCount?: number;
+    [key: string]: unknown;
+  };
+
   function fakeDb(initial: { id: number; fetchedAt: Date; jungscharId?: number | null; ortsgruppeId?: number | null }[] = []) {
-    const rows = new Map<number, any>(initial.map((r) => [r.id, { jungscharId: null, ortsgruppeId: null, ...r }]));
+    const rows = new Map<number, FakeRow>(initial.map((r) => [r.id, { jungscharId: null, ortsgruppeId: null, ...r }]));
     return {
       rows,
       hitobitoGroup: {
-        findMany: async ({ where }: any) => where.id.in.flatMap((id: number) => rows.get(id) ?? []),
-        upsert: async ({ where, create }: any) => void rows.set(where.provider_id?.id ?? where.id, create),
+        findMany: async ({ where }: { where: { id: { in: number[] } } }) => where.id.in.flatMap((id: number) => rows.get(id) ?? []),
+        upsert: async ({ where, create }: { where: { id?: number; provider_id?: { id: number } }; create: FakeRow }) =>
+          void rows.set(where.provider_id?.id ?? where.id!, create),
       },
     };
   }
+
+  const asDb = (db: ReturnType<typeof fakeDb>) => db as unknown as Parameters<typeof refreshCeviDbGroups>[0];
+
   const answers: Record<string, unknown> = { '806': joschija, '295': jsIllnau, '161': ortsgruppe };
   function stubFetch() {
     const fetchMock = vi.fn(async (url: string, _init?: RequestInit) => {
@@ -254,30 +267,30 @@ describe('refreshCeviDbGroups', () => {
   it('holt die Gruppe samt Jungschar und Ortsgruppe', async () => {
     const fetchMock = stubFetch();
     const db = fakeDb();
-    await refreshCeviDbGroups(db as any, log, options);
+    await refreshCeviDbGroups(asDb(db), log, options);
     expect([...db.rows.keys()].sort()).toEqual([161, 295, 806]);
-    expect(db.rows.get(161).jungscharCount).toBe(2);
+    expect(db.rows.get(161)?.jungscharCount).toBe(2);
     expect(fetchMock.mock.calls[0][1]?.headers).toMatchObject({ Authorization: 'Bearer geheim' });
   });
 
   it('fragt aktuelle Einträge nicht nochmals ab', async () => {
     const fetchMock = stubFetch();
     const db = fakeDb([{ id: 806, fetchedAt: new Date(), jungscharId: 295, ortsgruppeId: 161 }]);
-    await refreshCeviDbGroups(db as any, log, options);
+    await refreshCeviDbGroups(asDb(db), log, options);
     expect(fetchMock.mock.calls.map((c) => c[0])).toEqual(['https://db.test/groups/295.json', 'https://db.test/groups/161.json']);
   });
 
   it('frischt alte Einträge auf', async () => {
     const fetchMock = stubFetch();
     const db = fakeDb([{ id: 806, fetchedAt: new Date(Date.now() - 2 * 24 * 3600 * 1000) }]);
-    await refreshCeviDbGroups(db as any, log, options);
+    await refreshCeviDbGroups(asDb(db), log, options);
     expect(fetchMock.mock.calls[0][0]).toBe('https://db.test/groups/806.json');
-    expect(db.rows.get(806).ortsgruppeId).toBe(161);
+    expect(db.rows.get(806)?.ortsgruppeId).toBe(161);
   });
 
   it('ruft ohne Scope groups nichts ab', async () => {
     const fetchMock = stubFetch();
-    await refreshCeviDbGroups(fakeDb() as any, log, { ...options, grantedScopes: 'email name with_roles' });
+    await refreshCeviDbGroups(asDb(fakeDb()), log, { ...options, grantedScopes: 'email name with_roles' });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -289,17 +302,17 @@ describe('refreshCeviDbGroups', () => {
       return answer(url, init);
     });
     const db = fakeDb();
-    await refreshCeviDbGroups(db as any, log, { ...options, groupIds: [805, 806] });
+    await refreshCeviDbGroups(asDb(db), log, { ...options, groupIds: [805, 806] });
     expect(db.rows.has(805)).toBe(false);
-    expect(db.rows.get(806).ortsgruppeId).toBe(161);
-    expect(db.rows.get(161).jungscharCount).toBe(2);
+    expect(db.rows.get(806)?.ortsgruppeId).toBe(161);
+    expect(db.rows.get(161)?.jungscharCount).toBe(2);
   });
 
   it('lässt den Login bei einem Fehler nicht scheitern und behält den alten Stand', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Netzwerk')));
     const old = new Date(Date.now() - 2 * 24 * 3600 * 1000);
     const db = fakeDb([{ id: 806, fetchedAt: old, jungscharId: 295, ortsgruppeId: 161 }]);
-    await expect(refreshCeviDbGroups(db as any, log, options)).resolves.toBeUndefined();
-    expect(db.rows.get(806).fetchedAt).toBe(old);
+    await expect(refreshCeviDbGroups(asDb(db), log, options)).resolves.toBeUndefined();
+    expect(db.rows.get(806)?.fetchedAt).toBe(old);
   });
 });

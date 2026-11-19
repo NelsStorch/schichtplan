@@ -239,7 +239,7 @@ export async function getPhysicalCardByCode(
     items: tokens.map((t) => ({
       id: t.id,
       title: t.title,
-      status: (isBatchBlocked ? 'BLOCKED' : t.status) as any,
+      status: (isBatchBlocked ? 'BLOCKED' : t.status) as PhysicalCardScanResultDto['items'][number]['status'],
       redeemedAt: t.redeemedAt?.toISOString() ?? null,
       redeemedByName: t.redeemedByName,
     })),

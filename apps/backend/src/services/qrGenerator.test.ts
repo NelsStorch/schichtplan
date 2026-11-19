@@ -65,7 +65,7 @@ describe('qrGenerator', () => {
           mimeType: 'image/png',
         }),
       },
-    } as any;
+    } as unknown as Parameters<typeof generateQrSvg>[0]['prisma'];
 
     const svg = await generateQrSvg({
       text: 'https://example.com/checkin?code=123',

@@ -544,6 +544,7 @@ export function useCommandItems(query: string) {
   // LISTE ALLER VERFÜGBAREN BEFEHLE GENERIEREN
   // =========================================================================
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Die Aktionen in items greifen über Closures auf die aktuellen Handler zu; items wird gezielt nur bei Datenänderungen neu gebaut
   const items = useMemo(() => {
     const list: CommandItem[] = [];
 

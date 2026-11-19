@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   CheckCircle2,
   Download,
@@ -35,7 +35,7 @@ export function PhysicalBonsManager({
   const [customTitle, setCustomTitle] = useState('');
   const [generating, setGenerating] = useState(false);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [bData, hData] = await Promise.all([
@@ -46,17 +46,17 @@ export function PhysicalBonsManager({
       ]);
       setBatches(bData);
       setHelperCount(hData.totalHelpersCount);
-      if (hData.totalHelpersCount > 0 && cardCount === 20) {
-        setCardCount(hData.totalHelpersCount);
+      if (hData.totalHelpersCount > 0) {
+        setCardCount((prev) => (prev === 20 ? hData.totalHelpersCount : prev));
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventSlug]);
 
   useEffect(() => {
     void loadData();
-  }, [eventSlug]);
+  }, [loadData]);
 
   const handleCreateBatch = async () => {
     if (cardCount <= 0) {
@@ -137,7 +137,7 @@ export function PhysicalBonsManager({
 
         {/* Modus: Kombi-Bon vs Einzel-Bons */}
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-fg">Bon-Typ &amp; Format</label>
+          <span className="text-xs font-semibold text-fg">Bon-Typ &amp; Format</span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <button
               type="button"

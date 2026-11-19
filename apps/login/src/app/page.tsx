@@ -267,8 +267,8 @@ function LoginContent() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Fehler beim Senden.');
       setResendNotice({ tone: 'success', text: data.message || 'Neuer Bestätigungslink gesendet!' });
-    } catch (err: any) {
-      setResendNotice({ tone: 'danger', text: err.message || 'Fehler beim Senden.' });
+    } catch (err) {
+      setResendNotice({ tone: 'danger', text: err instanceof Error ? err.message : 'Fehler beim Senden.' });
     } finally {
       setResending(false);
     }
@@ -409,8 +409,8 @@ function LoginContent() {
       setTimeout(() => {
         window.location.href = afterLogin(data.user, returnTo, org.dbType, inviteToken);
       }, 700);
-    } catch (err: any) {
-      setError(err.message || 'Ein Fehler ist aufgetreten');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');
     } finally {
       setLoading(false);
     }
@@ -948,6 +948,7 @@ function LoginContent() {
                                 className="flex rounded-full bg-surface-2 p-0.5"
                               >
                                 {STUFE_OPTIONS.map((option) => (
+                                  /* biome-ignore lint/a11y/useSemanticElements: Segmented Control mit ARIA-Radio-Pattern */
                                   <button
                                     key={option.label}
                                     type="button"

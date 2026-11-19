@@ -127,13 +127,16 @@ function EventActions({
   const item = 'flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-sm text-fg transition hover:bg-surface-2 disabled:opacity-50 [&_svg]:size-4 [&_svg]:text-fg-subtle';
 
   return (
-    <div className="relative" onClick={(e) => e.stopPropagation()}>
+    <div className="relative">
       <Button
         variant="ghost"
         size="icon"
         aria-label={`Aktionen für ${event.title}`}
         aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((o) => !o);
+        }}
         className="size-9"
       >
         <MoreHorizontal aria-hidden />
@@ -143,6 +146,8 @@ function EventActions({
           <button type="button" aria-hidden tabIndex={-1} className="fixed inset-0 z-10 cursor-default" onClick={() => setOpen(false)} />
           <div
             role="menu"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
             className="absolute right-0 top-10 z-30 w-64 overflow-hidden rounded-card border border-line bg-surface py-1 shadow-lift"
           >
             <a role="menuitem" className={item} href={departmentUrl(event.departmentSlug, `/events/${event.slug}`, event.departmentOrganization)} target="_blank" rel="noreferrer">
@@ -322,7 +327,10 @@ export function EventsPanel({
   }, [search]);
 
   // Gewählte Abteilung passt nicht mehr zum neuen Verband: zurücksetzen
-  useEffect(() => setPage(1), [orgFilter]);
+  useEffect(() => {
+    void orgFilter;
+    setPage(1);
+  }, [orgFilter]);
   useEffect(() => {
     setDepartmentId((current) =>
       current && !allDepartments.some((d) => d.id === current && matchesOrg(d.organization, orgFilter)) ? '' : current
@@ -330,6 +338,7 @@ export function EventsPanel({
   }, [orgFilter, allDepartments]);
 
   useEffect(() => {
+    void reload;
     const controller = new AbortController();
     const params = new URLSearchParams({ when, page: String(page), pageSize: String(PAGE_SIZE) });
     if (orgFilter !== 'ALL') params.set('organization', orgFilter);
@@ -477,7 +486,11 @@ export function EventsPanel({
       {loading && !data ? (
         <Card className="divide-y divide-line overflow-hidden">
           {Array.from({ length: 6 }, (_, i) => (
-            <div key={i} className="flex items-center gap-3 px-5 py-4">
+            <div
+              // biome-ignore lint/suspicious/noArrayIndexKey: Skeleton placeholder
+              key={i}
+              className="flex items-center gap-3 px-5 py-4"
+            >
               <Skeleton className="h-4 w-56" />
               <Skeleton className="ml-auto hidden h-4 w-40 md:block" />
             </div>

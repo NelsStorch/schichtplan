@@ -966,6 +966,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                 const Icon = option.icon;
                 const active = view === option.value;
                 return (
+                  /* biome-ignore lint/a11y/useSemanticElements: Segmented Control Ansichts-Auswahl mit ARIA-Radio-Pattern */
                   <button
                     key={option.value}
                     type="button"

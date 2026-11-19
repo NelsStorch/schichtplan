@@ -60,11 +60,12 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     refresh();
   }, [refresh]);
 
+  const logoUrl = department?.logoUrl;
   useEffect(() => {
-    if (department) {
-      updateFavicon(department.logoUrl);
+    if (logoUrl !== undefined) {
+      updateFavicon(logoUrl);
     }
-  }, [department?.logoUrl]);
+  }, [logoUrl]);
 
   const logout = useCallback(async () => {
     await fetch('/api/auth/logout', { method: 'POST' });

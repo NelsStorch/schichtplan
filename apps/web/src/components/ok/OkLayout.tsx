@@ -104,6 +104,7 @@ function OkNav({ onNavigate }: { onNavigate?: () => void }) {
   // Auf kleinen Bildschirmen scrollt die Navigation selbst: aktiven Bereich sichtbar halten
   const activeLink = useRef<HTMLAnchorElement>(null);
   useEffect(() => {
+    void active;
     const link = activeLink.current;
     const box = link?.closest('[data-ok-nav-scroll]');
     if (!link || !box) return;

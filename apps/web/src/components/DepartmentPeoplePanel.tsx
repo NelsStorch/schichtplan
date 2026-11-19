@@ -320,7 +320,11 @@ function PermissionMatrix({ people }: { people: DepartmentPersonDto[] }) {
                         aria-label={`${DEPARTMENT_PERMISSIONS[perm].label}: ja`}
                       />
                     ) : (
-                      <span className="text-fg-subtle/40" aria-label={`${DEPARTMENT_PERMISSIONS[perm].label}: nein`}>
+                      <span
+                        className="text-fg-subtle/40"
+                        role="img"
+                        aria-label={`${DEPARTMENT_PERMISSIONS[perm].label}: nein`}
+                      >
                         ·
                       </span>
                     )}
@@ -398,6 +402,7 @@ function PersonEditor({
         <div className="space-y-2">
           <p className="text-xs font-semibold text-fg-subtle">Rolle im Verein</p>
           <div role="radiogroup" aria-label="Rolle im Verein" className="flex rounded-full bg-surface p-0.5">
+            {/* biome-ignore lint/a11y/useSemanticElements: Segmented Control mit ARIA-Radio-Pattern */}
             <button
               type="button"
               role="radio"
@@ -410,6 +415,7 @@ function PersonEditor({
             >
               <Crown className="size-3.5 text-accent-ink" /> Vereinsleitung
             </button>
+            {/* biome-ignore lint/a11y/useSemanticElements: Segmented Control mit ARIA-Radio-Pattern */}
             <button
               type="button"
               role="radio"
@@ -465,6 +471,7 @@ function PersonEditor({
                   </span>
                   <div role="radiogroup" aria-label={`Rolle in ${stufe.name}`} className="flex rounded-full bg-surface p-0.5">
                     {([null, 'TEILNEHMER', 'LEITUNG'] as const).map((value) => (
+                      /* biome-ignore lint/a11y/useSemanticElements: Segmented Control mit ARIA-Radio-Pattern */
                       <button
                         key={value ?? 'none'}
                         type="button"

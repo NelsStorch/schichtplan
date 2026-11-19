@@ -139,6 +139,7 @@ export function SectionNav({ sections }: { sections: readonly (readonly [id: str
   const active = ctx?.active;
 
   useEffect(() => {
+    void active;
     const box = nav.current;
     const chip = box?.querySelector<HTMLElement>('[aria-current]');
     if (!box || !chip) return;

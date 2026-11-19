@@ -79,6 +79,7 @@ export function dismissPwaPrompt(now = Date.now()): void {
       const root = getRootDomain(window.location.hostname);
       const isLocal = root === 'localhost' || root === '127.0.0.1' || root.endsWith('.localhost');
       const domainAttr = isLocal ? '' : `; domain=.${root}`;
+      // biome-ignore lint/suspicious/noDocumentCookie: Subdomain-uebergreifendes PWA-Dismissal-Cookie
       document.cookie = `${PWA_COOKIE_KEY}=${now}; max-age=${maxAgeSec}; path=/${domainAttr}; SameSite=Lax`;
     }
   } catch {}

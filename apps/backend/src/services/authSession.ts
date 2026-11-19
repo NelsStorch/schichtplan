@@ -270,7 +270,7 @@ export const PENDING_LINK_TTL_SECONDS = 15 * 60;
 /** Hängt die Cevi.DB, landet der Login lieber auf der Fehlerseite als minutenlang in der Warteschleife */
 export const CEVIDB_REQUEST_TIMEOUT_MS = 10_000;
 export interface PendingLink {
-  profile: any;
+  profile: Record<string, unknown>;
   returnTo: string | null;
   tenantSlug: string | null;
   userId: string;

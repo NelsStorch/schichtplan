@@ -324,7 +324,7 @@ function DepartmentSetup() {
                       </p>
                     </Callout>
                   ) : (
-                    <ul role="radiogroup" className="divide-y divide-line overflow-hidden rounded-card border border-line bg-surface/70">
+                    <div role="radiogroup" className="divide-y divide-line overflow-hidden rounded-card border border-line bg-surface/70">
                       <DepartmentOption
                         selected={!asHome}
                         onSelect={() => setAsHome(false)}
@@ -341,7 +341,7 @@ function DepartmentSetup() {
                           icon={<Check className="size-[18px]" />}
                         />
                       )}
-                    </ul>
+                    </div>
                   )}
                   <button
                     type="button"
@@ -395,7 +395,7 @@ function DepartmentSetup() {
                     </div>
                   )}
                   {selectable.length > 0 ? (
-                    <ul
+                    <div
                       role="radiogroup"
                       className="max-h-[22rem] divide-y divide-line overflow-y-auto rounded-card border border-line bg-surface/70"
                     >
@@ -410,15 +410,15 @@ function DepartmentSetup() {
                         />
                       ))}
                       {visible.length === 0 && (
-                        <li className="px-5 py-4 text-sm text-fg-subtle">Keine {org.unitTerm} gefunden.</li>
+                        <p className="px-5 py-4 text-sm text-fg-subtle">Keine {org.unitTerm} gefunden.</p>
                       )}
-                    </ul>
+                    </div>
                   ) : (
                     <Callout tone="info">
                       Um einer {org.unitTerm} beizutreten, öffne bitte den direkten Link oder Einladungslink deiner {org.unitTerm}.
                     </Callout>
                   )}
-                  <ul role="radiogroup" className="overflow-hidden rounded-card border border-line bg-surface/70">
+                  <div role="radiogroup" className="overflow-hidden rounded-card border border-line bg-surface/70">
                     <DepartmentOption
                       selected={selected === NONE}
                       onSelect={() => choose(NONE)}
@@ -426,7 +426,7 @@ function DepartmentSetup() {
                       subtitle="Eltern, Ehemalige, Freund*innen und Gäste"
                       icon={<UsersRound className="size-[18px]" />}
                     />
-                  </ul>
+                  </div>
                 </section>
               )}
 
@@ -454,6 +454,7 @@ function DepartmentSetup() {
                             {ROLE_OPTIONS.map((option) => {
                               const active = role === option.value;
                               return (
+                                /* biome-ignore lint/a11y/useSemanticElements: Segmented Control mit ARIA-Radio-Pattern */
                                 <button
                                   key={option.label}
                                   type="button"
@@ -560,17 +561,17 @@ function DepartmentOption({
   icon?: React.ReactNode;
 }) {
   return (
-    <li>
-      <button
-        type="button"
-        role="radio"
-        aria-checked={selected}
-        onClick={onSelect}
-        className={cn(
-          'flex w-full items-center gap-4 px-5 py-3.5 text-left transition-colors duration-200 hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent',
-          selected && 'bg-accent/8'
-        )}
-      >
+    // biome-ignore lint/a11y/useSemanticElements: Interaktive Abteilungs-Kachel mit ARIA-Radio-Rolle
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      onClick={onSelect}
+      className={cn(
+        'flex w-full items-center gap-4 px-5 py-3.5 text-left transition-colors duration-200 hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent',
+        selected && 'bg-accent/8'
+      )}
+    >
         <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-tile bg-surface-2 text-fg-muted">
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -593,7 +594,6 @@ function DepartmentOption({
           {selected && <Check className="size-3" />}
         </span>
       </button>
-    </li>
   );
 }
 

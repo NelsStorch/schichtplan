@@ -399,8 +399,8 @@ export function AssignPersonToShiftsDialog({
             <div className="flex items-start gap-2.5">
               <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning-ink" />
               <div className="space-y-2">
-                {collisionMessages.map((m, i) => (
-                  <p key={i} className="font-semibold text-warning-ink">
+                {collisionMessages.map((m) => (
+                  <p key={m} className="font-semibold text-warning-ink">
                     {m}
                   </p>
                 ))}

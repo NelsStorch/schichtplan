@@ -95,6 +95,7 @@ export function SlotMeter({ filled, total, className }: { filled: number; total:
       <div aria-hidden className={cn('flex flex-wrap gap-1', className)}>
         {Array.from({ length: total }, (_, i) => (
           <span
+            // biome-ignore lint/suspicious/noArrayIndexKey: Visual slot dots have no entity id
             key={i}
             className={cn(
               'h-2.5 w-4 rounded-full transition-colors',
@@ -109,6 +110,7 @@ export function SlotMeter({ filled, total, className }: { filled: number; total:
     <div aria-hidden className={cn('flex h-2.5 w-full max-w-48 gap-0.5', className)}>
       {Array.from({ length: 12 }, (_, i) => (
         <span
+          // biome-ignore lint/suspicious/noArrayIndexKey: Visual slot dots have no entity id
           key={i}
           className={cn('flex-1 rounded-full', i < Math.round((filled / total) * 12) ? fillClass : 'bg-surface-3')}
         />

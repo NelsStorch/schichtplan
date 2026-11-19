@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import {
   Ban,
@@ -91,7 +91,7 @@ function BonScanContent() {
   }, [pinStorageKey]);
 
   // Bon-Daten abrufen
-  const loadCard = async (currentPin = pin) => {
+  const loadCard = useCallback(async (currentPin = pin) => {
     if (!code) {
       setError('Kein Bon-Code im Scan-Link übergeben.');
       setLoading(false);
@@ -134,12 +134,11 @@ function BonScanContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug, code, pin, pinStorageKey]);
 
   useEffect(() => {
     if (pinReady) void loadCard();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, code, pin, pinReady]);
+  }, [pinReady, loadCard]);
 
   // PIN absenden & dauerhaft speichern (der Effekt oben lädt den Bon danach neu)
   const handlePinSubmit = (e: React.FormEvent) => {

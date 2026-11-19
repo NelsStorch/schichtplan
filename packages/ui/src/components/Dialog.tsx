@@ -73,6 +73,11 @@ export function Dialog({
       onClick={(e) => {
         if (dismissOnBackdrop && e.target === ref.current) onClose();
       }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          e.stopPropagation();
+        }
+      }}
       aria-labelledby={titleId}
       className={cn(
         'z-sheet m-0 mt-auto max-h-[92dvh] w-full max-w-none overflow-hidden rounded-t-card border border-b-0 border-line bg-surface p-0 text-fg shadow-lift',

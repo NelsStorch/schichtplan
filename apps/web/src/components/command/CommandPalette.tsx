@@ -79,10 +79,12 @@ export function CommandPalette() {
 
   // Auswahl bei Suchänderung zurücksetzen
   useEffect(() => {
+    void query;
     setSelectedIndex(0);
   }, [query]);
 
   useEffect(() => {
+    void subQuery;
     setSelectedSubIndex(0);
   }, [subQuery]);
 
@@ -194,6 +196,7 @@ export function CommandPalette() {
   return (
     <dialog
       ref={dialogRef}
+      onKeyDown={handleKeyDown}
       onCancel={(e) => {
         e.preventDefault();
         if (activeSubActionItem) {
@@ -213,7 +216,7 @@ export function CommandPalette() {
         'sm:m-auto sm:max-h-[84dvh] sm:max-w-2xl lg:max-w-4xl xl:max-w-5xl sm:rounded-2xl sm:border sm:open:animate-scale-in'
       )}
     >
-      <div className="flex h-full max-h-[inherit] flex-col" onKeyDown={handleKeyDown}>
+      <div className="flex h-full max-h-[inherit] flex-col">
         {/* Mobile Pull-Griff */}
         <div aria-hidden className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-line-strong sm:hidden" />
 
@@ -435,6 +438,9 @@ export function CommandPalette() {
                         return (
                           <div
                             key={item.id}
+                            role="option"
+                            aria-selected={isSelected}
+                            tabIndex={-1}
                             data-index={itemFlatIndex}
                             className={cn(
                               'group flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm transition cursor-pointer',
@@ -443,6 +449,12 @@ export function CommandPalette() {
                                 : 'text-fg-muted hover:bg-surface-2/60 hover:text-fg'
                             )}
                             onClick={() => item.onSelect()}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                item.onSelect();
+                              }
+                            }}
                             onMouseEnter={() => setSelectedIndex(itemFlatIndex)}
                           >
                             <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -597,7 +609,7 @@ export function CommandPalette() {
                           <div className="flex flex-wrap gap-1">
                             {previewTargetItem.preview.shift.signups.map((su, idx) => (
                               <span
-                                key={idx}
+                                key={su.userId || `${su.displayName}-${idx}`}
                                 className={cn(
                                   'inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-2xs font-medium',
                                   su.isSelf
@@ -699,8 +711,8 @@ export function CommandPalette() {
 
                         {previewTargetItem.preview.person.stufen && previewTargetItem.preview.person.stufen.length > 0 && (
                           <div className="flex flex-wrap gap-1 pt-1 border-t border-line/60">
-                            {previewTargetItem.preview.person.stufen.map((st, i) => (
-                              <Badge key={i} size="sm" tone="neutral">
+                            {previewTargetItem.preview.person.stufen.map((st) => (
+                              <Badge key={st} size="sm" tone="neutral">
                                 {st}
                               </Badge>
                             ))}
@@ -735,9 +747,9 @@ export function CommandPalette() {
 
                         {previewTargetItem.preview.person.shifts && previewTargetItem.preview.person.shifts.length > 0 ? (
                           <div className="space-y-1.5 max-h-48 overflow-y-auto pr-0.5">
-                            {previewTargetItem.preview.person.shifts.map((s, idx) => (
+                            {previewTargetItem.preview.person.shifts.map((s) => (
                               <div
-                                key={idx}
+                                key={`${s.title}-${s.time}`}
                                 className="rounded-lg border border-line/70 bg-surface-2/40 p-2 text-xs transition hover:bg-surface-2"
                               >
                                 <div className="flex items-center justify-between gap-1.5">
@@ -770,8 +782,8 @@ export function CommandPalette() {
 
                   {previewTargetItem.preview?.details && previewTargetItem.preview.details.length > 0 && (
                     <div className="space-y-2 rounded-xl border border-line bg-surface p-3.5 text-xs">
-                      {previewTargetItem.preview.details.map((d, i) => (
-                        <div key={i} className="flex justify-between gap-2">
+                      {previewTargetItem.preview.details.map((d) => (
+                        <div key={d.label} className="flex justify-between gap-2">
                           <span className="text-fg-subtle">{d.label}:</span>
                           <span className="font-semibold text-fg text-right truncate max-w-[150px]">{d.value}</span>
                         </div>

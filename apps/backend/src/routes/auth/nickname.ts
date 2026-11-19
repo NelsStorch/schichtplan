@@ -1,4 +1,4 @@
-import { FastifyPluginAsync, FastifyReply } from 'fastify';
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import {
   CeviNameQuickLoginSchema,
@@ -40,7 +40,7 @@ const nicknameAuthRoutes: FastifyPluginAsync = async (fastify) => {
     },
   };
 
-  const loginHandler = async (request: any, reply: FastifyReply) => {
+  const loginHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     if (tooManyRequests(request.ip)) {
       return reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
     }
@@ -117,7 +117,7 @@ const nicknameAuthRoutes: FastifyPluginAsync = async (fastify) => {
     },
   };
 
-  const registerHandler = async (request: any, reply: FastifyReply) => {
+  const registerHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     if (tooManyRequests(request.ip)) {
       return reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
     }

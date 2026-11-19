@@ -26,11 +26,25 @@ export function Spinner({
   /** Beschriftung für Screenreader; ohne Angabe ist der Ring dekorativ. */
   label?: string;
 }) {
+  if (label) {
+    return (
+      <span
+        role="status"
+        aria-label={label}
+        className={cn(
+          'inline-block shrink-0 animate-spin rounded-full border-current border-r-transparent motion-reduce:animate-pulse',
+          spinnerSizes[size],
+          className
+        )}
+      >
+        <span className="sr-only">{label}</span>
+      </span>
+    );
+  }
+
   return (
     <span
-      role={label ? 'status' : undefined}
-      aria-hidden={label ? undefined : true}
-      aria-label={label}
+      aria-hidden="true"
       className={cn(
         'inline-block shrink-0 animate-spin rounded-full border-current border-r-transparent motion-reduce:animate-pulse',
         spinnerSizes[size],

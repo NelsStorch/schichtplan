@@ -115,6 +115,7 @@ export function DailyBars({
         {/* Leise Hilfslinie bei der halben Höhe */}
         <div className="pointer-events-none absolute inset-x-0 top-1/2 border-t border-dashed border-line" />
         {values.map((v, i) => (
+          // biome-ignore lint/a11y/noStaticElementInteractions: Visual chart column hover tooltip
           <div
             key={days[i]}
             className="flex h-full min-w-0 flex-1 items-end"

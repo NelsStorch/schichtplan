@@ -68,6 +68,7 @@ export function PermissionEditor({
             const normalized = normalizePermissions(p.permissions);
             const active = p.key === null ? current.length === 0 : preset === p.key;
             return (
+              /* biome-ignore lint/a11y/useSemanticElements: Segmented Control Vorlagen-Auswahl mit ARIA-Radio-Pattern */
               <button
                 key={p.key ?? 'none'}
                 type="button"

@@ -228,7 +228,7 @@ describe('email service', () => {
       vi.stubEnv('SMTP_PASSWORD_PFADI', 'test-placeholder');
       vi.stubEnv('SMTP_PASSWORD_VEREIN', 'test-placeholder');
       const pfadiTransporter = getMailTransporter('PFADI');
-      const pfadiSpy = vi.spyOn(pfadiTransporter, 'sendMail').mockResolvedValueOnce({ messageId: 'pfadi-msg-1' } as any);
+      const pfadiSpy = vi.spyOn(pfadiTransporter, 'sendMail').mockResolvedValueOnce({ messageId: 'pfadi-msg-1' } as never);
 
       const resVerif = await sendVerificationEmail({
         to: 'helfer@pfadi-beispiel.ch',
@@ -237,13 +237,13 @@ describe('email service', () => {
       });
       expect(resVerif).toBe(true);
       expect(pfadiSpy).toHaveBeenCalledTimes(1);
-      const pfadiCallArgs = pfadiSpy.mock.calls[0][0] as any;
+      const pfadiCallArgs = pfadiSpy.mock.calls[0][0] as { from?: string; subject?: string; text?: string };
       expect(pfadiCallArgs.from).toBe('Pfadi Schichtplan <admin@pfadi-schichtplan.ch>');
       expect(pfadiCallArgs.subject).toContain('Bestätige deine E-Mail-Adresse – Pfadi Schichtplan');
       expect(pfadiCallArgs.text).toContain('Willkommen beim Pfadi Schichtplan!');
 
       const vereinTransporter = getMailTransporter('OTHER');
-      const vereinSpy = vi.spyOn(vereinTransporter, 'sendMail').mockResolvedValueOnce({ messageId: 'verein-msg-1' } as any);
+      const vereinSpy = vi.spyOn(vereinTransporter, 'sendMail').mockResolvedValueOnce({ messageId: 'verein-msg-1' } as never);
 
       const resReset = await sendPasswordResetEmail({
         to: 'admin@vereins-beispiel.ch',
@@ -252,7 +252,7 @@ describe('email service', () => {
       });
       expect(resReset).toBe(true);
       expect(vereinSpy).toHaveBeenCalledTimes(1);
-      const vereinCallArgs = vereinSpy.mock.calls[0][0] as any;
+      const vereinCallArgs = vereinSpy.mock.calls[0][0] as { from?: string; subject?: string; text?: string };
       expect(vereinCallArgs.from).toBe('Vereins Schichtplan <admin@vereins-schichtplan.ch>');
       expect(vereinCallArgs.subject).toContain('Passwort zurücksetzen – Vereins Schichtplan');
       expect(vereinCallArgs.text).toContain('Vereins Schichtplan');

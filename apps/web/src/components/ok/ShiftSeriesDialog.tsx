@@ -500,7 +500,11 @@ export function ShiftSeriesDialog({
           {/* Liste der Arbeiten */}
           <div className="space-y-3">
             {tasks.map((task, idx) => (
-              <div key={idx} className="relative rounded-lg border border-line bg-surface-2 p-3 text-xs space-y-3">
+              <div
+                // biome-ignore lint/suspicious/noArrayIndexKey: Series tasks in form builder are dynamically added/removed by index
+                key={idx}
+                className="relative rounded-lg border border-line bg-surface-2 p-3 text-xs space-y-3"
+              >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-bold text-fg-muted uppercase tracking-wider text-[11px]">
                     Arbeit #{idx + 1}
@@ -618,9 +622,9 @@ export function ShiftSeriesDialog({
           {/* Schichtdauer */}
           <div className="space-y-1.5 pt-1">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-fg-muted uppercase tracking-wider">
+              <span className="text-xs font-semibold text-fg-muted uppercase tracking-wider">
                 Schichtdauer pro Einsatz
-              </label>
+              </span>
               <span className="text-xs font-medium text-fg">
                 {durationMinutes} Minuten ({Math.round(durationMinutes / 6) / 10} Std.)
               </span>
@@ -647,9 +651,9 @@ export function ShiftSeriesDialog({
           {/* Übergabetoleranz / Überlappung */}
           <div className="space-y-1.5 pt-2 border-t border-line/60">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-fg-muted uppercase tracking-wider">
+              <span className="text-xs font-semibold text-fg-muted uppercase tracking-wider">
                 Übergabe-Überlappung
-              </label>
+              </span>
               <span className="text-xs font-medium text-fg">
                 {overlapMinutes === 0 ? 'Keine' : `${overlapMinutes} Min. Vorlauf`}
               </span>
@@ -721,7 +725,7 @@ export function ShiftSeriesDialog({
 
                 return (
                   <div
-                    key={idx}
+                    key={shift.startTime.toISOString()}
                     className="flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-lg border border-line bg-surface p-2.5 text-xs gap-2"
                   >
                     <div className="flex items-start sm:items-center gap-2.5 min-w-0">
@@ -742,6 +746,7 @@ export function ShiftSeriesDialog({
                           {definedTasks.length > 0 ? (
                             definedTasks.map((t, tIdx) => (
                               <span
+                                // biome-ignore lint/suspicious/noArrayIndexKey: Multiple instances of same task definition can exist in one shift
                                 key={tIdx}
                                 className="rounded bg-surface-2 px-1.5 py-0.5 border border-line/60 font-medium text-fg"
                               >

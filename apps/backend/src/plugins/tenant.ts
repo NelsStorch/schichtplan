@@ -26,7 +26,7 @@ export function extractSubdomain(hostHeader?: string): string | null {
   const parts = host.split('.');
   if (parts.length >= 3 || (host.endsWith('.localhost') && parts.length >= 2)) {
     const subdomain = parts[0];
-    if (RESERVED_SUBDOMAINS.includes(subdomain as any)) {
+    if ((RESERVED_SUBDOMAINS as readonly string[]).includes(subdomain)) {
       return null;
     }
     return subdomain;

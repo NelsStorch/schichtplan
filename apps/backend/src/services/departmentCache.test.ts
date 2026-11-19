@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Department, PrismaClient } from '../db';
+import type { DepartmentDirectoryItemDto } from '@schichtplan/shared';
 import { departmentCache } from './departmentCache';
 
 describe('departmentCache', () => {
@@ -7,9 +9,9 @@ describe('departmentCache', () => {
   });
 
   it('cacht Abteilungen und ruft die Datenbank bei Folgeanfragen nicht erneut auf', async () => {
-    const mockDept = { id: 'd1', name: 'Cevi Wetzikon', slug: 'wetzikon', organization: 'CEVI' } as any;
+    const mockDept = { id: 'd1', name: 'Cevi Wetzikon', slug: 'wetzikon', organization: 'CEVI' } as unknown as Department;
     const findUnique = vi.fn().mockResolvedValue(mockDept);
-    const mockPrisma = { department: { findUnique } } as any;
+    const mockPrisma = { department: { findUnique } } as unknown as PrismaClient;
 
     const first = await departmentCache.getDepartment(mockPrisma, 'CEVI', 'wetzikon');
     expect(first).toEqual(mockDept);
@@ -21,9 +23,9 @@ describe('departmentCache', () => {
   });
 
   it('invalidiert den Cache gezielt für eine Abteilung', async () => {
-    const mockDept = { id: 'd1', name: 'Cevi Wetzikon', slug: 'wetzikon', organization: 'CEVI' } as any;
+    const mockDept = { id: 'd1', name: 'Cevi Wetzikon', slug: 'wetzikon', organization: 'CEVI' } as unknown as Department;
     const findUnique = vi.fn().mockResolvedValue(mockDept);
-    const mockPrisma = { department: { findUnique } } as any;
+    const mockPrisma = { department: { findUnique } } as unknown as PrismaClient;
 
     await departmentCache.getDepartment(mockPrisma, 'CEVI', 'wetzikon');
     expect(findUnique).toHaveBeenCalledTimes(1);
@@ -35,9 +37,9 @@ describe('departmentCache', () => {
   });
 
   it('cacht das Abteilungsverzeichnis pro Organisation', async () => {
-    const mockList = [{ id: 'd1', name: 'Cevi Wetzikon', slug: 'wetzikon' }] as any;
+    const mockList = [{ id: 'd1', name: 'Cevi Wetzikon', slug: 'wetzikon' }] as unknown as DepartmentDirectoryItemDto[];
     const findMany = vi.fn().mockResolvedValue(mockList);
-    const mockPrisma = { department: { findMany } } as any;
+    const mockPrisma = { department: { findMany } } as unknown as PrismaClient;
 
     // Ohne gespeicherten Beitrittsmodus gilt LINK_ONLY
     const expected = [{ id: 'd1', name: 'Cevi Wetzikon', slug: 'wetzikon', joinMode: 'LINK_ONLY' }];

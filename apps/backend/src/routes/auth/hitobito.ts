@@ -42,6 +42,12 @@ import {
   type OrganizationType,
 } from '@schichtplan/shared';
 
+type HitobitoRawProfile = Record<string, unknown> & {
+  id?: string | number;
+  email?: string;
+  _meta?: Record<string, unknown>;
+};
+
 import {
   MAX_LINK_ATTEMPTS,
   setAuthCookie,
@@ -264,7 +270,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.redirect(withInviteParam(loginErrorUrl('cevidb_unavailable', returnTo, request.hostname, providerConfig.type), invite));
       }
 
-      let profile: any;
+      let profile: HitobitoRawProfile;
       try {
         // Code gegen Token tauschen
         const tokenRes = await fetch(`${providerConfig.baseUrl}/oauth/token`, {
@@ -413,7 +419,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
           fastify.log.warn({ provider: providerType }, 'Simulierter Login ohne gültige Person');
           return reply.redirect(withInviteParam(loginErrorUrl('cevidb_failed', returnTo, request.hostname, providerType), invite));
         }
-        const simulatedProfile: any = simProfile(providerType, persona);
+        const simulatedProfile: HitobitoRawProfile = simProfile(providerType, persona);
         simulatedProfile._meta = {
           fetchedAt: new Date().toISOString(),
           grantedScopes: getHitobitoConfig(providerType).oauthScopes,
@@ -461,7 +467,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
    */
   async function finishCeviDbLogin(
     reply: FastifyReply,
-    profile: any,
+    profile: HitobitoRawProfile,
     returnTo: string | null,
     tenantSlug: string | null,
     linkConfirmedUserId?: string,

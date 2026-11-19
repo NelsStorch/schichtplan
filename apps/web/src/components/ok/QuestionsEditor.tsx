@@ -225,9 +225,10 @@ export function QuestionsEditor({
                 Pflicht
               </label>
             </div>
-            <label className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-fg">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-fg">
               <span className="font-semibold">Antworten löschen</span>
               <Select
+                aria-label="Antworten löschen"
                 value={q.retentionDays === null ? 'never' : String(q.retentionDays)}
                 onChange={(e) =>
                   update(index, {
@@ -243,7 +244,7 @@ export function QuestionsEditor({
                   </option>
                 ))}
               </Select>
-            </label>
+            </div>
             <label className="flex items-start gap-2 text-sm text-fg">
               <input
                 type="checkbox"

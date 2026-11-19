@@ -281,6 +281,7 @@ function CreateLinkDialog({
             const Icon = k.icon;
             const selected = kind === k.value;
             return (
+              /* biome-ignore lint/a11y/useSemanticElements: Zugriffsmodus-Auswahlkachel mit ARIA-Radio-Rolle */
               <button
                 key={k.value}
                 type="button"
@@ -327,6 +328,19 @@ function csvCell(value: string | number | null | undefined) {
   return /[";\r\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
 }
 
+const answerText = (question: EventDetails['questions'][number], value: string | undefined) =>
+  !value ? '' : question.type === 'YES_NO' ? (value === 'JA' ? 'Ja' : 'Nein') : value;
+
+/** Antworten pro Eintragung als «Schicht (Tag Zeit): Antwort» */
+const perSignup = (question: EventDetails['questions'][number], person: EventParticipantDto) =>
+  person.signupAnswers
+    .filter((sa) => sa.answers[question.id])
+    .map((sa) => ({
+      label: `${sa.shiftTitle} (${fmtShortWeekday(sa.startTime)} ${fmtTime(sa.startTime)})`,
+      text: answerText(question, sa.answers[question.id]),
+      raw: sa.answers[question.id]!,
+    }));
+
 function Participants({ event }: { event: EventDetails }) {
   const [people, setPeople] = useState<EventParticipantDto[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -338,19 +352,6 @@ function Participants({ event }: { event: EventDetails }) {
       .then(setPeople)
       .catch((err) => setError(errorMessage(err)));
   }, [event.slug]);
-
-  const answerText = (question: EventDetails['questions'][number], value: string | undefined) =>
-    !value ? '' : question.type === 'YES_NO' ? (value === 'JA' ? 'Ja' : 'Nein') : value;
-
-  /** Antworten pro Eintragung als «Schicht (Tag Zeit): Antwort» */
-  const perSignup = (question: EventDetails['questions'][number], person: EventParticipantDto) =>
-    person.signupAnswers
-      .filter((sa) => sa.answers[question.id])
-      .map((sa) => ({
-        label: `${sa.shiftTitle} (${fmtShortWeekday(sa.startTime)} ${fmtTime(sa.startTime)})`,
-        text: answerText(question, sa.answers[question.id]),
-        raw: sa.answers[question.id]!,
-      }));
 
   const questionSummaries = useMemo(() => {
     if (!people || people.length === 0) return [];
@@ -609,8 +610,8 @@ function Participants({ event }: { event: EventDetails }) {
                           {q.scope === 'PER_SIGNUP' ? (
                             perSignup(q, p).length ? (
                               <ul className="space-y-0.5">
-                                {perSignup(q, p).map((a, i) => (
-                                  <li key={i}>
+                                {perSignup(q, p).map((a) => (
+                                  <li key={a.label}>
                                     <span className="text-xs text-fg-subtle">{a.label}:</span> {a.text}
                                   </li>
                                 ))}

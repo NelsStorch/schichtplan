@@ -257,6 +257,7 @@ export function UserDialog({
   const id = preview?.id;
 
   useEffect(() => {
+    void reload;
     if (!id) return;
     const controller = new AbortController();
     setError(null);

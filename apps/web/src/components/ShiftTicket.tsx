@@ -72,20 +72,13 @@ export function ShiftTicket({
   };
 
   return (
-    <article
+    <button
+      type="button"
       style={{ '--i': index } as React.CSSProperties}
       onClick={handleCardClick}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleCardClick();
-        }
-      }}
-      role="button"
-      tabIndex={0}
       aria-label={`Schicht ${shift.title?.trim() || fmtTimeRange(shift.startTime, shift.endTime)}, ${fmtTime(shift.startTime)} bis ${fmtTime(shift.endTime)}, ${STATUS_TEXT[status](free)}`}
       className={cn(
-        'group relative grid animate-fade-up stagger grid-cols-[5.25rem_1fr] cursor-pointer rounded-card border text-left',
+        'group relative grid w-full animate-fade-up stagger grid-cols-[5.25rem_1fr] cursor-pointer rounded-card border text-left',
         'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 active:scale-[0.99] sm:grid-cols-[7rem_1fr]',
         isMine
@@ -296,6 +289,6 @@ export function ShiftTicket({
           </div>
         </div>
       </div>
-    </article>
+    </button>
   );
 }

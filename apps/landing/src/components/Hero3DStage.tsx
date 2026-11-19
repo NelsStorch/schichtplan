@@ -70,8 +70,8 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
   const triggerConfetti = (e: React.MouseEvent) => {
     if (!cardRef.current) return;
     const cardRect = cardRef.current.getBoundingClientRect();
-    const originX = e.clientX - cardRect.left;
-    const originY = e.clientY - cardRect.top;
+    const originX = (e.clientX || cardRect.left + cardRect.width / 2) - cardRect.left;
+    const originY = (e.clientY || cardRect.top + cardRect.height / 2) - cardRect.top;
 
     const colors = ['#e11d48', '#f59e0b', '#10b981', '#38bdf8', '#fbbf24'];
     const pieces: ConfettiPiece[] = Array.from({ length: 20 }).map((_, i) => ({
@@ -207,14 +207,10 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
             </div>
 
             {/* Shift 2: Barbetrieb (Interactive Clickable Slot 1) */}
-            <div
+            <button
+              type="button"
               onClick={handleBarClick}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') handleBarClick(e as any);
-              }}
-              className={`relative rounded-tile border transition-all duration-200 cursor-pointer p-3 sm:p-3.5 flex items-center justify-between gap-2 text-xs select-none shadow-sm hover:shadow-md ${
+              className={`relative w-full text-left rounded-tile border transition-all duration-200 cursor-pointer p-3 sm:p-3.5 flex items-center justify-between gap-2 text-xs select-none shadow-sm hover:shadow-md ${
                 barEnrolled
                   ? 'border-emerald-500/50 bg-emerald-500/10'
                   : 'border-accent/40 bg-accent/8 hover:bg-accent/15'
@@ -260,17 +256,13 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
                   </span>
                 )}
               </div>
-            </div>
+            </button>
 
             {/* Shift 3: Nachtwache (Interactive Clickable Slot 2) */}
-            <div
+            <button
+              type="button"
               onClick={handleNightClick}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') handleNightClick(e as any);
-              }}
-              className={`relative rounded-tile border transition-all duration-200 cursor-pointer p-2.5 sm:p-3 flex items-center justify-between gap-2 text-xs select-none shadow-sm hover:shadow-md ${
+              className={`relative w-full text-left rounded-tile border transition-all duration-200 cursor-pointer p-2.5 sm:p-3 flex items-center justify-between gap-2 text-xs select-none shadow-sm hover:shadow-md ${
                 nightEnrolled
                   ? 'border-emerald-500/50 bg-emerald-500/10'
                   : 'border-warning/35 bg-warning/5 hover:bg-warning/10'
@@ -314,7 +306,7 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
                   </span>
                 )}
               </div>
-            </div>
+            </button>
           </div>
 
           {/* Footer Callout */}

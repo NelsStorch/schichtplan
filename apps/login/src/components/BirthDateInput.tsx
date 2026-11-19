@@ -125,8 +125,8 @@ export const BirthDateInput = forwardRef<HTMLInputElement, BirthDateInputProps>(
       const picker = pickerRef.current;
       if (!picker) return;
       try {
-        if ('showPicker' in picker && typeof (picker as any).showPicker === 'function') {
-          (picker as any).showPicker();
+        if ('showPicker' in picker && typeof picker.showPicker === 'function') {
+          picker.showPicker();
         } else {
           picker.focus();
         }

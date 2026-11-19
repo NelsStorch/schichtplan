@@ -305,8 +305,8 @@ export default function OkOverviewPage() {
           <h3 id="todo-title" className="text-sm font-bold uppercase tracking-wider text-fg-subtle">
             Zu erledigen
           </h3>
-          {todos.map((todo, i) => (
-            <TodoCard key={i} todo={todo} />
+          {todos.map((todo) => (
+            <TodoCard key={todo.title} todo={todo} />
           ))}
         </section>
 

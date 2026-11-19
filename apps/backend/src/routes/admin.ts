@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import { FastifyPluginAsync } from 'fastify';
-import { Prisma, type OrganizationType } from '../db.js';
+import { Prisma, PrismaClient, type OrganizationType } from '../db.js';
 import { z } from 'zod';
 import type {
   AdminHitobitoRoleDto,
@@ -137,7 +137,7 @@ export interface DuplicateUserRow {
   duplicateEmail: string | null;
 }
 
-export async function findDuplicateUsers(prisma: any) {
+export async function findDuplicateUsers(prisma: PrismaClient) {
   try {
     const rows = await prisma.$queryRaw`
       SELECT DISTINCT 
@@ -310,7 +310,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     const where: Prisma.UserWhereInput = {
       AND: [
         ...searchFilter(q),
-...(method === 'duplicate' ? [{ id: { in: duplicateIds } }] : methodFilter(method as any)),
+        ...(method === 'duplicate' ? [{ id: { in: duplicateIds } }] : methodFilter(method)),
         ...departmentFilter(departmentId),
         ...organizationFilter(organization),
         ...(role === 'admin' ? [{ isGlobalAdmin: true }] : []),

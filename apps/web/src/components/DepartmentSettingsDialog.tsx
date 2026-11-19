@@ -67,8 +67,7 @@ export function DepartmentSettingsDialog({
       setTab(firstAllowed);
     }
     // Nur beim Öffnen oder gezielten Wechsel von initialTab synchronisieren
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, initialTab]);
+  }, [open, initialTab, can]);
 
   const activeTab = tabs.some((t) => t.key === tab) ? tab : (tabs[0]?.key ?? 'general');
   const close = () => {
@@ -319,9 +318,9 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
 
         {/* 1. Primärfarbe */}
         <div className="space-y-2">
-          <label className="block text-xs font-semibold text-fg">
+          <span className="block text-xs font-semibold text-fg">
             Hauptfarbe der Abteilung (Portal, Buttons & Akzente)
-          </label>
+          </span>
           <div className="flex flex-wrap items-center gap-2.5">
             {SWATCHES_PRIMARY.map((color) => (
               <button
@@ -391,9 +390,9 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
 
               {/* QR-Hauptfarbe */}
               <div className="space-y-2">
-                <label className="block text-xs font-semibold text-fg">
+                <span className="block text-xs font-semibold text-fg">
                   QR-Code Hauptfarbe (Körper)
-                </label>
+                </span>
                 <div className="flex flex-wrap items-center gap-2.5">
                   {SWATCHES_PRIMARY.map((color) => (
                     <button
@@ -439,9 +438,9 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
 
               {/* QR-Zweitfarbe */}
               <div className="space-y-2">
-                <label className="block text-xs font-semibold text-fg">
+                <span className="block text-xs font-semibold text-fg">
                   QR-Code Zweitfarbe (Positions-Ecken oder Verlauf)
-                </label>
+                </span>
                 <div className="flex flex-wrap items-center gap-2.5">
                   {SWATCHES_SECONDARY.map((color) => (
                     <button
@@ -487,7 +486,7 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
 
               {/* Stil-Auswahl: CORNERS vs GRADIENT vs SOLID */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-fg">QR-Code Stil</label>
+                <span className="block text-xs font-semibold text-fg">QR-Code Stil</span>
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
@@ -556,9 +555,9 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
               {form.enableTwoTone && (
                 <div className="space-y-4 rounded-xl border border-line/60 bg-surface-2/40 p-3.5">
                   <div className="space-y-2">
-                    <label className="block text-xs font-semibold text-fg">
+                    <span className="block text-xs font-semibold text-fg">
                       Zweitfarbe der Abteilung
-                    </label>
+                    </span>
                     <div className="flex flex-wrap items-center gap-2.5">
                       {SWATCHES_SECONDARY.map((color) => (
                         <button
@@ -603,7 +602,7 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-fg">QR-Code Stil</label>
+                    <span className="block text-xs font-semibold text-fg">QR-Code Stil</span>
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"

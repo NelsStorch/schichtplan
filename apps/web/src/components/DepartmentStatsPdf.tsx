@@ -452,7 +452,7 @@ export function DepartmentStatsPdf({ data, department, logoUrl }: DepartmentStat
             </View>
 
             {helpersList.map((h, i) => (
-              <View key={i} style={[s.tr, i % 2 === 1 ? s.trAlt : {}]}>
+              <View key={h.userId || `${h.displayName}-${i}`} style={[s.tr, i % 2 === 1 ? s.trAlt : {}]}>
                 <Text style={[s.td, { width: 22, textAlign: 'center', fontWeight: i < 3 ? 700 : 400, color: i === 0 ? '#b45309' : MUTED }]}>
                   {i + 1}
                 </Text>
@@ -474,8 +474,8 @@ export function DepartmentStatsPdf({ data, department, logoUrl }: DepartmentStat
 
                 <View style={{ width: 110, flexDirection: 'row', flexWrap: 'wrap' }}>
                   {h.stufen.length > 0 ? (
-                    h.stufen.map((st, sIdx) => (
-                      <Text key={sIdx} style={s.badge}>
+                    h.stufen.map((st) => (
+                      <Text key={st} style={s.badge}>
                         {st}
                       </Text>
                     ))

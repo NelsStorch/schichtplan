@@ -270,7 +270,7 @@ function AssignHelperForm({
       if (err instanceof ApiError && err.data.code === 'TIME_COLLISION') {
         setCollisionWarning({
           hasCollision: true,
-          conflicts: (err.data.conflicts as any) || [],
+          conflicts: (err.data.conflicts as ShiftCollisionCheckResult['conflicts']) || [],
           message: err.message,
         });
       }
@@ -436,7 +436,7 @@ function AssignHelperForm({
                 {visible.length} {visible.length === 1 ? 'Person' : 'Personen'}
                 {minShifts !== null && ` · Soll ${minShifts} Schicht${minShifts === 1 ? '' : 'en'} pro Person`}
               </p>
-              <ul role="radiogroup" aria-label="Person auswählen" className="max-h-[22rem] space-y-1.5 overflow-y-auto pr-1">
+              <div role="radiogroup" aria-label="Person auswählen" className="max-h-[22rem] space-y-1.5 overflow-y-auto pr-1">
                 {visible.map((c) => (
                   <CandidateRow
                     key={c.userId}
@@ -447,7 +447,7 @@ function AssignHelperForm({
                     onSelect={() => setSelectedUserId(c.userId)}
                   />
                 ))}
-              </ul>
+              </div>
             </div>
           )}
         </div>
@@ -553,20 +553,20 @@ function CandidateRow({
   ].filter(Boolean);
 
   return (
-    <li>
-      <button
-        type="button"
-        role="radio"
-        aria-checked={selected}
-        disabled={disabled}
-        onClick={onSelect}
-        className={cn(
-          'flex w-full items-center gap-3 rounded-field border px-3 py-2 text-left transition',
-          selected ? 'border-accent bg-accent/10 ring-1 ring-accent' : 'border-line bg-surface hover:border-line-strong',
-          disabled && 'cursor-not-allowed opacity-55 hover:border-line',
-          c.isDeregistered && !selected && 'bg-surface-2/60'
-        )}
-      >
+    // biome-ignore lint/a11y/useSemanticElements: Helfer-Auswahlkachel mit ARIA-Radio-Rolle
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      disabled={disabled}
+      onClick={onSelect}
+      className={cn(
+        'flex w-full items-center gap-3 rounded-field border px-3 py-2 text-left transition',
+        selected ? 'border-accent bg-accent/10 ring-1 ring-accent' : 'border-line bg-surface hover:border-line-strong',
+        disabled && 'cursor-not-allowed opacity-55 hover:border-line',
+        c.isDeregistered && !selected && 'bg-surface-2/60'
+      )}
+    >
         <Avatar name={c.displayName} size="sm" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-fg">{c.displayName}</p>
@@ -605,6 +605,5 @@ function CandidateRow({
           <p className="mt-0.5 text-2xs text-fg-subtle">{c.shiftCount === 1 ? 'Schicht' : 'Schichten'}</p>
         </div>
       </button>
-    </li>
   );
 }

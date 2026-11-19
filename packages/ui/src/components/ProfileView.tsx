@@ -269,6 +269,7 @@ function OverviewTab({
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    void user.id;
     let cancelled = false;
     fetch('/api/shifts/my', { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : []))

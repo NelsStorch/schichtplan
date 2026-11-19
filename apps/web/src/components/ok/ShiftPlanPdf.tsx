@@ -227,6 +227,7 @@ function ShiftRow({ shift, doc }: { shift: PlanShift; doc: PlanDocument }) {
       </View>
       <View style={s.tasks}>
         {shift.tasks.map((task, i) => (
+          /* biome-ignore lint/suspicious/noArrayIndexKey: Aufgaben einer Schicht im PDF-Export */
           <TaskRow key={i} task={task} doc={doc} first={i === 0} />
         ))}
       </View>
@@ -269,6 +270,7 @@ function Slots({ task, landscape }: { task: PlanTask; landscape: boolean }) {
       {Array.from({ length: total }, (_, i) => {
         const name = task.names[i];
         return (
+          /* biome-ignore lint/suspicious/noArrayIndexKey: Nummerierte Steckplätze für Helferliste auf Aushang */
           <View key={i} style={{ width, paddingRight: 8 }}>
             <View style={[s.slot, { borderBottomColor: name ? INK : LINE_STRONG, borderBottomStyle: name ? 'solid' : 'dashed' }]}>
               <Text style={s.slotNo}>{i + 1}</Text>
@@ -292,7 +294,7 @@ function PeopleTable({ people }: { people: PersonEntry[] }) {
         <Text style={[s.colLabel, { flex: 1 }]}>Schicht · Arbeit</Text>
       </View>
       {people.map((p, i) => (
-        <View key={`${p.name}-${i}`} style={[s.person, i % 2 ? { backgroundColor: '#f9fafb' } : {}]} wrap={false}>
+        <View key={p.name} style={[s.person, i % 2 ? { backgroundColor: '#f9fafb' } : {}]} wrap={false}>
           <View style={s.personName}>
             <Text style={{ fontWeight: 700, fontSize: 10 }}>{p.name}</Text>
             <Text style={s.small}>
@@ -300,8 +302,8 @@ function PeopleTable({ people }: { people: PersonEntry[] }) {
             </Text>
           </View>
           <View style={{ flex: 1 }}>
-            {p.items.map((it, j) => (
-              <View key={j} style={s.entry}>
+            {p.items.map((it) => (
+              <View key={`${it.day}-${it.time}-${it.shift}-${it.task ?? ''}`} style={s.entry}>
                 <Text style={{ width: 58 }}>{it.day}</Text>
                 <Text style={{ width: 68 }}>{it.time}</Text>
                 <Text style={{ flex: 1 }}>

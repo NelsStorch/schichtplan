@@ -190,6 +190,7 @@ export function Campfire3DCanvas() {
   return (
     <canvas
       ref={canvasRef}
+      tabIndex={-1}
       className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-80"
       aria-hidden="true"
     />

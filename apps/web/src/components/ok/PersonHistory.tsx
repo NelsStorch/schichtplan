@@ -48,6 +48,7 @@ export function PersonHistory({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    void reloadKey;
     let active = true;
     const query = userId ? `userId=${encodeURIComponent(userId)}` : `guestName=${encodeURIComponent(guestName ?? '')}`;
     api<PersonHistoryDto>(`/api/events/${eventSlug}/person-history?${query}`)

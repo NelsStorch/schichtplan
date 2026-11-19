@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   isPwaPromptDismissed,
   dismissPwaPrompt,
@@ -17,7 +17,7 @@ describe('pwaDismissal', () => {
     mockSession = {};
     mockCookie = '';
 
-    (global as any).window = {
+    vi.stubGlobal('window', {
       location: { hostname: 'zuerich11.cevi-schichtplan.ch' },
       localStorage: {
         getItem: (k: string) => mockLocal[k] ?? null,
@@ -37,9 +37,9 @@ describe('pwaDismissal', () => {
           delete mockSession[k];
         },
       },
-    };
+    });
 
-    (global as any).document = {
+    vi.stubGlobal('document', {
       get cookie() {
         return mockCookie;
       },
@@ -56,12 +56,11 @@ describe('pwaDismissal', () => {
           mockCookie = `${mockCookie ? mockCookie + '; ' : ''}${k.trim()}=${v?.trim() ?? ''}`;
         }
       },
-    };
+    });
   });
 
   afterEach(() => {
-    delete (global as any).window;
-    delete (global as any).document;
+    vi.unstubAllGlobals();
   });
 
   it('meldet nicht weggedrückt im Ursprungszustand', () => {

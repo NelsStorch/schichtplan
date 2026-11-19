@@ -1,4 +1,4 @@
-import type { FastifyPluginAsync } from 'fastify';
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { ORGANIZATION_DOMAINS, getOrganization } from '@schichtplan/shared';
 import {
@@ -15,7 +15,7 @@ const CalendarTokenResponseSchema = z.object({
   resetNotice: z.boolean().optional().describe('True, wenn ein früheres Kalender-Abo beim Profil-Merge zurückgesetzt wurde und neu eingerichtet werden muss'),
 });
 
-export function deriveCalendarUrls(request: { headers: Record<string, any>; protocol: string }, token: string) {
+export function deriveCalendarUrls(request: { headers: Record<string, unknown>; protocol: string }, token: string) {
   const root = (process.env.COOKIE_DOMAIN || process.env.DOMAIN || 'cevi-schichtplan.ch').replace(/^\./, '').toLowerCase();
   // Nur der Host der Anfrage (Traefik leitet nur eigene Hosts weiter) und nur die eigene Domain; keine
   // X-Forwarded-Header. Das Protokoll folgt der Umgebung: in Produktion immer https.
@@ -39,7 +39,7 @@ export function deriveCalendarUrls(request: { headers: Record<string, any>; prot
 
 const calendarRoutes: FastifyPluginAsync = async (fastify) => {
   // Öffentlicher iCal / Webcal Feed für Kalender-Abonnements (Apple Kalender, Outlook, Google Kalender)
-  const feedHandler = async (request: any, reply: any) => {
+  const feedHandler = async (request: FastifyRequest<{ Params: { token: string } }>, reply: FastifyReply) => {
     const rawToken = request.params.token as string;
     const token = rawToken.replace(/\.ics$/i, '');
 
@@ -99,7 +99,7 @@ const calendarRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get('/api/calendar/feed/:token', { schema: { hide: true } }, feedHandler);
 
   // Authentifizierte Endpunkte für die Verwaltung des eigenen Kalender-Tokens
-  const getTokenHandler = async (request: any) => {
+  const getTokenHandler = async (request: FastifyRequest) => {
     const [token, user] = await Promise.all([
       getOrCreateCalendarToken(fastify.prisma, request.user.id),
       fastify.prisma.user.findUnique({ where: { id: request.user.id }, select: { calendarResetNotice: true } }),
@@ -126,7 +126,7 @@ const calendarRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get('/api/calendar/token', tokenRouteOptions, getTokenHandler);
   fastify.get('/api/auth/me/calendar-token', { schema: { hide: true }, preHandler: [fastify.authenticate] }, getTokenHandler);
 
-  const resetTokenHandler = async (request: any) => {
+  const resetTokenHandler = async (request: FastifyRequest) => {
     const token = await resetCalendarToken(fastify.prisma, request.user.id);
     await fastify.prisma.user.update({ where: { id: request.user.id }, data: { calendarResetNotice: false } });
     return { ...deriveCalendarUrls(request, token), resetNotice: false };

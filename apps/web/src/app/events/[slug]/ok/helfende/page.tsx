@@ -977,7 +977,16 @@ function MiniStat({
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      onKeyDown={onClick ? (e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onClick()) : undefined}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
       title={onClick ? 'Diese Personen anzeigen' : undefined}
     >
       <p className="text-2xs font-bold uppercase tracking-wider text-fg-subtle">{label}</p>

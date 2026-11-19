@@ -74,8 +74,7 @@ describe.skipIf(!hasTestDb)('Server Alert & Webhook Integration', () => {
 
     const freshApp = await buildApp();
     freshApp.get('/test/simulate-db-overload', async () => {
-      const err: any = new Error('Connection pool exhausted');
-      err.code = 'P2024';
+      const err = Object.assign(new Error('Connection pool exhausted'), { code: 'P2024' });
       throw err;
     });
 

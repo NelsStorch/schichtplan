@@ -118,10 +118,10 @@ function VerifyEmailContent() {
         tone: 'success',
         text: data.message || 'Neuer Bestätigungslink wurde gesendet.',
       });
-    } catch (err: any) {
+    } catch (err) {
       setResendMessage({
         tone: 'danger',
-        text: err.message || 'Fehler beim Senden des Bestätigungslinks.',
+        text: err instanceof Error ? err.message : 'Fehler beim Senden des Bestätigungslinks.',
       });
     } finally {
       setResending(false);

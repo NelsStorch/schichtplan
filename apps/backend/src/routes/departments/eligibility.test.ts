@@ -110,17 +110,17 @@ describe('departmentCreationEligibility für Vereine und Verbände', () => {
       ({
         user: { findUnique: async () => user },
         hitobitoGroup: {
-          findMany: async ({ where }: any) =>
+          findMany: async ({ where }: { where: { provider: string; id?: { in: number[] }; ortsgruppeId?: number } }) =>
             groupRows.filter(
               (g) =>
                 g.provider === where.provider &&
                 (where.id ? where.id.in.includes(g.id) : g.ortsgruppeId === where.ortsgruppeId && g.jungscharId !== null)
             ),
-          findUnique: async ({ where }: any) =>
+          findUnique: async ({ where }: { where: { provider_id: { provider: string; id: number } } }) =>
             groupRows.find((g) => g.provider === where.provider_id.provider && g.id === where.provider_id.id) ?? null,
         },
         department: {
-          findFirst: async ({ where }: any) =>
+          findFirst: async ({ where }: { where: { hitobitoGroupId: { in: number[] } } }) =>
             where.hitobitoGroupId.in.some((id: number) => existing.includes(id)) ? { name: 'Bestehend', slug: 'bestehend' } : null,
         },
       }) as unknown as PrismaClient;

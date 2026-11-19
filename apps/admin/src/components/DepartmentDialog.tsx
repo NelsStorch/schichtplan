@@ -662,6 +662,7 @@ export function DepartmentDialog({
   const [syncingStufen, setSyncingStufen] = useState(false);
 
   useEffect(() => {
+    void reload;
     if (!departmentId) return;
     const controller = new AbortController();
     setError(null);

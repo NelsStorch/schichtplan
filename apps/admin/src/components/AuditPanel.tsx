@@ -208,6 +208,7 @@ export function AuditPanel({
   }, [search]);
 
   useEffect(() => {
+    void reload;
     const controller = new AbortController();
     const params = new URLSearchParams({ page: String(page), pageSize: '50' });
     if (filter !== 'all') params.set('targetType', filter);

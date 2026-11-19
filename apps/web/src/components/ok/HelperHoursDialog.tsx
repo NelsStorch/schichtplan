@@ -478,9 +478,9 @@ export function HelperHoursDialog({
                             Beteiligte Personen ({s.helpers.length}):
                           </div>
                           <div className="flex flex-wrap gap-1.5">
-                            {s.helpers.map((h, hIdx) => (
+                            {s.helpers.map((h) => (
                               <span
-                                key={hIdx}
+                                key={h.displayName + (h.ceviName ?? '')}
                                 className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface-elevated px-2 py-1 text-xs text-fg"
                               >
                                 <span className="font-medium">{h.displayName}</span>

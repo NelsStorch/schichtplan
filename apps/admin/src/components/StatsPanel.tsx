@@ -607,6 +607,7 @@ export function StatsPanel({
   const query = `days=${days}${scopedDepartment ? `&departmentId=${encodeURIComponent(scopedDepartment)}` : ''}`;
 
   useEffect(() => {
+    void reload;
     let cancelled = false;
     setUsage(null);
     setError(null);
@@ -619,6 +620,7 @@ export function StatsPanel({
   }, [query, reload]);
 
   useEffect(() => {
+    void reload;
     if (view !== 'anlaesse') return;
     let cancelled = false;
     setFeatures(null);
@@ -631,6 +633,7 @@ export function StatsPanel({
   }, [view, query, reload]);
 
   useEffect(() => {
+    void reload;
     if (view !== 'betrieb') return;
     let cancelled = false;
     setSystem(null);

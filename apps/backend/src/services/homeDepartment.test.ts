@@ -24,20 +24,20 @@ function db(home: { id: string; hitobitoGroupId: number | null } | null) {
       update: vi.fn().mockResolvedValue({}),
     },
     department: {
-      findUnique: vi.fn(async ({ where }: any) =>
+      findUnique: vi.fn(async ({ where }: { where: { id: string } }) =>
         home && where.id === home.id
           ? { id: home.id, slug: 'eigene', organization: 'JUBLA', hitobitoGroupId: home.hitobitoGroupId }
           : null
       ),
     },
     hitobitoGroup: {
-      findUnique: vi.fn(async ({ where }: any) => ({ ortsgruppeId: where.provider_id.id === 31 ? 30 : where.provider_id.id })),
+      findUnique: vi.fn(async ({ where }: { where: { provider_id: { id: number } } }) => ({ ortsgruppeId: where.provider_id.id === 31 ? 30 : where.provider_id.id })),
       findMany: vi.fn().mockResolvedValue([]),
     },
     userHitobitoStufe: { findMany: vi.fn().mockResolvedValue([]) },
     departmentStufe: { findMany: vi.fn().mockResolvedValue([]) },
     userStufe: { deleteMany: vi.fn(), upsert: vi.fn() },
-  } as any;
+  } as unknown as Parameters<typeof syncCeviDbHomeDepartment>[0];
 }
 
 describe('syncCeviDbHomeDepartment', () => {

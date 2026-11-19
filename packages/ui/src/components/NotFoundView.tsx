@@ -234,16 +234,9 @@ export function NotFoundView({
           </div>
 
           {/* Interaktive SVG-Grafik */}
-          <div
-            role="button"
-            tabIndex={0}
+          <button
+            type="button"
             onClick={addWood}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                addWood();
-              }
-            }}
             title="Klick aufs Feuer, um Holz nachzulegen!"
             aria-label="Lagerfeuer: Klick um Holz nachzulegen"
             className={cn(
@@ -422,32 +415,32 @@ export function NotFoundView({
                   cy="100"
                   r="2"
                   className="fill-amber-400"
-                  style={{ animation: 'cevi-ember 2s linear infinite', '--drift': '-10px' } as any}
+                  style={{ animation: 'cevi-ember 2s linear infinite', '--drift': '-10px' } as React.CSSProperties}
                 />
                 <circle
                   cx="214"
                   cy="92"
                   r="2.5"
                   className="fill-yellow-300"
-                  style={{ animation: 'cevi-ember 2.4s linear infinite 0.6s', '--drift': '12px' } as any}
+                  style={{ animation: 'cevi-ember 2.4s linear infinite 0.6s', '--drift': '12px' } as React.CSSProperties}
                 />
                 <circle
                   cx="210"
                   cy="80"
                   r="1.8"
                   className="fill-orange-400"
-                  style={{ animation: 'cevi-ember 1.8s linear infinite 1.1s', '--drift': '-4px' } as any}
+                  style={{ animation: 'cevi-ember 1.8s linear infinite 1.1s', '--drift': '-4px' } as React.CSSProperties}
                 />
                 <circle
                   cx="218"
                   cy="86"
                   r="1.5"
                   className="fill-amber-300"
-                  style={{ animation: 'cevi-ember 2.2s linear infinite 1.5s', '--drift': '8px' } as any}
+                  style={{ animation: 'cevi-ember 2.2s linear infinite 1.5s', '--drift': '8px' } as React.CSSProperties}
                 />
               </g>
             </svg>
-          </div>
+          </button>
 
           {/* Interaktions-Leiste für das Lagerfeuer */}
           <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
@@ -527,11 +520,11 @@ export function NotFoundView({
         {/* Weitere Schnell-Links (falls angegeben) */}
         {secondaryActions.length > 0 && (
           <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-            {secondaryActions.map((act, i) => {
+            {secondaryActions.map((act) => {
               if (act.href) {
                 return act.external ? (
                   <a
-                    key={i}
+                    key={act.label}
                     href={act.href}
                     target="_blank"
                     rel="noreferrer"
@@ -545,7 +538,7 @@ export function NotFoundView({
                   </a>
                 ) : (
                   <Link
-                    key={i}
+                    key={act.label}
                     href={act.href}
                     className={cn(
                       'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition',
@@ -559,7 +552,7 @@ export function NotFoundView({
               }
               return (
                 <button
-                  key={i}
+                  key={act.label}
                   type="button"
                   onClick={act.onClick}
                   className={cn(

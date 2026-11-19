@@ -374,7 +374,7 @@ function OrgFilterBar({
 }) {
   const count = (filter: OrgFilter) => departments?.filter((d) => matchesOrg(d.organization, filter)).length;
   return (
-    <div className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-2" role="group" aria-label="Verband">
+    <fieldset className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-2 border-0 p-0" aria-label="Verband">
       <span className="text-2xs font-semibold uppercase tracking-wider text-fg-subtle">Verband</span>
       <ChipRow>
         <Chip selected={value === 'ALL'} count={count('ALL')} onClick={() => onChange('ALL')}>
@@ -386,7 +386,7 @@ function OrgFilterBar({
           </Chip>
         ))}
       </ChipRow>
-    </div>
+    </fieldset>
   );
 }
 
@@ -427,6 +427,13 @@ function AdminHome({
     saveOrgFilter(next);
   };
 
+  const navigate = useCallback((next: AdminTab) => {
+    if (next === 'uebersicht') history.pushState(null, '', window.location.pathname);
+    else window.location.hash = next;
+    setTab(next);
+    window.scrollTo({ top: 0 });
+  }, []);
+
   // Globale Tastenkombinationen (⌘K, Zahlentasten 1-6 für Tabs, / für Suche)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -460,7 +467,7 @@ function AdminHome({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [navigate]);
 
   // Ablauf-Countdown für die Admin-Sitzung (prüft alle 30 Sekunden)
   useEffect(() => {
@@ -536,13 +543,6 @@ function AdminHome({
     setOpenDepartment(null);
     setHashSilently(`personen/${encodeURIComponent(userId)}`);
     openUserById(userId);
-  };
-
-  const navigate = (next: AdminTab) => {
-    if (next === 'uebersicht') history.pushState(null, '', window.location.pathname);
-    else window.location.hash = next;
-    setTab(next);
-    window.scrollTo({ top: 0 });
   };
 
   const refresh = useCallback(() => {

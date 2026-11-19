@@ -1,4 +1,4 @@
-import { FastifyPluginAsync } from 'fastify';
+import type { FastifyPluginAsync, FastifyReply } from 'fastify';
 import { z } from 'zod';
 
 const HealthOkResponseSchema = z.object({
@@ -20,7 +20,7 @@ const HealthErrorResponseSchema = z.object({
 });
 
 const healthRoutes: FastifyPluginAsync = async (fastify) => {
-  const handler = async (_request: unknown, reply: any) => {
+  const handler = async (_request: unknown, reply: FastifyReply) => {
     try {
       // Test DB connection
       await fastify.prisma.$queryRaw`SELECT 1`;

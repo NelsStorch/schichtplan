@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, type ChangeEvent, type DragEvent } from 'react';
+import { useState, useRef, useId, type ChangeEvent, type DragEvent } from 'react';
 import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
 import { Button, CeviLogo, cn } from '@schichtplan/ui';
 import { api, errorMessage } from '@/lib/api';
@@ -86,18 +86,20 @@ export function ImageUpload({
     }
   };
 
+  const inputId = useId();
   const hasImage = Boolean(value && value.trim().length > 0);
 
   return (
     <div className={cn('space-y-2', className)}>
       {label && (
         <div className="flex items-center justify-between">
-          <label className="text-[13px] font-semibold text-fg">{label}</label>
+          <label htmlFor={inputId} className="text-[13px] font-semibold text-fg">{label}</label>
           {hint && <span className="text-xs text-fg-subtle">{hint}</span>}
         </div>
       )}
 
       <input
+        id={inputId}
         ref={fileInputRef}
         type="file"
         accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml,image/gif"
@@ -155,7 +157,9 @@ export function ImageUpload({
           </div>
         </div>
       ) : (
-        <div
+        <button
+          type="button"
+          disabled={disabled || uploading}
           onDragOver={(e) => {
             e.preventDefault();
             if (!disabled && !uploading) setDragOver(true);
@@ -166,7 +170,7 @@ export function ImageUpload({
             if (!disabled && !uploading) fileInputRef.current?.click();
           }}
           className={cn(
-            'group relative flex cursor-pointer flex-col items-center justify-center rounded-field border-2 border-dashed p-4 text-center transition',
+            'group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-field border-2 border-dashed p-4 text-center transition',
             dragOver
               ? 'border-accent bg-accent/10'
               : 'border-line-strong hover:border-accent hover:bg-surface-2',
@@ -197,7 +201,7 @@ export function ImageUpload({
               </div>
             </div>
           )}
-        </div>
+        </button>
       )}
 
       {error && <p className="text-xs text-danger">{error}</p>}

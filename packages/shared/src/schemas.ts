@@ -80,7 +80,7 @@ export const DepartmentSlugSchema = z
   .min(3, 'Subdomain muss mindestens 3 Zeichen lang sein')
   .max(30, 'Subdomain darf maximal 30 Zeichen lang sein')
   .regex(SUBDOMAIN_REGEX, 'Nur Kleinbuchstaben, Zahlen und Bindestriche erlaubt')
-  .refine((val: string) => !RESERVED_SUBDOMAINS.includes(val as any), {
+  .refine((val: string) => !(RESERVED_SUBDOMAINS as readonly string[]).includes(val), {
     message: 'Diese Subdomain ist reserviert und kann nicht verwendet werden',
   });
 

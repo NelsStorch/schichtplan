@@ -105,8 +105,8 @@ export default function TemplatesPage() {
                 </div>
                 {tpl.description && <p className="mt-2 text-xs leading-relaxed text-fg-muted">{tpl.description}</p>}
                 <ul className="mt-4 space-y-1 rounded-field bg-surface-2 p-3 text-2xs text-fg-muted">
-                  {tpl.data?.shifts?.slice(0, 5).map((s, i) => (
-                    <li key={i}>
+                  {tpl.data?.shifts?.slice(0, 5).map((s) => (
+                    <li key={`${s.title}-${s.dayOffset}-${s.startTimeStr}-${s.endTimeStr}`}>
                       <strong className="text-fg">{s.title}</strong> · Tag {s.dayOffset + 1}, {s.startTimeStr}–{s.endTimeStr}
                     </li>
                   ))}

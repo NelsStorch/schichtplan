@@ -76,7 +76,7 @@ describe('resolveOrganizerUser', () => {
         ],
         count: async () => 0,
       },
-    } as any;
+    } as unknown as Parameters<typeof resolveOrganizerUser>[0];
 
     const resNick = await resolveOrganizerUser(mockPrisma, 'dep-1', { nickname: 'Fuchs' });
     expect(resNick).toEqual({ user: { id: 'u-1' } });

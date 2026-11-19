@@ -243,16 +243,9 @@ export function ErrorView({
           </div>
 
           {/* Interaktive SVG-Grafik */}
-          <div
-            role="button"
-            tabIndex={0}
+          <button
+            type="button"
             onClick={stirPot}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                stirPot();
-              }
-            }}
             title="Klick auf die Gamelle, um umzurühren!"
             aria-label="Kochende Gamelle: Klick um die Suppe umzurühren"
             className={cn(
@@ -363,7 +356,7 @@ export function ErrorView({
                 className="animate-pulse"
               />
             </svg>
-          </div>
+          </button>
 
           {/* Interaktions-Button für die Gamelle */}
           <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
@@ -454,11 +447,11 @@ export function ErrorView({
         {/* Weitere Schnell-Aktionen */}
         {secondaryActions.length > 0 && (
           <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-            {secondaryActions.map((act, i) => {
+            {secondaryActions.map((act) => {
               if (act.href) {
                 return act.external ? (
                   <a
-                    key={i}
+                    key={act.label}
                     href={act.href}
                     target="_blank"
                     rel="noreferrer"
@@ -472,7 +465,7 @@ export function ErrorView({
                   </a>
                 ) : (
                   <Link
-                    key={i}
+                    key={act.label}
                     href={act.href}
                     className={cn(
                       'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition',
@@ -486,7 +479,7 @@ export function ErrorView({
               }
               return (
                 <button
-                  key={i}
+                  key={act.label}
                   type="button"
                   onClick={act.onClick}
                   className={cn(

@@ -153,6 +153,7 @@ function ParticipationForm({
               { v: 'JA', label: 'Ja' },
               { v: 'NEIN', label: 'Nein' },
             ].map((o) => (
+              /* biome-ignore lint/a11y/useSemanticElements: Segmented Control mit ARIA-Radio-Pattern */
               <button
                 key={o.v}
                 type="button"

@@ -194,7 +194,7 @@ function ShiftsPage() {
       {/* Ansicht und Filter */}
       <div className="mb-6 space-y-3">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex rounded-full border border-line bg-surface p-1" role="group" aria-label="Ansicht">
+          <fieldset className="inline-flex rounded-full border border-line bg-surface p-1 m-0" aria-label="Ansicht">
             {(
               [
                 ['list', 'Liste', LayoutList],
@@ -214,7 +214,7 @@ function ShiftsPage() {
                 <Icon className="size-4" /> {label}
               </button>
             ))}
-          </div>
+          </fieldset>
           <div className="relative min-w-[12rem] flex-1 sm:max-w-xs">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-subtle" />
             <Input

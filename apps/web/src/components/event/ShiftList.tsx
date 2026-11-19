@@ -76,6 +76,7 @@ export function NeededShifts({
           const handover = !mine ? actions.getHandover?.(shift) : null;
           return (
             <li key={shift.id} id={`shift-${shift.id}`}>
+              {/* biome-ignore lint/a11y/useSemanticElements: Card contains nested action buttons */}
               <div
                 role="button"
                 tabIndex={0}
@@ -188,6 +189,7 @@ export function ShiftRows({ shifts, actions }: { shifts: ShiftDto[]; actions: Sh
             : shift.responsibles;
         return (
           <li key={shift.id} id={`shift-${shift.id}`}>
+            {/* biome-ignore lint/a11y/useSemanticElements: Card contains nested action buttons */}
             <div
               role="button"
               tabIndex={0}

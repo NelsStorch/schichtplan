@@ -91,8 +91,8 @@ function MyRoles({ roles, org }: { roles: DepartmentCreationRoleDto[]; org: Orga
       ) : (
         <>
           <ul className="divide-y divide-line overflow-hidden rounded-card border border-line bg-surface">
-            {roles.map((role, i) => (
-              <li key={`${role.roleName}-${role.groupName ?? ''}-${i}`} className="flex items-center justify-between gap-3 px-4 py-2.5">
+            {roles.map((role) => (
+              <li key={`${role.roleName}-${role.groupName ?? ''}`} className="flex items-center justify-between gap-3 px-4 py-2.5">
                 <span className="min-w-0">
                   <span className="block text-[14px] font-medium text-fg">{role.roleName}</span>
                   {role.groupName && <span className="block text-[13px] text-fg-muted">{role.groupName}</span>}

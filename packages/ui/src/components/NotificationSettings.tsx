@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { BellRing, Check, Info, Send, Smartphone } from 'lucide-react';
 import {
   DEFAULT_EMAIL_REMINDER_MINUTES,
@@ -125,7 +125,13 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
   const emailReminderOn = emailUsable && user.shiftReminders !== false && emailMinutes.length > 0;
   const pushReminderOn = user.pushReminders !== false && pushMinutes.length > 0;
 
+  const userRef = useRef(user);
+  userRef.current = user;
+  const onUserChangeRef = useRef(onUserChange);
+  onUserChangeRef.current = onUserChange;
+
   useEffect(() => {
+    void user.id;
     if (typeof window === 'undefined') return;
     setAppleMobile(isAppleMobile());
     const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
@@ -145,8 +151,8 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
         if (res.ok) {
           const data = await res.json();
           setDeviceSubscribed(Boolean(data.deviceSubscribed));
-          if (typeof data.subscriptionCount === 'number' && data.subscriptionCount !== user.pushSubscriptionCount) {
-            onUserChange({ ...user, pushSubscriptionCount: data.subscriptionCount });
+          if (typeof data.subscriptionCount === 'number' && data.subscriptionCount !== userRef.current.pushSubscriptionCount) {
+            onUserChangeRef.current({ ...userRef.current, pushSubscriptionCount: data.subscriptionCount });
           }
         } else {
           setDeviceSubscribed(Boolean(sub));

@@ -269,6 +269,7 @@ export function UsersPanel({
   }, [search]);
 
   useEffect(() => {
+    void reload;
     const controller = new AbortController();
     setLoading(true);
     api<AdminUserListDto>(`/api/admin/users?${buildQuery({ query, filter, departmentId, sort, page, orgFilter })}`, {
@@ -291,6 +292,7 @@ export function UsersPanel({
 
   // Neuer Verband: Seite 1, Auswahl leeren und eine nicht mehr passende Abteilung zurücksetzen
   useEffect(() => {
+    void orgFilter;
     setPage(1);
     setSelectedIds(new Set());
   }, [orgFilter]);
@@ -417,7 +419,11 @@ export function UsersPanel({
       {firstLoad ? (
         <Card className="divide-y divide-line overflow-hidden">
           {Array.from({ length: 8 }, (_, i) => (
-            <div key={i} className="flex items-center gap-3 px-5 py-4">
+            <div
+              // biome-ignore lint/suspicious/noArrayIndexKey: Skeleton placeholder
+              key={i}
+              className="flex items-center gap-3 px-5 py-4"
+            >
               <Skeleton className="size-7 rounded-full" />
               <Skeleton className="h-4 w-40" />
               <Skeleton className="ml-auto hidden h-4 w-48 md:block" />
@@ -546,12 +552,15 @@ export function UsersPanel({
                     <td className="tabular whitespace-nowrap px-5 py-3 text-right font-mono text-fg-muted">
                       {formatDate(user.createdAt)}
                     </td>
-                    <td className="w-12 px-3 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                    <td className="w-12 px-3 py-3 text-right">
                       {user.id !== currentUserId && (
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDeleteUser(user)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteUser(user);
+                          }}
                           aria-label={`${fullName(user)} löschen`}
                           title="Person löschen"
                           className="text-fg-subtle transition hover:bg-danger/10 hover:text-danger-ink"

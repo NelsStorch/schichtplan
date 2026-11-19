@@ -29,7 +29,7 @@ function makePrisma(
             }
           : null
       ),
-      findMany: vi.fn(async ({ where }: any) =>
+      findMany: vi.fn(async ({ where }: { where: { hitobitoGroupId: { in: number[] } } }) =>
         (hitobito.departments ?? [])
           .filter((d) => where.hitobitoGroupId.in.includes(d.hitobitoGroupId))
           .map((d) => ({ id: d.id, hitobitoGroupId: d.hitobitoGroupId }))
@@ -39,7 +39,7 @@ function makePrisma(
       findMany: vi.fn().mockResolvedValue((hitobito.roleGroupIds ?? []).map((groupId) => ({ groupId }))),
     },
     hitobitoGroup: {
-      findMany: vi.fn(async ({ where }: any) =>
+      findMany: vi.fn(async ({ where }: { where: { id?: { in: number[] }; ortsgruppeId?: { in: number[] } } }) =>
         where.id
           ? groups.filter((g) => where.id.in.includes(g.id))
           : groups.filter((g) => g.ortsgruppeId !== null && where.ortsgruppeId.in.includes(g.ortsgruppeId) && g.jungscharId !== null)
@@ -55,7 +55,7 @@ function makePrisma(
     departmentInviteRedemption: {
       count: vi.fn().mockResolvedValue(extra.redeemed ? 1 : 0),
     },
-  } as any;
+  } as unknown as Parameters<typeof checkDepartmentJoin>[0];
 }
 
 describe('checkDepartmentJoin', () => {
@@ -264,7 +264,7 @@ describe('checkDepartmentJoin mit Einladungen', () => {
 });
 
 describe('syncProviderMemberships', () => {
-  const log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any;
+  const log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() } as unknown as Parameters<typeof syncProviderMemberships>[1];
   /** `fromProviderBefore`: Einträge mit Herkunft aus der DB; `existing`: bestehende Mitgliedschaften pro Abteilung */
   function memberDb(
     fromProviderBefore: (string | { departmentId: string; joinSource: string })[] = [],
@@ -272,7 +272,7 @@ describe('syncProviderMemberships', () => {
   ) {
     return {
       departmentMember: {
-        findUnique: vi.fn(async ({ where }: any) => {
+        findUnique: vi.fn(async ({ where }: { where: { departmentId_userId: { departmentId: string; userId: string } } }) => {
           const m = existing[where.departmentId_userId.departmentId];
           return m ? { permissions: [], ...m } : null;
         }),
@@ -284,7 +284,7 @@ describe('syncProviderMemberships', () => {
       },
       user: { findUnique: vi.fn().mockResolvedValue({ firstName: 'Lea', lastName: 'Muster', nickname: 'Sim' }) },
       departmentAuditLog: { create: vi.fn().mockResolvedValue({}) },
-    } as any;
+    } as unknown as Parameters<typeof syncProviderMemberships>[0];
   }
 
   it('trägt weitere Abteilungen laut Rollen bestätigt ein und protokolliert sie, die Heimabteilung nicht', async () => {
@@ -317,7 +317,7 @@ describe('syncProviderMemberships', () => {
       'dept-invited': { joinedAt: new Date('2026-01-01'), confirmedAt: new Date('2026-01-02'), joinSource: null },
     });
     await syncProviderMemberships(db, log, 'u-1', null, ['dept-self', 'dept-invited'], true, 'Cevi.DB');
-    const [self, invited] = db.departmentMember.upsert.mock.calls.map((c: any) => c[0].update);
+    const [self, invited] = (db.departmentMember.upsert as unknown as { mock: { calls: Array<[{ update: Record<string, unknown> }]> } }).mock.calls.map((c) => c[0].update);
     expect(self).toMatchObject({ joinSource: 'CEVIDB_CONFIRMED' });
     expect(self.confirmedAt).toBeInstanceOf(Date);
     expect(invited.joinSource).toBeUndefined();

@@ -87,17 +87,20 @@ export function EventAttendancePanel({
   const [cateringStatsOpen, setCateringStatsOpen] = useState(false);
 
   useEffect(() => setOrigin(window.location.origin), []);
-  useEffect(() => setOverrides({}), [event]);
-
-  const withAttendance = (su: ShiftSignupDto): ShiftSignupDto => ({ ...su, ...overrides[su.id] });
+  useEffect(() => {
+    void event;
+    setOverrides({});
+  }, [event]);
 
   const shifts = useMemo(
     () =>
       event.shifts
         .filter((s) => (s.signups?.length ?? 0) > 0)
-        .map((s) => ({ ...s, signups: (s.signups ?? []).map(withAttendance) })),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [event, overrides]
+        .map((s) => ({
+          ...s,
+          signups: (s.signups ?? []).map((su) => ({ ...su, ...overrides[su.id] })),
+        })),
+    [event.shifts, overrides]
   );
   const days = useMemo(() => groupByBusinessDay(shifts, event.dayCutoffTime), [shifts, event.dayCutoffTime]);
   const allSignups = shifts.flatMap((s) => s.signups);
@@ -570,7 +573,7 @@ function ShiftAttendanceCard({
                   {[su.taskTitle, note].filter(Boolean).join(' · ') || 'Offen'}
                 </p>
               </div>
-              <div className="flex shrink-0 items-center gap-1.5" role="group" aria-label={`Anwesenheit ${su.displayName}`}>
+              <fieldset className="flex shrink-0 items-center gap-1.5 border-0 p-0 m-0" aria-label={`Anwesenheit ${su.displayName}`}>
                 {STATUS_BUTTONS.map(({ status, short, icon: Icon, active }) => {
                   const selected = su.attendance === status;
                   return (
@@ -591,7 +594,7 @@ function ShiftAttendanceCard({
                     </button>
                   );
                 })}
-              </div>
+              </fieldset>
             </li>
           );
         })}

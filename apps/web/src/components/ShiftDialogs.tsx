@@ -119,8 +119,6 @@ export function ShiftFormDialog({
 }) {
   const confirm = useConfirm();
   const toast = useToast();
-  const org = useOrganization();
-  const isVerein = org.slug === 'verein';
   const isEdit = Boolean(shift);
 
   const saveRef = useRef<(() => Promise<boolean>) | null>(null);
@@ -292,8 +290,6 @@ function ShiftForm({
   formId?: string;
 }) {
   const toast = useToast();
-  const org = useOrganization();
-  const isVerein = org.slug === 'verein';
   const isEdit = Boolean(shift);
 
   const [availableTasks, setAvailableTasks] = useState<TaskDefinitionDto[]>([]);
@@ -532,17 +528,25 @@ function ShiftForm({
     }
   };
 
+  const internalSaveRef = useRef<() => Promise<boolean>>(() => performSave({ silent: true }));
+  internalSaveRef.current = () => performSave({ silent: true });
+  const internalValidationRef = useRef<() => string | null>(getValidationError);
+  internalValidationRef.current = getValidationError;
+
   // Auto-Save Effect (nur beim Bearbeiten bestehender Schichten)
   useEffect(() => {
+    void form;
+    void tasks;
+    void responsibleUserIds;
     if (!isEdit || !shift) return;
     if (!isDirty || saving) return;
 
     // Nur speichern, wenn keine Validierungsfehler vorliegen
-    const validationErr = getValidationError();
+    const validationErr = internalValidationRef.current();
     if (validationErr) return;
 
     const timer = setTimeout(async () => {
-      await performSave({ silent: true });
+      await internalSaveRef.current();
     }, 800);
 
     return () => clearTimeout(timer);
@@ -558,8 +562,8 @@ function ShiftForm({
   }, [isDirty, saving, autoSaveStatus, validationError, onStatusChange]);
 
   useEffect(() => {
-    if (saveRef) saveRef.current = () => performSave({ silent: true });
-    if (validationRef) validationRef.current = getValidationError;
+    if (saveRef) saveRef.current = internalSaveRef.current;
+    if (validationRef) validationRef.current = internalValidationRef.current;
   });
 
   const submit = async (e: FormEvent) => {
@@ -694,6 +698,7 @@ function ShiftForm({
 
         <div className="space-y-3">
           {tasks.map((task, idx) => (
+            /* biome-ignore lint/suspicious/noArrayIndexKey: Lokale Formular-Tasks besitzen keinen zwingenden Server-Schlüssel */
             <div key={idx} className="relative rounded-field border border-line bg-surface-2 p-3.5">
               {tasks.length > 1 && (
                 <button
@@ -916,8 +921,6 @@ function DuplicateShiftForm({
   onDuplicated: () => void;
 }) {
   const toast = useToast();
-  const org = useOrganization();
-  const isVerein = org.slug === 'verein';
   const [title, setTitle] = useState(shift.title?.trim() ? `${shift.title} (Folgeschicht)` : '');
   const [startTime, setStartTime] = useState(toLocalInput(shift.endTime)); // Standard: schliesst direkt an vorherige Schicht an!
 
@@ -1002,8 +1005,6 @@ export function SaveTemplateDialog({
   onSaved: () => void;
 }) {
   const toast = useToast();
-  const org = useOrganization();
-  const isVerein = org.slug === 'verein';
   const [title, setTitle] = useState(`${defaultTitle} (Vorlage)`);
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
@@ -1238,8 +1239,6 @@ export function DayResponsiblesDialog({
   onSaved: () => void;
 }) {
   const toast = useToast();
-  const org = useOrganization();
-  const isVerein = org.slug === 'verein';
   const [members, setMembers] = useState<DeptMemberItem[]>([]);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);

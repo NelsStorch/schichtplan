@@ -865,7 +865,7 @@ export function EventForm({
             {organizers.map((org, idx) => {
               const isLead = org.role === 'OK_LEAD';
               return (
-                <div key={idx} className="flex items-center justify-between gap-3 p-3 text-sm">
+                <div key={org.userId || org.email || `${org.displayName}-${idx}`} className="flex items-center justify-between gap-3 p-3 text-sm">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span
                       className={cn(
@@ -923,8 +923,9 @@ export function EventForm({
 
             <div className="grid gap-2 sm:grid-cols-2">
               <div>
-                <label className="text-[11px] font-medium text-fg-subtle block mb-1">Aus Mitgliedern wählen</label>
+                <label htmlFor="ok-member-select" className="text-[11px] font-medium text-fg-subtle block mb-1">Aus Mitgliedern wählen</label>
                 <select
+                  id="ok-member-select"
                   value={selectedMemberUserId}
                   onChange={(e) => {
                     setSelectedMemberUserId(e.target.value);
@@ -942,10 +943,11 @@ export function EventForm({
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-fg-subtle block mb-1">
+                <label htmlFor="ok-custom-who" className="text-[11px] font-medium text-fg-subtle block mb-1">
                   Oder {org.nicknameTerm} / E-Mail
                 </label>
                 <input
+                  id="ok-custom-who"
                   type="text"
                   placeholder={org.slug === 'verein' ? 'z.B. Max oder max@beispiel.ch' : 'z.B. Falk oder falk@beispiel.ch'}
                   value={customWho}
@@ -960,8 +962,9 @@ export function EventForm({
 
             <div className="grid gap-2 sm:grid-cols-2 items-end">
               <div>
-                <label className="text-[11px] font-medium text-fg-subtle block mb-1">Rolle im OK</label>
+                <label htmlFor="ok-new-role" className="text-[11px] font-medium text-fg-subtle block mb-1">Rolle im OK</label>
                 <select
+                  id="ok-new-role"
                   value={newRole}
                   onChange={(e) => setNewRole(e.target.value as 'OK_LEAD' | 'OK_MEMBER')}
                   className="w-full rounded-field border border-line bg-surface-1 px-2.5 py-1.5 text-xs text-fg focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
@@ -972,8 +975,9 @@ export function EventForm({
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-fg-subtle block mb-1">Ressort / Bezeichnung (optional)</label>
+                <label htmlFor="ok-new-role-title" className="text-[11px] font-medium text-fg-subtle block mb-1">Ressort / Bezeichnung (optional)</label>
                 <input
+                  id="ok-new-role-title"
                   type="text"
                   placeholder="z. B. Bau & Technik, Kasse, Grill"
                   value={newRoleTitle}
@@ -1358,7 +1362,12 @@ export function EventForm({
                   <div className="space-y-2">
                     <div className="flex flex-wrap gap-2">
                       {form.cateringTokenItems.map((item, idx) => (
-                        <Badge key={idx} tone="neutral" className="pl-2.5 pr-1.5 py-1 text-xs gap-1.5 font-medium">
+                        <Badge
+                          // biome-ignore lint/suspicious/noArrayIndexKey: Token items are tracked and removed by index
+                          key={idx}
+                          tone="neutral"
+                          className="pl-2.5 pr-1.5 py-1 text-xs gap-1.5 font-medium"
+                        >
                           {item}
                           <button
                             type="button"

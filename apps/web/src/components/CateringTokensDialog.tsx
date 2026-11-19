@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Loader2, UtensilsCrossed } from 'lucide-react';
 import type { CateringTokenDto } from '@schichtplan/shared';
 import { Button, Dialog, EmptyState } from '@schichtplan/ui';
@@ -24,7 +24,7 @@ export function CateringTokensDialog({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadTokens = async () => {
+  const loadTokens = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -37,13 +37,13 @@ export function CateringTokensDialog({
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventSlug]);
 
   useEffect(() => {
     if (open) {
       void loadTokens();
     }
-  }, [open, eventSlug]);
+  }, [open, loadTokens]);
 
   return (
     <Dialog

@@ -12,7 +12,7 @@ describe('offline utils', () => {
       delete: vi.fn().mockResolvedValue(true),
     };
 
-    (global as any).window = {
+    vi.stubGlobal('window', {
       localStorage: {
         getItem: (key: string) => mockStorage[key] ?? null,
         setItem: (key: string, val: string) => {
@@ -23,11 +23,11 @@ describe('offline utils', () => {
         },
       },
       caches: mockCaches,
-    };
+    });
   });
 
   afterEach(() => {
-    delete (global as any).window;
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 

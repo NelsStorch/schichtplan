@@ -26,6 +26,7 @@ export function HighlightText({ text, query }: { text: string; query: string }) 
         const isMatch = words.some((w) => w.toLowerCase() === part.toLowerCase());
         return isMatch ? (
           <span
+            // biome-ignore lint/suspicious/noArrayIndexKey: Tokenized text substring fragments
             key={i}
             className="font-bold text-accent-ink underline decoration-accent/40 decoration-1 underline-offset-2"
           >

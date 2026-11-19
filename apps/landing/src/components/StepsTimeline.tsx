@@ -61,7 +61,7 @@ export function StepsTimeline({ org }: { org?: OrganizationConfig } = {}) {
       window.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', schedule);
     };
-  }, []);
+  }, [steps.length]);
 
   return (
     <div ref={containerRef} className="relative mt-10 [--progress:1]">
