@@ -7,13 +7,22 @@ import type { NextConfig } from 'next';
  * Bilder auch von https:, weil Logos/Banner fremde Adressen sein dürfen. Lokal zusätzlich eval + WebSocket (HMR).
  */
 const isDev = process.env.NODE_ENV !== 'production';
+// Optionale Web-Statistik (Umami, siehe UmamiScript): dessen Ursprung für Skript und Meldungen erlauben.
+// Wird beim Build gelesen, darum ist UMAMI_SCRIPT_URL auch ein Build-Argument.
+const umamiOrigin = (() => {
+  try {
+    return process.env.UMAMI_SCRIPT_URL ? ` ${new URL(process.env.UMAMI_SCRIPT_URL).origin}` : '';
+  } catch {
+    return '';
+  }
+})();
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ''}`,
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ''}${umamiOrigin}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  `connect-src 'self'${isDev ? ' ws: wss:' : ''}`,
+  `connect-src 'self'${umamiOrigin}${isDev ? ' ws: wss:' : ''}`,
   "frame-src 'self' blob:",
   "worker-src 'self' blob:",
   "object-src 'none'",

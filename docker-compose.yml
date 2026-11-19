@@ -94,11 +94,17 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      args:
+        # Optionale Web-Statistik (Umami): Ursprung für die Content-Security-Policy
+        UMAMI_SCRIPT_URL: ${UMAMI_SCRIPT_URL:-}
     restart: unless-stopped
     environment:
       NODE_ENV: production
       PORT: 3000
       INTERNAL_API_URL: http://backend:4000
+      UMAMI_SCRIPT_URL: ${UMAMI_SCRIPT_URL:-}
+      # Website-ID pro Verband: cevi=<id>,pfadi=<id>,jubla=<id>,verein=<id> (leer: keine Web-Statistik)
+      UMAMI_WEBSITE_IDS: ${UMAMI_WEBSITE_IDS:-}
     depends_on:
       - backend
     networks:
@@ -132,11 +138,17 @@ services:
     build:
       context: .
       dockerfile: apps/landing/Dockerfile
+      args:
+        # Optionale Web-Statistik (Umami): Ursprung für die Content-Security-Policy
+        UMAMI_SCRIPT_URL: ${UMAMI_SCRIPT_URL:-}
     restart: unless-stopped
     environment:
       NODE_ENV: production
       PORT: 3001
       INTERNAL_API_URL: http://backend:4000
+      UMAMI_SCRIPT_URL: ${UMAMI_SCRIPT_URL:-}
+      # Website-ID pro Verband: cevi=<id>,pfadi=<id>,jubla=<id>,verein=<id> (leer: keine Web-Statistik)
+      UMAMI_WEBSITE_IDS: ${UMAMI_WEBSITE_IDS:-}
       PRIVACY_CONTACT_NAME: ${PRIVACY_CONTACT_NAME:-}
       PRIVACY_CONTACT_STREET: ${PRIVACY_CONTACT_STREET:-}
       PRIVACY_CONTACT_CITY: ${PRIVACY_CONTACT_CITY:-}
@@ -173,11 +185,17 @@ services:
     build:
       context: .
       dockerfile: apps/login/Dockerfile
+      args:
+        # Optionale Web-Statistik (Umami): Ursprung für die Content-Security-Policy
+        UMAMI_SCRIPT_URL: ${UMAMI_SCRIPT_URL:-}
     restart: unless-stopped
     environment:
       NODE_ENV: production
       PORT: 3002
       INTERNAL_API_URL: http://backend:4000
+      UMAMI_SCRIPT_URL: ${UMAMI_SCRIPT_URL:-}
+      # Website-ID pro Verband: cevi=<id>,pfadi=<id>,jubla=<id>,verein=<id> (leer: keine Web-Statistik)
+      UMAMI_WEBSITE_IDS: ${UMAMI_WEBSITE_IDS:-}
     depends_on:
       - backend
     networks:

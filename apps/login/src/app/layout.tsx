@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import { ConsoleBanner, OrganizationProvider, SkipLink, ThemeScript, UsageTracker, accentVars } from '@schichtplan/ui';
+import { ConsoleBanner, OrganizationProvider, SkipLink, ThemeScript, UsageTracker, UmamiScript, accentVars } from '@schichtplan/ui';
 import { fontVariables } from '@schichtplan/ui/fonts';
 import { getRequestOrigin, ogImage } from '@schichtplan/ui/og';
 import { getOrganization, getOrganizationSlugFromHost } from '@schichtplan/shared';
@@ -59,6 +59,7 @@ export default async function RootLayout({
         <SkipLink />
         <OrganizationProvider slug={orgSlug}>{children}</OrganizationProvider>
         <UsageTracker app="login" />
+        <UmamiScript host={host} />
         <ConsoleBanner />
       </body>
     </html>

@@ -58,6 +58,7 @@ export {
 
 export { trackUi, usageOptedOut } from './stats/usage';
 export { UsageTracker } from './stats/UsageTracker';
+export { UmamiScript, umamiConfig, umamiEnabled } from './stats/UmamiScript';
 export { ConsoleBanner, printConsoleBanner } from './console/ConsoleBanner';
 export { NotificationSettings, type NotificationSettingsProps } from './components/NotificationSettings';
 export { PasswordSettings, type PasswordSettingsProps } from './components/PasswordSettings';

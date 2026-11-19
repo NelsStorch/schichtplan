@@ -7,6 +7,7 @@ import {
   ThemeScript,
   ConsoleBanner,
   UsageTracker,
+  UmamiScript,
   accentVars,
 } from '@schichtplan/ui';
 import type { Metadata, Viewport } from 'next';
@@ -112,6 +113,7 @@ export default async function RootLayout({
           <FeedbackProvider>{children}</FeedbackProvider>
         </OrganizationProvider>
         <UsageTracker app="landing" />
+        <UmamiScript host={host} />
         <ConsoleBanner />
       </body>
     </html>

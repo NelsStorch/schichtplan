@@ -8,6 +8,7 @@ import {
   type OrganizationConfig,
   type OrganizationSlug,
 } from "@schichtplan/shared";
+import { umamiEnabled } from "@schichtplan/ui";
 import { getRequestOrigin } from "@schichtplan/ui/og";
 import { LEGAL_ROBOTS, LegalPage, List, Section } from "@/components/LegalPage";
 import { ContactReveal } from "./ContactReveal";
@@ -120,6 +121,8 @@ export default async function DatenschutzPage() {
   const w = wording(org);
   const fed = w.federation;
   const dbShort = org.authProviderShort;
+  // Web-Statistik (Umami) nur erwähnen, wenn sie für diese Domain eingerichtet ist
+  const webStats = umamiEnabled(host);
   return (
     <LegalPage
       org={org}
@@ -354,6 +357,26 @@ export default async function DatenschutzPage() {
             ohne Uhrzeit). Daraus zählen wir, wie viele Personen pro Tag, Woche
             und Monat aktiv sind, und erkennen lange unbenutzte Konten.
           </p>
+
+          {webStats && (
+            <>
+              <h3 className="pt-2 font-semibold text-fg">Web-Statistik</h3>
+              <p>
+                Um zu sehen, welche Seiten wie oft besucht werden, nutzen wir
+                zusätzlich <strong>Umami</strong>, eine Statistik-Software, die
+                wir selbst auf unserem Server betreiben. Es fliessen keine Daten
+                an Dritte. Erfasst werden die aufgerufene Seite samt Titel (ohne
+                Parameter, also ohne Codes oder Links aus E-Mails), die zuvor
+                besuchte Seite, Browser, Betriebssystem, Gerätetyp,
+                Bildschirmgrösse, Sprache und das aus der IP-Adresse
+                abgeleitete Land. Die IP-Adresse selbst speichert Umami nicht.
+                Um Besuche zu zählen, bildet Umami aus IP-Adresse und Browser
+                eine Prüfsumme, die jeden Monat wechselt und keinen Rückschluss auf
+                dich zulässt. Umami setzt keine Cookies. Hast du in deinem
+                Browser «nicht verfolgen» eingestellt, wird nichts erfasst.
+              </p>
+            </>
+          )}
         </Section>
 
         <Section id="zweck" title="4. Wozu wir die Daten bearbeiten">
@@ -428,7 +451,8 @@ export default async function DatenschutzPage() {
             Einbindung von Diensten wie Google Analytics, Facebook oder YouTube.
             Die Schriften sind selbst gehostet, beim Aufruf entsteht also keine
             Verbindung zu Google. Die anonyme Nutzungsstatistik (Abschnitt 3)
-            kommt ohne Cookies und ohne lokalen Speicher aus.
+            kommt ohne Cookies und ohne lokalen Speicher aus
+            {webStats ? ", ebenso die Web-Statistik mit Umami, die wir selbst betreiben" : ""}.
           </p>
           <StorageTable
             rows={[

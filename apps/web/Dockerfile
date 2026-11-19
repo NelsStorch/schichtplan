@@ -31,6 +31,9 @@ CMD ["npm", "run", "dev"]
 FROM base AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
+# Optionale Web-Statistik: Ursprung landet beim Build in der Content-Security-Policy (next.config.ts)
+ARG UMAMI_SCRIPT_URL=""
+ENV UMAMI_SCRIPT_URL=$UMAMI_SCRIPT_URL
 COPY package.json package-lock.json ./
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY packages/shared ./packages/shared
