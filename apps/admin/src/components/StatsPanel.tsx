@@ -130,6 +130,28 @@ function UsageView({ usage, days }: { usage: AdminStatsUsageDto; days: StatsRang
         </ChartCard>
       </div>
 
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ChartCard
+          title="Seitenaufrufe pro Tag (Server)"
+          description="Vom Server gezählte Seitenladungen ohne Bots und Prefetch, auch bei «nicht verfolgen» oder Werbeblocker. Navigation innerhalb der App zählt nicht."
+        >
+          <DailyBars days={usage.days} values={metric('PAGE_LOAD')?.daily ?? []} label="Seitenaufrufe pro Tag (Server)" />
+        </ChartCard>
+        <ChartCard
+          title="Seitenaufrufe nach Verband und App"
+          description={`Im Browser gezählt (ohne «nicht verfolgen» und Blocker): ${fmtNumber(metric('UI_APP_LOAD')?.total ?? 0)} von ${fmtNumber(metric('PAGE_LOAD')?.total ?? 0)}.`}
+        >
+          <p className="font-display text-2xl font-bold leading-none tracking-tight text-fg tabular">
+            {fmtNumber(metric('PAGE_LOAD')?.total ?? 0)}
+          </p>
+          {(metric('PAGE_LOAD')?.total ?? 0) > 0 && (
+            <div className="mt-4">
+              <Breakdown items={dimItems(metric('PAGE_LOAD'))} limit={12} />
+            </div>
+          )}
+        </ChartCard>
+      </div>
+
       <MetricGroup usage={usage} group="KONTEN" exclude={['ACTIVE_USER']} />
 
       {!usage.departmentId && departments.length > 0 && (
@@ -516,7 +538,7 @@ function SystemView({
         </div>
       </section>
 
-      {usage ? <MetricGroup usage={usage} group="BETRIEB" /> : <LoadingCards />}
+      {usage ? <MetricGroup usage={usage} group="BETRIEB" exclude={['PAGE_LOAD']} /> : <LoadingCards />}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <ChartCard title="Grösste Tabellen">

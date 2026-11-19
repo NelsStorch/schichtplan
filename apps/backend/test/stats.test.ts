@@ -76,6 +76,27 @@ describe.skipIf(!hasTestDb)('Nutzungsstatistik', () => {
     expect(tooMany.statusCode).toBe(400);
   });
 
+  it('zählt Seitenaufrufe der Frontends pro Verband/App, mit Abteilung', async () => {
+    const department = await createDepartment(app, { slug: 'seitenabt' });
+    const web = await inject(app, {
+      method: 'POST',
+      url: '/api/stats/page-load',
+      tenant: 'seitenabt',
+      payload: { dim: 'cevi_web' },
+    });
+    expect(web.statusCode).toBe(204);
+    const landing = await inject(app, { method: 'POST', url: '/api/stats/page-load', payload: { dim: 'pfadi_landing' } });
+    expect(landing.statusCode).toBe(204);
+    const wrong = await inject(app, { method: 'POST', url: '/api/stats/page-load', payload: { dim: 'erfunden' } });
+    expect(wrong.statusCode).toBe(400);
+    await flushUsageStats(app.prisma);
+    const rows = await app.prisma.usageCounter.findMany({ where: { metric: 'PAGE_LOAD' }, orderBy: { dim: 'asc' } });
+    expect(rows).toEqual([
+      expect.objectContaining({ dim: 'cevi_web', departmentId: department.id, count: 1 }),
+      expect.objectContaining({ dim: 'pfadi_landing', departmentId: '', count: 1 }),
+    ]);
+  });
+
   it('setzt last_seen_on einmal pro Tag und zählt die Person als aktiv', async () => {
     const department = await createDepartment(app);
     const user = await createUser(app, { passwordHash: 'x', homeDepartmentId: department.id });

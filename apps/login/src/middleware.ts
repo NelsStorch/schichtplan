@@ -1,12 +1,21 @@
-import { NextResponse, type NextRequest } from 'next/server';
-import { getOrganizationTypeFromHost } from '@schichtplan/shared';
+import { NextResponse, type NextFetchEvent, type NextRequest } from 'next/server';
+import { getOrganizationTypeFromHost, isPageLoadRequest, reportPageLoad } from '@schichtplan/shared';
 
 /**
- * Nur lokale Entwicklung: leitet /api/* an das Backend weiter (in Produktion
+ * Zählt Seitenaufrufe (siehe unten). Nur lokale Entwicklung: leitet /api/* an das Backend weiter (in Produktion
  * erledigt das Traefik, Requests auf /api erreichen Next.js dort gar nicht).
  * Das Login-Portal hat keinen Mandanten, darum ohne x-tenant-slug.
  */
-export function middleware(request: NextRequest) {
+export function middleware(request: NextRequest, event: NextFetchEvent) {
+  // Seitenaufrufe serverseitig zählen (nur Tagessumme pro Verband/App, siehe pageLoad.ts)
+  if (!request.nextUrl.pathname.startsWith('/api/')) {
+    if (isPageLoadRequest(request.method, request.nextUrl.pathname, request.headers)) {
+      const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? '';
+      event.waitUntil(reportPageLoad('login', host.split(',')[0].trim()));
+    }
+    return NextResponse.next();
+  }
+
   const backend = process.env.INTERNAL_API_URL;
   if (process.env.NODE_ENV !== 'development' || !backend) return NextResponse.next();
 
@@ -19,5 +28,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: '/api/:path*',
+  // /api: lokaler Proxy zum Backend; Rest: Seitenaufrufe (ohne _next und Dateien mit Endung)
+  matcher: ['/api/:path*', '/((?!api/|_next/|.*\\.[a-zA-Z0-9]+$).*)'],
 };

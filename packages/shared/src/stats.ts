@@ -78,6 +78,18 @@ export const OK_PAGES = {
 
 export const STATS_APPS = { web: 'Abteilungen', landing: 'Startseite', login: 'Login' } as const;
 
+/**
+ * Seitenaufrufe, vom Server der Frontends gezählt (auch bei «nicht verfolgen» oder Werbeblocker), unterteilt
+ * nach Verband und App. Nur echte Seitenladungen (kein Prefetch, keine Bots), siehe pageLoad.ts.
+ */
+const PAGE_LOAD_ORGS = { cevi: 'Cevi', pfadi: 'Pfadi', jubla: 'Jubla', verein: 'Vereine' } as const;
+export type PageLoadDim = `${keyof typeof PAGE_LOAD_ORGS}_${keyof typeof STATS_APPS}`;
+const PAGE_LOAD_DIMS = Object.fromEntries(
+  Object.entries(PAGE_LOAD_ORGS).flatMap(([org, orgLabel]) =>
+    Object.entries(STATS_APPS).map(([app, appLabel]) => [`${org}_${app}`, `${orgLabel} · ${appLabel}`])
+  )
+) as Record<PageLoadDim, string>;
+
 export const USAGE_METRICS = {
   // --- Login und Konten -----------------------------------------------------------------------
   ACTIVE_USER: { label: 'Aktive Personen', group: 'KONTEN', source: 'server' },
@@ -156,6 +168,8 @@ export const USAGE_METRICS = {
       JUBLADB_ERROR: 'Jubla-DB Fehler',
     },
   },
+
+  PAGE_LOAD: { label: 'Seitenaufrufe (Server)', group: 'BETRIEB', source: 'server', dims: PAGE_LOAD_DIMS },
 
   // --- Anlässe und Schichten -----------------------------------------------------------------
   EVENT_CREATE: {

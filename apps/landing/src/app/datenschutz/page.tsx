@@ -339,7 +339,11 @@ export default async function DatenschutzPage() {
             Anfragen eine Funktion des Servers bekam, wie lange die Antwort
             dauerte und ob Fehler auftraten; dabei speichern wir nur das Muster
             der Adresse (z.&nbsp;B. «Anlass ansehen»), nie die echte Adresse
-            mit Namen von Anlässen, Zugangs- oder Check-in-Codes.
+            mit Namen von Anlässen, Zugangs- oder Check-in-Codes. Ebenso
+            zählt der Server, wie oft Seiten geladen werden, als Tagessumme pro
+            Bereich (Startseite, Login, Seiten {w.ofThe}). Weil dabei nichts
+            über dich gespeichert wird, gilt das auch, wenn du «nicht verfolgen»
+            eingestellt hast.
           </p>
           <p>
             Dafür speichern wir <strong>keine</strong> IP-Adresse, keine

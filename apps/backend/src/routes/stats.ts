@@ -27,6 +27,7 @@ import {
   type UsageMetricKey,
 } from '@schichtplan/shared';
 import { Prisma } from '../db.js';
+import { tenantHeaderAllowed } from '../plugins/tenant.js';
 import { createRateLimiter } from '../services/rateLimit.js';
 import { SNAPSHOT_KEYS } from '../services/statsMaintenance.js';
 import { flushUsageStats, percentileFromBuckets, trackUsageUnchecked } from '../services/usageStats.js';
@@ -37,6 +38,8 @@ const UiStatsSchema = z.object({
     .min(1)
     .max(STATS_UI_MAX_EVENTS),
 });
+
+const PageLoadSchema = z.object({ dim: z.string().max(40) });
 
 const RangeQuerySchema = z.object({
   days: z.coerce
@@ -113,6 +116,20 @@ const statsRoutes: FastifyPluginAsync = async (fastify) => {
     }
     return reply.status(204).send();
   });
+
+  // Seitenaufrufe, gemeldet vom Server der Frontends (Middleware, siehe pageLoad.ts in @schichtplan/shared).
+  // Nur intern erreichbar: Über Traefik kommt immer X-Forwarded-For, solche Anfragen bekommen 404.
+  // Gezählt wird nur die Tagessumme pro Verband/App (bei Abteilungsseiten mit Abteilung).
+  fastify.post(
+    '/api/stats/page-load',
+    { schema: { hide: true, body: PageLoadSchema } },
+    async (request, reply) => {
+      if (!tenantHeaderAllowed(request.headers)) return reply.status(404).send({ error: 'Nicht gefunden' });
+      const { dim } = request.body as z.output<typeof PageLoadSchema>;
+      const ok = trackUsageUnchecked('PAGE_LOAD', dim, request.tenant?.id ?? null);
+      return reply.status(ok ? 204 : 400).send();
+    }
+  );
 
   // ---------------------------------------------------------------------------
   // Admin-Portal
