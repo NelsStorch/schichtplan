@@ -6,6 +6,7 @@ import {
   getVapidKeys,
   getVapidPublicKey,
   isValidP256dhKey,
+  pushOriginHost,
 } from './webPush.js';
 
 describe('webPush service', () => {
@@ -88,5 +89,18 @@ describe('webPush service', () => {
     expect(decryptedPadded[decryptedPadded.length - 1]).toBe(0x02);
     const decryptedText = decryptedPadded.subarray(0, decryptedPadded.length - 1).toString('utf8');
     expect(decryptedText).toBe(payloadJson);
+  });
+});
+
+describe('pushOriginHost', () => {
+  it('nimmt den Hostname aus dem Origin-Header, sonst aus dem Host', () => {
+    expect(pushOriginHost('https://wil.cevi-schichtplan.ch', 'api.intern')).toBe('wil.cevi-schichtplan.ch');
+    expect(pushOriginHost(undefined, 'Cevi-Schichtplan.ch')).toBe('cevi-schichtplan.ch');
+    expect(pushOriginHost('http://wil.localhost:3000', undefined)).toBe('wil.localhost');
+  });
+
+  it('liefert null ohne brauchbare Angabe', () => {
+    expect(pushOriginHost(undefined, undefined)).toBeNull();
+    expect(pushOriginHost('kein origin', undefined)).toBeNull();
   });
 });

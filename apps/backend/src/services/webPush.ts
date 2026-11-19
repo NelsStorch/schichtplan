@@ -47,6 +47,20 @@ export function parseAllowedPushEndpoint(endpoint: string): URL | null {
   return allowed ? url : null;
 }
 
+/**
+ * Hostname, auf dem das Abo eingerichtet wird. Ein Web-Push-Abo gehört zum Service Worker genau dieser
+ * Adresse: nur dort lässt es sich anzeigen und ausschalten, und Mitteilungen erscheinen unter ihr.
+ */
+export function pushOriginHost(origin: string | undefined, host: string | undefined): string | null {
+  const raw = origin || (host ? `https://${host}` : '');
+  try {
+    const hostname = new URL(raw).hostname.toLowerCase();
+    return /^[a-z0-9.-]{1,253}$/.test(hostname) ? hostname : null;
+  } catch {
+    return null;
+  }
+}
+
 export function isAllowedPushEndpoint(endpoint: string): boolean {
   return parseAllowedPushEndpoint(endpoint) !== null;
 }

@@ -76,7 +76,7 @@ const privacyRoutes: FastifyPluginAsync = async (fastify) => {
             select: { value: true, consentAt: true, updatedAt: true, question: { select: { label: true } }, event: { select: { title: true } } },
           },
           deregistrations: { select: { reason: true, createdAt: true, event: { select: { title: true } } } },
-          pushSubscriptions: { select: { createdAt: true } },
+          pushSubscriptions: { select: { createdAt: true, origin: true } },
         },
       });
       if (!user) return reply.status(404).send({ error: 'Person nicht gefunden' });
@@ -87,7 +87,7 @@ const privacyRoutes: FastifyPluginAsync = async (fastify) => {
         hinweis:
           'Alle Personendaten, die der Schichtplan zu deinem Konto speichert. Passwort und Zwei-Faktor-Schlüssel sind nur verschlüsselt gespeichert und deshalb nicht enthalten.',
         ...rest,
-        pushGeraete: pushSubscriptions.map((p) => ({ eingerichtetAm: p.createdAt })),
+        pushGeraete: pushSubscriptions.map((p) => ({ eingerichtetAm: p.createdAt, adresse: p.origin })),
       };
       reply
         .header('Cache-Control', 'no-store')

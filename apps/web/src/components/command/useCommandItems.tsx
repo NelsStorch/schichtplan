@@ -38,6 +38,7 @@ import {
   Wrench,
 } from 'lucide-react';
 import {
+  getLandingUrl,
   type DepartmentPersonDto,
   type EventDto,
   type ShiftDto,
@@ -2032,13 +2033,13 @@ export function useCommandItems(query: string) {
       list.push({
         id: 'nav-profile',
         title: 'Mein Profil & Kontaktdaten',
-        subtitle: `${displayName(user)} · Angaben, Benachrichtigungen und Stufen`,
+        subtitle: `${displayName(user)} · Angaben, Benachrichtigungen, Sicherheit und Daten`,
         section: 'NAVIGATION',
         icon: <UserRound className="size-4" />,
         keywords: ['profil', 'konto', 'name', 'einstellungen', 'telefon', 'mail'],
         onSelect: () => {
           recordRecentCommand('nav-profile');
-          router.push('/profil');
+          window.location.href = getLandingUrl('/profil');
           close();
         },
       });

@@ -82,7 +82,7 @@ function isAppleMobile(): boolean {
 export interface NotificationSettingsProps {
   user: UserDto;
   onUserChange: (updated: UserDto) => void;
-  /** Kompakte Darstellung für das Konto-Dialogfenster in der Abteilungs-App (nur Gerät und Schicht-Erinnerung) */
+  /** Kompakte Darstellung für das Konto-Dialogfenster in der Abteilungs-App (nur Push für diese Adresse) */
   compact?: boolean;
   /**
    * Adresse der installierbaren Abteilungs-App (z. B. auf der Landingpage). Auf dem iPhone funktioniert
@@ -102,7 +102,9 @@ interface MatrixRow {
 }
 
 /**
- * Benachrichtigungs-Einstellungen: oben das Gerät (Web Push gilt pro Browser und Gerät), darunter eine
+ * Benachrichtigungs-Einstellungen: oben Push für dieses Gerät auf dieser Adresse (ein Web-Push-Abo gehört
+ * zum Service Worker genau einer Adresse, z. B. wil.cevi-schichtplan.ch, und lässt sich nur dort ein- und
+ * ausschalten; Mitteilungen erscheinen unter dieser Adresse), darunter eine
  * Tabelle «was × wie» (E-Mail / Push) und die Zeitpunkte der Schicht-Erinnerung. Alles speichert sofort.
  */
 export function NotificationSettings({ user, onUserChange, compact = false, appUrl }: NotificationSettingsProps) {
@@ -113,6 +115,9 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
   const [deviceSubscribed, setDeviceSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
   const [testingPush, setTestingPush] = useState(false);
+  const [host, setHost] = useState('');
+  /** Adressen, auf denen das Konto Push-Abos hat (auch andere Geräte) */
+  const [pushHosts, setPushHosts] = useState<string[]>([]);
 
   const hasRealEmail = Boolean(user.email && !PLACEHOLDER_EMAIL_REGEX.test(user.email));
   const emailUsable = hasRealEmail && Boolean(user.emailVerified);
@@ -134,6 +139,7 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
     void user.id;
     if (typeof window === 'undefined') return;
     setAppleMobile(isAppleMobile());
+    setHost(window.location.hostname);
     const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
     setPushSupported(supported);
     if (!supported) return;
@@ -144,13 +150,13 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
       try {
         const reg = await ensureActiveServiceWorker();
         const sub = await reg.pushManager.getSubscription();
-        // Das Backend erkennt das Gerät zusätzlich über ein Cookie der ganzen Domain, damit ein auf einer
-        // anderen Subdomain (Startseite oder andere Abteilung) eingerichtetes Abo hier als aktiv gilt.
+        // Aktiv ist nur das Abo des Service Workers dieser Adresse; Abos anderer Adressen listet `hosts`.
         const url = sub ? `/api/push/status?endpoint=${encodeURIComponent(sub.endpoint)}` : '/api/push/status';
         const res = await fetch(url, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           setDeviceSubscribed(Boolean(data.deviceSubscribed));
+          if (Array.isArray(data.hosts)) setPushHosts(data.hosts);
           if (typeof data.subscriptionCount === 'number' && data.subscriptionCount !== userRef.current.pushSubscriptionCount) {
             onUserChangeRef.current({ ...userRef.current, pushSubscriptionCount: data.subscriptionCount });
           }
@@ -267,6 +273,8 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
         const data = await subscribeCurrentOrigin(reg);
 
         setDeviceSubscribed(true);
+        const here = window.location.hostname;
+        setPushHosts((prev) => (prev.includes(here) ? prev : [...prev, here].sort()));
         onUserChange({
           ...user,
           pushSubscriptionCount: data.subscriptionCount ?? subscriptionCount + 1,
@@ -286,7 +294,7 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
 
         toast({
           title: 'Push auf diesem Gerät aktiviert',
-          description: 'Gilt für diesen Browser, auch auf den anderen Seiten des Schichtplans.',
+          description: `Mitteilungen kommen von ${window.location.hostname}. Ausschalten kannst du sie nur hier.`,
           tone: 'success',
         });
       } else {
@@ -327,15 +335,6 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
       if (Notification.permission === 'default') {
         const perm = await Notification.requestPermission();
         setPermission(perm);
-      }
-
-      // Falls das Abo auf einer anderen Subdomain eingerichtet wurde, stellen wir sicher,
-      // dass auch diese Subdomain lokal im Service Worker registriert ist
-      if (Notification.permission === 'granted') {
-        const localSub = await reg.pushManager.getSubscription();
-        if (!localSub) {
-          await subscribeCurrentOrigin(reg).catch(() => {});
-        }
       }
 
       const shownPromise = waitForSwPushShown(2500);
@@ -420,7 +419,8 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
       },
     },
   ];
-  const visibleRows = compact ? rows.slice(0, 1) : rows;
+
+  const otherHosts = pushHosts.filter((h) => h !== host);
 
   /** Auf der Profilseite eigenständige Karten, im Konto-Dialog schlichte Felder */
   const box = compact ? 'rounded-field border border-line bg-surface-1' : 'rounded-card border border-line bg-surface';
@@ -444,7 +444,8 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
             )}
           </div>
           <p className="mt-0.5 text-xs text-fg-muted">
-            Auch bei geschlossenem Browser. Gilt pro Gerät und Browser, egal wo im Schichtplan du es einschaltest.
+            Auch bei geschlossenem Browser. Gilt nur für {host ? <strong className="font-semibold text-fg">{host}</strong> : 'diese Adresse'}:
+            die Mitteilungen kommen von dort, und nur dort kannst du Push wieder ausschalten.
           </p>
         </div>
         {pushSupported && (
@@ -485,6 +486,15 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
         </Callout>
       )}
 
+      {otherHosts.length > 0 && (
+        <p className="flex items-start gap-1.5 text-xs text-fg-muted">
+          <Info className="mt-0.5 size-3.5 shrink-0" />
+          <span>
+            Push ist auch auf {otherHosts.join(', ')} eingerichtet. Dort siehst du es und schaltest es aus.
+          </span>
+        </p>
+      )}
+
       {pushUsable && (
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
           <span className="flex items-center gap-1.5 text-xs text-fg-subtle">
@@ -510,7 +520,7 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
       <div
         className="grid grid-cols-[minmax(0,1fr)_3.5rem_3.5rem] items-center gap-2 border-b border-line bg-surface-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-fg-subtle sm:grid-cols-[minmax(0,1fr)_5rem_5rem]"
       >
-        <span>{compact ? 'Erinnerung' : 'Was'}</span>
+        <span>Was</span>
         <span className="text-center">
           E-Mail
         </span>
@@ -519,14 +529,14 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
         </span>
       </div>
       <div className="divide-y divide-line">
-        {visibleRows.map((row) => (
+        {rows.map((row) => (
           <div
             key={row.key}
             className="grid grid-cols-[minmax(0,1fr)_3.5rem_3.5rem] items-center gap-2 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_5rem_5rem]"
           >
             <div className="min-w-0">
               <div className="text-sm font-semibold text-fg">{row.label}</div>
-              {!compact && <div className="mt-0.5 text-xs text-fg-subtle">{row.description}</div>}
+              <div className="mt-0.5 text-xs text-fg-subtle">{row.description}</div>
             </div>
             <div className="flex justify-center">
               <Switch
@@ -606,7 +616,7 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
   return (
     <div className={cn('space-y-4', compact && 'space-y-3')}>
       {deviceCard}
-      {matrix}
+      {!compact && matrix}
       {!compact && (showEmailTimes || showPushTimes) && (
         <div className={cn('space-y-3', box, pad)}>
           <div>

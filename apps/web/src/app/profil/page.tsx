@@ -1,38 +1,23 @@
 'use client';
 
 import { useEffect } from 'react';
-import { getLoginUrl } from '@schichtplan/shared';
-import { ProfileView } from '@schichtplan/ui';
-import { AppShell } from '@/components/AppShell';
-import { usePortal } from '@/lib/portal';
+import { getLandingUrl } from '@schichtplan/shared';
 
 /**
- * Profil direkt auf der Abteilungs-Subdomain (<abteilung>.cevi-schichtplan.ch/profil). Gleicher Inhalt
- * wie auf der Startseite (gemeinsame ProfileView), damit Push auch in der installierten App eingerichtet werden kann.
+ * Das Profil mit allen grösseren Einstellungen lebt auf der Startseite (cevi-schichtplan.ch/profil).
+ * In der Abteilungs-App gibt es nur den kleinen Konto-Dialog; alte Links (auch `?tab=`) leiten weiter.
+ * Ausnahme Push: ein Abo gehört zur Adresse, auf der es eingerichtet wird. Dafür öffnen wir hier den
+ * Konto-Dialog mit dem Push-Schalter dieser Abteilungs-Adresse.
  */
-export default function DepartmentProfilePage() {
-  const { user, setUser, loading, department, logout } = usePortal();
-
+export default function DepartmentProfileRedirectPage() {
   useEffect(() => {
-    if (!loading && !user) {
-      window.location.href = getLoginUrl(window.location.href);
+    const tab = new URLSearchParams(window.location.search).get('tab');
+    if (tab === 'benachrichtigungen') {
+      window.location.replace('/?konto=push');
+      return;
     }
-  }, [loading, user]);
+    window.location.replace(getLandingUrl(tab ? `/profil?tab=${encodeURIComponent(tab)}` : '/profil'));
+  }, []);
 
-  return (
-    <AppShell>
-      <div className="mx-auto w-full max-w-3xl px-4 pt-6 pb-16 sm:px-6">
-        {!user ? (
-          <div className="h-40 animate-pulse rounded-card bg-surface-2" aria-busy />
-        ) : (
-          <ProfileView
-            user={user}
-            onUserChange={setUser}
-            currentDepartmentSlug={department?.slug}
-            onLogout={logout}
-          />
-        )}
-      </div>
-    </AppShell>
-  );
+  return null;
 }

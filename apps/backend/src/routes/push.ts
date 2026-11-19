@@ -4,6 +4,7 @@ import { PushSubscribeSchema, PushUnsubscribeSchema, getDepartmentUrl, getLandin
 import {
   getVapidPublicKey,
   isAllowedPushEndpoint,
+  pushOriginHost,
   isValidP256dhKey,
   sendPushNotification,
   sendPushToUser,
@@ -60,7 +61,7 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
     }
   );
 
-  // 2. Check current user's push subscription count & whether this device (by endpoint or wildcard cookie) is registered
+  // 2. Push-Status: Anzahl Abos, ob das Abo des Service Workers dieser Adresse aktiv ist, und auf welchen Adressen es Abos gibt
   fastify.get<{ Querystring: { endpoint?: string } }>(
     '/api/push/status',
     {
@@ -77,6 +78,7 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
             publicKey: z.string(),
             subscriptionCount: z.number().int(),
             deviceSubscribed: z.boolean(),
+            hosts: z.array(z.string()).describe('Adressen, auf denen Push-Abos eingerichtet sind'),
           }),
         },
       },
@@ -88,8 +90,8 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
       const endpoint = request.query.endpoint?.trim();
       const cookieSubId = request.cookies?.[PUSH_DEVICE_COOKIE]?.trim();
 
-      const [count, byEndpoint, byCookie] = await Promise.all([
-        fastify.prisma.pushSubscription.count({ where: { userId } }),
+      const [subs, byEndpoint, byCookie] = await Promise.all([
+        fastify.prisma.pushSubscription.findMany({ where: { userId }, select: { origin: true } }),
         endpoint
           ? fastify.prisma.pushSubscription.findFirst({
               where: { userId, endpoint },
@@ -104,7 +106,8 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
           : Promise.resolve(null),
       ]);
 
-      const activeSub = byEndpoint || byCookie;
+      // Aktiv nur, wenn der Service Worker dieser Adresse selbst ein Abo hat: ein auf einer anderen
+      // Adresse eingerichtetes Abo lässt sich hier weder anzeigen noch ausschalten.
       // Falls lokal über den ServiceWorker gefunden, aber Cookie fehlte (z. B. vor diesem Update), Cookie nachziehen
       if (byEndpoint && cookieSubId !== byEndpoint.id) {
         setPushDeviceCookie(reply, byEndpoint.id);
@@ -113,10 +116,12 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
         clearPushDeviceCookie(reply);
       }
 
+      const hosts = [...new Set(subs.map((s) => s.origin).filter((o): o is string => Boolean(o)))].sort();
       return {
         publicKey: getVapidPublicKey(),
-        subscriptionCount: count,
-        deviceSubscribed: Boolean(activeSub),
+        subscriptionCount: subs.length,
+        deviceSubscribed: Boolean(byEndpoint),
+        hosts,
       };
     },
   );
@@ -146,6 +151,7 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
 
       const userId = request.user.id;
       const cookieSubId = request.cookies?.[PUSH_DEVICE_COOKIE]?.trim();
+      const origin = pushOriginHost(request.headers.origin, request.headers.host);
 
       // Falls derselbe Browser schon unter einer anderen Subdomain ein Abo angelegt hatte,
       // ersetzen wir das alte Abo dieses Geräts, damit dasselbe Gerät nie doppelt benachrichtigt wird.
@@ -167,12 +173,14 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
           userId,
           p256dh: keys.p256dh,
           auth: keys.auth,
+          origin,
         },
         create: {
           userId,
           endpoint,
           p256dh: keys.p256dh,
           auth: keys.auth,
+          origin,
         },
         select: { id: true },
       });

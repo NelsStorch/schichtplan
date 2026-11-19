@@ -10,8 +10,10 @@ import {
   CalendarSync,
   Check,
   ChevronRight,
+  Clock,
   Copy,
   Database,
+  Download,
   KeyRound,
   LayoutGrid,
   LogOut,
@@ -27,6 +29,7 @@ import {
   getDepartmentSetupUrl,
   getDepartmentUrl,
   isPlaceholderEmail,
+  type MyHoursSummaryDto,
   type OrganizationType,
   type UserDto,
 } from '@schichtplan/shared';
@@ -49,7 +52,7 @@ const TAB_META: Record<ProfileTab, { label: string; short: string; icon: typeof 
   uebersicht: { label: 'Übersicht', short: 'Übersicht', icon: LayoutGrid },
   angaben: { label: 'Angaben', short: 'Angaben', icon: UserRound },
   benachrichtigungen: { label: 'Benachrichtigungen', short: 'Mitteilungen', icon: Bell },
-  sicherheit: { label: 'Sicherheit', short: 'Sicherheit', icon: KeyRound },
+  sicherheit: { label: 'Sicherheit & Daten', short: 'Sicherheit', icon: KeyRound },
 };
 
 /** Ausschnitt aus GET /api/shifts/my (Schichten über alle Abteilungen) */
@@ -102,8 +105,9 @@ export interface ProfileViewProps {
 }
 
 /**
- * Gemeinsame Profilseite für die Startseite (cevi-schichtplan.ch/profil) und die Abteilungs-Apps
- * (<abteilung>.cevi-schichtplan.ch/profil). Inhalt in vier Tabs, der aktive Tab steht in `?tab=`.
+ * Profilseite auf der Startseite (cevi-schichtplan.ch/profil) mit allen grösseren Einstellungen. Die
+ * Abteilungs-Apps haben nur einen kleinen Konto-Dialog (inkl. Push für ihre Adresse) und leiten /profil
+ * hierher weiter. Inhalt in vier Tabs, der aktive Tab steht in `?tab=`.
  */
 export function ProfileView({ user, onUserChange, currentDepartmentSlug, onLogout }: ProfileViewProps) {
   const org = useOrganization();
@@ -139,9 +143,12 @@ export function ProfileView({ user, onUserChange, currentDepartmentSlug, onLogou
 
   const home = user.homeDepartment;
   const onHomeDepartment = Boolean(home && currentDepartmentSlug && home.slug === currentDepartmentSlug);
-  /** Abteilungs-App, in der Push auch auf dem iPhone geht (installierbar) */
+  /**
+   * Abteilungs-App, in der Push auch auf dem iPhone geht (installierbar). `?konto=push` öffnet dort den
+   * Konto-Dialog mit dem Push-Schalter für diese Adresse.
+   */
   const appUrl =
-    !currentDepartmentSlug && home ? getDepartmentUrl(home.slug, '/profil?tab=benachrichtigungen', home.organization) : undefined;
+    !currentDepartmentSlug && home ? getDepartmentUrl(home.slug, '/?konto=push', home.organization) : undefined;
 
   return (
     <div className="space-y-5">
@@ -264,6 +271,7 @@ function OverviewTab({
   const org = useOrganization();
   const toast = useToast();
   const [shifts, setShifts] = useState<ProfileShift[] | null>(null);
+  const [hours, setHours] = useState<MyHoursSummaryDto | null>(null);
   const [calData, setCalData] = useState<CalendarTokenData | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -275,6 +283,10 @@ function OverviewTab({
       .then((r) => (r.ok ? r.json() : []))
       .then((data: ProfileShift[]) => !cancelled && setShifts(Array.isArray(data) ? data : []))
       .catch(() => !cancelled && setShifts([]));
+    fetch('/api/shifts/my/summary', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => !cancelled && data && setHours(data as MyHoursSummaryDto))
+      .catch(() => {});
     fetch('/api/calendar/token', { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => !cancelled && data && setCalData(data))
@@ -413,6 +425,27 @@ function OverviewTab({
           </a>
         )}
       </ProfileCard>
+
+      {hours && hours.shiftCount > 0 && (
+        <ProfileCard title="Deine Helferstunden" icon={Clock} description="Über alle Anlässe und Abteilungen, inkl. Schichtleitung">
+          <div className="grid grid-cols-3 gap-2 text-center">
+            {[
+              { value: `${hours.totalHours} Std.`, label: 'Gesamt' },
+              { value: `${hours.completedHours} Std.`, label: 'Geleistet' },
+              { value: `${hours.upcomingHours} Std.`, label: 'Geplant' },
+            ].map((item) => (
+              <div key={item.label} className="rounded-field bg-surface-2 px-2 py-3">
+                <div className="font-mono text-lg font-bold text-fg">{item.value}</div>
+                <div className="mt-0.5 text-2xs font-semibold uppercase tracking-wider text-fg-subtle">{item.label}</div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-fg-subtle">
+            {hours.shiftCount} {hours.shiftCount === 1 ? 'Einsatz' : 'Einsätze'} an {hours.eventCount}{' '}
+            {hours.eventCount === 1 ? 'Anlass' : 'Anlässen'}
+          </p>
+        </ProfileCard>
+      )}
 
       <ProfileCard
         title={`${org.unitTerm} & Stufen`}
@@ -673,6 +706,34 @@ function SecurityTab({ user, onUserChange }: { user: UserDto; onUserChange: (use
   const toast = useToast();
   const [deleting, setDeleting] = useState(false);
 
+  /** Konten nur mit Cevi-Name/Spitzname können sich nicht selbst löschen: Antrag an die Datenschutz-Kontaktadresse */
+  const requestDeletion = async () => {
+    const confirmed = await confirm({
+      title: 'Löschung beantragen?',
+      description:
+        'Dein Profil ist nur mit Name und Geburtsdatum geschützt und kann darum nicht direkt gelöscht werden. Wir erhalten deinen Antrag und löschen dein Konto innert 30 Tagen.',
+      confirmLabel: 'Löschung beantragen',
+      cancelLabel: 'Abbrechen',
+      tone: 'danger',
+    });
+    if (!confirmed) return;
+    setDeleting(true);
+    try {
+      const res = await fetch('/api/auth/me/deletion-request', { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Antrag hat nicht geklappt.');
+      toast({ title: 'Antrag verschickt', description: data.message, tone: 'success' });
+    } catch (err) {
+      toast({
+        title: 'Antrag nicht verschickt',
+        description: err instanceof Error ? err.message : 'Antrag hat nicht geklappt.',
+        tone: 'error',
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const deleteAccount = async () => {
     const confirmed = await confirm({
       title: 'Konto wirklich löschen?',
@@ -706,7 +767,21 @@ function SecurityTab({ user, onUserChange }: { user: UserDto; onUserChange: (use
     <>
       <PasswordSettings user={user} onUserChange={onUserChange} />
       <TwoFactorSettings user={user} onUserChange={onUserChange} />
-      {user.canSelfDelete && (
+      <ProfileCard
+        title="Deine Daten"
+        icon={Database}
+        description="Alle Personendaten, die der Schichtplan zu deinem Konto speichert, als JSON-Datei."
+        action={
+          <a
+            href="/api/auth/me/export"
+            download="schichtplan-meine-daten.json"
+            className={buttonClasses({ variant: 'secondary', size: 'sm' })}
+          >
+            <Download /> Meine Daten herunterladen
+          </a>
+        }
+      />
+      {user.canSelfDelete ? (
         <section className="rounded-card border border-danger/30 bg-surface p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -718,6 +793,21 @@ function SecurityTab({ user, onUserChange }: { user: UserDto; onUserChange: (use
             <Button variant="danger" size="sm" onClick={() => void deleteAccount()} disabled={deleting} className="shrink-0">
               <Trash2 aria-hidden />
               {deleting ? 'Wird gelöscht …' : 'Konto löschen'}
+            </Button>
+          </div>
+        </section>
+      ) : (
+        <section className="rounded-card border border-danger/30 bg-surface p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-base font-bold text-danger-ink">Konto löschen</h2>
+              <p className="mt-1 text-sm text-fg-muted">
+                Dein Konto lässt sich nicht direkt löschen. Stell einen Antrag, wir löschen es innert 30 Tagen.
+              </p>
+            </div>
+            <Button variant="danger" size="sm" onClick={() => void requestDeletion()} disabled={deleting} className="shrink-0">
+              <Trash2 aria-hidden />
+              Löschung beantragen
             </Button>
           </div>
         </section>

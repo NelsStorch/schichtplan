@@ -1,6 +1,6 @@
 ---
 title: Konto und Profil
-description: Angaben ändern, E-Mail bestätigen, Farbschema wählen oder das Konto ganz löschen.
+description: Konto-Fenster und Profilseite, Push pro Adresse, Daten herunterladen und Konto löschen.
 audience: [helfer]
 ---
 
@@ -9,27 +9,27 @@ import Path from '../../../components/Path.astro';
 
 ## Das Konto-Fenster
 
-Tippe unten rechts auf **Konto** (auf dem Computer oben rechts auf deinen Namen). Dort siehst du deinen Namen, deine Abteilung, deine Stufen und deine Rolle, zum Beispiel «Helfer\*in» oder «Abteilungsleitung».
-
-Im Fenster findest du:
+Tippe im Schichtplan deiner Abteilung unten rechts auf **Konto** (auf dem Computer oben rechts auf deinen Namen). Das Fenster ist bewusst klein: Es zeigt deinen Namen, deine Abteilung und deine Rolle, zum Beispiel «Helfer\*in» oder «Abteilungsleitung», und enthält nur, was zu dieser Adresse gehört:
 
 - **Farbschema**: hell, dunkel oder wie dein Gerät
-- <Btn>Meine Schichten</Btn>
-- <Btn>Abteilung & Stufen</Btn>
-- <Btn>Profil & Angaben</Btn>, öffnet die Profilseite
-- <Btn variant="ghost">Abmelden</Btn>
-- <Btn variant="danger">Konto löschen</Btn>, nur bei Konten mit Cevi.DB oder Passwort
+- **Push auf diesem Gerät** für diese Abteilungs-Adresse (siehe [unten](#push-gilt-pro-adresse))
+- <Btn>Meine Schichten</Btn> mit deinen Helferstunden
+- <Btn>Profil & Einstellungen</Btn>, öffnet die Profilseite auf der Startseite
+- <Btn>App installieren</Btn>, wenn dein Browser das anbietet
+- <Btn variant="ghost">Hilfe</Btn> und <Btn variant="ghost">Abmelden</Btn>
+
+Alles Weitere, etwa Angaben, Benachrichtigungen, Passwort, **Meine Daten herunterladen** und **Konto löschen**, findest du auf der Profilseite.
 
 ## Die Profilseite
 
 <Path steps={['cevi-schichtplan.ch/profil']} />
 
-Die Profilseite sieht auf der Startseite und im Schichtplan deiner Abteilung (`<abteilung>.cevi-schichtplan.ch/profil`) gleich aus. Sie hat vier Tabs:
+Die Profilseite gibt es nur auf der Startseite. `<abteilung>.cevi-schichtplan.ch/profil` leitet dorthin weiter. Sie hat vier Tabs:
 
-- **Übersicht**: deine nächsten Schichten mit Kalender-Abo, deine Abteilung und Stufen und was im Profil noch fehlt
+- **Übersicht**: deine nächsten Schichten mit Kalender-Abo, deine Helferstunden, deine Abteilung und Stufen und was im Profil noch fehlt
 - **Angaben**: Name, Handynummer, Geburtsdatum und E-Mail
 - **Benachrichtigungen**: E-Mail und Push
-- **Sicherheit**: Passwort, Zwei-Faktor-Anmeldung und Konto löschen
+- **Sicherheit & Daten**: Passwort, Zwei-Faktor-Anmeldung, Meine Daten herunterladen und Konto löschen
 
 Im Tab **Angaben** änderst du **Vorname, Nachname, Handynummer und Geburtsdatum**. Diese Angaben verwendet der Schichtplan, wenn ein Anlass sie [verlangt](/helfen/angaben-und-fragen/).
 
@@ -74,22 +74,30 @@ Melde dich mit einem Wiederherstellungscode an (auf der Code-Seite **Wiederherst
 
 ### Benachrichtigungen & Erinnerungen
 
-Im Tab **Benachrichtigungen** der Profilseite stellst du ein, wie und wann du erinnert werden möchtest. Alles wird sofort gespeichert. Die Schicht-Erinnerung lässt sich auch im **Konto-Fenster** ein- und ausschalten.
+Im Tab **Benachrichtigungen** der Profilseite stellst du ein, wie und wann du erinnert werden möchtest. Alles wird sofort gespeichert.
 
-- **Push auf diesem Gerät**: Schaltet Push-Mitteilungen für den Browser ein, mit dem du gerade surfst (auch für Cevi-Name-Profile ohne E-Mail). Push gilt pro Gerät und Browser, egal ob du es auf der Startseite oder im Schichtplan deiner Abteilung einschaltest. Auf deinem Handy und anderen Computern schaltest du es dort separat ein. Mit **Test senden** prüfst du, ob alles klappt.
+- **Push auf diesem Gerät**: Schaltet Push-Mitteilungen für den Browser ein, mit dem du gerade surfst (auch für Cevi-Name-Profile ohne E-Mail). Mit **Test senden** prüfst du, ob alles klappt.
 - **Was per E-Mail, was per Push**: Eine Tabelle mit den Spalten E-Mail und Push für Schicht-Erinnerung, offene Verpflegungs-Bons, «Ersatz gefunden» und Mitteilungen vom OK. E-Mails brauchen eine bestätigte Adresse.
 - **Wann erinnern?**: Zu welchen Zeitpunkten vor Schichtbeginn die Erinnerung kommt (z. B. 1 Woche, 2 Tage, 1 Tag oder 2 Stunden vorher, auch mehrere gleichzeitig). E-Mail-Erinnerungen enthalten einen Kalender-Eintrag (`.ics`).
 
+### Push gilt pro Adresse
+
+Ein Push-Abo gehört immer zu der Adresse, auf der du es einschaltest, zum Beispiel `wil.cevi-schichtplan.ch` oder `cevi-schichtplan.ch`. Die Mitteilungen kommen von dieser Adresse, und nur dort siehst du den Schalter als **Aktiv** und kannst Push wieder ausschalten. Ist Push noch auf einer anderen Adresse eingerichtet, zeigt der Schichtplan dir, auf welcher.
+
+Am besten schaltest du Push im **Konto-Fenster** im Schichtplan deiner Abteilung ein. Schaltest du es auf demselben Gerät auf einer anderen Adresse ein, ersetzt das neue Abo das alte, damit du nichts doppelt bekommst. Auf deinem Handy und anderen Computern schaltest du Push separat ein.
+
 :::note[iPhone und iPad]
-Push funktioniert auf iPhone und iPad nur in der App auf dem Home-Bildschirm. Öffne den Schichtplan deiner Abteilung, füge ihn über **Teilen → Zum Home-Bildschirm** hinzu und schalte Push in der App ein.
+Push funktioniert auf iPhone und iPad nur in der App auf dem Home-Bildschirm. Öffne den Schichtplan deiner Abteilung, füge ihn über **Teilen → Zum Home-Bildschirm** hinzu und schalte Push in der App im **Konto-Fenster** ein.
 :::
 
 ## Konto löschen
 
 Löschen entfernt dein Konto mit allen Schicht-Eintragungen, Abteilungs- und OK-Rollen. Du bist danach sofort abgemeldet. Das lässt sich nicht rückgängig machen. Zur Sicherheit wird der Knopf erst nach einigen Sekunden aktiv.
 
-- Konten mit **Cevi.DB** oder **Passwort** löschen sich selbst, im Konto-Fenster oder auf der Profilseite im Tab **Sicherheit**.
-- Profile nur mit **Cevi-Name** haben diese Option nicht. Sie sind als kurzfristige Helferprofile gedacht. Soll so ein Profil weg, wende dich an die [Kontaktadresse](/wissen/kontakt/).
+- Konten mit **Cevi.DB** oder **Passwort** löschen sich selbst, auf der Profilseite im Tab **Sicherheit & Daten**.
+- Profile nur mit **Cevi-Name** können sich nicht selbst löschen. Sie sind als kurzfristige Helferprofile gedacht. Im selben Tab stellst du mit **Löschung beantragen** einen Antrag, das Konto wird dann innert 30 Tagen gelöscht.
+
+Unter **Meine Daten herunterladen** bekommst du vorher alle Daten, die der Schichtplan zu deinem Konto speichert, als JSON-Datei.
 
 :::caution[Vorher austragen ist netter]
 Das Löschen nimmt dich aus allen kommenden Schichten. Sag dem OK Bescheid, wenn du für bald eingetragen warst.

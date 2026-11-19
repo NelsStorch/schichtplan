@@ -709,6 +709,8 @@ model PushSubscription {
   endpoint  String   @unique
   p256dh    String
   auth      String
+  /// Hostname, auf dem das Abo eingerichtet wurde (Service Worker gehört zu genau dieser Adresse)
+  origin    String?
   createdAt DateTime @default(now()) @map("created_at")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 

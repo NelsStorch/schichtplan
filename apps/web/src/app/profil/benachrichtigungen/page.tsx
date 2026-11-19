@@ -1,15 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 
-/** Alte Adresse: die Benachrichtigungen sind jetzt ein Tab der Profilseite */
+/** Alte Adresse: Push für diese Abteilungs-Adresse steht im Konto-Dialog */
 export default function NotificationsRedirectPage() {
-  const router = useRouter();
-
   useEffect(() => {
-    router.replace('/profil?tab=benachrichtigungen');
-  }, [router]);
+    window.location.replace('/?konto=push');
+  }, []);
 
   return null;
 }
