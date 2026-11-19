@@ -15,6 +15,7 @@ Prüfen die wichtigsten Abläufe im echten Browser (Playwright, Chromium) gegen 
 | `organizations.spec.ts` | Cevi- und Pfadi-Abteilung mit gleicher Subdomain bleiben getrennt (`<slug>.localhost` / `<slug>.pfadi.localhost`), Verzeichnis je Verband, Verbands-Login-Knopf je Domain |
 | `adminPortal.spec.ts` | Admin-Portal: ohne Anmeldung nichts, Helfende «Kein Zugriff», globale Admin sieht Daten, Admin-API lehnt Aufrufe von fremder Seite ab (CSRF) |
 | `simulation.spec.ts` | Verbands-Login über die simulierte Cevi.DB: Auswahlseite, Stufenleiterin ohne Schichtplan (Grund und Rollen), Abteilungsleitung legt an, automatische Zugehörigkeit, eigene Rollen. Setzt die Simulation vorher und nachher zurück |
+| `accessibility.spec.ts` | Barrierefreiheit (axe-core, WCAG 2.1 A/AA): Landing, Login, Abteilung, Anlass, Meine Schichten und Admin-Portal ohne schwere Verstösse; Skip-Link per Tastatur; Dialog mit Esc schliessbar |
 
 Die Tests legen pro Lauf eigene Anlässe in der Zukunft an (Slug `e2e-…`) und löschen sie danach wieder, ebenso
 die Test-Abteilungen (`e2e-fremd-…`, `e2e-org-…`). Cevi-Name-Testprofile (`E2E…`) und Testkonten
