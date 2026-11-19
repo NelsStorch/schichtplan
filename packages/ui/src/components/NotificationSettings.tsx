@@ -102,9 +102,10 @@ interface MatrixRow {
 }
 
 /**
- * Benachrichtigungs-Einstellungen: oben Push für dieses Gerät auf dieser Adresse (ein Web-Push-Abo gehört
- * zum Service Worker genau einer Adresse, z. B. wil.cevi-schichtplan.ch, und lässt sich nur dort ein- und
- * ausschalten; Mitteilungen erscheinen unter dieser Adresse), darunter eine
+ * Benachrichtigungs-Einstellungen: oben Push für dieses Gerät. Technisch gehört ein Web-Push-Abo zum Service
+ * Worker einer Adresse (z. B. a.cevi-schichtplan.ch). Das Backend erkennt das Gerät aber über ein Cookie der
+ * ganzen Domain, darum zeigt jede Abteilungs-Adresse und die Startseite dasselbe Abo als aktiv und kann es
+ * ausschalten (löscht das Abo im Backend). Darunter eine
  * Tabelle «was × wie» (E-Mail / Push) und die Zeitpunkte der Schicht-Erinnerung. Alles speichert sofort.
  */
 export function NotificationSettings({ user, onUserChange, compact = false, appUrl }: NotificationSettingsProps) {
@@ -115,9 +116,6 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
   const [deviceSubscribed, setDeviceSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
   const [testingPush, setTestingPush] = useState(false);
-  const [host, setHost] = useState('');
-  /** Adressen, auf denen das Konto Push-Abos hat (auch andere Geräte) */
-  const [pushHosts, setPushHosts] = useState<string[]>([]);
 
   const hasRealEmail = Boolean(user.email && !PLACEHOLDER_EMAIL_REGEX.test(user.email));
   const emailUsable = hasRealEmail && Boolean(user.emailVerified);
@@ -139,7 +137,7 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
     void user.id;
     if (typeof window === 'undefined') return;
     setAppleMobile(isAppleMobile());
-    setHost(window.location.hostname);
+
     const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
     setPushSupported(supported);
     if (!supported) return;
@@ -150,13 +148,13 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
       try {
         const reg = await ensureActiveServiceWorker();
         const sub = await reg.pushManager.getSubscription();
-        // Aktiv ist nur das Abo des Service Workers dieser Adresse; Abos anderer Adressen listet `hosts`.
+        // Das Backend erkennt das Gerät zusätzlich über ein Cookie der ganzen Domain, damit ein auf einer
+        // anderen Adresse (Startseite oder andere Abteilung) eingerichtetes Abo hier als aktiv gilt.
         const url = sub ? `/api/push/status?endpoint=${encodeURIComponent(sub.endpoint)}` : '/api/push/status';
         const res = await fetch(url, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           setDeviceSubscribed(Boolean(data.deviceSubscribed));
-          if (Array.isArray(data.hosts)) setPushHosts(data.hosts);
           if (typeof data.subscriptionCount === 'number' && data.subscriptionCount !== userRef.current.pushSubscriptionCount) {
             onUserChangeRef.current({ ...userRef.current, pushSubscriptionCount: data.subscriptionCount });
           }
@@ -273,8 +271,6 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
         const data = await subscribeCurrentOrigin(reg);
 
         setDeviceSubscribed(true);
-        const here = window.location.hostname;
-        setPushHosts((prev) => (prev.includes(here) ? prev : [...prev, here].sort()));
         onUserChange({
           ...user,
           pushSubscriptionCount: data.subscriptionCount ?? subscriptionCount + 1,
@@ -294,7 +290,7 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
 
         toast({
           title: 'Push auf diesem Gerät aktiviert',
-          description: `Mitteilungen kommen von ${window.location.hostname}. Ausschalten kannst du sie nur hier.`,
+          description: 'Gilt für dieses Gerät im ganzen Schichtplan, für alle Abteilungen.',
           tone: 'success',
         });
       } else {
@@ -420,8 +416,6 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
     },
   ];
 
-  const otherHosts = pushHosts.filter((h) => h !== host);
-
   /** Auf der Profilseite eigenständige Karten, im Konto-Dialog schlichte Felder */
   const box = compact ? 'rounded-field border border-line bg-surface-1' : 'rounded-card border border-line bg-surface';
   const pad = compact ? 'p-4' : 'p-4 sm:p-5';
@@ -444,8 +438,7 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
             )}
           </div>
           <p className="mt-0.5 text-xs text-fg-muted">
-            Auch bei geschlossenem Browser. Gilt nur für {host ? <strong className="font-semibold text-fg">{host}</strong> : 'diese Adresse'}:
-            die Mitteilungen kommen von dort, und nur dort kannst du Push wieder ausschalten.
+            Auch bei geschlossenem Browser. Gilt für dieses Gerät im ganzen Schichtplan, für alle Abteilungen.
           </p>
         </div>
         {pushSupported && (
@@ -484,15 +477,6 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
         <Callout tone="warning">
           Du hast Benachrichtigungen im Browser blockiert. Erlaube sie über das Schloss-Symbol in der Adresszeile.
         </Callout>
-      )}
-
-      {otherHosts.length > 0 && (
-        <p className="flex items-start gap-1.5 text-xs text-fg-muted">
-          <Info className="mt-0.5 size-3.5 shrink-0" />
-          <span>
-            Push ist auch auf {otherHosts.join(', ')} eingerichtet. Dort siehst du es und schaltest es aus.
-          </span>
-        </p>
       )}
 
       {pushUsable && (

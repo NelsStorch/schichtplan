@@ -232,9 +232,8 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
 
 /**
  * Kleiner Konto-Dialog der Abteilungs-App. Alle grösseren Einstellungen (Angaben, Benachrichtigungen,
- * Sicherheit, Daten herunterladen, Konto löschen) liegen auf der Startseite unter /profil. Hier bleibt nur,
- * was an diese Adresse gebunden ist: Push (das Abo gehört zum Service Worker dieser Abteilungs-Adresse),
- * App installieren und das Design.
+ * Sicherheit, Daten herunterladen, Konto löschen) liegen auf der Startseite unter /profil. Hier bleibt das
+ * Nötigste: Push für dieses Gerät (gilt im ganzen Schichtplan), App installieren und das Design.
  */
 function AccountSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { user, setUser, department, logout } = usePortal();

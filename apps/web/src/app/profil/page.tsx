@@ -6,8 +6,8 @@ import { getLandingUrl } from '@schichtplan/shared';
 /**
  * Das Profil mit allen grösseren Einstellungen lebt auf der Startseite (cevi-schichtplan.ch/profil).
  * In der Abteilungs-App gibt es nur den kleinen Konto-Dialog; alte Links (auch `?tab=`) leiten weiter.
- * Ausnahme Push: ein Abo gehört zur Adresse, auf der es eingerichtet wird. Dafür öffnen wir hier den
- * Konto-Dialog mit dem Push-Schalter dieser Abteilungs-Adresse.
+ * Ausnahme Benachrichtigungen: Push richtet man am besten in der (installierbaren) Abteilungs-App ein,
+ * darum öffnen wir dafür den Konto-Dialog mit dem Push-Schalter.
  */
 export default function DepartmentProfileRedirectPage() {
   useEffect(() => {

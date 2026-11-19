@@ -61,7 +61,7 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
     }
   );
 
-  // 2. Push-Status: Anzahl Abos, ob das Abo des Service Workers dieser Adresse aktiv ist, und auf welchen Adressen es Abos gibt
+  // 2. Push-Status: Anzahl Abos und ob dieses Gerät ein Abo hat (über den Endpoint dieser Adresse oder das Geräte-Cookie der ganzen Domain)
   fastify.get<{ Querystring: { endpoint?: string } }>(
     '/api/push/status',
     {
@@ -78,7 +78,6 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
             publicKey: z.string(),
             subscriptionCount: z.number().int(),
             deviceSubscribed: z.boolean(),
-            hosts: z.array(z.string()).describe('Adressen, auf denen Push-Abos eingerichtet sind'),
           }),
         },
       },
@@ -90,8 +89,8 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
       const endpoint = request.query.endpoint?.trim();
       const cookieSubId = request.cookies?.[PUSH_DEVICE_COOKIE]?.trim();
 
-      const [subs, byEndpoint, byCookie] = await Promise.all([
-        fastify.prisma.pushSubscription.findMany({ where: { userId }, select: { origin: true } }),
+      const [count, byEndpoint, byCookie] = await Promise.all([
+        fastify.prisma.pushSubscription.count({ where: { userId } }),
         endpoint
           ? fastify.prisma.pushSubscription.findFirst({
               where: { userId, endpoint },
@@ -106,8 +105,10 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
           : Promise.resolve(null),
       ]);
 
-      // Aktiv nur, wenn der Service Worker dieser Adresse selbst ein Abo hat: ein auf einer anderen
-      // Adresse eingerichtetes Abo lässt sich hier weder anzeigen noch ausschalten.
+      // Ein Abo gehört technisch zum Service Worker einer Adresse (z. B. a.cevi-schichtplan.ch). Für die Person
+      // gilt es aber fürs ganze Gerät: Das Geräte-Cookie der ganzen Domain macht es auf jeder Abteilungs-Adresse
+      // und der Startseite sichtbar, und Ausschalten löscht dort das Abo im Backend (siehe /unsubscribe).
+      const activeSub = byEndpoint || byCookie;
       // Falls lokal über den ServiceWorker gefunden, aber Cookie fehlte (z. B. vor diesem Update), Cookie nachziehen
       if (byEndpoint && cookieSubId !== byEndpoint.id) {
         setPushDeviceCookie(reply, byEndpoint.id);
@@ -116,12 +117,10 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
         clearPushDeviceCookie(reply);
       }
 
-      const hosts = [...new Set(subs.map((s) => s.origin).filter((o): o is string => Boolean(o)))].sort();
       return {
         publicKey: getVapidPublicKey(),
-        subscriptionCount: subs.length,
-        deviceSubscribed: Boolean(byEndpoint),
-        hosts,
+        subscriptionCount: count,
+        deviceSubscribed: Boolean(activeSub),
       };
     },
   );
