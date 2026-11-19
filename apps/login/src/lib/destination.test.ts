@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getDepartmentCreationUrl, getLoginUrl } from '@schichtplan/shared';
+import { getDepartmentCreationUrl } from '@schichtplan/shared';
 import { afterLogin, cleanReturnTo, departmentSlugFromReturnTo, finalDestination, withReturnTo } from './destination';
 
 function onHost(hostname: string) {

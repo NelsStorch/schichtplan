@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { ArrowRight, LogIn } from 'lucide-react';
-import { getDepartmentCreationUrl, getDepartmentUrl, getLandingUrl, getLoginUrl, type UserDto } from '@schichtplan/shared';
+import { getDepartmentCreationUrl, getDepartmentUrl, getLandingUrl, type UserDto } from '@schichtplan/shared';
 import { Avatar, buttonClasses } from '@schichtplan/ui';
 
 /**
