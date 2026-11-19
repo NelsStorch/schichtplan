@@ -12,7 +12,7 @@ export function middleware(request: NextRequest, event: NextFetchEvent) {
   if (!request.nextUrl.pathname.startsWith('/api/')) {
     if (isPageLoadRequest(request.method, request.nextUrl.pathname, request.headers)) {
       const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? '';
-      event.waitUntil(reportPageLoad('web', host.split(',')[0].trim()));
+      event.waitUntil(reportPageLoad('web', host.split(',')[0].trim(), process.env.INTERNAL_API_URL));
     }
     return NextResponse.next();
   }

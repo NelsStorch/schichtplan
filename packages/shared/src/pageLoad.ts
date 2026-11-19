@@ -43,10 +43,10 @@ function departmentSlug(host: string): string | null {
 }
 
 /**
- * Seitenaufruf intern ans Backend melden. Wirft nie; ohne INTERNAL_API_URL passiert nichts.
+ * Seitenaufruf intern ans Backend melden (`backend` = INTERNAL_API_URL). Wirft nie; ohne Adresse passiert nichts.
  * In der Middleware mit `event.waitUntil(...)` aufrufen, damit die Antwort nicht wartet.
  */
-export async function reportPageLoad(app: StatsApp, host: string, backend = process.env.INTERNAL_API_URL): Promise<void> {
+export async function reportPageLoad(app: StatsApp, host: string, backend: string | undefined): Promise<void> {
   if (!backend || !host) return;
   const headers: Record<string, string> = {
     'content-type': 'application/json',
