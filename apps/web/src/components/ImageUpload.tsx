@@ -76,7 +76,7 @@ export function ImageUpload({
     }
   };
 
-  const onDrop = (e: DragEvent<HTMLDivElement>) => {
+  const onDrop = (e: DragEvent<HTMLElement>) => {
     e.preventDefault();
     setDragOver(false);
     if (disabled || uploading) return;

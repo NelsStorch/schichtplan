@@ -45,7 +45,19 @@ import {
 type HitobitoRawProfile = Record<string, unknown> & {
   id?: string | number;
   email?: string;
-  _meta?: Record<string, unknown>;
+  first_name?: string;
+  given_name?: string;
+  last_name?: string;
+  family_name?: string;
+  nickname?: string;
+  birthday?: string | number;
+  _meta?: {
+    grantedScopes?: string;
+    fetchedAt?: string;
+    tokenType?: string;
+    simulated?: boolean;
+    [key: string]: unknown;
+  };
 };
 
 import {
@@ -363,7 +375,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
         await refreshCeviDbGroups(fastify.prisma, fastify.log, {
           baseUrl: providerConfig.baseUrl,
           accessToken,
-          grantedScopes: profile._meta.grantedScopes,
+          grantedScopes: String(profile._meta?.grantedScopes ?? ''),
           groupIds: prioritizedGroupIds,
           provider: providerConfig.type,
         });
@@ -480,13 +492,14 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
     const providerId = String(profile.id);
     const provider = targetProvider;
     const org = getOrganizationByDbType(provider);
-    const email = (profile.email || `${provider.toLowerCase()}_${providerId}@${org.domain}`).toLowerCase();
-    const firstName = profile.first_name || profile.given_name || 'Mitglied';
-    const lastName = profile.last_name || profile.family_name || '';
-    const nickname = profile.nickname || null;
+    const emailStr = typeof profile.email === 'string' ? profile.email : null;
+    const email = (emailStr || `${provider.toLowerCase()}_${providerId}@${org.domain}`).toLowerCase();
+    const firstName = String(profile.first_name || profile.given_name || 'Mitglied');
+    const lastName = String(profile.last_name || profile.family_name || '');
+    const nickname = typeof profile.nickname === 'string' ? profile.nickname : null;
 
     let birthDate: Date | null = null;
-    if (profile.birthday) {
+    if (typeof profile.birthday === 'string' || typeof profile.birthday === 'number') {
       const parsedBirthday = new Date(profile.birthday);
       if (!isNaN(parsedBirthday.getTime())) {
         birthDate = parsedBirthday;

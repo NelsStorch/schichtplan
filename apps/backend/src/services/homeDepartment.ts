@@ -10,7 +10,7 @@ import { placeCeviDbPerson, type CeviDbDerived, type CeviDbPlacement } from './h
 
 type Db = Pick<
   PrismaClient,
-  'department' | 'departmentStufe' | 'user' | 'userStufe' | 'userHitobitoStufe' | 'hitobitoGroup'
+  'department' | 'departmentStufe' | 'user' | 'userStufe' | 'userHitobitoStufe' | 'userHitobitoRole' | 'hitobitoGroup'
 > & {
   $transaction?: unknown;
 };

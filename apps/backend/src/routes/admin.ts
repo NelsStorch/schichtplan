@@ -139,7 +139,7 @@ export interface DuplicateUserRow {
 
 export async function findDuplicateUsers(prisma: PrismaClient) {
   try {
-    const rows = await prisma.$queryRaw`
+    const rows = await prisma.$queryRaw<DuplicateUserRow[]>`
       SELECT DISTINCT 
         u1."id", 
         u2."id" as "duplicateId", 
