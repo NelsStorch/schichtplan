@@ -150,14 +150,15 @@ export function getLandingUrl(path = '/', host?: string): string {
 
 /**
  * Link ins Hilfe-Center, z. B. helpUrl('/ok/zugang/').
- * Unterstützt dynamisch die Verbands-Domain (z. B. hilfe.pfadi-schichtplan.ch).
+ * Unterstützt dynamisch die Verbands-Domain (z. B. hilfe.pfadi-schichtplan.ch) und Sprachpräfixe (z. B. /fr/).
  */
-export function helpUrl(path = '/', host?: string): string {
+export function helpUrl(path = '/', host?: string, locale?: string): string {
   const currentHost = host || (typeof window !== 'undefined' ? window.location.host : '');
   const rawRoot = currentHost ? getRootDomain(currentHost).replace(/^dev\./, '') : 'cevi-schichtplan.ch';
   const root = rawRoot === 'localhost' ? getOrganization(currentHost).domain : rawRoot;
   const cleanPath = path === '/' ? '' : path.startsWith('/') ? path : `/${path}`;
-  return `https://hilfe.${root}${cleanPath}`;
+  const localePrefix = locale && locale !== 'de' ? `/${locale}` : '';
+  return `https://hilfe.${root}${localePrefix}${cleanPath}`;
 }
 
 /**

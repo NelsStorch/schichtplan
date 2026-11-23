@@ -1,10 +1,10 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import Link from 'next/link';
 import { ArrowRight, LogIn } from 'lucide-react';
 import { getDepartmentCreationUrl, getDepartmentUrl, getLandingUrl, type UserDto } from '@schichtplan/shared';
 import { Avatar, buttonClasses } from '@schichtplan/ui';
+import { Link } from '@/i18n/routing';
 
 /**
  * Die Landingpage wird auf dem Server gerendert. Nur die Teile, die von der angemeldeten Person abhängen

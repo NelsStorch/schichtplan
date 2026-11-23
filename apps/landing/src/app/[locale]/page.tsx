@@ -1,4 +1,8 @@
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
+import { LandingLocaleSwitcher } from '@/components/LandingLocaleSwitcher';
+import { setRequestLocale } from 'next-intl/server';
+import { DEFAULT_LOCALE, type Locale } from '@schichtplan/i18n';
+import { routing } from '@/i18n/routing';
 import {
   Flame,
   ExternalLink,
@@ -39,9 +43,17 @@ import { CreateDepartmentButton, HeaderAccount, MeProvider, PrimaryCta } from '@
 const PRIMARY_CTA_CLASS = 'justify-center text-sm font-semibold h-12 px-6 gap-2 shadow-glow';
 
 /** Server-Komponente: Inhalt steht direkt im HTML, passt sich dynamisch an den Verband/Domain an */
-export default async function LandingPage() {
+export default async function LandingPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: rawLocale } = await params;
+  const locale = (routing.locales.includes(rawLocale as Locale) ? rawLocale : DEFAULT_LOCALE) as Locale;
+  setRequestLocale(locale);
+
   const { host } = await getRequestOrigin();
-  const org = getOrganization(host);
+  const org = getOrganization(host, locale);
   const landingUrl = getLandingUrl('/', host);
   const createDepartmentUrl = getDepartmentCreationUrl(landingUrl, host);
   // Nur auf der neutralen Vereins-Seite: Verweis auf die Verbandsinstanzen mit eigenem Verbands-Login
@@ -80,9 +92,10 @@ export default async function LandingPage() {
 
             <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
               <ThemeToggle className="size-8 sm:size-9" />
+              <LandingLocaleSwitcher className="hidden sm:inline-flex" />
 
               <a
-                href={helpUrl('/', host)}
+                href={helpUrl('/', host, locale)}
                 className={buttonClasses({
                   variant: 'ghost',
                   size: 'sm',
@@ -527,10 +540,11 @@ export default async function LandingPage() {
             </div>
 
             <div className="flex flex-wrap items-center justify-center sm:justify-end gap-4 sm:gap-5">
+              <LandingLocaleSwitcher />
               <a href={createDepartmentUrl} className="hover:text-fg transition font-medium text-fg">
                 {org.unitTerm} erfassen
               </a>
-              <a href={helpUrl('/', host)} className="hover:text-fg transition">
+              <a href={helpUrl('/', host, locale)} className="hover:text-fg transition">
                 Hilfe
               </a>
               <a href={statusUrl('/', host)} className="hover:text-fg transition">

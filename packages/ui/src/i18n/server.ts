@@ -42,31 +42,49 @@ export interface RequestLocaleInfo {
 const isDev = process.env.NODE_ENV !== 'production';
 
 /** Pro Anfrage zwischengespeichert: Layout und `request.ts` rechnen nicht doppelt */
-export const getRequestLocale = cache(async (department?: string | null): Promise<RequestLocaleInfo> => {
-  const [{ host }, cookieStore, h] = await Promise.all([getRequestOrigin(), cookies(), headers()]);
-  // Zur Laufzeit gelesen: auf Dev lassen sich Sprachen mit I18N_ENABLED_LOCALES=de,fr,en freischalten
-  const enabled = getEnabledLocales(getOrganizationTypeFromHost(host), process.env.I18N_ENABLED_LOCALES);
-  const cookie = cookieStore.get(LOCALE_COOKIE)?.value ?? null;
-  const pseudo = isDev && cookie === PSEUDO_LOCALE;
-  const { locale, source } = resolveLocale({
-    cookie: pseudo ? null : cookie,
-    acceptLanguage: h.get('accept-language'),
-    department,
-    enabled,
-  });
-  return { locale, intlLocale: INTL_LOCALES[locale], source, enabled, pseudo, pseudoAvailable: isDev };
-});
+export const getRequestLocale = cache(
+  async (
+    department?: string | null,
+    explicitLocale?: string | null,
+    enabledOverride?: readonly Locale[],
+  ): Promise<RequestLocaleInfo> => {
+    const [{ host }, cookieStore, h] = await Promise.all([getRequestOrigin(), cookies(), headers()]);
+    // Zur Laufzeit gelesen: auf Dev lassen sich Sprachen mit I18N_ENABLED_LOCALES=de,fr,en freischalten
+    const baseEnabled = getEnabledLocales(getOrganizationTypeFromHost(host), process.env.I18N_ENABLED_LOCALES);
+    const enabled = enabledOverride ? [...enabledOverride] : baseEnabled;
+    const effectiveEnabled =
+      explicitLocale && !enabled.includes(explicitLocale as Locale)
+        ? [explicitLocale as Locale, ...enabled]
+        : enabled;
+    const cookie = cookieStore.get(LOCALE_COOKIE)?.value ?? null;
+    const pseudo = isDev && cookie === PSEUDO_LOCALE;
+    const { locale, source } = resolveLocale({
+      explicit: explicitLocale,
+      cookie: pseudo ? null : cookie,
+      acceptLanguage: h.get('accept-language'),
+      department,
+      enabled: effectiveEnabled,
+    });
+    return { locale, intlLocale: INTL_LOCALES[locale], source, enabled, pseudo, pseudoAvailable: isDev };
+  },
+);
 
 /** Konfiguration für `getRequestConfig` von next-intl: nur die genannten Namespaces, Lücken auf Deutsch */
 export async function createRequestConfig({
   namespaces,
   department,
+  locale: explicitLocale,
+  enabledLocales,
 }: {
   namespaces: readonly Namespace[];
   /** Standardsprache der Abteilung dieser Subdomain (z. B. aus /api/departments/current) */
   department?: string | null;
+  /** Explizit angeforderte Sprache (z. B. aus `requestLocale` in `next-intl`) */
+  locale?: string | null;
+  /** Für diese App freigeschaltete Sprachen (z. B. Routing-Locales der Landingpage) */
+  enabledLocales?: readonly Locale[];
 }) {
-  const info = await getRequestLocale(department ?? null);
+  const info = await getRequestLocale(department ?? null, explicitLocale, enabledLocales);
   let messages: Record<string, unknown> = pickMessages(info.locale, namespaces);
   if (info.pseudo) {
     const { pseudoLocalizeMessages } = await import('@schichtplan/i18n/pseudo');

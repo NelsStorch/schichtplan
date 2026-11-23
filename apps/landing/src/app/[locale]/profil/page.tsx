@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import { ArrowLeft } from 'lucide-react';
 import { getLoginUrl, getRootDomain, type UserDto } from '@schichtplan/shared';
 import { Callout, ProfileView, ThemeToggle, useOrganization } from '@schichtplan/ui';

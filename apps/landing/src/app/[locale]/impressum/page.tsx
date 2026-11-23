@@ -1,19 +1,40 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
+import { routing } from "@/i18n/routing";
+import { DEFAULT_LOCALE, type Locale } from "@schichtplan/i18n";
+import { setRequestLocale } from "next-intl/server";
 import { getOrganization } from "@schichtplan/shared";
 import { getRequestOrigin } from "@schichtplan/ui/og";
 import { LEGAL_ROBOTS, LegalPage, Section } from "@/components/LegalPage";
 import { ContactReveal } from "../datenschutz/ContactReveal";
 import { landingPageMetadata } from "@/lib/ogPages";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const base = await landingPageMetadata("impressum");
-  return { ...base, alternates: { canonical: "/impressum" }, robots: LEGAL_ROBOTS };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: rawLocale } = await params;
+  const locale = (routing.locales.includes(rawLocale as Locale) ? rawLocale : DEFAULT_LOCALE) as Locale;
+  const base = await landingPageMetadata("impressum", locale);
+  return {
+    ...base,
+    alternates: { canonical: locale === DEFAULT_LOCALE ? "/impressum" : `/${locale}/mentions-legales` },
+    robots: LEGAL_ROBOTS,
+  };
 }
 
-export default async function ImpressumPage() {
+export default async function ImpressumPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: rawLocale } = await params;
+  const locale = (routing.locales.includes(rawLocale as Locale) ? rawLocale : DEFAULT_LOCALE) as Locale;
+  setRequestLocale(locale);
+
   const { host } = await getRequestOrigin();
-  const org = getOrganization(host);
+  const org = getOrganization(host, locale);
 
   return (
     <LegalPage org={org} title="Impressum">

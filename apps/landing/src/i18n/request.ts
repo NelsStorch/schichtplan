@@ -1,8 +1,21 @@
 import { getRequestConfig } from 'next-intl/server';
 import { createRequestConfig } from '@schichtplan/ui/i18n/server';
+import { routing } from './routing';
 
 /**
- * Sprache und Texte pro Anfrage, vorerst ohne Sprach-Präfix in der URL (Konzept: docs/internal/i18n-konzept.md,
- * Schritt 9 bringt /fr/… mit hreflang). Übersetzt sind bisher die gemeinsamen Teile aus @schichtplan/ui (Profil).
+ * Sprache und Texte pro Anfrage mit Sprach-Routing (Konzept: docs/internal/i18n-konzept.md, Schritt 9).
+ * Liest `requestLocale` aus der Route (z. B. 'fr' aus /fr/...) und initialisiert die Kataloge.
  */
-export default getRequestConfig(() => createRequestConfig({ namespaces: ['common', 'ui'] }));
+export default getRequestConfig(async ({ requestLocale }) => {
+  const requested = await requestLocale;
+  const locale =
+    requested && (routing.locales as readonly string[]).includes(requested)
+      ? requested
+      : undefined;
+
+  return createRequestConfig({
+    namespaces: ['common', 'ui'],
+    locale,
+    enabledLocales: routing.locales,
+  });
+});

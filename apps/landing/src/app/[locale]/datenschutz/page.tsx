@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
+import { routing } from "@/i18n/routing";
+import { DEFAULT_LOCALE, type Locale } from "@schichtplan/i18n";
+import { setRequestLocale } from "next-intl/server";
 import {
   ORGANIZATIONS,
   getOrganization,
@@ -14,13 +17,17 @@ import { LEGAL_ROBOTS, LegalPage, List, Section } from "@/components/LegalPage";
 import { ContactReveal } from "./ContactReveal";
 import { landingPageMetadata } from "@/lib/ogPages";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const base = await landingPageMetadata("datenschutz");
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: rawLocale } = await params;
+  const locale = (routing.locales.includes(rawLocale as Locale) ? rawLocale : DEFAULT_LOCALE) as Locale;
+  const base = await landingPageMetadata("datenschutz", locale);
   return {
     ...base,
-    // Eigener Canonical statt dem der Startseite (aus dem Layout), sonst widersprechen sich die Signale
-    alternates: { canonical: "/datenschutz" },
-    // Nicht in Suchmaschinen, keine Kopie im Cache (zusätzlich zu robots.txt)
+    alternates: { canonical: locale === DEFAULT_LOCALE ? "/datenschutz" : `/${locale}/protection-des-donnees` },
     robots: LEGAL_ROBOTS,
   };
 }
@@ -115,9 +122,17 @@ function StorageTable({
   );
 }
 
-export default async function DatenschutzPage() {
+export default async function DatenschutzPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: rawLocale } = await params;
+  const locale = (routing.locales.includes(rawLocale as Locale) ? rawLocale : DEFAULT_LOCALE) as Locale;
+  setRequestLocale(locale);
+
   const { host } = await getRequestOrigin();
-  const org = getOrganization(host);
+  const org = getOrganization(host, locale);
   const w = wording(org);
   const fed = w.federation;
   const dbShort = org.authProviderShort;

@@ -789,11 +789,19 @@ export interface OgSubpage {
  * Metadaten für eine Unterseite mit eigenem Vorschaubild (`/og?seite=<key>`). Die `/og`-Route der App
  * zeichnet für denselben Schlüssel Titel und Untertitel aus `page`.
  */
-export async function ogSubpageMetadata(key: string, path: string, page: OgSubpage) {
+export async function ogSubpageMetadata(key: string, path: string, page: OgSubpage, locale?: string) {
   const { origin, host } = await getRequestOrigin();
-  const org = getOrganization(host);
+  const org = getOrganization(host, locale);
   const title = `${page.title} · ${org.name}`;
-  const image = ogImage(`${origin}/og?seite=${encodeURIComponent(key)}`, title, key, page.title, page.subtitle);
+  const langQuery = locale && locale !== 'de' ? `&lang=${encodeURIComponent(locale)}` : '';
+  const image = ogImage(`${origin}/og?seite=${encodeURIComponent(key)}${langQuery}`, title, key, page.title, page.subtitle);
+  const ogLocaleMap: Record<string, string> = {
+    de: 'de_CH',
+    fr: 'fr_CH',
+    it: 'it_CH',
+    en: 'en_CH',
+  };
+  const ogLocale = (locale && ogLocaleMap[locale]) || 'de_CH';
   return {
     title: page.title,
     description: page.description,
@@ -801,7 +809,7 @@ export async function ogSubpageMetadata(key: string, path: string, page: OgSubpa
     openGraph: {
       type: 'website' as const,
       siteName: org.name,
-      locale: 'de_CH',
+      locale: ogLocale,
       title,
       description: page.description,
       url: `${origin}${path}`,

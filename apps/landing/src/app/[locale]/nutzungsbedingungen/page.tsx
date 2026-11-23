@@ -1,21 +1,42 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
+import { routing } from "@/i18n/routing";
+import { DEFAULT_LOCALE, type Locale } from "@schichtplan/i18n";
+import { setRequestLocale } from "next-intl/server";
 import { getOrganization } from "@schichtplan/shared";
 import { getRequestOrigin } from "@schichtplan/ui/og";
 import { LEGAL_ROBOTS, LegalPage, List, Section } from "@/components/LegalPage";
 import { landingPageMetadata } from "@/lib/ogPages";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const base = await landingPageMetadata("nutzungsbedingungen");
-  return { ...base, alternates: { canonical: "/nutzungsbedingungen" }, robots: LEGAL_ROBOTS };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: rawLocale } = await params;
+  const locale = (routing.locales.includes(rawLocale as Locale) ? rawLocale : DEFAULT_LOCALE) as Locale;
+  const base = await landingPageMetadata("nutzungsbedingungen", locale);
+  return {
+    ...base,
+    alternates: { canonical: locale === DEFAULT_LOCALE ? "/nutzungsbedingungen" : `/${locale}/conditions-utilisation` },
+    robots: LEGAL_ROBOTS,
+  };
 }
 
 /** Bei inhaltlichen Änderungen auch TERMS_VERSION in packages/shared/src/constants.ts erhöhen */
 const STAND = "19. November 2026";
 
-export default async function NutzungsbedingungenPage() {
+export default async function NutzungsbedingungenPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: rawLocale } = await params;
+  const locale = (routing.locales.includes(rawLocale as Locale) ? rawLocale : DEFAULT_LOCALE) as Locale;
+  setRequestLocale(locale);
+
   const { host } = await getRequestOrigin();
-  const org = getOrganization(host);
+  const org = getOrganization(host, locale);
   const isVerein = org.slug === "verein";
   const unit = org.unitTerm;
   const units = org.unitTermPlural;
@@ -71,12 +92,12 @@ export default async function NutzungsbedingungenPage() {
           <li>
             Wir schützen sie mit angemessenen technischen und organisatorischen
             Massnahmen (siehe{" "}
-            <Link href="/datenschutz#sicherheit">Datenschutzerklärung, Abschnitt 9</Link>
+            <Link href={{ pathname: "/datenschutz", hash: "sicherheit" }}>Datenschutzerklärung, Abschnitt 9</Link>
             ).
           </li>
           <li>
             Wir setzen nur die Dienstleister ein, die in der{" "}
-            <Link href="/datenschutz#dritte">Datenschutzerklärung, Abschnitt 7</Link>{" "}
+            <Link href={{ pathname: "/datenschutz", hash: "dritte" }}>Datenschutzerklärung, Abschnitt 7</Link>{" "}
             genannt sind. Neue Dienstleister nehmen wir dort auf, bevor wir sie
             einsetzen.
           </li>
@@ -95,7 +116,7 @@ export default async function NutzungsbedingungenPage() {
           <li>
             Löscht {the} Anlässe oder wird sie aufgelöst, löschen wir die Daten
             nach den Fristen in der{" "}
-            <Link href="/datenschutz#dauer">Datenschutzerklärung, Abschnitt 8</Link>
+            <Link href={{ pathname: "/datenschutz", hash: "dauer" }}>Datenschutzerklärung, Abschnitt 8</Link>
             , auch aus den Sicherungen.
           </li>
         </List>
