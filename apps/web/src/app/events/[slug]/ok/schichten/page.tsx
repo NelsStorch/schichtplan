@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { AlertTriangle, CalendarDays, CheckSquare, Filter, LayoutList, Plus, Rows3, Search, Sparkles } from 'lucide-react';
 import type { ShiftDto, ShiftTaskDto } from '@schichtplan/shared';
 import { Badge, Button, Chip, Dialog, EmptyState, Input, Select, cn, trackUi, useConfirm, useToast } from '@schichtplan/ui';
@@ -20,6 +21,7 @@ type View = 'list' | 'plan';
 const VIEW_KEY = 'ok-shift-view';
 
 function ShiftsPage() {
+  const t = useTranslations('web.ok.shifts');
   const { event, base, reload, setMessageDraft } = useOkEvent();
   const router = useRouter();
   const params = useSearchParams();
@@ -155,37 +157,37 @@ function ShiftsPage() {
 
   const removeSignup = async (shift: ShiftDto, signupId: string, name: string) => {
     const ok = await confirm({
-      title: `${name} austragen?`,
-      description: `Aus der Schicht «${shift.title?.trim() || fmtTimeRange(shift.startTime, shift.endTime)}».`,
-      confirmLabel: 'Austragen',
+      title: t('confirmSignoffTitle', { name }),
+      description: t('confirmSignoffDesc', { title: shift.title?.trim() || fmtTimeRange(shift.startTime, shift.endTime) }),
+      confirmLabel: t('confirmSignoffBtn'),
       tone: 'danger',
     });
     if (!ok) return;
     try {
       await api(`/api/shifts/${shift.id}/signup?signupId=${signupId}`, { method: 'DELETE' });
-      toast({ title: `${name} ausgetragen` });
+      toast({ title: t('signoffSuccess', { name }) });
       await reload();
     } catch (err) {
-      toast({ title: 'Austragen fehlgeschlagen', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('signoffFailed'), description: errorMessage(err), tone: 'error' });
     }
   };
 
   return (
     <div>
       <OkPageHeader
-        title="Schichten"
-        description="Schichten anlegen, Personen einteilen und Lücken finden. Zum Ändern mehrerer Schichten auf einmal «Auswählen» antippen."
+        title={t('title')}
+        description={t('desc')}
         help="/ok/schichten-planen/"
         actions={
           <>
             <Button size="sm" variant={selecting ? 'primary' : 'secondary'} onClick={selecting ? stopSelecting : () => setSelecting(true)}>
-              <CheckSquare className="size-4" /> {selecting ? 'Fertig' : 'Auswählen'}
+              <CheckSquare className="size-4" /> {selecting ? t('doneBtn') : t('selectBtn')}
             </Button>
             <Button size="sm" variant="secondary" onClick={() => setShowSeriesForm(true)}>
-              <Sparkles className="size-4" /> Serie erstellen
+              <Sparkles className="size-4" /> {t('createSeriesBtn')}
             </Button>
             <Button size="sm" onClick={openNew}>
-              <Plus className="size-4" /> Neue Schicht
+              <Plus className="size-4" /> {t('newShiftBtn')}
             </Button>
           </>
         }
@@ -194,11 +196,11 @@ function ShiftsPage() {
       {/* Ansicht und Filter */}
       <div className="mb-6 space-y-3">
         <div className="flex flex-wrap items-center gap-2">
-          <fieldset className="inline-flex rounded-full border border-line bg-surface p-1 m-0" aria-label="Ansicht">
+          <fieldset className="inline-flex rounded-full border border-line bg-surface p-1 m-0" aria-label={t('viewAria')}>
             {(
               [
-                ['list', 'Liste', LayoutList],
-                ['plan', 'Plan', Rows3],
+                ['list', t('viewList'), LayoutList],
+                ['plan', t('viewPlan'), Rows3],
               ] as const
             ).map(([key, label, Icon]) => (
               <button
@@ -219,10 +221,10 @@ function ShiftsPage() {
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-subtle" />
             <Input
               className="h-10 pl-9 text-sm"
-              placeholder="Schicht, Arbeit oder Person…"
+              placeholder={t('searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              aria-label="Schichten durchsuchen"
+              aria-label={t('searchAria')}
             />
           </div>
           {taskTitles.length > 1 && (
@@ -230,12 +232,12 @@ function ShiftsPage() {
               className="h-10 w-auto text-sm"
               value={taskFilter}
               onChange={(e) => setTaskFilter(e.target.value)}
-              aria-label="Nach Arbeit filtern"
+              aria-label={t('filterTaskAria')}
             >
-              <option value="ALL">Alle Arbeiten</option>
-              {taskTitles.map((t) => (
-                <option key={t} value={t}>
-                  {t}
+              <option value="ALL">{t('allTasks')}</option>
+              {taskTitles.map((item) => (
+                <option key={item} value={item}>
+                  {item}
                 </option>
               ))}
             </Select>
@@ -245,9 +247,9 @@ function ShiftsPage() {
               className="h-10 w-auto text-sm"
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              aria-label="Nach Kategorie filtern"
+              aria-label={t('filterCategoryAria')}
             >
-              <option value="ALL">Alle Kategorien</option>
+              <option value="ALL">{t('allCategories')}</option>
               {categories.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -260,7 +262,7 @@ function ShiftsPage() {
           {days.length > 1 && (
             <>
               <Chip selected={day === 'ALL'} onClick={() => setDay('ALL')}>
-                Alle Tage
+                {t('allDays')}
               </Chip>
               {days.map((d) => (
                 <Chip key={d.key} selected={day === d.key} onClick={() => setDay(d.key)}>
@@ -271,11 +273,11 @@ function ShiftsPage() {
             </>
           )}
           <Chip selected={onlyOpen} onClick={() => setOnlyOpen((v) => !v)}>
-            Nur nicht voll
+            {t('onlyOpen')}
           </Chip>
           {(warningShiftIds.size > 0 || onlyWarning) && (
             <Chip selected={onlyWarning} count={warningShiftIds.size} onClick={() => setOnlyWarning((v) => !v)}>
-              <AlertTriangle className="size-3.5 text-warning-ink" /> Jugendschutz-Warnung
+              <AlertTriangle className="size-3.5 text-warning-ink" /> {t('youthWarning')}
             </Chip>
           )}
           {hasSetup && (
@@ -283,12 +285,12 @@ function ShiftsPage() {
               selected={setupFilter === 'SETUP'}
               onClick={() => setSetupFilter(setupFilter === 'SETUP' ? 'ALL' : 'SETUP')}
             >
-              Nur Auf-/Abbau
+              {t('onlySetup')}
             </Chip>
           )}
           {filtersActive && (
             <Button size="sm" variant="ghost" onClick={resetFilters}>
-              Filter zurücksetzen
+              {t('resetFilters')}
             </Button>
           )}
         </div>
@@ -297,22 +299,22 @@ function ShiftsPage() {
       {event.shifts.length === 0 ? (
         <EmptyState
           icon={<CalendarDays />}
-          title="Noch keine Schichten"
-          description="Lege die erste Schicht an. Wiederkehrende Arbeiten wie Bar oder Grill legst du am besten zuerst im Arbeiten-Katalog an."
+          title={t('emptyTitle')}
+          description={t('emptyDesc')}
           action={
             <Button onClick={openNew}>
-              <Plus className="size-4" /> Erste Schicht anlegen
+              <Plus className="size-4" /> {t('firstShiftBtn')}
             </Button>
           }
         />
       ) : filteredDays.length === 0 ? (
         <EmptyState
           icon={<Filter />}
-          title="Keine passenden Schichten"
-          description="Keine Schicht passt zu den gewählten Filtern."
+          title={t('noMatchesTitle')}
+          description={t('noMatchesDesc')}
           action={
             <Button variant="secondary" onClick={resetFilters}>
-              Filter zurücksetzen
+              {t('resetFilters')}
             </Button>
           }
         />
@@ -331,7 +333,7 @@ function ShiftsPage() {
                       {fmtWeekday(iso)} <span className="text-base font-normal text-fg-muted">{fmtDayMonth(iso)}</span>
                     </h3>
                     <span className="text-xs font-semibold text-fg-muted">
-                      {group.items.length} Schicht{group.items.length === 1 ? '' : 'en'}
+                      {t('shiftsCount', { count: group.items.length })}
                     </span>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -339,15 +341,15 @@ function ShiftsPage() {
                       <>
                         {responsibles.length ? (
                           <Badge tone="neutral" size="sm">
-                            Tagesleitung: {responsibles.map((r) => r.displayName).join(', ')}
+                            {t('dayLeadBadge', { names: responsibles.map((r) => r.displayName).join(', ') })}
                           </Badge>
                         ) : (
                           <Badge tone="warning" size="sm">
-                            Keine Tagesleitung
+                            {t('noDayLeadBadge')}
                           </Badge>
                         )}
                         <Button size="sm" variant="ghost" onClick={() => setDayTarget({ dayDate: group.key, dayLabel })}>
-                          Tagesleitung ändern
+                          {t('changeDayLead')}
                         </Button>
                       </>
                     )}
@@ -366,7 +368,7 @@ function ShiftsPage() {
                           })
                         }
                       >
-                        {groupSelected ? 'Tag abwählen' : 'Ganzen Tag wählen'}
+                        {groupSelected ? t('unselectDay') : t('selectAllDay')}
                       </Button>
                     )}
                   </div>
@@ -423,7 +425,7 @@ function ShiftsPage() {
             setMessageDraft({
               target: 'SHIFTS',
               shiftIds: ids,
-              label: `Eingetragene in ${ids.length} Schicht${ids.length === 1 ? '' : 'en'}`,
+              label: t('messageDraftLabel', { count: ids.length }),
             });
             router.push(`${base}/nachrichten`);
           }}
@@ -431,7 +433,7 @@ function ShiftsPage() {
       )}
       {selecting && selectedIds.size === 0 && (
         <p className="sticky bottom-4 z-20 mt-6 rounded-card border border-line bg-surface/95 p-3 text-sm text-fg-muted shadow-lift backdrop-blur">
-          Tippe Schichten an, um sie auszuwählen.
+          {t('selectPrompt')}
         </p>
       )}
 
@@ -494,13 +496,13 @@ function ShiftsPage() {
           open
           onClose={() => setShiftToDelete(null)}
           size="sm"
-          title={`Schicht «${shiftToDelete.title?.trim() || fmtTimeRange(shiftToDelete.startTime, shiftToDelete.endTime)}» löschen?`}
+          title={t('deleteDialogTitle', { title: shiftToDelete.title?.trim() || fmtTimeRange(shiftToDelete.startTime, shiftToDelete.endTime) })}
           description={
             <div className="space-y-4 pt-1 text-left">
               <p className="text-sm text-fg-muted">
                 {shiftToDelete.signups?.length
-                  ? `Dabei werden auch ${shiftToDelete.signups.length} Eintragung${shiftToDelete.signups.length === 1 ? '' : 'en'} unwiderruflich gelöscht.`
-                  : 'Das lässt sich nicht rückgängig machen.'}
+                  ? t('deleteSignupsWarning', { count: shiftToDelete.signups.length })
+                  : t('deleteIrreversible')}
               </p>
               {(shiftToDelete.signups?.length ?? 0) > 0 && (
                 <label className="flex items-start gap-2.5 rounded-field border border-line bg-surface-2 p-3 text-sm cursor-pointer select-none">
@@ -512,10 +514,10 @@ function ShiftsPage() {
                   />
                   <div className="space-y-0.5">
                     <span className="text-xs font-semibold text-fg block">
-                      Eingetragene Helfende per E-Mail benachrichtigen
+                      {t('notifyHelpersCheckbox')}
                     </span>
                     <span className="text-xs text-fg-muted block">
-                      Informiert die betroffenen Helfenden automatisch darüber, dass ihre Schicht abgesagt wurde.
+                      {t('notifyHelpersHint')}
                     </span>
                   </div>
                 </label>
@@ -525,7 +527,7 @@ function ShiftsPage() {
           footer={
             <>
               <Button variant="ghost" onClick={() => setShiftToDelete(null)}>
-                Abbrechen
+                {t('cancelBtn')}
               </Button>
               <Button
                 variant="danger"
@@ -535,16 +537,16 @@ function ShiftsPage() {
                   try {
                     await api(`/api/shifts/${s.id}?notify=${notifyHelpers}`, { method: 'DELETE' });
                     toast({
-                      title: 'Schicht gelöscht',
+                      title: t('shiftDeleted'),
                       description: s.title?.trim() || fmtTimeRange(s.startTime, s.endTime),
                     });
                     await reload();
                   } catch (err) {
-                    toast({ title: 'Löschen fehlgeschlagen', description: errorMessage(err), tone: 'error' });
+                    toast({ title: t('deleteFailed'), description: errorMessage(err), tone: 'error' });
                   }
                 }}
               >
-                Schicht löschen
+                {t('deleteShiftBtn')}
               </Button>
             </>
           }

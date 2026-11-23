@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   CalendarDays,
   ChevronDown,
@@ -44,6 +45,7 @@ export function HelperHoursDialog({
   roster: EventRosterResponseDto | null;
   onClose: () => void;
 }) {
+  const t = useTranslations('web.ok.helpers.hours');
   const [config, setConfig] = useState<HelperStatsConfig>(DEFAULT_HELPER_STATS_CONFIG);
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'helpers' | 'stufen'>('helpers');
@@ -102,10 +104,10 @@ export function HelperHoursDialog({
       open={open}
       onClose={onClose}
       icon={<Clock />}
-      title="Helferstunden & Stufen-Rangliste"
+      title={t('title')}
       description={
         <span>
-          Übersicht der geleisteten Arbeits- und Einsatzstunden für {event.title} (inkl. Schichtleitungen).{' '}
+          {t('desc')}{' '}
           <a
             href={helpUrl('/ok/auswertung/#helferstunden--einsatz-statistik')}
             target="_blank"
@@ -131,7 +133,7 @@ export function HelperHoursDialog({
             </Button>
             <Button onClick={handleExport} variant="secondary">
               <FileSpreadsheet className="size-4" />
-              {viewMode === 'stufen' ? 'Rangliste exportieren' : 'CSV exportieren'}
+              {t('exportCsv')}
             </Button>
           </div>
         </div>
@@ -143,7 +145,7 @@ export function HelperHoursDialog({
           <div className="rounded-xl border border-line bg-surface p-3.5 space-y-1">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-fg-muted uppercase tracking-wider">
               <Clock className="size-3.5 text-accent" />
-              Gesamtstunden
+              {t('summaryTotalHours')}
             </div>
             <div className="text-2xl font-bold text-fg">
               {summary.totalHours} <span className="text-sm font-normal text-fg-muted">Std.</span>
@@ -156,20 +158,20 @@ export function HelperHoursDialog({
           <div className="rounded-xl border border-line bg-surface p-3.5 space-y-1">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-fg-muted uppercase tracking-wider">
               <Users className="size-3.5 text-accent" />
-              Aktive Helfende
+              {t('summaryTotalHelpers')}
             </div>
             <div className="text-2xl font-bold text-fg">
               {summary.activeHelpers}
             </div>
             <div className="text-[11px] text-fg-subtle truncate">
-              Ø {summary.avgHoursPerHelper} Std. / Person
+              {t('summaryAvgHours')}: {summary.avgHoursPerHelper} Std.
             </div>
           </div>
 
           <div className="rounded-xl border border-line bg-surface p-3.5 space-y-1">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-fg-muted uppercase tracking-wider">
               <CalendarDays className="size-3.5 text-accent" />
-              Einsätze
+              {t('colShifts')}
             </div>
             <div className="text-2xl font-bold text-fg">
               {summary.totalShifts}
@@ -182,7 +184,7 @@ export function HelperHoursDialog({
           <div className="rounded-xl border border-line bg-surface p-3.5 space-y-1">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-fg-muted uppercase tracking-wider">
               <Trophy className="size-3.5 text-amber-500" />
-              Stufen aktiv
+              {t('colStufen')}
             </div>
             <div className="text-2xl font-bold text-fg">
               {stufenStats.length}
@@ -197,7 +199,7 @@ export function HelperHoursDialog({
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-surface-subtle p-3 text-xs">
           <span className="font-semibold text-fg flex items-center gap-1.5">
             <SlidersHorizontal className="size-3.5 text-accent" />
-            Filter für Stunden-Berechnung:
+            {t('configTitle')}:
           </span>
 
           <div className="flex flex-wrap items-center gap-4">
@@ -223,7 +225,7 @@ export function HelperHoursDialog({
                   }
                   className="size-4 rounded border-line text-accent focus:ring-accent"
                 />
-                <span>Nur bestätigte Anwesenheiten («Da»)</span>
+                <span>{t('configIncludeUnconfirmed')}</span>
               </label>
             )}
           </div>
@@ -243,7 +245,7 @@ export function HelperHoursDialog({
               )}
             >
               <Users className="size-4" />
-              Personen ({filteredHelpers.length})
+              {t('tabHelpers', { count: filteredHelpers.length })}
             </button>
             <button
               type="button"
@@ -256,7 +258,7 @@ export function HelperHoursDialog({
               )}
             >
               <Trophy className="size-4 text-amber-500" />
-              Stufen-Rangliste ({stufenStats.length})
+              {t('tabStufen')} ({stufenStats.length})
             </button>
           </div>
 
@@ -264,7 +266,7 @@ export function HelperHoursDialog({
             <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-fg-subtle" />
             <Input
               className="h-8 pl-8 text-xs"
-              placeholder={viewMode === 'stufen' ? 'Stufe oder Name suchen…' : 'Person, Abteilung oder Stufe suchen…'}
+              placeholder={t('searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -278,12 +280,12 @@ export function HelperHoursDialog({
               <table className="w-full text-left text-xs">
                 <thead className="sticky top-0 bg-surface-subtle border-b border-line text-fg-muted uppercase tracking-wider text-[10px] font-semibold">
                   <tr>
-                    <th scope="col" className="py-2.5 px-3">Helfende Person</th>
-                    <th scope="col" className="py-2.5 px-3">Abteilung / Stufe</th>
-                    <th scope="col" className="py-2.5 px-3 text-center">Schichten</th>
+                    <th scope="col" className="py-2.5 px-3">{t('colName')}</th>
+                    <th scope="col" className="py-2.5 px-3">{t('colUnit')} / {t('colStufen')}</th>
+                    <th scope="col" className="py-2.5 px-3 text-center">{t('colShifts')}</th>
                     <th scope="col" className="py-2.5 px-3 text-right">Anlass</th>
                     <th scope="col" className="py-2.5 px-3 text-right">Auf-/Abbau</th>
-                    <th scope="col" className="py-2.5 px-3 text-right">Gesamtzeit</th>
+                    <th scope="col" className="py-2.5 px-3 text-right">{t('colHours')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line/60">
@@ -504,3 +506,4 @@ export function HelperHoursDialog({
     </Dialog>
   );
 }
+

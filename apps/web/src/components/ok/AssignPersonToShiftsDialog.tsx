@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { AlertTriangle, Check, Search, UserCheck, UserPlus, X } from 'lucide-react';
 import type { ShiftCollisionCheckResult, ShiftDto } from '@schichtplan/shared';
 import { Badge, Button, Callout, Chip, Dialog, Input, Select, cn, useToast } from '@schichtplan/ui';
@@ -43,6 +44,7 @@ export function AssignPersonToShiftsDialog({
   /** Nach dem Einteilen Daten neu laden; `done` = alles geklappt, Dialog schliessen */
   onChanged: (done: boolean) => Promise<void>;
 }) {
+  const t = useTranslations('web.ok.helpers.assignDialog');
   const toast = useToast();
   const [search, setSearch] = useState('');
   const [onlyOpen, setOnlyOpen] = useState(true);
@@ -141,7 +143,7 @@ export function AssignPersonToShiftsDialog({
   const collisionMessages = selectedShifts
     .map((s) => collisions[s.id])
     .filter((c): c is ShiftCollisionCheckResult => Boolean(c?.hasCollision))
-    .map((c) => c.message ?? 'Zeitkollision mit einer bestehenden Schicht');
+    .map((c) => c.message ?? t('collisionTitle'));
   const needsConfirm = collisionMessages.length > 0 || internalOverlaps.length > 0;
   const selectedMinutes = selectedShifts.reduce((sum, s) => sum + minutesOf(s), 0);
   const afterCount = currentCount + selectedShifts.length;
@@ -172,7 +174,7 @@ export function AssignPersonToShiftsDialog({
     e.preventDefault();
     if (!person || selectedShifts.length === 0) return;
     if (needsConfirm && !confirmCollision) {
-      setError('Bitte bestätige die Zeitkollision mit dem Kontrollkästchen.');
+      setError(t('collisionDesc'));
       return;
     }
     setSaving(true);
@@ -205,7 +207,7 @@ export function AssignPersonToShiftsDialog({
     const failed = results.filter((r) => r.error);
     if (ok.length > 0) {
       toast({
-        title: `${person.name} in ${ok.length} Schicht${ok.length === 1 ? '' : 'en'} eingeteilt`,
+        title: t('successToast', { name: person.name, count: ok.length }),
         description: ok.map((r) => r.label).join(', '),
       });
     }
@@ -226,7 +228,7 @@ export function AssignPersonToShiftsDialog({
       open={Boolean(person)}
       onClose={onClose}
       icon={<UserPlus />}
-      title={person ? `${person.name} in Schichten einteilen` : ''}
+      title={person ? t('title', { name: person.name }) : ''}
       description={
         person
           ? `${currentCount}${minShifts && !person.isGuest ? `/${minShifts}` : ''} Schicht${currentCount === 1 ? '' : 'en'} bisher${
@@ -240,7 +242,7 @@ export function AssignPersonToShiftsDialog({
         {error && <Callout tone="danger">{error}</Callout>}
         {failures.length > 0 && (
           <Callout tone="danger">
-            <p className="font-semibold">Nicht eingeteilt:</p>
+            <p className="font-semibold">{t('failToast')}:</p>
             <ul className="mt-1 list-disc space-y-0.5 pl-4">
               {failures.map((f) => (
                 <li key={f.shiftId}>
@@ -256,19 +258,19 @@ export function AssignPersonToShiftsDialog({
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-subtle" />
             <Input
               className="h-9 pl-9 text-sm"
-              placeholder="Schicht oder Arbeit suchen…"
+              placeholder={t('searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
           <Chip selected={onlyOpen} onClick={() => setOnlyOpen((v) => !v)}>
-            Nur freie Schichten
+            {t('onlyOpen')}
           </Chip>
         </div>
 
         <div className="max-h-72 space-y-4 overflow-y-auto rounded-field border border-line bg-surface-2/40 p-3">
           {days.length === 0 ? (
-            <p className="py-6 text-center text-xs text-fg-muted">Keine passenden Schichten gefunden.</p>
+            <p className="py-6 text-center text-xs text-fg-muted">{t('noMatchingShifts')}</p>
           ) : (
             days.map((d) => {
               const iso = dayKeyToIso(d.key);
@@ -315,7 +317,7 @@ export function AssignPersonToShiftsDialog({
                         <span className="shrink-0">
                           {alreadyIn ? (
                             <Badge size="sm" tone="neutral">
-                              Schon drin
+                              {t('alreadyIn')}
                             </Badge>
                           ) : (
                             <Badge size="sm" tone={isFull ? 'neutral' : 'success'}>
@@ -416,7 +418,7 @@ export function AssignPersonToShiftsDialog({
                     onChange={(e) => setConfirmCollision(e.target.checked)}
                     className="size-4 accent-warning"
                   />
-                  Trotz Zeitkollision einteilen
+                  {t('confirmCollision')}
                 </label>
               </div>
             </div>
@@ -425,14 +427,15 @@ export function AssignPersonToShiftsDialog({
 
         <div className="flex flex-col-reverse gap-2 border-t border-line pt-4 sm:flex-row sm:justify-end">
           <Button type="button" variant="ghost" onClick={onClose}>
-            {failures.length > 0 ? 'Schliessen' : 'Abbrechen'}
+            {t('cancel')}
           </Button>
           <Button type="submit" loading={saving} disabled={selectedShifts.length === 0}>
             <UserCheck className="size-4" />
-            {selectedShifts.length > 1 ? `In ${selectedShifts.length} Schichten einteilen` : 'Einteilen'}
+            {selectedShifts.length > 1 ? t('submit', { count: selectedShifts.length }) : t('submitSingle')}
           </Button>
         </div>
       </form>
     </Dialog>
   );
 }
+

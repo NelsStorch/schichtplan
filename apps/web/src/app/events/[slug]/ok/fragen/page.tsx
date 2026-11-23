@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button, Callout, Card, useToast } from '@schichtplan/ui';
 import { useOkEvent } from '@/components/ok/OkContext';
 import { OkPageHeader } from '@/components/ok/OkLayout';
@@ -13,6 +14,7 @@ import { api, errorMessage } from '@/lib/api';
  * «Zugang & Antworten».
  */
 export default function QuestionsPage() {
+  const t = useTranslations('web.ok.questions');
   const { event, reload, permissions } = useOkEvent();
   const toast = useToast();
   const initial = () => event.questions.map(questionDraft);
@@ -32,7 +34,7 @@ export default function QuestionsPage() {
       await api(`/api/events/${event.slug}`, { method: 'PATCH', json: { questions: questionsPayload(questions) } });
       await reload();
       setSaved(JSON.stringify(questions));
-      toast({ title: 'Fragen gespeichert', tone: 'success' });
+      toast({ title: t('savedSuccess'), tone: 'success' });
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -43,13 +45,13 @@ export default function QuestionsPage() {
   return (
     <div>
       <OkPageHeader
-        title="Fragen"
-        description="Was ihr von den Helfenden zusätzlich wissen müsst. Fragt nur, was ihr wirklich braucht, und legt fest, wann die Antworten gelöscht werden."
+        title={t('pageTitle')}
+        description={t('pageDesc')}
         help="/ok/fragen/"
         actions={
           canEdit && (
             <Button onClick={save} loading={saving} disabled={!dirty}>
-              Speichern
+              {saving ? t('savingBtn') : t('saveBtn')}
             </Button>
           )
         }
@@ -57,7 +59,7 @@ export default function QuestionsPage() {
 
       {!canEdit && (
         <Callout tone="info" className="mb-4">
-          Fragen ändern dürfen die Abteilungsleitung und die OK-Leitung.
+          {t('permissionHint')}
         </Callout>
       )}
       {error && (
@@ -67,7 +69,7 @@ export default function QuestionsPage() {
       )}
       {dirty && removedWithAnswers && (
         <Callout tone="warning" className="mb-4">
-          Entfernte Fragen werden beim Speichern samt allen Antworten gelöscht.
+          {t('dirtyRemovedNotice')}
         </Callout>
       )}
 
@@ -76,8 +78,7 @@ export default function QuestionsPage() {
       </Card>
 
       <p className="mt-4 text-xs text-fg-muted">
-        Die Löschfrist zählt ab dem Ende der letzten Schicht und wird den Helfenden beim Ausfüllen angezeigt. Die
-        Antworten seht ihr unter «Zugang & Antworten».
+        {t('retentionHint')}
       </p>
     </div>
   );

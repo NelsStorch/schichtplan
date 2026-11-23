@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   CalendarDays,
   Clock,
@@ -71,6 +72,9 @@ export function ShiftSeriesDialog({
   onClose: () => void;
   onCreated: () => void;
 }) {
+  const t = useTranslations('web.ok.series');
+  const tShifts = useTranslations('web.ok.shifts');
+  const tLayout = useTranslations('web.ok.layout');
   const toast = useToast();
   const [saving, setSaving] = useState(false);
   const [availableTasks, setAvailableTasks] = useState<TaskDefinitionDto[]>([]);
@@ -146,7 +150,7 @@ export function ShiftSeriesDialog({
     if (existingIdx >= 0) {
       const nextSlots = tasks[existingIdx].requiredSlots + 1;
       updateTask(existingIdx, { requiredSlots: nextSlots });
-      toast({ title: `${catalogItem.title}: Plätze auf ${nextSlots} erhöht` });
+      toast({ title: t('slotsIncreased', { title: catalogItem.title, count: nextSlots }) });
       return;
     }
 
@@ -243,18 +247,18 @@ export function ShiftSeriesDialog({
     if (!cleanTitle && validTasks.length === 0) {
       toast({
         tone: 'error',
-        title: 'Titel oder Arbeit erforderlich',
-        description: 'Bitte gib entweder einen Schichttitel oder mindestens eine Arbeit an.',
+        title: t('titleOrTaskRequired'),
+        description: t('titleOrTaskRequiredDesc'),
       });
       return;
     }
 
-    for (const t of validTasks) {
-      if (t.title.trim().length < 2) {
+    for (const item of validTasks) {
+      if (item.title.trim().length < 2) {
         toast({
           tone: 'error',
-          title: 'Ungültige Arbeit',
-          description: `Die Arbeit «${t.title}» muss mindestens 2 Zeichen lang sein.`,
+          title: t('invalidTask'),
+          description: t('invalidTaskDesc', { title: item.title }),
         });
         return;
       }
@@ -265,8 +269,8 @@ export function ShiftSeriesDialog({
     if (!startIso || !endIso || intervals.length === 0) {
       toast({
         tone: 'error',
-        title: 'Ungültiges Zeitraster',
-        description: 'Aus dem gewählten Zeitraum konnten keine Schichten generiert werden.',
+        title: t('invalidGrid'),
+        description: t('invalidGridDesc'),
       });
       return;
     }
@@ -274,13 +278,13 @@ export function ShiftSeriesDialog({
     // Wenn keine spezifischen Arbeiten definiert wurden, den Titel als 1 Standard-Arbeit verwenden
     const resolvedTasks =
       validTasks.length > 0
-        ? validTasks.map((t) => ({
-            taskDefinitionId: t.taskDefinitionId || null,
-            title: t.title.trim(),
-            description: t.description.trim() || null,
-            requiredSlots: Math.max(1, Number(t.requiredSlots) || 1),
-            minAge: t.minAge ? Number(t.minAge) : null,
-            ageRequirementType: t.ageRequirementType,
+        ? validTasks.map((item) => ({
+            taskDefinitionId: item.taskDefinitionId || null,
+            title: item.title.trim(),
+            description: item.description.trim() || null,
+            requiredSlots: Math.max(1, Number(item.requiredSlots) || 1),
+            minAge: item.minAge ? Number(item.minAge) : null,
+            ageRequirementType: item.ageRequirementType,
           }))
         : [
             {
@@ -316,17 +320,17 @@ export function ShiftSeriesDialog({
       const totalSlotsAllShifts = intervals.length * totalSlotsPerShift;
       toast({
         tone: 'success',
-        title: 'Schicht-Serie erstellt',
+        title: t('createdSuccess'),
         description: cleanTitle
-          ? `Es wurden ${intervals.length} Schichten für «${cleanTitle}» erstellt (${totalSlotsAllShifts} Plätze).`
-          : `Es wurden ${intervals.length} Schichten erstellt (${totalSlotsAllShifts} Plätze).`,
+          ? t('createdSuccessDesc', { title: cleanTitle, shifts: intervals.length, slots: totalSlotsAllShifts })
+          : t('createdSuccessDescNoTitle', { shifts: intervals.length, slots: totalSlotsAllShifts }),
       });
       onCreated();
       onClose();
     } catch (err) {
       toast({
         tone: 'error',
-        title: 'Erstellen fehlgeschlagen',
+        title: t('createFailed'),
         description: errorMessage(err),
       });
     } finally {
@@ -334,24 +338,24 @@ export function ShiftSeriesDialog({
     }
   };
 
-  const definedTasks = useMemo(() => tasks.filter((t) => t.title.trim().length > 0), [tasks]);
+  const definedTasks = useMemo(() => tasks.filter((item) => item.title.trim().length > 0), [tasks]);
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
       icon={<Layers />}
-      title="Schicht-Serie erstellen (Raster-Planung)"
+      title={t('dialogTitle')}
       description={
         <span>
-          Automatische Schicht-Generierung für Stände oder Arbeiten bei {event.title}.{' '}
+          {t('dialogDesc', { title: event.title })}{' '}
           <a
             href={helpUrl('/ok/schichten-planen/#schichtserien-erstellen-raster-planung')}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1 font-semibold text-accent-ink hover:underline"
           >
-            <LifeBuoy className="size-3.5 inline" /> Anleitung im Hilfe-Center
+            <LifeBuoy className="size-3.5 inline" /> {tLayout('helpGuide')}
           </a>
         </span>
       }
@@ -370,7 +374,7 @@ export function ShiftSeriesDialog({
           </div>
           <div className="flex gap-2 justify-end">
             <Button variant="ghost" onClick={onClose} type="button" disabled={saving}>
-              Abbrechen
+              {tShifts('cancelBtn')}
             </Button>
             <Button
               type="submit"

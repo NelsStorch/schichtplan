@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { Check, Copy, Download, Filter, Link2, Plus, Search, Share2, Trash2, User, Users, X } from 'lucide-react';
 import {
   PLACEHOLDER_LAST_NAME,
@@ -23,7 +24,6 @@ import {
   Skeleton,
   cn,
   useConfirm,
-  useOrganization,
   useToast,
 } from '@schichtplan/ui';
 import { api, errorMessage } from '@/lib/api';
@@ -37,23 +37,24 @@ function linkUrl(slug: string, token: string) {
 
 /** OK-Dashboard: Wer darf sich eintragen, Zugangs-Links, Angaben der eingetragenen Personen */
 export function EventAccessPanel({ event }: { event: EventDetails }) {
+  const t = useTranslations('web.ok.access');
   return (
     <div className="space-y-8">
       <Card className="p-5 shadow-soft">
         <div className="flex flex-wrap items-center gap-2">
           <AccessTypeBadge type={event.accessType} leadersOnly={event.leadersOnly} />
-          {!event.allowPublicSignup && <Badge tone="warning">Eintragen geschlossen</Badge>}
+          {!event.allowPublicSignup && <Badge tone="warning">{t('closedBadge')}</Badge>}
         </div>
         <p className="mt-3 text-sm text-fg">
-          Eintragen dürfen: <span className="font-semibold">{event.audience}</span>
+          {t('audienceLabel', { audience: event.audience })}
         </p>
         <p className="mt-1 text-xs text-fg-muted">
-          Pflichtangaben:{' '}
-          {event.requiredFields.length
-            ? event.requiredFields.map((f) => REQUIRED_PROFILE_FIELDS[f].label).join(', ')
-            : 'keine'}
-          {event.questions.length > 0 && ` · ${event.questions.length} eigene Frage(n)`}. Pflichtangaben ändern unter
-          «Einstellungen», Fragen unter «Fragen».
+          {t('requiredFieldsLabel', {
+            fields: event.requiredFields.length
+              ? event.requiredFields.map((f) => REQUIRED_PROFILE_FIELDS[f].label).join(', ')
+              : t('noneRequired'),
+          })}
+          {event.questions.length > 0 && ` · ${t('ownQuestions', { count: event.questions.length })}`}. {t('settingsHint')}
         </p>
       </Card>
 
@@ -64,7 +65,7 @@ export function EventAccessPanel({ event }: { event: EventDetails }) {
 }
 
 function AccessLinks({ eventSlug }: { eventSlug: string }) {
-  const org = useOrganization();
+  const t = useTranslations('web.ok.access');
   const toast = useToast();
   const confirm = useConfirm();
   const [links, setLinks] = useState<EventAccessLinkDto[] | null>(null);
@@ -96,7 +97,7 @@ function AccessLinks({ eventSlug }: { eventSlug: string }) {
     }
     await navigator.clipboard.writeText(url);
     setCopied(link.id);
-    toast({ title: 'Link kopiert', description: 'Er gilt nur zusammen mit einer Anmeldung.' });
+    toast({ title: t('copySuccess'), description: 'Er gilt nur zusammen mit einer Anmeldung.' });
     setTimeout(() => setCopied((c) => (c === link.id ? null : c)), 2000);
   };
 
@@ -107,7 +108,7 @@ function AccessLinks({ eventSlug }: { eventSlug: string }) {
         link.redeemedBy.length > 0
           ? `${link.redeemedBy.length} Person(en) verlieren den Zugang. Bestehende Eintragungen bleiben.`
           : 'Der Link funktioniert danach nicht mehr.',
-      confirmLabel: 'Löschen',
+      confirmLabel: t('deleteBtn'),
       tone: 'danger',
     });
     if (!ok) return;
@@ -124,14 +125,14 @@ function AccessLinks({ eventSlug }: { eventSlug: string }) {
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h3 id="links-title" className="text-base font-bold text-fg">
-            Zugangs-Links
+            {t('linksTitle')}
           </h3>
           <p className="text-xs text-fg-muted">
-            Für Personen, die die Bedingungen nicht erfüllen. Ein Konto braucht es trotzdem ({org.nicknameTerm} reicht).
+            {t('linksDesc')}
           </p>
         </div>
         <Button size="sm" onClick={() => setCreating(true)}>
-          <Plus /> Link erstellen
+          <Plus /> {t('createLinkBtn')}
         </Button>
       </div>
 
@@ -140,7 +141,7 @@ function AccessLinks({ eventSlug }: { eventSlug: string }) {
       ) : links.length === 0 ? (
         <EmptyState
           icon={<Link2 />}
-          title="Noch keine Links"
+          title={t('noLinks')}
           description="Ein persönlicher Link gilt für eine Person, ein Gruppen-Link für alle, die ihn haben (z. B. Elternchat)."
         />
       ) : (
@@ -212,6 +213,7 @@ function AccessLinks({ eventSlug }: { eventSlug: string }) {
     </section>
   );
 }
+
 
 function CreateLinkDialog({
   open,
@@ -342,6 +344,7 @@ const perSignup = (question: EventDetails['questions'][number], person: EventPar
     }));
 
 function Participants({ event }: { event: EventDetails }) {
+  const t = useTranslations('web.ok.access');
   const [people, setPeople] = useState<EventParticipantDto[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -466,12 +469,12 @@ function Participants({ event }: { event: EventDetails }) {
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h3 id="people-title" className="text-base font-bold text-fg">
-            Angaben der Helfenden
+            {t('participantsTitle')}
           </h3>
-          <p className="text-xs text-fg-muted">Kontaktangaben und Antworten aller Eingetragenen. Nur für das OK.</p>
+          <p className="text-xs text-fg-muted">{t('participantsDesc')}</p>
         </div>
         <Button size="sm" variant="secondary" onClick={download} disabled={!people?.length}>
-          <Download /> CSV
+          <Download /> {t('exportCsv')}
         </Button>
       </div>
 
@@ -518,7 +521,7 @@ function Participants({ event }: { event: EventDetails }) {
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-subtle" />
               <Input
                 className="h-9 pl-9 pr-8 text-sm"
-                placeholder="Name, Kontakt oder Antwort suchen…"
+                placeholder={t('searchPlaceholder')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 aria-label="Helfende und Antworten durchsuchen"
@@ -547,6 +550,7 @@ function Participants({ event }: { event: EventDetails }) {
               </Button>
             )}
           </div>
+
 
           {filteredPeople.length === 0 ? (
             <EmptyState

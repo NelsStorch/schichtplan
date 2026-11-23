@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   Check,
   CheckCircle2,
@@ -40,6 +41,7 @@ type StatusFilter = 'ALL' | 'AVAILABLE' | 'REDEEMED' | 'READY_NOW';
 type RoleFilter = 'ALL' | 'HELPER' | 'LEADER';
 
 export default function OkCateringPage() {
+  const t = useTranslations('web.ok.catering');
   const { event } = useOk();
   const toast = useToast();
   const confirm = useConfirm();
@@ -97,9 +99,9 @@ export default function OkCateringPage() {
 
   const handleManualRedeem = async (tokenId: string, title: string, helperName: string) => {
     const ok = await confirm({
-      title: 'Bon manuell entwerten?',
-      description: `Möchtest du «${title}» für ${helperName} jetzt als eingelöst markieren?`,
-      confirmLabel: 'Jetzt entwerten',
+      title: t('manualRedeemConfirmTitle'),
+      description: t('manualRedeemConfirmDesc', { title, helperName }),
+      confirmLabel: t('manualRedeemBtn'),
       tone: 'default',
     });
     if (!ok) return;
@@ -110,14 +112,14 @@ export default function OkCateringPage() {
         method: 'POST',
       });
       toast({
-        title: 'Bon entwertet',
+        title: t('manualRedeemSuccess'),
         description: `${title} (${helperName}) wurde als eingelöst markiert.`,
         tone: 'success',
       });
       await loadOverview();
     } catch (err) {
       toast({
-        title: 'Entwertung fehlgeschlagen',
+        title: t('manualRedeemFailed'),
         description: errorMessage(err),
         tone: 'error',
       });
@@ -189,8 +191,8 @@ export default function OkCateringPage() {
     return (
       <div>
         <OkPageHeader
-          title="Verpflegungs- & Getränke-Bons"
-          description="Digitale Essens- und Getränkegutscheine für Helfende und die Schichtleitung auswerten und verwalten."
+          title={t('pageTitle')}
+          description={t('pageDesc')}
         />
         <EmptyState
           icon={<UtensilsCrossed />}
@@ -218,10 +220,10 @@ export default function OkCateringPage() {
   return (
     <div className="space-y-8">
       <OkPageHeader
-        title="Verpflegungs- & Getränke-Bons"
+        title={t('pageTitle')}
         description={
           <span>
-            Auswertung, Kassensturz und Verwaltung aller Bons für Helfende und Schichtleitung.{' '}
+            {t('pageDesc')}{' '}
             {earlyHoursLabel && <span className="font-semibold text-fg">Gültigkeit: {earlyHoursLabel}.</span>}
           </span>
         }
@@ -260,7 +262,7 @@ export default function OkCateringPage() {
               : 'border-transparent text-fg-muted hover:text-fg'
           )}
         >
-          <UtensilsCrossed className="size-4" /> Digitale Bons &amp; Live-Auswertung
+          <UtensilsCrossed className="size-4" /> {t('tabDigital')}
         </button>
         <button
           type="button"
@@ -272,7 +274,7 @@ export default function OkCateringPage() {
               : 'border-transparent text-fg-muted hover:text-fg'
           )}
         >
-          <Printer className="size-4" /> Physische Bons (A4-Druckbögen)
+          <Printer className="size-4" /> {t('tabPhysical')}
         </button>
       </div>
 
@@ -292,13 +294,13 @@ export default function OkCateringPage() {
           {/* 1. Kennzahlen (KPI-Karten) */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Card className="p-4 sm:p-5">
-              <p className="text-xs font-bold uppercase tracking-wider text-fg-subtle">Ausgegeben (Total)</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-fg-subtle">{t('kpiIssued')}</p>
               <p className="mt-1 font-display text-3xl font-extrabold text-fg tabular">{data.totalTokens}</p>
               <p className="mt-1 text-xs text-fg-muted">Inkl. Helfende &amp; Schichtleitung</p>
             </Card>
             <Card className="p-4 sm:p-5 border-success/30 bg-success/5">
               <div className="flex items-baseline justify-between gap-2">
-                <p className="text-xs font-bold uppercase tracking-wider text-success-ink">Eingelöst / Entwertet</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-success-ink">{t('kpiRedeemed')}</p>
                 <span className="text-xs font-bold text-success-ink tabular">
                   {data.totalTokens > 0 ? Math.round((data.redeemedTokens / data.totalTokens) * 100) : 0}%
                 </span>
@@ -309,7 +311,7 @@ export default function OkCateringPage() {
               <p className="mt-1 text-xs text-fg-muted">Am Stand bezogen</p>
             </Card>
             <Card className="p-4 sm:p-5">
-              <p className="text-xs font-bold uppercase tracking-wider text-fg-subtle">Noch offen</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-fg-subtle">{t('kpiAvailable')}</p>
               <p className="mt-1 font-display text-3xl font-extrabold text-fg tabular">{data.availableTokens}</p>
               <p className="mt-1 text-xs text-fg-muted">Noch nicht eingelöst</p>
             </Card>
@@ -393,7 +395,7 @@ export default function OkCateringPage() {
                 <Input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Name, Schicht oder Bon suchen…"
+                  placeholder={t('searchPlaceholder')}
                   className="pl-9"
                 />
               </div>
@@ -403,10 +405,10 @@ export default function OkCateringPage() {
                 onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
                 aria-label="Nach Status filtern"
               >
-                <option value="ALL">Status: Alle ({data.totalTokens})</option>
-                <option value="AVAILABLE">Status: Offen ({data.availableTokens})</option>
-                <option value="READY_NOW">Status: Jetzt einlösbar</option>
-                <option value="REDEEMED">Status: Eingelöst ({data.redeemedTokens})</option>
+                <option value="ALL">{t('statusFilterAll')} ({data.totalTokens})</option>
+                <option value="AVAILABLE">{t('statusFilterAvailable')} ({data.availableTokens})</option>
+                <option value="READY_NOW">{t('statusFilterReadyNow')}</option>
+                <option value="REDEEMED">{t('statusFilterRedeemed')} ({data.redeemedTokens})</option>
               </Select>
 
               <Select
@@ -414,9 +416,9 @@ export default function OkCateringPage() {
                 onChange={(e) => setRoleFilter(e.target.value as RoleFilter)}
                 aria-label="Nach Rolle filtern"
               >
-                <option value="ALL">Rolle: Helfende &amp; Schichtleitung</option>
-                <option value="HELPER">Nur Helfende</option>
-                <option value="LEADER">Nur Schichtleitung</option>
+                <option value="ALL">{t('roleFilterAll')}</option>
+                <option value="HELPER">{t('roleFilterHelper')}</option>
+                <option value="LEADER">{t('roleFilterLeader')}</option>
               </Select>
 
               <Select
@@ -424,7 +426,7 @@ export default function OkCateringPage() {
                 onChange={(e) => setItemFilter(e.target.value)}
                 aria-label="Nach Bon-Typ filtern"
               >
-                <option value="ALL">Bon-Typ: Alle</option>
+                <option value="ALL">{t('itemFilterAll')}</option>
                 {data.byItem.map((i) => (
                   <option key={i.title} value={i.title}>
                     {i.title} ({i.redeemed}/{i.total})
@@ -436,17 +438,17 @@ export default function OkCateringPage() {
             {filteredTokens.length === 0 ? (
               <EmptyState
                 icon={<Ticket />}
-                title="Keine passenden Bons gefunden"
-                description="Passe deine Suchbegriffe oder Filter an."
+                title={t('emptyTokensTitle')}
+                description={t('emptyTokensDesc')}
               />
             ) : (
               <div className="overflow-hidden rounded-card border border-line bg-surface">
                 <div className="divide-y divide-line">
-                  {filteredTokens.map((t) => {
-                    const isRedeemed = t.status === 'REDEEMED';
+                  {filteredTokens.map((tRow) => {
+                    const isRedeemed = tRow.status === 'REDEEMED';
                     return (
                       <div
-                        key={t.id}
+                        key={tRow.id}
                         className={cn(
                           'flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between',
                           isRedeemed && 'bg-surface-2/40'
@@ -454,21 +456,21 @@ export default function OkCateringPage() {
                       >
                         <div className="min-w-0 space-y-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-bold text-sm text-fg">{t.helperName}</span>
-                            {t.isResponsible && (
+                            <span className="font-bold text-sm text-fg">{tRow.helperName}</span>
+                            {tRow.isResponsible && (
                               <Badge tone="accent" size="sm">
-                                <Shield className="size-3" /> Schichtleitung
+                                <Shield className="size-3" /> {t('responsibleBadge')}
                               </Badge>
                             )}
                             <Badge tone={isRedeemed ? 'neutral' : 'accent'} size="sm">
-                              {t.title}
+                              {tRow.title}
                             </Badge>
                           </div>
                           <p className="text-xs text-fg-muted">
-                            {t.shiftTitle || 'Schicht'}
-                            {t.taskTitle && !t.isResponsible ? ` (${t.taskTitle})` : ''} ·{' '}
-                            {fmtWeekday(t.shiftStartTime)}, {fmtDayMonth(t.shiftStartTime)},{' '}
-                            {fmtTimeRange(t.shiftStartTime, t.shiftEndTime)}
+                            {tRow.shiftTitle || 'Schicht'}
+                            {tRow.taskTitle && !tRow.isResponsible ? ` (${tRow.taskTitle})` : ''} ·{' '}
+                            {fmtWeekday(tRow.shiftStartTime)}, {fmtDayMonth(tRow.shiftStartTime)},{' '}
+                            {fmtTimeRange(tRow.shiftStartTime, tRow.shiftEndTime)}
                           </p>
                         </div>
 
@@ -477,13 +479,13 @@ export default function OkCateringPage() {
                             <>
                               <span className="inline-flex items-center gap-1 text-xs font-semibold text-success-ink">
                                 <CheckCircle2 className="size-3.5" />
-                                Eingelöst {t.redeemedAt ? `um ${fmtTime(t.redeemedAt)} Uhr` : ''}
+                                {t('redeemedBadge')} {tRow.redeemedAt ? `(${fmtTime(tRow.redeemedAt)})` : ''}
                               </span>
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                loading={busyId === t.id}
-                                onClick={() => void handleResetToken(t.id, t.title, t.helperName)}
+                                loading={busyId === tRow.id}
+                                onClick={() => void handleResetToken(tRow.id, tRow.title, tRow.helperName)}
                                 title="Bon zurücksetzen, falls versehentlich eingelöst"
                               >
                                 <RotateCcw className="size-3.5" /> Zurücksetzen
@@ -491,22 +493,22 @@ export default function OkCateringPage() {
                             </>
                           ) : (
                             <>
-                              {t.isAvailableNow ? (
+                              {tRow.isAvailableNow ? (
                                 <Badge tone="success" size="sm">
-                                  <Check className="size-3" /> Einlösbar
+                                  <Check className="size-3" /> {t('availableNowBadge')}
                                 </Badge>
                               ) : (
                                 <Badge tone="neutral" size="sm">
-                                  <Clock className="size-3" /> Ab {fmtTime(t.availableFrom)} Uhr
+                                  <Clock className="size-3" /> Ab {fmtTime(tRow.availableFrom)} Uhr
                                 </Badge>
                               )}
                               <Button
                                 variant="secondary"
                                 size="sm"
-                                loading={busyId === t.id}
-                                onClick={() => void handleManualRedeem(t.id, t.title, t.helperName)}
+                                loading={busyId === tRow.id}
+                                onClick={() => void handleManualRedeem(tRow.id, tRow.title, tRow.helperName)}
                               >
-                                <Check className="size-3.5" /> Entwerten
+                                <Check className="size-3.5" /> {t('redeemManuallyBtn')}
                               </Button>
                             </>
                           )}

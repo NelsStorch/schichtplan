@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowDown, ArrowUp, Check, Plus, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   DEFAULT_QUESTION_RETENTION_DAYS,
   EVENT_QUESTION_PRESETS,
@@ -96,6 +97,7 @@ export function QuestionsEditor({
   onChange: (next: QuestionDraft[]) => void;
   disabled?: boolean;
 }) {
+  const t = useTranslations('web.ok.questions');
   const update = (index: number, patch: Partial<QuestionDraft>) =>
     onChange(questions.map((q, i) => (i === index ? { ...q, ...patch } : q)));
   const move = (index: number, delta: number) => {
@@ -109,7 +111,7 @@ export function QuestionsEditor({
   return (
     <div className="space-y-6">
       <div>
-        <p className="mb-2 text-[13px] font-semibold text-fg">Vorgefertigte Fragen</p>
+        <p className="mb-2 text-[13px] font-semibold text-fg">{t('presetsTitle')}</p>
         <div className="flex flex-wrap gap-2">
           {EVENT_QUESTION_PRESETS.map((preset) => {
             const added = usedLabels.has(preset.label.toLowerCase());
@@ -119,7 +121,7 @@ export function QuestionsEditor({
                 type="button"
                 disabled={disabled || added}
                 title={preset.hint}
-                aria-label={added ? `${preset.label} (schon hinzugefügt)` : `Frage «${preset.label}» hinzufügen`}
+                aria-label={added ? t('presetAddedTitle', { label: preset.label }) : t('addPresetAria', { label: preset.label })}
                 onClick={() => onChange([...questions, fromPreset(preset)])}
                 className={cn(
                   'inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-semibold transition',
@@ -139,7 +141,7 @@ export function QuestionsEditor({
       <div className="space-y-3">
         {questions.length === 0 && (
           <p className="rounded-field border border-dashed border-line p-4 text-sm text-fg-muted">
-            Noch keine Fragen. Fragt nur, was ihr für den Anlass wirklich braucht.
+            {t('emptyNotice')}
           </p>
         )}
         {questions.map((q, index) => (
@@ -148,8 +150,8 @@ export function QuestionsEditor({
               <Input
                 value={q.label}
                 onChange={(e) => update(index, { label: e.target.value })}
-                placeholder="Frage, z. B. Bringst du ein Zelt mit?"
-                aria-label={`Frage ${index + 1}`}
+                placeholder={t('placeholder')}
+                aria-label={t('questionAria', { index: index + 1 })}
                 className="h-10"
                 disabled={disabled}
               />
@@ -160,7 +162,7 @@ export function QuestionsEditor({
                   variant="ghost"
                   disabled={disabled || index === 0}
                   onClick={() => move(index, -1)}
-                  aria-label="Nach oben"
+                  aria-label={t('moveUpAria')}
                 >
                   <ArrowUp />
                 </Button>
@@ -170,7 +172,7 @@ export function QuestionsEditor({
                   variant="ghost"
                   disabled={disabled || index === questions.length - 1}
                   onClick={() => move(index, 1)}
-                  aria-label="Nach unten"
+                  aria-label={t('moveDownAria')}
                 >
                   <ArrowDown />
                 </Button>
@@ -180,7 +182,7 @@ export function QuestionsEditor({
                   variant="ghost"
                   disabled={disabled}
                   onClick={() => onChange(questions.filter((_, i) => i !== index))}
-                  aria-label="Frage entfernen"
+                  aria-label={t('removeAria')}
                   className="hover:text-danger-ink"
                 >
                   <Trash2 />
@@ -191,7 +193,7 @@ export function QuestionsEditor({
               <Select
                 value={q.type}
                 onChange={(e) => update(index, { type: e.target.value as EventQuestionType })}
-                aria-label="Art der Antwort"
+                aria-label={t('typeAria')}
                 className="h-10 w-40"
                 disabled={disabled}
               >
@@ -204,7 +206,7 @@ export function QuestionsEditor({
               <Select
                 value={q.scope}
                 onChange={(e) => update(index, { scope: e.target.value as EventQuestionScope })}
-                aria-label="Wann wird gefragt?"
+                aria-label={t('scopeAria')}
                 className="h-10 w-52"
                 disabled={disabled}
               >
@@ -222,13 +224,13 @@ export function QuestionsEditor({
                   className="size-4 accent-[rgb(var(--accent))]"
                   disabled={disabled}
                 />
-                Pflicht
+                {t('required')}
               </label>
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-fg">
-              <span className="font-semibold">Antworten löschen</span>
+              <span className="font-semibold">{t('retentionLabel')}</span>
               <Select
-                aria-label="Antworten löschen"
+                aria-label={t('retentionLabel')}
                 value={q.retentionDays === null ? 'never' : String(q.retentionDays)}
                 onChange={(e) =>
                   update(index, {
@@ -259,10 +261,9 @@ export function QuestionsEditor({
                 disabled={disabled}
               />
               <span>
-                <span className="font-semibold">Gesundheitsangaben</span>{' '}
+                <span className="font-semibold">{t('sensitiveTitle')}</span>{' '}
                 <span className="text-fg-muted">
-                  (z. B. Allergien, Medikamente). Helfende müssen ausdrücklich einwilligen, und die Antworten werden
-                  immer nach einer Frist gelöscht.
+                  {t('sensitiveDesc')}
                 </span>
               </span>
             </label>
@@ -271,8 +272,8 @@ export function QuestionsEditor({
                 value={q.optionsText}
                 onChange={(e) => update(index, { optionsText: e.target.value })}
                 rows={3}
-                placeholder={'Eine Antwort pro Zeile, z. B.\nS\nM\nL'}
-                aria-label="Antwortmöglichkeiten"
+                placeholder={t('optionsPlaceholder')}
+                aria-label={t('optionsAria')}
                 disabled={disabled}
                 className="w-full rounded-field border border-line bg-surface px-3 py-2 text-sm text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
               />
@@ -286,7 +287,7 @@ export function QuestionsEditor({
           disabled={disabled}
           onClick={() => onChange([...questions, { ...EMPTY_QUESTION }])}
         >
-          <Plus /> Eigene Frage
+          <Plus /> {t('customQuestionBtn')}
         </Button>
       </div>
     </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { EventAttendancePanel } from '@/components/EventAttendancePanel';
 import { useOkEvent } from '@/components/ok/OkContext';
 import { OkPageHeader } from '@/components/ok/OkLayout';
@@ -8,11 +9,13 @@ import { OkPageHeader } from '@/components/ok/OkLayout';
 export default function AttendancePage() {
   const { event, base, reload, permissions } = useOkEvent();
   const router = useRouter();
+  const t = useTranslations('web.ok.attendance');
+
   return (
     <div>
       <OkPageHeader
-        title="Anwesenheit"
-        description="Am Anlass abhaken, wer da war. Mit QR-Code checken sich die Helfenden selbst ein."
+        title={t('title')}
+        description={t('desc')}
         help="/ok/anwesenheit/"
       />
       <EventAttendancePanel
@@ -24,3 +27,4 @@ export default function AttendancePage() {
     </div>
   );
 }
+

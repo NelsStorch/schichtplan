@@ -3,6 +3,7 @@
 import { Suspense, useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   ArrowDownUp,
   ChevronDown,
@@ -81,15 +82,15 @@ const SORT_PARAM: Record<SortKey, string> = {
   AGE_ASC: 'alter',
   AGE_DESC: 'alter-ab',
 };
-const SORT_LABEL: Record<SortKey, string> = {
-  NAME: 'Name A–Z',
-  SHIFTS_ASC: 'Wenigste Schichten zuerst',
-  SHIFTS_DESC: 'Meiste Schichten zuerst',
-  HOURS_ASC: 'Wenigste Stunden zuerst',
-  HOURS_DESC: 'Meiste Stunden zuerst',
-  AGE_ASC: 'Jüngste zuerst',
-  AGE_DESC: 'Älteste zuerst',
-};
+const SORT_KEYS: SortKey[] = [
+  'NAME',
+  'SHIFTS_ASC',
+  'SHIFTS_DESC',
+  'HOURS_ASC',
+  'HOURS_DESC',
+  'AGE_ASC',
+  'AGE_DESC',
+];
 
 const fromParam = <K extends string>(map: Record<K, string>, value: string | null, fallback: K): K =>
   (Object.entries(map) as [K, string][]).find(([, v]) => v === value)?.[0] ?? fallback;
@@ -134,12 +135,14 @@ const shiftMinutes = (s: { startTime: string; endTime: string }) =>
   Math.max(0, Math.round((new Date(s.endTime).getTime() - new Date(s.startTime).getTime()) / 60_000));
 
 function HelpersPage() {
+  const t = useTranslations('web.ok.helpers');
   const { event, base, reload, setMessageDraft, permissions } = useOkEvent();
   const router = useRouter();
   const params = useSearchParams();
   const toast = useToast();
   const confirm = useConfirm();
   const org = useOrganization();
+
 
   const [roster, setRoster] = useState<EventRosterResponseDto | null>(null);
   const [rosterError, setRosterError] = useState<string | null>(null);
@@ -209,7 +212,7 @@ function HelpersPage() {
             key,
             userId: null,
             name: su.displayName,
-            subName: 'Gast, vom OK eingetragen',
+            subName: t('guestSubname'),
             departmentName: null,
             stufen: [],
             age: null,
@@ -252,7 +255,7 @@ function HelpersPage() {
       r.dayKeys = new Set(r.shifts.map((s) => businessDayKey(s.startTime, event.dayCutoffTime)));
     }
     return all.sort((a, b) => a.name.localeCompare(b.name, 'de'));
-  }, [event, roster]);
+  }, [event, roster, t]);
 
   const counts = useMemo(() => {
     const active = rows.filter((r) => !r.isDeregistered);
@@ -390,26 +393,26 @@ function HelpersPage() {
 
   const removeSignup = async (row: PersonRow, s: PersonShift) => {
     const ok = await confirm({
-      title: `${row.name} austragen?`,
-      description: `Aus der Schicht «${shiftName(s)}».`,
-      confirmLabel: 'Austragen',
+      title: t('confirmSignoffTitle', { name: row.name }),
+      description: t('confirmSignoffDesc', { title: shiftName(s) }),
+      confirmLabel: t('confirmSignoffBtn'),
       tone: 'danger',
     });
     if (!ok) return;
     try {
       await api(`/api/shifts/${s.shiftId}/signup?signupId=${s.signupId}`, { method: 'DELETE' });
-      toast({ title: `${row.name} ausgetragen` });
+      toast({ title: t('signoffSuccess', { name: row.name }) });
       await refresh();
     } catch (err) {
-      toast({ title: 'Austragen fehlgeschlagen', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('signoffFailed'), description: errorMessage(err), tone: 'error' });
     }
   };
 
   const removeFromAll = async (row: PersonRow) => {
     const ok = await confirm({
-      title: `${row.name} aus allen Schichten austragen?`,
-      description: `Die Person wird aus ${row.shifts.length} Schicht${row.shifts.length === 1 ? '' : 'en'} dieses Anlasses ausgetragen.`,
-      confirmLabel: 'Aus allen austragen',
+      title: t('confirmRemoveAllTitle', { name: row.name }),
+      description: t('confirmRemoveAllDesc', { count: row.shifts.length }),
+      confirmLabel: t('confirmRemoveAllBtn'),
       tone: 'danger',
     });
     if (!ok) return;
@@ -418,20 +421,23 @@ function HelpersPage() {
         method: 'POST',
         json: row.userId ? { userId: row.userId } : { guestName: row.name },
       });
-      toast({ title: `${row.name} ausgetragen`, description: `Aus ${row.shifts.length} Schichten` });
+      toast({
+        title: t('removeAllSuccess', { name: row.name }),
+        description: t('removeAllSuccessDesc', { count: row.shifts.length }),
+      });
       await refresh();
     } catch (err) {
-      toast({ title: 'Austragen fehlgeschlagen', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('signoffFailed'), description: errorMessage(err), tone: 'error' });
     }
   };
 
   const undoDeregistration = async (row: PersonRow) => {
     try {
       await api(`/api/events/${event.slug}/deregistrations/${row.userId}`, { method: 'DELETE' });
-      toast({ title: `${row.name} wieder dabei` });
+      toast({ title: t('undoDeregSuccess', { name: row.name }) });
       await loadRoster();
     } catch (err) {
-      toast({ title: 'Aktion fehlgeschlagen', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('actionFailed'), description: errorMessage(err), tone: 'error' });
     }
   };
 
@@ -439,7 +445,7 @@ function HelpersPage() {
     setMessageDraft({ target: 'PEOPLE', userIds: ids, label });
     router.push(`${base}/nachrichten`);
   };
-  const plural = (n: number) => `${n} Person${n === 1 ? '' : 'en'}`;
+  const plural = (n: number) => t('pluralPeople', { count: n });
 
   const exportFiltered = () => {
     const header = ['Name', 'Vollständiger Name', org.unitTerm, 'Stufen', 'Alter', 'Typ', 'Schichten'];
@@ -469,41 +475,60 @@ function HelpersPage() {
     downloadCsv(`helfende-${event.slug}.csv`, [header, ...lines]);
   };
 
+  const getSortLabel = (k: SortKey) => {
+    switch (k) {
+      case 'NAME':
+        return t('sortName');
+      case 'SHIFTS_ASC':
+        return t('sortShiftsAsc');
+      case 'SHIFTS_DESC':
+        return t('sortShiftsDesc');
+      case 'HOURS_ASC':
+        return t('sortHoursAsc');
+      case 'HOURS_DESC':
+        return t('sortHoursDesc');
+      case 'AGE_ASC':
+        return t('sortAgeAsc');
+      case 'AGE_DESC':
+        return t('sortAgeDesc');
+    }
+  };
+
   const statusChips: { key: Status; label: string; show: boolean }[] = [
-    { key: 'ALL', label: 'Alle', show: true },
-    { key: 'WITH', label: 'Mit Schicht', show: true },
-    { key: 'WITHOUT', label: 'Ohne Schicht', show: true },
-    { key: 'UNDER', label: 'Unter dem Soll', show: Boolean(minShifts) },
-    { key: 'MET', label: 'Soll erfüllt', show: Boolean(minShifts) },
-    { key: 'DEREGISTERED', label: 'Abgemeldet', show: counts.DEREGISTERED > 0 },
+    { key: 'ALL', label: t('chips.all'), show: true },
+    { key: 'WITH', label: t('chips.with'), show: true },
+    { key: 'WITHOUT', label: t('chips.without'), show: true },
+    { key: 'UNDER', label: t('chips.under'), show: Boolean(minShifts) },
+    { key: 'MET', label: t('chips.met'), show: Boolean(minShifts) },
+    { key: 'DEREGISTERED', label: t('chips.deregistered'), show: counts.DEREGISTERED > 0 },
   ];
   const hasGuests = rows.some((r) => r.isGuest);
 
   return (
     <div>
       <OkPageHeader
-        title="Helfende"
-        description="Alle Personen, die bei diesem Anlass helfen können oder schon eingetragen sind. Wer nicht helfen kann, meldest du hier ab, dann zählt das Soll nicht."
+        title={t('pageTitle')}
+        description={t('pageDesc')}
         help="/ok/helfer-pool/"
         actions={
           <Button size="sm" variant="secondary" onClick={() => setShowHoursDialog(true)}>
-            <Clock className="size-4" /> Helferstunden-Statistik
+            <Clock className="size-4" /> {t('statsBtn')}
           </Button>
         }
       />
 
-      {rosterError && <Callout tone="danger" className="mb-6">Personen konnten nicht geladen werden: {rosterError}</Callout>}
+      {rosterError && <Callout tone="danger" className="mb-6">{t('loadError', { error: rosterError })}</Callout>}
 
       {roster && (
         <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <MiniStat label="Personen" value={counts.ALL} hint={roster.scopeDescription} />
-          <MiniStat label="Mit Schicht" value={counts.WITH} tone="success" />
+          <MiniStat label={t('statPeople')} value={counts.ALL} hint={roster.scopeDescription} />
+          <MiniStat label={t('statWithShifts')} value={counts.WITH} tone="success" />
           <MiniStat
-            label={minShifts ? 'Unter dem Soll' : 'Ohne Schicht'}
+            label={minShifts ? t('statUnderTarget') : t('statWithoutShifts')}
             value={minShifts ? counts.UNDER : counts.WITHOUT}
             hint={
               minShifts
-                ? `Soll: ${minShifts} Schichten${distribution.missing > 0 ? ` · ${distribution.missing} fehlen total` : ''}`
+                ? t('targetHint', { min: minShifts, missing: distribution.missing })
                 : undefined
             }
             tone="warning"
@@ -513,14 +538,13 @@ function HelpersPage() {
               setSort('SHIFTS_ASC');
             }}
           />
-          <MiniStat label="Abgemeldet" value={counts.DEREGISTERED} hint="müssen nicht helfen" />
+          <MiniStat label={t('statDeregistered')} value={counts.DEREGISTERED} hint={t('deregisteredHint')} />
         </div>
       )}
 
       {roster && !roster.isRestricted && (
         <Callout tone="info" className="mb-6">
-          Dieser Anlass ist offen für {roster.scopeDescription}. Hier stehen alle Eingetragenen sowie die Personen deiner
-          Abteilung. Ein festes Soll pro Person lohnt sich vor allem bei Anlässen nur für die Abteilung oder einzelne Stufen.
+          {t('openScopeNotice', { scope: roster.scopeDescription })}
         </Callout>
       )}
 
@@ -531,15 +555,15 @@ function HelpersPage() {
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-subtle" />
             <Input
               className="h-10 pl-9 text-sm"
-              placeholder={`Name, ${org.nicknameTerm} oder Stufe…`}
+              placeholder={t('searchPlaceholder', { nicknameTerm: org.nicknameTerm })}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              aria-label="Personen durchsuchen"
+              aria-label={t('searchAria')}
             />
           </div>
           {stufen.length > 1 && (
             <Select className="h-10 w-auto text-sm" value={stufe} onChange={(e) => setStufe(e.target.value)} aria-label="Stufe">
-              <option value="ALL">Alle Stufen</option>
+              <option value="ALL">{t('allStufen')}</option>
               {stufen.map(([id, name]) => (
                 <option key={id} value={id}>
                   {name}
@@ -549,7 +573,12 @@ function HelpersPage() {
           )}
           {departments.length > 1 && (
             <Select className="h-10 w-auto text-sm" value={dept} onChange={(e) => setDept(e.target.value)} aria-label={org.unitTerm}>
-              <option value="ALL">Alle {org.unitTerm === 'Abteilung' ? 'Abteilungen' : org.unitTerm === 'Schar' ? 'Scharen' : 'Vereine'}</option>
+              <option value="ALL">
+                {t('allDepartments', {
+                  unitPlural:
+                    org.unitTerm === 'Abteilung' ? 'Abteilungen' : org.unitTerm === 'Schar' ? 'Scharen' : 'Vereine',
+                })}
+              </option>
               {departments.map((d) => (
                 <option key={d} value={d}>
                   {d}
@@ -566,10 +595,10 @@ function HelpersPage() {
               onChange={(e) => setCountOp(e.target.value as CountOp)}
               aria-label="Anzahl Schichten filtern"
             >
-              <option value="ANY">Beliebig viele Schichten</option>
-              <option value="LT">Weniger als …</option>
-              <option value="EQ">Genau …</option>
-              <option value="GTE">Mindestens …</option>
+              <option value="ANY">{t('allCount')}</option>
+              <option value="LT">{t('countLt')}</option>
+              <option value="EQ">{t('countEq')}</option>
+              <option value="GTE">{t('countGte')}</option>
             </Select>
             {countOp !== 'ANY' && (
               <>
@@ -583,24 +612,24 @@ function HelpersPage() {
                   onChange={(e) => setCountN(Math.min(99, Math.max(0, parseInt(e.target.value, 10) || 0)))}
                   aria-label="Anzahl Schichten"
                 />
-                <span className="text-sm text-fg-muted">Schicht{countN === 1 ? '' : 'en'}</span>
+                <span className="text-sm text-fg-muted">{t('countSuffix', { count: countN })}</span>
               </>
             )}
           </div>
           {eventDays.length > 1 && (
             <Select className="h-10 w-auto text-sm" value={day} onChange={(e) => setDay(e.target.value)} aria-label="Tag">
-              <option value="ALL">Alle Tage</option>
-              <optgroup label="Noch frei am …">
+              <option value="ALL">{t('allDays')}</option>
+              <optgroup label={t('freeOnDayGroup')}>
                 {eventDays.map((k) => (
                   <option key={`frei:${k}`} value={`frei:${k}`}>
-                    Frei am {fmtShortWeekday(dayKeyToIso(k))} {fmtDayMonth(dayKeyToIso(k))}
+                    {t('freeOnDay', { day: `${fmtShortWeekday(dayKeyToIso(k))} ${fmtDayMonth(dayKeyToIso(k))}` })}
                   </option>
                 ))}
               </optgroup>
-              <optgroup label="Eingeteilt am …">
+              <optgroup label={t('busyOnDayGroup')}>
                 {eventDays.map((k) => (
                   <option key={`am:${k}`} value={`am:${k}`}>
-                    Eingeteilt am {fmtShortWeekday(dayKeyToIso(k))} {fmtDayMonth(dayKeyToIso(k))}
+                    {t('busyOnDay', { day: `${fmtShortWeekday(dayKeyToIso(k))} ${fmtDayMonth(dayKeyToIso(k))}` })}
                   </option>
                 ))}
               </optgroup>
@@ -613,17 +642,17 @@ function HelpersPage() {
               onChange={(e) => setPersonType(e.target.value as PersonType)}
               aria-label="Personentyp"
             >
-              <option value="ALL">Mitglieder und Gäste</option>
-              <option value="MEMBER">Nur mit Konto</option>
-              <option value="GUEST">Nur Gäste</option>
+              <option value="ALL">{t('allTypes')}</option>
+              <option value="MEMBER">{t('typeMembers')}</option>
+              <option value="GUEST">{t('typeGuests')}</option>
             </Select>
           )}
           <div className="flex items-center gap-1.5 sm:ml-auto">
             <ArrowDownUp className="size-4 text-fg-subtle" aria-hidden />
-            <Select className="h-10 w-auto text-sm" value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label="Sortierung">
-              {(Object.keys(SORT_LABEL) as SortKey[]).map((k) => (
+            <Select className="h-10 w-auto text-sm" value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label={t('sortAria')}>
+              {SORT_KEYS.map((k) => (
                 <option key={k} value={k}>
-                  {SORT_LABEL[k]}
+                  {getSortLabel(k)}
                 </option>
               ))}
             </Select>
@@ -639,7 +668,7 @@ function HelpersPage() {
             ))}
           {activeFilterCount > 0 && (
             <Button size="sm" variant="ghost" onClick={resetFilters}>
-              <X className="size-3.5" /> Filter zurücksetzen ({activeFilterCount})
+              <X className="size-3.5" /> {t('resetFilters')} ({activeFilterCount})
             </Button>
           )}
         </div>
@@ -648,8 +677,8 @@ function HelpersPage() {
         {roster && distribution.buckets.length > 1 && (
           <div className="rounded-card border border-line bg-surface p-3">
             <div className="mb-2 flex items-baseline justify-between gap-2">
-              <p className="text-2xs font-bold uppercase tracking-wider text-fg-subtle">Schichten pro Person</p>
-              <p className="text-2xs text-fg-muted">Klick auf einen Balken filtert</p>
+              <p className="text-2xs font-bold uppercase tracking-wider text-fg-subtle">{t('barTitle')}</p>
+              <p className="text-2xs text-fg-muted">{t('barHint')}</p>
             </div>
             <div className="flex items-end gap-1.5 overflow-x-auto pb-1">
               {distribution.buckets.map((b) => {
@@ -690,7 +719,7 @@ function HelpersPage() {
                 );
               })}
             </div>
-            {minShifts && <p className="mt-1 text-2xs text-fg-muted">Orange: unter dem Soll von {minShifts} Schichten</p>}
+            {minShifts && <p className="mt-1 text-2xs text-fg-muted">{t('barBelowTargetHint', { min: minShifts })}</p>}
           </div>
         )}
       </div>
@@ -714,16 +743,16 @@ function HelpersPage() {
               })
             }
           />
-          {selected.size > 0 ? `${selected.size} ausgewählt` : `${filtered.length} Personen`}
+          {selected.size > 0 ? t('selectedCount', { count: selected.size }) : t('pluralPeople', { count: filtered.length })}
         </label>
         <div className="flex flex-wrap items-center gap-2">
           {selected.size > 0 ? (
             <>
               <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>
-                Auswahl aufheben
+                {t('unselect')}
               </Button>
               <Button size="sm" onClick={() => writeMessage([...selected], `${plural(selected.size)} ausgewählt`)}>
-                <Mail className="size-4" /> Nachricht an Auswahl
+                <Mail className="size-4" /> {t('messageSelection')}
               </Button>
             </>
           ) : (
@@ -741,13 +770,13 @@ function HelpersPage() {
                   )
                 }
               >
-                <Mail className="size-4" /> {plural(selectableIds.length)} anschreiben
+                <Mail className="size-4" /> {t('contactPeople', { count: selectableIds.length })}
               </Button>
             )
           )}
           {filtered.length > 0 && (
             <Button size="sm" variant="ghost" onClick={exportFiltered} title="Gefilterte Liste als CSV (Excel)">
-              <Download className="size-4" /> CSV
+              <Download className="size-4" /> {t('exportCsv')}
             </Button>
           )}
         </div>
@@ -762,8 +791,8 @@ function HelpersPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={rows.length === 0 ? <Users /> : <Filter />}
-          title={rows.length === 0 ? 'Noch niemand dabei' : 'Keine passenden Personen'}
-          description={rows.length === 0 ? 'Sobald sich jemand einträgt, erscheint die Person hier.' : 'Passe die Filter an.'}
+          title={rows.length === 0 ? t('emptyPoolTitle') : t('emptyTitle')}
+          description={rows.length === 0 ? t('emptyPoolDesc') : t('emptyDesc')}
         />
       ) : (
         <Card className="divide-y divide-line overflow-hidden">
@@ -802,17 +831,17 @@ function HelpersPage() {
                       </span>
                     </span>
                     <span className="hidden shrink-0 sm:flex sm:items-center sm:gap-2">
-                      {missing > 0 && <span className="text-2xs font-semibold text-warning-ink">fehlt {missing}</span>}
+                      {missing > 0 && <span className="text-2xs font-semibold text-warning-ink">{t('missingBadge', { count: missing })}</span>}
                       {totalMins > 0 && (
                         <span className="font-mono text-xs font-semibold text-fg-muted">
                           {formatMinutes(totalMins)}
                         </span>
                       )}
                       {row.isDeregistered ? (
-                        <Badge tone="neutral">Abgemeldet</Badge>
+                        <Badge tone="neutral">{t('chips.deregistered')}</Badge>
                       ) : (
                         <Badge tone={met ? 'success' : row.shifts.length > 0 ? 'warning' : 'neutral'}>
-                          {target ? `${row.shifts.length}/${target} Schichten` : `${row.shifts.length} Schicht${row.shifts.length === 1 ? '' : 'en'}`}
+                          {target ? t('shiftsRatio', { count: row.shifts.length, target }) : t('shiftsCount', { count: row.shifts.length })}
                         </Badge>
                       )}
                     </span>
@@ -829,15 +858,15 @@ function HelpersPage() {
                         </span>
                       )}
                       {row.isDeregistered ? (
-                        <Badge tone="neutral">Abgemeldet</Badge>
+                        <Badge tone="neutral">{t('chips.deregistered')}</Badge>
                       ) : (
                         <Badge tone={met ? 'success' : 'warning'}>
-                          {target ? `${row.shifts.length}/${target} Schichten` : `${row.shifts.length} Schichten`}
+                          {target ? t('shiftsRatio', { count: row.shifts.length, target }) : t('shiftsCount', { count: row.shifts.length })}
                         </Badge>
                       )}
                     </div>
                     {row.isDeregistered && row.deregistrationReason && (
-                      <p className="text-xs text-fg-muted">Grund: {row.deregistrationReason}</p>
+                      <p className="text-xs text-fg-muted">{t('reasonDisplay', { reason: row.deregistrationReason })}</p>
                     )}
                     {(row.guestEmail || row.guestPhone) && (
                       <p className="text-xs text-fg-muted">
@@ -874,17 +903,17 @@ function HelpersPage() {
                           ))}
                       </ul>
                     ) : (
-                      <p className="text-xs italic text-fg-muted">Noch in keiner Schicht.</p>
+                      <p className="text-xs italic text-fg-muted">{t('noShiftsYet')}</p>
                     )}
                     <div className="flex flex-wrap gap-2">
                       {permissions.can.HELPERS && event.shifts.length > 0 && (
                         <Button size="sm" variant="secondary" onClick={() => setAssignTarget(row)}>
-                          <Plus className="size-3.5" /> In Schichten einteilen
+                          <Plus className="size-3.5" /> {t('assignShiftsBtn')}
                         </Button>
                       )}
                       {row.shifts.length > 1 && (
                         <Button size="sm" variant="ghost" className="text-danger-ink hover:bg-danger/10" onClick={() => removeFromAll(row)}>
-                          <X className="size-3.5" /> Aus allen Schichten austragen
+                          <X className="size-3.5" /> {t('removeFromAllBtn')}
                         </Button>
                       )}
                       <Button
@@ -893,16 +922,16 @@ function HelpersPage() {
                         onClick={() => setHistoryOpen(historyOpen === row.key ? null : row.key)}
                         aria-expanded={historyOpen === row.key}
                       >
-                        <History className="size-3.5" /> {historyOpen === row.key ? 'Verlauf ausblenden' : 'Verlauf'}
+                        <History className="size-3.5" /> {historyOpen === row.key ? t('hideHistoryBtn') : t('viewHistoryBtn')}
                       </Button>
                       {row.userId &&
                         (row.isDeregistered ? (
                           <Button size="sm" variant="secondary" onClick={() => undoDeregistration(row)}>
-                            <UserCheck className="size-3.5" /> Abmeldung aufheben
+                            <UserCheck className="size-3.5" /> {t('undoDeregBtn')}
                           </Button>
                         ) : (
                           <Button size="sm" variant="ghost" onClick={() => setDeregTarget(row)}>
-                            <UserMinus className="size-3.5" /> Kann nicht helfen (abmelden)
+                            <UserMinus className="size-3.5" /> {t('deregisterBtn')}
                           </Button>
                         ))}
                     </div>
@@ -1014,6 +1043,7 @@ function DeregisterDialog({
   onClose: () => void;
   onSaved: () => Promise<void>;
 }) {
+  const tDereg = useTranslations('web.ok.helpers.deregDialog');
   const toast = useToast();
   const [reason, setReason] = useState('');
   const [saving, setSaving] = useState(false);
@@ -1027,11 +1057,11 @@ function DeregisterDialog({
         method: 'POST',
         json: { userId: row.userId, reason: reason.trim() || undefined },
       });
-      toast({ title: `${row.name} abgemeldet`, description: 'Muss an diesem Anlass keine Schichten übernehmen.' });
+      toast({ title: tDereg('successToast', { name: row.name }) });
       setReason('');
       await onSaved();
     } catch (err) {
-      toast({ title: 'Abmelden fehlgeschlagen', description: errorMessage(err), tone: 'error' });
+      toast({ title: tDereg('failToast'), description: errorMessage(err), tone: 'error' });
     } finally {
       setSaving(false);
     }
@@ -1042,19 +1072,19 @@ function DeregisterDialog({
       open={Boolean(row)}
       onClose={onClose}
       icon={<UserMinus />}
-      title={row ? `${row.name} abmelden` : ''}
-      description="Die Person muss an diesem Anlass keine Schichten übernehmen und zählt nicht mehr beim Soll. Bestehende Eintragungen bleiben."
+      title={row ? tDereg('title', { name: row.name }) : ''}
+      description={tDereg('desc')}
     >
       <form onSubmit={submit} className="space-y-4">
-        <Field label="Grund (optional)" hint="z. B. Ferien, Militär, verletzt">
+        <Field label={tDereg('reasonLabel')} hint={tDereg('reasonPlaceholder')}>
           <Input value={reason} maxLength={200} autoFocus onChange={(e) => setReason(e.target.value)} />
         </Field>
         <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
           <Button type="button" variant="ghost" onClick={onClose}>
-            Abbrechen
+            {tDereg('cancelBtn')}
           </Button>
           <Button type="submit" loading={saving}>
-            Abmelden
+            {tDereg('confirmBtn')}
           </Button>
         </div>
       </form>

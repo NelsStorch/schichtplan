@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { CalendarClock, CalendarDays } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { addZurichDays, dayKeyDiff, formatDays, zurichDayKey as zurichDay } from '@schichtplan/shared';
 import { Button, Callout, Dialog, Field, Input, useToast } from '@schichtplan/ui';
 import { api, errorMessage } from '@/lib/api';
@@ -15,6 +16,7 @@ const daysLabel = (n: number) => formatDays(Math.abs(n));
  * Ändern geht nur über «Verschieben», dabei wandern alle Schichten mit.
  */
 export function EventRangeField({ event, onMoved }: { event: EventDetails; onMoved: () => void | Promise<void> }) {
+  const t = useTranslations('web.ok.settings');
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [day, setDay] = useState(zurichDay(event.startDate));
@@ -41,7 +43,11 @@ export function EventRangeField({ event, onMoved }: { event: EventDetails; onMov
     setError(null);
     try {
       await api(`/api/events/${event.slug}/move`, { method: 'POST', json: { days } });
-      toast({ title: 'Anlass verschoben', description: `${shifts.length} Schichten um ${daysLabel(days)} verschoben.`, tone: 'success' });
+      toast({
+        title: t('rangeMovedSuccess'),
+        description: t('rangeMovedSuccessDesc', { count: shifts.length, days: daysLabel(days) }),
+        tone: 'success',
+      });
       setOpen(false);
       await onMoved();
     } catch (err) {
@@ -51,6 +57,8 @@ export function EventRangeField({ event, onMoved }: { event: EventDetails; onMov
     }
   };
 
+  const direction = days > 0 ? t('rangeMoveForward') : t('rangeMoveBackward');
+
   return (
     <>
       <div className="flex flex-col gap-3 rounded-field border border-line bg-surface-2/60 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -59,13 +67,11 @@ export function EventRangeField({ event, onMoved }: { event: EventDetails; onMov
             <CalendarDays className="size-4 text-accent-ink" aria-hidden /> {fmtDateRange(event.startDate, event.endDate, event.dayCutoffTime)}
           </p>
           <p className="mt-0.5 text-xs text-fg-muted">
-            {shifts.length > 0
-              ? 'Wird automatisch aus der ersten und letzten Schicht berechnet.'
-              : 'Noch keine Schichten. Sobald es welche gibt, ergibt sich der Zeitraum aus ihnen.'}
+            {shifts.length > 0 ? t('rangeCalculatedHint') : t('rangeNoShiftsHint')}
           </p>
         </div>
         <Button type="button" size="sm" variant="secondary" className="shrink-0" onClick={() => setOpen(true)}>
-          <CalendarClock aria-hidden /> Verschieben
+          <CalendarClock aria-hidden /> {t('rangeMoveBtn')}
         </Button>
       </div>
 
@@ -73,44 +79,44 @@ export function EventRangeField({ event, onMoved }: { event: EventDetails; onMov
         open={open}
         onClose={close}
         icon={<CalendarClock />}
-        title="Anlass verschieben"
-        description="Wähle den neuen ersten Tag. Alle Schichten wandern um gleich viele Tage mit, die Uhrzeiten bleiben."
+        title={t('rangeMoveDialogTitle')}
+        description={t('rangeMoveDialogDesc')}
         footer={
           <>
             <Button variant="secondary" onClick={close} disabled={busy}>
-              Abbrechen
+              {t('rangeMoveCancelBtn')}
             </Button>
             <Button onClick={move} disabled={busy || days === 0}>
               <CalendarClock aria-hidden />
-              {busy ? 'Wird verschoben …' : 'Verschieben'}
+              {busy ? t('rangeMoveSubmittingBtn') : t('rangeMoveSubmitBtn')}
             </Button>
           </>
         }
       >
         <div className="space-y-5">
-          <Field label="Neuer erster Tag" error={error ?? undefined}>
+          <Field label={t('rangeNewFirstDayLabel')} error={error ?? undefined}>
             <Input type="date" value={day} required onChange={(e) => setDay(e.target.value)} />
           </Field>
           {days !== 0 && (
             <Callout tone="warning">
               <p>
-                {shifts.length > 0 ? (
-                  <>
-                    Alle {shifts.length} Schichten werden um {daysLabel(days)} {days > 0 ? 'nach hinten' : 'nach vorne'}{' '}
-                    verschoben, neu <strong>{preview}</strong>.
-                  </>
-                ) : (
-                  <>
-                    Der Anlass wird um {daysLabel(days)} {days > 0 ? 'nach hinten' : 'nach vorne'} verschoben, neu{' '}
-                    <strong>{preview}</strong>.
-                  </>
-                )}
-                {event.signupOpensAt && ' Die Freischaltung des Eintragens wandert mit.'}
+                {shifts.length > 0
+                  ? t.rich('rangeMoveWarningShifts', {
+                      count: shifts.length,
+                      days: daysLabel(days),
+                      direction,
+                      preview: () => <strong>{preview}</strong>,
+                    })
+                  : t.rich('rangeMoveWarningNoShifts', {
+                      days: daysLabel(days),
+                      direction,
+                      preview: () => <strong>{preview}</strong>,
+                    })}
+                {event.signupOpensAt && t('rangeMoveOpensAtNote')}
               </p>
               {signupCount > 0 && (
                 <p className="mt-2">
-                  {signupCount} Eintragungen bleiben bestehen. Die Helfenden bekommen keine Nachricht: Schreib ihnen danach
-                  unter «Nachrichten», dass sich das Datum geändert hat.
+                  {t('rangeMoveSignupsNote', { count: signupCount })}
                 </p>
               )}
             </Callout>

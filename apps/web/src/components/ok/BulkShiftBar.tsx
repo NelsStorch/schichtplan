@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { ArrowLeftRight, Hammer, Mail, Tag, Trash2, Users, X } from 'lucide-react';
 import type { BulkShiftsInput, BulkShiftsResultDto, ShiftDto } from '@schichtplan/shared';
 import { Button, Callout, Dialog, Field, Input, Select, cn, useConfirm, useToast } from '@schichtplan/ui';
@@ -27,6 +28,8 @@ export function BulkShiftBar({
   onDone: () => Promise<void>;
   onMessage: () => void;
 }) {
+  const t = useTranslations('web.ok.shifts.bulk');
+  const tShifts = useTranslations('web.ok.shifts');
   const toast = useToast();
   const confirm = useConfirm();
   const [mode, setMode] = useState<Mode>(null);
@@ -44,7 +47,7 @@ export function BulkShiftBar({
     toast({
       title: success.replace('{n}', String(res.updated)),
       description: res.skipped.length
-        ? `Nicht geändert: ${res.skipped.map((s) => `${s.title?.trim() || "Schicht ohne Titel"} (${s.reason})`).join(', ')}`
+        ? t('skippedNotice', { items: res.skipped.map((s) => `${s.title?.trim() || tShifts('emptyTitle')} (${s.reason})`).join(', ') })
         : undefined,
       tone: res.skipped.length ? 'error' : undefined,
     });
@@ -58,17 +61,17 @@ export function BulkShiftBar({
       return;
     }
     const ok = await confirm({
-      title: `${count} Schicht${count === 1 ? '' : 'en'} löschen?`,
-      description: 'Das lässt sich nicht rückgängig machen.',
-      confirmLabel: 'Löschen',
+      title: t('confirmDeleteTitle', { count }),
+      description: t('confirmDeleteDesc'),
+      confirmLabel: t('confirmDeleteBtn'),
       tone: 'danger',
     });
     if (!ok) return;
     try {
-      await run({ type: 'DELETE', notify: false }, '{n} Schichten gelöscht');
+      await run({ type: 'DELETE', notify: false }, t('deletedSuccess', { n: '{n}' }));
       onClear();
     } catch (err) {
-      toast({ title: 'Löschen fehlgeschlagen', description: errorMessage(err), tone: 'error' });
+      toast({ title: tShifts('deleteFailed'), description: errorMessage(err), tone: 'error' });
     }
   };
 
@@ -79,31 +82,31 @@ export function BulkShiftBar({
       <div className="sticky bottom-4 z-20 mt-6">
         <div className="flex flex-wrap items-center gap-2 rounded-card border border-line-strong bg-surface/95 p-3 shadow-lift backdrop-blur">
           <span className="mr-1 text-sm font-semibold text-fg">
-            {count} ausgewählt
+            {t('selectedCount', { count })}
           </span>
           <Button size="sm" variant="ghost" onClick={count === shifts.length ? onClear : onSelectAll}>
-            {count === shifts.length ? 'Keine' : `Alle ${shifts.length}`}
+            {count === shifts.length ? t('noneBtn') : t('allBtn', { count: shifts.length })}
           </Button>
           <span className="mx-1 hidden h-5 w-px bg-line sm:block" />
           <Button size="sm" variant="secondary" onClick={() => setMode('MOVE')}>
-            <ArrowLeftRight className="size-3.5" /> Verschieben
+            <ArrowLeftRight className="size-3.5" /> {t('moveBtn')}
           </Button>
           <Button size="sm" variant="secondary" onClick={() => setMode('SET_SLOTS')}>
-            <Users className="size-3.5" /> Plätze
+            <Users className="size-3.5" /> {t('slotsBtn')}
           </Button>
           <Button size="sm" variant="secondary" onClick={() => setMode('SET_CATEGORY')}>
-            <Tag className="size-3.5" /> Kategorie
+            <Tag className="size-3.5" /> {t('categoryBtn')}
           </Button>
           <Button size="sm" variant="secondary" onClick={() => setMode('SET_SETUP')}>
-            <Hammer className="size-3.5" /> Auf-/Abbau
+            <Hammer className="size-3.5" /> {t('setupBtn')}
           </Button>
           <Button size="sm" variant="secondary" onClick={onMessage} disabled={signupCount === 0}>
-            <Mail className="size-3.5" /> Nachricht
+            <Mail className="size-3.5" /> {t('messageBtn')}
           </Button>
           <Button size="sm" variant="ghost" onClick={remove} className="text-danger-ink hover:bg-danger/10">
-            <Trash2 className="size-3.5" /> Löschen
+            <Trash2 className="size-3.5" /> {t('deleteBtn')}
           </Button>
-          <Button size="icon-sm" variant="ghost" onClick={onClear} aria-label="Auswahl aufheben" className="ml-auto">
+          <Button size="icon-sm" variant="ghost" onClick={onClear} aria-label={t('clearAria')} className="ml-auto">
             <X className="size-4" />
           </Button>
         </div>
@@ -114,14 +117,14 @@ export function BulkShiftBar({
         onClose={() => setMode(null)}
         title={
           mode === 'MOVE'
-            ? 'Schichten verschieben'
+            ? t('dialogTitleMove')
             : mode === 'SET_SLOTS'
-              ? 'Plätze festlegen'
+              ? t('dialogTitleSlots')
               : mode === 'SET_CATEGORY'
-                ? 'Kategorie setzen'
-                : 'Auf- und Abbau'
+                ? t('dialogTitleCategory')
+                : t('dialogTitleSetup')
         }
-        description={`Gilt für ${count} ausgewählte Schicht${count === 1 ? '' : 'en'}.`}
+        description={t('dialogDesc', { count })}
       >
         {mode && (
           <BulkForm
@@ -141,11 +144,11 @@ export function BulkShiftBar({
           open
           onClose={() => setShowDeleteDialog(false)}
           size="sm"
-          title={`${count} Schicht${count === 1 ? '' : 'en'} löschen?`}
+          title={t('confirmDeleteTitle', { count })}
           description={
             <div className="space-y-4 pt-1 text-left">
               <p className="text-sm text-fg-muted">
-                Dabei werden auch {signupCount} Eintragung{signupCount === 1 ? '' : 'en'} unwiderruflich gelöscht.
+                {t('deleteWithSignupsDesc', { count: signupCount })}
               </p>
               <label className="flex items-start gap-2.5 rounded-field border border-line bg-surface-2 p-3 text-sm cursor-pointer select-none">
                 <input
@@ -156,10 +159,10 @@ export function BulkShiftBar({
                 />
                 <div className="space-y-0.5">
                   <span className="text-xs font-semibold text-fg block">
-                    Eingetragene Helfende per E-Mail benachrichtigen
+                    {tShifts('notifyHelpersCheckbox')}
                   </span>
                   <span className="text-xs text-fg-muted block">
-                    Informiert die betroffenen Helfenden automatisch darüber, dass ihre Schicht abgesagt wurde.
+                    {tShifts('notifyHelpersHint')}
                   </span>
                 </div>
               </label>
@@ -168,21 +171,21 @@ export function BulkShiftBar({
           footer={
             <>
               <Button variant="ghost" onClick={() => setShowDeleteDialog(false)}>
-                Abbrechen
+                {tShifts('cancelBtn')}
               </Button>
               <Button
                 variant="danger"
                 onClick={async () => {
                   setShowDeleteDialog(false);
                   try {
-                    await run({ type: 'DELETE', notify: notifyHelpers }, '{n} Schichten gelöscht');
+                    await run({ type: 'DELETE', notify: notifyHelpers }, t('deletedSuccess', { n: '{n}' }));
                     onClear();
                   } catch (err) {
-                    toast({ title: 'Löschen fehlgeschlagen', description: errorMessage(err), tone: 'error' });
+                    toast({ title: tShifts('deleteFailed'), description: errorMessage(err), tone: 'error' });
                   }
                 }}
               >
-                Schichten löschen
+                {tShifts('deleteShiftBtn')}
               </Button>
             </>
           }
@@ -203,6 +206,8 @@ function BulkForm({
   onCancel: () => void;
   onSubmit: (action: BulkShiftsInput['action'], success: string) => Promise<void>;
 }) {
+  const t = useTranslations('web.ok.shifts.bulk');
+  const tShifts = useTranslations('web.ok.shifts');
   const [direction, setDirection] = useState<1 | -1>(1);
   const [days, setDays] = useState(0);
   const [hours, setHours] = useState(1);
@@ -220,14 +225,14 @@ function BulkForm({
     try {
       if (mode === 'MOVE') {
         const total = hours * 60 + minutes;
-        if (days === 0 && total === 0) throw new Error('Bitte eine Zeitspanne angeben');
-        await onSubmit({ type: 'MOVE', days: direction * days, minutes: direction * total }, '{n} Schichten verschoben');
+        if (days === 0 && total === 0) throw new Error(t('specifyTimeSpanError'));
+        await onSubmit({ type: 'MOVE', days: direction * days, minutes: direction * total }, t('movedSuccess', { n: '{n}' }));
       } else if (mode === 'SET_SLOTS') {
-        await onSubmit({ type: 'SET_SLOTS', requiredSlots: slots }, 'Plätze bei {n} Schichten geändert');
+        await onSubmit({ type: 'SET_SLOTS', requiredSlots: slots }, t('slotsSuccess', { n: '{n}' }));
       } else if (mode === 'SET_CATEGORY') {
-        await onSubmit({ type: 'SET_CATEGORY', category: category.trim() || null }, 'Kategorie bei {n} Schichten gesetzt');
+        await onSubmit({ type: 'SET_CATEGORY', category: category.trim() || null }, t('categorySuccess', { n: '{n}' }));
       } else {
-        await onSubmit({ type: 'SET_SETUP', isSetupTeardown: setup }, '{n} Schichten geändert');
+        await onSubmit({ type: 'SET_SETUP', isSetupTeardown: setup }, t('setupSuccess', { n: '{n}' }));
       }
     } catch (err) {
       setError(errorMessage(err));
@@ -254,25 +259,24 @@ function BulkForm({
                   direction === d ? 'bg-surface text-fg shadow-soft' : 'text-fg-muted hover:text-fg'
                 )}
               >
-                {d === 1 ? 'Später' : 'Früher'}
+                {d === 1 ? t('directionLater') : t('directionEarlier')}
               </button>
             ))}
           </div>
           <div className="grid grid-cols-3 gap-3">
-            <Field label="Tage">
+            <Field label={t('fieldDays')}>
               <Input type="number" min={0} max={365} value={days} onChange={(e) => setDays(num(e.target.value, 365))} />
             </Field>
-            <Field label="Stunden">
+            <Field label={t('fieldHours')}>
               <Input type="number" min={0} max={23} value={hours} onChange={(e) => setHours(num(e.target.value, 23))} />
             </Field>
-            <Field label="Minuten">
+            <Field label={t('fieldMinutes')}>
               <Input type="number" min={0} max={59} step={5} value={minutes} onChange={(e) => setMinutes(num(e.target.value, 59))} />
             </Field>
           </div>
           {signupCount > 0 && (
             <Callout tone="warning">
-              {signupCount} Person{signupCount === 1 ? ' ist' : 'en sind'} schon eingetragen. Sie bleiben eingetragen und
-              erfahren die neue Zeit nicht automatisch. Schick ihnen danach am besten eine Nachricht.
+              {t('moveHelpersWarning', { count: signupCount })}
             </Callout>
           )}
         </>
@@ -280,34 +284,34 @@ function BulkForm({
 
       {mode === 'SET_SLOTS' && (
         <Field
-          label="Plätze pro Schicht"
-          hint="Gilt nur für Schichten mit genau einer Arbeit. Schichten mit mehreren Arbeiten oder mit mehr Eingetragenen bleiben unverändert."
+          label={t('slotsPerShiftLabel')}
+          hint={t('slotsPerShiftHint')}
         >
           <Input type="number" min={1} max={500} value={slots} onChange={(e) => setSlots(Math.max(1, num(e.target.value, 500)))} />
         </Field>
       )}
 
       {mode === 'SET_CATEGORY' && (
-        <Field label="Kategorie" hint="Leer lassen, um die Kategorie zu entfernen.">
-          <Input value={category} maxLength={80} placeholder="z. B. Festwirtschaft" onChange={(e) => setCategory(e.target.value)} />
+        <Field label={t('categoryLabel')} hint={t('categoryHint')}>
+          <Input value={category} maxLength={80} placeholder={t('categoryPlaceholder')} onChange={(e) => setCategory(e.target.value)} />
         </Field>
       )}
 
       {mode === 'SET_SETUP' && (
-        <Field label="Art der Schicht">
+        <Field label={t('setupTypeLabel')}>
           <Select value={setup ? 'yes' : 'no'} onChange={(e) => setSetup(e.target.value === 'yes')}>
-            <option value="yes">Als Auf- oder Abbau markieren</option>
-            <option value="no">Normale Schicht während des Anlasses</option>
+            <option value="yes">{t('setupTypeYes')}</option>
+            <option value="no">{t('setupTypeNo')}</option>
           </Select>
         </Field>
       )}
 
       <div className="flex flex-col-reverse gap-2 border-t border-line pt-4 sm:flex-row sm:justify-end">
         <Button type="button" variant="ghost" onClick={onCancel}>
-          Abbrechen
+          {tShifts('cancelBtn')}
         </Button>
         <Button type="submit" loading={saving}>
-          Übernehmen
+          {t('applyBtn')}
         </Button>
       </div>
     </form>

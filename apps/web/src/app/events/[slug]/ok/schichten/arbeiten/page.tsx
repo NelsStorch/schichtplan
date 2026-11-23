@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Edit, Plus, Trash2, Wrench } from 'lucide-react';
 import type { TaskDefinitionDto } from '@schichtplan/shared';
 import { Badge, Button, Callout, Card, EmptyState, Skeleton, useConfirm, useToast } from '@schichtplan/ui';
@@ -11,6 +12,8 @@ import { TaskDefinitionDialog } from '@/components/ok/TaskDefinitionDialog';
 import { api, errorMessage } from '@/lib/api';
 
 export default function TaskCatalogPage() {
+  const t = useTranslations('web.ok.tasks');
+  const tShifts = useTranslations('web.ok.shifts');
   const { event, base } = useOkEvent();
   const toast = useToast();
   const confirm = useConfirm();
@@ -23,9 +26,9 @@ export default function TaskCatalogPage() {
       setTasks(await api<TaskDefinitionDto[]>('/api/tasks'));
     } catch (err) {
       setTasks([]);
-      toast({ title: 'Katalog konnte nicht geladen werden', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('loadError'), description: errorMessage(err), tone: 'error' });
     }
-  }, [toast]);
+  }, [toast, t]);
 
   useEffect(() => {
     load();
@@ -34,26 +37,26 @@ export default function TaskCatalogPage() {
   const remove = async (td: TaskDefinitionDto, usedIn: number) => {
     if (usedIn > 0) {
       toast({
-        title: 'Arbeit in Schichten verbaut',
-        description: `«${td.title}» wird aktuell in ${usedIn} Schicht(en) dieses Anlasses verwendet und kann nicht gelöscht werden.`,
+        title: t('usedInShifts'),
+        description: t('usedInShiftsDesc', { title: td.title, count: usedIn }),
         tone: 'error',
       });
       return;
     }
 
     const ok = await confirm({
-      title: `Arbeit «${td.title}» löschen?`,
-      description: 'Sie wird aus dem Katalog entfernt. Nur Arbeiten, die aktuell in keinen Schichten verbaut sind, können gelöscht werden.',
-      confirmLabel: 'Arbeit löschen',
+      title: t('confirmDeleteTitle', { title: td.title }),
+      description: t('confirmDeleteDesc'),
+      confirmLabel: t('confirmDeleteBtn'),
       tone: 'danger',
     });
     if (!ok) return;
     try {
       await api(`/api/tasks/${td.id}`, { method: 'DELETE' });
-      toast({ title: 'Arbeit gelöscht', description: td.title });
+      toast({ title: t('deletedSuccess'), description: td.title });
       await load();
     } catch (err) {
-      toast({ title: 'Löschen fehlgeschlagen', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('deleteFailed'), description: errorMessage(err), tone: 'error' });
     }
   };
 
@@ -65,19 +68,18 @@ export default function TaskCatalogPage() {
   return (
     <div>
       <OkPageHeader
-        title="Arbeiten-Katalog"
-        description="Typische Arbeiten wie Bar, Grill oder Kasse einmal anlegen und beim Planen in jede Schicht übernehmen."
+        title={t('pageTitle')}
+        description={t('pageDesc')}
         help="/ok/arbeiten-katalog/"
         actions={
           <Button onClick={openNew}>
-            <Plus className="size-4" /> Neue Arbeit
+            <Plus className="size-4" /> {t('newBtn')}
           </Button>
         }
       />
 
       <Callout tone="info" className="mb-6">
-        Hier verwaltet ihr typische Aufgaben eurer Abteilung. Beim Anlegen von Schichten könnt ihr sie mit einem Klick übernehmen.
-        Arbeiten, die aktuell in Schichten verbaut sind, können zum Schutz vor Datenverlust nicht gelöscht werden.
+        {t('callout')}
       </Callout>
 
       {tasks === null ? (
@@ -89,11 +91,11 @@ export default function TaskCatalogPage() {
       ) : tasks.length === 0 ? (
         <EmptyState
           icon={<Wrench />}
-          title="Noch keine Arbeiten im Katalog"
-          description="Lege die Arbeiten an, die bei euren Anlässen immer wieder vorkommen."
+          title={t('emptyTitle')}
+          description={t('emptyDesc')}
           action={
             <Button onClick={openNew}>
-              <Plus className="size-4" /> Erste Arbeit anlegen
+              <Plus className="size-4" /> {t('createFirstBtn')}
             </Button>
           }
         />
@@ -102,7 +104,7 @@ export default function TaskCatalogPage() {
           {tasks.map((td) => {
             const usedIn = event.shifts.filter((s) =>
               s.tasks?.some(
-                (t) => (t.taskDefinitionId && t.taskDefinitionId === td.id) || t.title.toLowerCase() === td.title.toLowerCase()
+                (item) => (item.taskDefinitionId && item.taskDefinitionId === td.id) || item.title.toLowerCase() === td.title.toLowerCase()
               )
             ).length;
             return (
@@ -114,7 +116,7 @@ export default function TaskCatalogPage() {
                       <Button
                         size="icon-sm"
                         variant="ghost"
-                        aria-label={`${td.title} bearbeiten`}
+                        aria-label={t('editTitle')}
                         onClick={() => {
                           setEditing(td);
                           setDialogOpen(true);
@@ -125,9 +127,9 @@ export default function TaskCatalogPage() {
                       <Button
                         size="icon-sm"
                         variant="ghost"
-                        aria-label={`${td.title} löschen`}
+                        aria-label={t('confirmDeleteBtn')}
                         disabled={usedIn > 0}
-                        title={usedIn > 0 ? `In ${usedIn} Schicht(en) verwendet – kann nicht gelöscht werden` : 'Arbeit löschen'}
+                        title={usedIn > 0 ? t('usedInShiftsDesc', { title: td.title, count: usedIn }) : t('confirmDeleteBtn')}
                         onClick={() => remove(td, usedIn)}
                         className={usedIn > 0 ? 'text-fg-subtle/40 cursor-not-allowed' : 'text-fg-subtle hover:text-danger-ink'}
                       >
@@ -136,15 +138,18 @@ export default function TaskCatalogPage() {
                     </div>
                   </div>
                   <p className="mt-2 text-xs leading-relaxed text-fg-muted">
-                    {td.description || <span className="italic text-fg-subtle">Keine Beschreibung</span>}
+                    {td.description || <span className="italic text-fg-subtle">{t('noDescription')}</span>}
                   </p>
                   <div className="mt-3">
                     {td.minAge ? (
                       <Badge tone="warning">
-                        ab {td.minAge} J. ({td.ageRequirementType === 'AT_LEAST_ONE' ? 'mind. 1 Person' : 'alle'})
+                        {t('minAgeBadge', {
+                          age: td.minAge,
+                          type: td.ageRequirementType === 'AT_LEAST_ONE' ? tShifts('card.ageRequirementOne') : tShifts('card.ageRequirementAll'),
+                        })}
                       </Badge>
                     ) : (
-                      <Badge tone="neutral">Kein Mindestalter</Badge>
+                      <Badge tone="neutral">{t('noMinAge')}</Badge>
                     )}
                   </div>
                 </div>
@@ -154,13 +159,13 @@ export default function TaskCatalogPage() {
                       href={`${base}/schichten?arbeit=${encodeURIComponent(td.title)}`}
                       className="font-semibold text-accent-ink hover:underline"
                     >
-                      In {usedIn} Schicht{usedIn === 1 ? '' : 'en'} anzeigen
+                      {t('showInShifts', { count: usedIn })}
                     </Link>
                   ) : (
-                    <span className="text-fg-subtle">In diesem Anlass nicht verwendet</span>
+                    <span className="text-fg-subtle">{t('notUsedInEvent')}</span>
                   )}
                   <Link href={`${base}/schichten?neu=1`} className="font-bold text-accent-ink hover:underline">
-                    + Schicht
+                    {t('addShift')}
                   </Link>
                 </div>
               </Card>

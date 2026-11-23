@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -31,10 +32,29 @@ import { useCommandPalette } from '@/components/command';
 import { fmtDateRange } from '@/lib/format';
 import { OkProvider, useOk } from './OkContext';
 
+type NavKey =
+  | 'overview'
+  | 'planGroup'
+  | 'shifts'
+  | 'tasksCatalog'
+  | 'templates'
+  | 'helpersGroup'
+  | 'helpers'
+  | 'questions'
+  | 'access'
+  | 'messages'
+  | 'atEventGroup'
+  | 'attendance'
+  | 'cateringBons'
+  | 'export'
+  | 'managementGroup'
+  | 'settings'
+  | 'logs';
+
 interface NavItem {
   /** Pfad relativ zum OK-Bereich ('' = Übersicht) */
   path: string;
-  label: string;
+  labelKey: NavKey;
   icon: ComponentType<LucideProps>;
   /** Nur sichtbar mit dieser Fähigkeit im Anlass */
   capability?: EventCapability;
@@ -42,43 +62,43 @@ interface NavItem {
 }
 
 interface NavGroup {
-  label: string | null;
+  labelKey: NavKey | null;
   items: NavItem[];
 }
 
 /** Reihenfolge wie die Arbeit am Anlass: planen, Helfende betreuen, durchführen, verwalten */
 const NAV: NavGroup[] = [
-  { label: null, items: [{ path: '', label: 'Übersicht', icon: LayoutDashboard }] },
+  { labelKey: null, items: [{ path: '', labelKey: 'overview', icon: LayoutDashboard }] },
   {
-    label: 'Planen',
+    labelKey: 'planGroup',
     items: [
-      { path: 'schichten', label: 'Schichten', icon: CalendarDays, count: (c) => c.event?.shifts.length ?? null },
-      { path: 'schichten/arbeiten', label: 'Arbeiten-Katalog', icon: Wrench, capability: 'SHIFTS' },
-      { path: 'schichten/vorlagen', label: 'Vorlagen', icon: Copy, capability: 'TEMPLATES' },
+      { path: 'schichten', labelKey: 'shifts', icon: CalendarDays, count: (c) => c.event?.shifts.length ?? null },
+      { path: 'schichten/arbeiten', labelKey: 'tasksCatalog', icon: Wrench, capability: 'SHIFTS' },
+      { path: 'schichten/vorlagen', labelKey: 'templates', icon: Copy, capability: 'TEMPLATES' },
     ],
   },
   {
-    label: 'Helfende',
+    labelKey: 'helpersGroup',
     items: [
-      { path: 'helfende', label: 'Helfende', icon: Users, count: (c) => c.stats.helperCount },
-      { path: 'fragen', label: 'Fragen', icon: MessageSquareText, count: (c) => c.event?.questions.length ?? null },
-      { path: 'helfende/zugang', label: 'Zugang & Antworten', icon: KeyRound },
-      { path: 'nachrichten', label: 'Nachrichten', icon: Mail, capability: 'MESSAGES' },
+      { path: 'helfende', labelKey: 'helpers', icon: Users, count: (c) => c.stats.helperCount },
+      { path: 'fragen', labelKey: 'questions', icon: MessageSquareText, count: (c) => c.event?.questions.length ?? null },
+      { path: 'helfende/zugang', labelKey: 'access', icon: KeyRound },
+      { path: 'nachrichten', labelKey: 'messages', icon: Mail, capability: 'MESSAGES' },
     ],
   },
   {
-    label: 'Am Anlass',
+    labelKey: 'atEventGroup',
     items: [
-      { path: 'anwesenheit', label: 'Anwesenheit', icon: ClipboardCheck, capability: 'ATTENDANCE' },
-      { path: 'verpflegung', label: 'Verpflegungs-Bons', icon: UtensilsCrossed, capability: 'ATTENDANCE' },
-      { path: 'export', label: 'Export & Drucken', icon: Download, capability: 'EXPORT' },
+      { path: 'anwesenheit', labelKey: 'attendance', icon: ClipboardCheck, capability: 'ATTENDANCE' },
+      { path: 'verpflegung', labelKey: 'cateringBons', icon: UtensilsCrossed, capability: 'ATTENDANCE' },
+      { path: 'export', labelKey: 'export', icon: Download, capability: 'EXPORT' },
     ],
   },
   {
-    label: 'Verwaltung',
+    labelKey: 'managementGroup',
     items: [
-      { path: 'einstellungen', label: 'Einstellungen', icon: Settings, capability: 'SETTINGS' },
-      { path: 'protokoll', label: 'Protokoll', icon: History },
+      { path: 'einstellungen', labelKey: 'settings', icon: Settings, capability: 'SETTINGS' },
+      { path: 'protokoll', labelKey: 'logs', icon: History },
     ],
   },
 ];
@@ -89,6 +109,7 @@ function itemHref(base: string, path: string) {
 
 function OkNav({ onNavigate }: { onNavigate?: () => void }) {
   const ctx = useOk();
+  const tNav = useTranslations('web.ok.nav');
   const pathname = usePathname();
   const { base, permissions } = ctx;
 
@@ -113,14 +134,14 @@ function OkNav({ onNavigate }: { onNavigate?: () => void }) {
   }, [active]);
 
   return (
-    <nav aria-label="OK-Bereich" className="space-y-5">
+    <nav aria-label={tNav('ariaLabel')} className="space-y-5">
       {NAV.map((group) => {
         const items = group.items.filter((i) => !i.capability || permissions.can[i.capability]);
         if (items.length === 0) return null;
         return (
-          <div key={group.label ?? 'start'}>
-            {group.label && (
-              <p className="mb-1.5 px-3 text-2xs font-bold uppercase tracking-wider text-fg-subtle">{group.label}</p>
+          <div key={group.labelKey ?? 'start'}>
+            {group.labelKey && (
+              <p className="mb-1.5 px-3 text-2xs font-bold uppercase tracking-wider text-fg-subtle">{tNav(group.labelKey)}</p>
             )}
             <ul className="space-y-0.5">
               {items.map((item) => {
@@ -140,7 +161,7 @@ function OkNav({ onNavigate }: { onNavigate?: () => void }) {
                       )}
                     >
                       <Icon className="size-4 shrink-0" />
-                      <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                      <span className="min-w-0 flex-1 truncate">{tNav(item.labelKey)}</span>
                       {count !== null && count !== undefined && (
                         <span className="tabular text-2xs font-semibold text-fg-subtle">{count}</span>
                       )}
@@ -158,7 +179,7 @@ function OkNav({ onNavigate }: { onNavigate?: () => void }) {
         rel="noreferrer"
         className="flex items-center gap-2.5 rounded-field px-3 py-2 text-sm font-semibold text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
       >
-        <LifeBuoy className="size-4 shrink-0" /> Hilfe zum OK-Bereich
+        <LifeBuoy className="size-4 shrink-0" /> {tNav('helpLink')}
       </a>
     </nav>
   );
@@ -178,10 +199,12 @@ function useCurrentItem() {
 
 function OkFrame({ children }: { children: ReactNode }) {
   const { event, loading, error, permissions } = useOk();
+  const tNav = useTranslations('web.ok.nav');
+  const tLayout = useTranslations('web.ok.layout');
   const { registerContextData } = useCommandPalette();
   const [menuOpen, setMenuOpen] = useState(false);
   const currentItem = useCurrentItem();
-  const currentLabel = currentItem?.label ?? 'Übersicht';
+  const currentLabel = currentItem ? tNav(currentItem.labelKey) : tNav('overview');
   const currentPath = currentItem?.path ?? '';
 
   // Welche Bereiche das OK nutzt (nur der Bereich, nicht der Anlass)
@@ -215,11 +238,11 @@ function OkFrame({ children }: { children: ReactNode }) {
       <div className="mx-auto max-w-xl px-4 pt-16">
         <EmptyState
           icon={<AlertTriangle />}
-          title="Anlass nicht gefunden"
-          description={error || 'Der Anlass konnte nicht geladen werden.'}
+          title={tLayout('notFoundTitle')}
+          description={error || tLayout('notFoundDesc')}
           action={
             <Link href="/" className={buttonClasses()}>
-              Zur Startseite
+              {tLayout('toHome')}
             </Link>
           }
         />
@@ -234,21 +257,29 @@ function OkFrame({ children }: { children: ReactNode }) {
       <div className="mx-auto max-w-xl px-4 pt-16">
         <EmptyState
           icon={<Shield className="size-12 text-warning-ink" />}
-          title="Keine Berechtigung"
+          title={tLayout('noPermissionTitle')}
           description={
             missingCapability
-              ? `Für «${currentLabel}» fehlt dir in diesem Anlass das Recht. Frag die OK-Leitung oder die Abteilungsleitung.`
-              : 'Der OK-Bereich ist für das OK dieses Anlasses, die Abteilungsleitung und wer «Alle Anlässe sehen» darf.'
+              ? tLayout('noPermissionArea', { area: currentLabel })
+              : tLayout('noPermissionGeneral')
           }
           action={
             <Link href={`/events/${event.slug}`} className={buttonClasses()}>
-              Zum Schichtplan
+              {tLayout('toShiftPlan')}
             </Link>
           }
         />
       </div>
     );
   }
+
+  const roleText = permissions.roleLabel === 'OK-Leitung'
+    ? tLayout('roleLead')
+    : permissions.roleLabel === 'OK-Mitglied'
+      ? tLayout('roleMember')
+      : permissions.roleLabel === 'Plattform-Admin'
+        ? tLayout('rolePlatformAdmin')
+        : permissions.roleLabel;
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-16 pt-5 sm:px-6 sm:pt-8">
@@ -259,7 +290,7 @@ function OkFrame({ children }: { children: ReactNode }) {
             href={`/events/${event.slug}`}
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-fg-muted transition hover:text-fg"
           >
-            <ArrowLeft className="size-4" /> Zum Schichtplan für Helfende
+            <ArrowLeft className="size-4" /> {tLayout('backToShifts')}
           </Link>
           <h1 className="mt-2 truncate font-display text-2xl font-extrabold tracking-tight text-fg sm:text-3xl">
             {event.title}
@@ -267,11 +298,11 @@ function OkFrame({ children }: { children: ReactNode }) {
           <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-fg-muted">
             <CalendarDays className="size-4" /> {fmtDateRange(event.startDate, event.endDate, event.dayCutoffTime)}
             <Badge tone="accent" size="sm">
-              <Shield className="size-3" /> OK-Bereich
+              <Shield className="size-3" /> {tNav('ariaLabel')}
             </Badge>
-            {permissions.roleLabel && (
+            {roleText && (
               <Badge tone="neutral" size="sm">
-                Du: {permissions.roleLabel}
+                {tLayout('youRole', { role: roleText })}
               </Badge>
             )}
           </p>
@@ -286,14 +317,14 @@ function OkFrame({ children }: { children: ReactNode }) {
         aria-haspopup="dialog"
       >
         <span className="min-w-0">
-          <span className="block text-2xs font-bold uppercase tracking-wider text-fg-subtle">Bereich</span>
+          <span className="block text-2xs font-bold uppercase tracking-wider text-fg-subtle">{tNav('area')}</span>
           <span className="block truncate font-semibold text-fg">{currentLabel}</span>
         </span>
         <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-ink">
-          <Menu className="size-4" /> Wechseln
+          <Menu className="size-4" /> {tNav('switch')}
         </span>
       </button>
-      <Dialog open={menuOpen} onClose={() => setMenuOpen(false)} title="OK-Bereich" size="sm">
+      <Dialog open={menuOpen} onClose={() => setMenuOpen(false)} title={tNav('ariaLabel')} size="sm">
         <OkNav onNavigate={() => setMenuOpen(false)} />
       </Dialog>
 
@@ -332,6 +363,7 @@ export function OkPageHeader({
   help?: string;
   actions?: ReactNode;
 }) {
+  const tLayout = useTranslations('web.ok.layout');
   return (
     <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
       <div className="min-w-0 max-w-2xl">
@@ -344,7 +376,7 @@ export function OkPageHeader({
             rel="noreferrer"
             className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-accent-ink hover:underline"
           >
-            <LifeBuoy className="size-3.5" /> Anleitung im Hilfe-Center
+            <LifeBuoy className="size-3.5" /> {tLayout('helpGuide')}
           </a>
         )}
       </div>

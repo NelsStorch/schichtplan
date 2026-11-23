@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { Wrench } from 'lucide-react';
 import type { AgeRequirementType, TaskDefinitionDto } from '@schichtplan/shared';
 import { Button, Callout, Dialog, Field, Input, Textarea, cn, useToast } from '@schichtplan/ui';
@@ -18,6 +19,8 @@ export function TaskDefinitionDialog({
   onSaved: () => void;
 }) {
   const isEdit = Boolean(task);
+  const t = useTranslations('web.ok.tasks');
+  const tShifts = useTranslations('web.ok.shifts');
   const toast = useToast();
   const [title, setTitle] = useState(task?.title || '');
   const [description, setDescription] = useState(task?.description || '');
@@ -45,7 +48,7 @@ export function TaskDefinitionDialog({
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
-      setError('Bitte einen Namen für die Arbeit angeben.');
+      setError(t('titleRequiredError'));
       return;
     }
     setSaving(true);
@@ -64,13 +67,13 @@ export function TaskDefinitionDialog({
           method: 'PATCH',
           json: payload,
         });
-        toast({ title: 'Arbeit aktualisiert', description: title });
+        toast({ title: t('updatedSuccess'), description: title });
       } else {
         await api('/api/tasks', {
           method: 'POST',
           json: payload,
         });
-        toast({ title: 'Arbeit angelegt', description: title });
+        toast({ title: t('createdTaskSuccess'), description: title });
       }
       onSaved();
     } catch (err) {
@@ -84,33 +87,33 @@ export function TaskDefinitionDialog({
       open={open}
       onClose={onClose}
       icon={<Wrench />}
-      title={isEdit ? 'Arbeit bearbeiten' : 'Neue Arbeit definieren'}
-      description="Gilt für alle Anlässe der Abteilung und lässt sich in jede Schicht übernehmen."
+      title={isEdit ? t('editTitle') : t('createTitle')}
+      description={t('dialogDesc')}
     >
       <form onSubmit={submit} className="space-y-4">
         {error && <Callout tone="danger">{error}</Callout>}
 
-        <Field label="Titel der Arbeit" required>
+        <Field label={t('titleLabel')} required>
           <Input
             value={title}
             autoFocus
-            placeholder="z.B. Bar, Grill, Kasse, Zeltbau, Küche"
+            placeholder={t('titlePlaceholder')}
             onChange={(e) => setTitle(e.target.value)}
           />
         </Field>
 
-        <Field label="Beschreibung / Aufgaben">
+        <Field label={t('descLabel')}>
           <Textarea
             rows={2}
             value={description}
-            placeholder="Was ist zu tun?"
+            placeholder={t('descPlaceholder')}
             onChange={(e) => setDescription(e.target.value)}
           />
         </Field>
 
         {/* Mindestalter */}
         <div className="flex flex-col gap-1.5 rounded-field border border-line bg-surface-2 p-3">
-          <span className="text-[13px] font-semibold text-fg">Mindestalter für diese Arbeit</span>
+          <span className="text-[13px] font-semibold text-fg">{t('minAgeHeading')}</span>
           <div className="mt-1 grid h-9 grid-cols-4 gap-1">
             {[0, 14, 16, 18].map((age) => (
               <button
@@ -122,21 +125,20 @@ export function TaskDefinitionDialog({
                   minAge === age ? 'bg-surface text-fg shadow-soft' : 'text-fg-muted hover:text-fg'
                 )}
               >
-                {age === 0 ? 'Keins' : `ab ${age}`}
+                {age === 0 ? t('minAgeNone') : t('minAgeFrom', { age })}
               </button>
             ))}
           </div>
           {minAge > 0 && (
             <p className="text-2xs text-fg-muted mt-1">
-              Geprüft wird das selbst angegebene Geburtsdatum. Ausweiskontrolle und Jugendschutz vor Ort bleiben
-              Sache des OK.
+              {t('minAgeNotice')}
             </p>
           )}
         </div>
 
         {minAge > 0 && (
           <div className="flex flex-col gap-1.5 rounded-field border border-line bg-surface-2 p-3">
-            <span className="text-[13px] font-semibold text-fg">Alters-Anforderung in der Schicht</span>
+            <span className="text-[13px] font-semibold text-fg">{t('ageReqHeading')}</span>
             <div className="mt-1 grid h-9 grid-cols-2 gap-1 rounded-field border border-line bg-surface p-0.5">
               <button
                 type="button"
@@ -148,7 +150,7 @@ export function TaskDefinitionDialog({
                     : 'text-fg-muted hover:text-fg'
                 )}
               >
-                Alle
+                {t('ageReqAll')}
               </button>
               <button
                 type="button"
@@ -159,25 +161,25 @@ export function TaskDefinitionDialog({
                     ? 'bg-accent/15 text-accent-ink font-bold'
                     : 'text-fg-muted hover:text-fg'
                 )}
-                title="Mindestens 1 Person in der Schicht muss das Alter haben"
+                title={t('ageReqAtLeastOneTitle')}
               >
-                Mind. 1 in Schicht
+                {t('ageReqAtLeastOne')}
               </button>
             </div>
             <p className="text-2xs text-fg-muted mt-1">
               {ageRequirementType === 'ALL'
-                ? 'Alle, die diese Arbeit übernehmen, müssen mindestens so alt sein.'
-                : 'Mindestens eine Person in der Schicht muss so alt sein. Ist noch niemand alt genug, bleibt der letzte Platz für eine solche Person reserviert.'}
+                ? t('ageReqAllDesc')
+                : t('ageReqOneDesc')}
             </p>
           </div>
         )}
 
         <div className="flex flex-col-reverse gap-2 border-t border-line pt-4 sm:flex-row sm:justify-end">
           <Button variant="ghost" onClick={onClose} type="button">
-            Abbrechen
+            {tShifts('cancelBtn')}
           </Button>
           <Button type="submit" loading={saving}>
-            {isEdit ? 'Änderungen speichern' : 'Arbeit anlegen'}
+            {isEdit ? t('saveChangesBtn') : t('createTaskBtn')}
           </Button>
         </div>
       </form>

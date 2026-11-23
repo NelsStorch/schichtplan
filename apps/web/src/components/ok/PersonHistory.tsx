@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ClipboardCheck, Mail, Repeat, UserMinus, UserPlus, UserX } from 'lucide-react';
 import { ATTENDANCE_STATUSES, type PersonHistoryDto } from '@schichtplan/shared';
 import { Skeleton, cn } from '@schichtplan/ui';
@@ -44,6 +45,7 @@ export function PersonHistory({
   /** Ändert sich nach Ein-/Austragungen, damit der Verlauf neu lädt */
   reloadKey: number;
 }) {
+  const t = useTranslations('web.ok.helpers.history');
   const [data, setData] = useState<PersonHistoryDto | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,7 +65,7 @@ export function PersonHistory({
     };
   }, [eventSlug, userId, guestName, reloadKey]);
 
-  if (error) return <p className="text-xs text-danger-ink">Verlauf konnte nicht geladen werden: {error}</p>;
+  if (error) return <p className="text-xs text-danger-ink">{t('loadError', { error })}</p>;
   if (!data) return <Skeleton className="h-16 rounded-field" />;
 
   const entries: Entry[] = [];
@@ -78,7 +80,7 @@ export function PersonHistory({
         at: l.createdAt,
         icon: <UserPlus className="size-3.5" />,
         tone: 'success',
-        title: self ? 'Selbst eingetragen' : `Eingeteilt von ${l.performedByName}`,
+        title: self ? t('selfSignup') : t('byOtherSignup', { name: l.performedByName ?? '' }),
         detail: shift,
       });
     } else if (l.action === 'SIGNOFF') {
@@ -87,7 +89,7 @@ export function PersonHistory({
         at: l.createdAt,
         icon: <UserMinus className="size-3.5" />,
         tone: 'danger',
-        title: self ? 'Selbst ausgetragen' : `Ausgetragen von ${l.performedByName}`,
+        title: self ? t('selfSignoff') : t('byOtherSignoff', { name: l.performedByName ?? '' }),
         detail: shift,
       });
     } else if (l.action === 'REPLACE') {
@@ -96,7 +98,7 @@ export function PersonHistory({
         at: l.createdAt,
         icon: <Repeat className="size-3.5" />,
         tone: 'warning',
-        title: `Schicht übernommen von ${l.performedByName ?? 'Gast'}`,
+        title: t('replace', { name: l.performedByName ?? 'Gast' }),
         detail: shift,
       });
     } else {
@@ -105,9 +107,11 @@ export function PersonHistory({
         at: l.createdAt,
         icon: <ClipboardCheck className="size-3.5" />,
         tone: 'accent',
-        title: `Anwesenheit: ${l.attendance ? ATTENDANCE_STATUSES[l.attendance] : 'offen'}${
-          l.performedByName ? ` (durch ${l.performedByName})` : ' (per QR-Code)'
-        }`,
+        title: t('attendance', {
+          status: `${l.attendance ? ATTENDANCE_STATUSES[l.attendance] : 'offen'}${
+            l.performedByName ? ` (${l.performedByName})` : ' (QR)'
+          }`,
+        }),
         detail: shift,
       });
     }
@@ -118,7 +122,7 @@ export function PersonHistory({
       at: m.createdAt,
       icon: <Mail className="size-3.5" />,
       tone: 'neutral',
-      title: `Nachricht vom OK: «${m.subject}»`,
+      title: t('messageSent', { subject: m.subject }),
       detail: `von ${m.sentByName} an ${m.targetLabel}`,
     });
   }
@@ -128,7 +132,7 @@ export function PersonHistory({
       at: deregisteredAt,
       icon: <UserX className="size-3.5" />,
       tone: 'neutral',
-      title: 'Abgemeldet (kann nicht helfen)',
+      title: deregistrationReason ? t('deregistered', { reason: deregistrationReason }) : t('deregisteredNoReason'),
       detail: deregistrationReason ? `Grund: ${deregistrationReason}` : undefined,
     });
   }
@@ -144,12 +148,12 @@ export function PersonHistory({
           <span className="ml-2 font-normal normal-case tracking-normal text-fg-muted">
             {lastMessage
               ? `zuletzt angeschrieben ${fmtStand(lastMessage.createdAt)}`
-              : 'noch nicht vom OK angeschrieben (erfasst seit 14.11.2026)'}
+              : 'noch nicht vom OK angeschrieben'}
           </span>
         )}
       </p>
       {entries.length === 0 ? (
-        <p className="text-xs italic text-fg-muted">Noch keine Einträge.</p>
+        <p className="text-xs italic text-fg-muted">{t('emptyHistory')}</p>
       ) : (
         <ol className="space-y-1.5">
           {entries.map((e) => (
@@ -167,3 +171,4 @@ export function PersonHistory({
     </div>
   );
 }
+

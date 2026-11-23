@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   CheckCircle2,
   Download,
@@ -24,6 +25,7 @@ export function PhysicalBonsManager({
   eventSlug,
   items,
 }: PhysicalBonsManagerProps) {
+  const t = useTranslations('web.ok.physicalBons');
   const toast = useToast();
   const [batches, setBatches] = useState<CateringBatchDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,10 +124,10 @@ export function PhysicalBonsManager({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h4 className="font-display text-sm font-bold text-fg flex items-center gap-2">
-              <Printer className="size-4 text-accent-ink" /> Neue Druck-Tranche anlegen
+              <Printer className="size-4 text-accent-ink" /> {t('createTitle')}
             </h4>
             <p className="text-xs text-fg-muted mt-0.5">
-              Generiert unpersönliche A4-Druckbögen (10 Bons pro Seite) mit QR-Codes zum Ausschneiden.
+              {t('createDesc')}
             </p>
           </div>
           {helperCount !== null && (
@@ -151,7 +153,7 @@ export function PhysicalBonsManager({
             >
               <div>
                 <div className="font-bold text-xs text-fg flex items-center justify-between">
-                  <span>Kombi-Bon (1 QR-Code)</span>
+                  <span>{t('modeCombi')}</span>
                   {mode === 'COMBI' && <CheckCircle2 className="size-3.5 text-accent-ink" />}
                 </div>
                 <p className="text-[11px] text-fg-muted mt-1 leading-snug">
@@ -174,7 +176,7 @@ export function PhysicalBonsManager({
             >
               <div>
                 <div className="font-bold text-xs text-fg flex items-center justify-between">
-                  <span>Einzel-Bons (1 QR-Code pro Bon)</span>
+                  <span>{t('modeSingle')}</span>
                   {mode === 'SINGLE' && <CheckCircle2 className="size-3.5 text-accent-ink" />}
                 </div>
                 <p className="text-[11px] text-fg-muted mt-1 leading-snug">
@@ -190,7 +192,7 @@ export function PhysicalBonsManager({
         {/* Anzahl & Name */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           <Field
-            label="Anzahl Sätze / Karten"
+            label={t('countLabel')}
             hint={
               mode === 'COMBI'
                 ? `${cardCount} Karten insgesamt (ergibt ${Math.ceil(cardCount / 10)} A4-Seiten)`
@@ -237,7 +239,7 @@ export function PhysicalBonsManager({
             className="w-full sm:w-auto"
           >
             <Printer className="size-4 mr-1.5" />
-            Tranche generieren &amp; A4-PDF öffnen
+            {t('generateBtn')}
           </Button>
         </div>
       </div>
@@ -260,7 +262,7 @@ export function PhysicalBonsManager({
 
         {batches.length === 0 ? (
           <div className="rounded-xl border border-dashed border-line p-6 text-center text-xs text-fg-muted">
-            Noch keine physischen Bons für diesen Anlass generiert.
+            {t('emptyDesc')}
           </div>
         ) : (
           <div className="space-y-2.5">
@@ -282,7 +284,7 @@ export function PhysicalBonsManager({
                     </Badge>
                   </div>
                   <p className="text-xs text-fg-muted mt-0.5">
-                    {batch.cardCount} Karten ({batch.tokenCount} Artikel-Gutscheine) ·{' '}
+                    {t('cardsCount', { count: batch.cardCount })} ({t('totalBonsCount', { count: batch.tokenCount })}) ·{' '}
                     <span className="font-medium text-fg">{batch.redeemedTokensCount} bereits eingelöst</span> ·{' '}
                     {zurichDateTimeFormat({ day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(
                       new Date(batch.createdAt)
@@ -300,7 +302,7 @@ export function PhysicalBonsManager({
                     }
                     title="A4-Druckbogen als PDF herunterladen"
                   >
-                    <Download className="size-3.5 mr-1" /> PDF Druckbogen
+                    <Download className="size-3.5 mr-1" /> {t('downloadPdfBtn')}
                   </Button>
 
                   <Button
@@ -308,16 +310,16 @@ export function PhysicalBonsManager({
                     variant={batch.isBlocked ? 'secondary' : 'ghost'}
                     size="sm"
                     onClick={() => handleToggleBlock(batch.id)}
-                    title={batch.isBlocked ? 'Tranche wieder freigeben' : 'Tranche sperren'}
+                    title={batch.isBlocked ? t('unlockBtn') : t('lockBtn')}
                     className={batch.isBlocked ? 'text-success-ink' : 'text-danger-ink'}
                   >
                     {batch.isBlocked ? (
                       <>
-                        <Unlock className="size-3.5 mr-1" /> Freigeben
+                        <Unlock className="size-3.5 mr-1" /> {t('unlockBtn')}
                       </>
                     ) : (
                       <>
-                        <Lock className="size-3.5 mr-1" /> Sperren
+                        <Lock className="size-3.5 mr-1" /> {t('lockBtn')}
                       </>
                     )}
                   </Button>
@@ -330,3 +332,4 @@ export function PhysicalBonsManager({
     </div>
   );
 }
+

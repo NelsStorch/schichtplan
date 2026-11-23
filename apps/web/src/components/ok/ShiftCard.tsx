@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { AlertTriangle, CheckCircle2, Clock, Copy, Edit, Hammer, Trash2, UserPlus, X } from 'lucide-react';
 import type { ShiftDto, ShiftTaskDto } from '@schichtplan/shared';
 import { Avatar, Badge, Button, Card, cn } from '@schichtplan/ui';
@@ -27,6 +28,7 @@ export function ShiftCard({
   onAssign: (task: ShiftTaskDto) => void;
   onRemoveSignup: (signupId: string, name: string) => void;
 }) {
+  const t = useTranslations('web.ok.shifts.card');
   const signups = shift.signups ?? [];
   const isFull = signups.length >= shift.requiredSlots;
 
@@ -47,7 +49,7 @@ export function ShiftCard({
               checked={selected}
               onChange={onToggleSelect}
               onClick={(e) => e.stopPropagation()}
-              aria-label={`${shift.title?.trim() || fmtTimeRange(shift.startTime, shift.endTime)} auswählen`}
+              aria-label={t('selectShiftAria', { title: shift.title?.trim() || fmtTimeRange(shift.startTime, shift.endTime) })}
               className="mt-1 size-4 shrink-0 accent-accent"
             />
           )}
@@ -59,15 +61,15 @@ export function ShiftCard({
                   isFull ? 'bg-success/15 text-success-ink' : 'bg-warning/15 text-warning-ink'
                 )}
               >
-                {signups.length}/{shift.requiredSlots} besetzt
+                {t('slotsFilled', { filled: signups.length, total: shift.requiredSlots })}
               </span>
               {shift.isSetupTeardown && (
                 <Badge tone="warning" size="sm">
-                  <Hammer className="size-3" /> Auf-/Abbau
+                  <Hammer className="size-3" /> {t('setupBadge')}
                 </Badge>
               )}
               {shift.category ? <Badge size="sm">{shift.category}</Badge> : null}
-              {shift.minAge ? <Badge tone="warning" size="sm">ab {shift.minAge} J.</Badge> : null}
+              {shift.minAge ? <Badge tone="warning" size="sm">{t('minAgeBadge', { age: shift.minAge })}</Badge> : null}
             </div>
             {shift.title?.trim() ? (
               <h3 className="text-lg font-bold text-fg">{shift.title}</h3>
@@ -83,7 +85,7 @@ export function ShiftCard({
             </p>
             {shift.responsibles && shift.responsibles.length > 0 && (
               <p className="mt-1 text-xs text-fg-muted">
-                Verantwortlich: {shift.responsibles.map((r) => r.displayName).join(', ')}
+                {t('responsibles', { names: shift.responsibles.map((r) => r.displayName).join(', ') })}
               </p>
             )}
           </div>
@@ -91,14 +93,14 @@ export function ShiftCard({
 
         {!selecting && (
           <div className="flex items-center gap-1">
-            <Button size="icon-sm" variant="ghost" title="Schicht bearbeiten" aria-label="Schicht bearbeiten" onClick={onEdit}>
+            <Button size="icon-sm" variant="ghost" title={t('editAria')} aria-label={t('editAria')} onClick={onEdit}>
               <Edit className="size-4" />
             </Button>
             <Button
               size="icon-sm"
               variant="ghost"
-              title="Kopieren (z. B. als Folgeschicht)"
-              aria-label="Schicht kopieren"
+              title={t('duplicateTitle')}
+              aria-label={t('duplicateAria')}
               onClick={onDuplicate}
             >
               <Copy className="size-4" />
@@ -106,8 +108,8 @@ export function ShiftCard({
             <Button
               size="icon-sm"
               variant="ghost"
-              title="Schicht löschen"
-              aria-label="Schicht löschen"
+              title={t('deleteAria')}
+              aria-label={t('deleteAria')}
               onClick={onDelete}
               className="hover:text-danger-ink"
             >
@@ -134,13 +136,16 @@ export function ShiftCard({
                   </span>
                   {task.minAge ? (
                     <Badge size="sm" tone="warning">
-                      ab {task.minAge} J. ({task.ageRequirementType === 'ALL' ? 'alle' : 'mind. 1 Person'})
+                      {t('ageRequirementBadge', {
+                        age: task.minAge,
+                        type: task.ageRequirementType === 'ALL' ? t('ageRequirementAll') : t('ageRequirementOne'),
+                      })}
                     </Badge>
                   ) : null}
                 </div>
                 {!selecting && (
                   <Button size="sm" variant="secondary" onClick={() => onAssign(task)} disabled={taskFull}>
-                    <UserPlus className="size-3" /> {taskFull ? 'Voll' : 'Einteilen'}
+                    <UserPlus className="size-3" /> {taskFull ? t('fullBtn') : t('assignBtn')}
                   </Button>
                 )}
               </div>
@@ -149,11 +154,11 @@ export function ShiftCard({
                 <p className="mt-1 text-2xs">
                   {hasAdult ? (
                     <span className="inline-flex items-center gap-1 font-semibold text-success-ink">
-                      <CheckCircle2 className="size-3" /> Jemand ab {task.minAge} ist in der Schicht
+                      <CheckCircle2 className="size-3" /> {t('hasAdult', { age: task.minAge })}
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 font-semibold text-warning-ink">
-                      <AlertTriangle className="size-3" /> Noch niemand ab {task.minAge} in der Schicht
+                      <AlertTriangle className="size-3" /> {t('missingAdult', { age: task.minAge })}
                     </span>
                   )}
                 </p>
@@ -176,8 +181,8 @@ export function ShiftCard({
                           type="button"
                           onClick={() => onRemoveSignup(su.id, su.displayName)}
                           className="rounded-full p-0.5 text-fg-subtle transition hover:bg-danger/10 hover:text-danger-ink"
-                          title={`${su.displayName} austragen`}
-                          aria-label={`${su.displayName} austragen`}
+                          title={t('removeSignupAria', { name: su.displayName })}
+                          aria-label={t('removeSignupAria', { name: su.displayName })}
                         >
                           <X className="size-3" />
                         </button>
@@ -186,7 +191,7 @@ export function ShiftCard({
                   ))}
                 </div>
               ) : (
-                <p className="mt-1 text-2xs italic text-fg-muted">Noch niemand eingeteilt.</p>
+                <p className="mt-1 text-2xs italic text-fg-muted">{t('nobodyAssigned')}</p>
               )}
             </div>
           );

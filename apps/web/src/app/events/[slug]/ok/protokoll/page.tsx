@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ClipboardCheck, History, RefreshCw, Repeat, Search, UserMinus, UserPlus, X } from 'lucide-react';
 import type { ShiftSignupLogDto } from '@schichtplan/shared';
 import { ATTENDANCE_STATUSES, zurichDateTimeFormat } from '@schichtplan/shared';
@@ -22,6 +23,7 @@ const stampFmt = zurichDateTimeFormat({
 });
 
 export default function LogPage() {
+  const t = useTranslations('web.ok.logs');
   const { event } = useOkEvent();
   const toast = useToast();
   const [logs, setLogs] = useState<ShiftSignupLogDto[] | null>(null);
@@ -34,12 +36,12 @@ export default function LogPage() {
     try {
       setLogs(await api<ShiftSignupLogDto[]>(`/api/events/${event.slug}/logs`));
     } catch (err) {
-      toast({ title: 'Protokoll konnte nicht geladen werden', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('loadError'), description: errorMessage(err), tone: 'error' });
       setLogs((prev) => prev ?? []);
     } finally {
       setLoading(false);
     }
-  }, [event.slug, toast]);
+  }, [event.slug, toast, t]);
 
   useEffect(() => {
     load();
@@ -66,12 +68,12 @@ export default function LogPage() {
   return (
     <div>
       <OkPageHeader
-        title="Protokoll"
-        description="Wer sich wann ein- oder ausgetragen hat und wer die Anwesenheit erfasst hat."
+        title={t('title')}
+        description={t('desc')}
         help="/ok/auswertung/#aktivitaets-protokoll"
         actions={
           <Button variant="secondary" size="sm" loading={loading} onClick={load}>
-            <RefreshCw className="size-3.5" /> Aktualisieren
+            <RefreshCw className="size-3.5" /> {t('refresh')}
           </Button>
         }
       />
@@ -79,22 +81,22 @@ export default function LogPage() {
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-2">
           <Chip selected={action === 'ALL'} count={counts.ALL} onClick={() => setAction('ALL')}>
-            Alle
+            {t('filterAll')}
           </Chip>
           <Chip selected={action === 'SIGNUP'} count={counts.SIGNUP} onClick={() => setAction('SIGNUP')}>
-            Eintragungen
+            {t('filterSignups')}
           </Chip>
           <Chip selected={action === 'SIGNOFF'} count={counts.SIGNOFF} onClick={() => setAction('SIGNOFF')}>
-            Austragungen
+            {t('filterSignoffs')}
           </Chip>
           {counts.REPLACE > 0 && (
             <Chip selected={action === 'REPLACE'} count={counts.REPLACE} onClick={() => setAction('REPLACE')}>
-              Übernommen
+              {t('filterReplace')}
             </Chip>
           )}
           {counts.ATTENDANCE > 0 && (
             <Chip selected={action === 'ATTENDANCE'} count={counts.ATTENDANCE} onClick={() => setAction('ATTENDANCE')}>
-              Anwesenheit
+              {t('filterAttendance')}
             </Chip>
           )}
         </div>
@@ -102,17 +104,17 @@ export default function LogPage() {
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-subtle" />
           <Input
             className="h-10 pl-9 pr-8 text-sm"
-            placeholder="Person oder Schicht…"
+            placeholder={t('searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            aria-label="Protokoll durchsuchen"
+            aria-label={t('searchAria')}
           />
           {search && (
             <button
               type="button"
               onClick={() => setSearch('')}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-subtle hover:text-fg"
-              aria-label="Suche leeren"
+              aria-label={t('clearSearch')}
             >
               <X className="size-3.5" />
             </button>
@@ -129,11 +131,11 @@ export default function LogPage() {
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={<History />}
-          title={logs.length === 0 ? 'Noch keine Einträge' : 'Keine passenden Einträge'}
+          title={logs.length === 0 ? t('emptyTitle') : t('noMatchesTitle')}
           description={
             logs.length === 0
-              ? 'Sobald sich jemand ein- oder austrägt, steht es hier mit Zeit und Person.'
-              : 'Passe Filter oder Suche an.'
+              ? t('emptyDesc')
+              : t('noMatchesDesc')
           }
         />
       ) : (
@@ -172,21 +174,21 @@ export default function LogPage() {
                       <span className="font-bold text-fg">{item.helperName}</span>
                       <Badge tone={isAttendance ? 'accent' : isReplace ? 'warning' : isSignup ? 'success' : 'danger'} size="sm">
                         {isAttendance
-                          ? `Anwesenheit: ${item.attendance ? ATTENDANCE_STATUSES[item.attendance] : 'offen'}`
+                          ? t('badgeAttendance', { status: item.attendance ? ATTENDANCE_STATUSES[item.attendance] : t('badgeAttendanceOpen') })
                           : isReplace
-                            ? 'Übernommen'
+                            ? t('badgeReplace')
                             : isSignup
-                              ? 'Eingetragen'
-                              : 'Ausgetragen'}
+                              ? t('badgeSignup')
+                              : t('badgeSignoff')}
                       </Badge>
                       <span className="text-2xs text-fg-subtle">
                         {isReplace
-                          ? `von ${item.performedByName ?? 'Gast'}`
+                          ? t('fromPerson', { name: item.performedByName ?? t('guest') })
                           : item.performedByName
-                            ? `durch ${item.performedByName}`
+                            ? t('byPerson', { name: item.performedByName })
                             : isAttendance
-                              ? 'per QR-Code'
-                              : 'selbst'}
+                              ? t('byQr')
+                              : t('self')}
                       </span>
                     </p>
                     <p className="mt-0.5 text-xs text-fg-muted">

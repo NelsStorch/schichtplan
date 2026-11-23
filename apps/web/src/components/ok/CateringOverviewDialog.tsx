@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { CheckCircle2, Loader2, UtensilsCrossed } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { CateringTokensOverviewDto } from '@schichtplan/shared';
 import { Badge, Button, Card, Dialog, EmptyState } from '@schichtplan/ui';
 import { api, errorMessage } from '@/lib/api';
@@ -18,6 +19,7 @@ export function CateringOverviewDialog({
   onClose,
   eventSlug,
 }: CateringOverviewDialogProps) {
+  const t = useTranslations('web.ok.catering');
   const [data, setData] = useState<CateringTokensOverviewDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,14 +49,14 @@ export function CateringOverviewDialog({
       onClose={onClose}
       size="lg"
       icon={<UtensilsCrossed />}
-      title="Verpflegungs-Statistik & Kassensturz"
-      description="Übersicht über alle ausgegebenen und eingelösten Helfer-Bons für die Festabrechnung."
+      title={t('overviewDialogTitle')}
+      description={t('overviewDialogDesc')}
     >
       <div className="space-y-6">
         {loading ? (
           <div className="py-12 text-center text-fg-muted flex flex-col items-center justify-center gap-2">
             <Loader2 className="size-6 animate-spin text-accent-ink" />
-            <p className="text-xs">Statistiken werden geladen…</p>
+            <p className="text-xs">{t('overviewLoading')}</p>
           </div>
         ) : error ? (
           <div className="rounded-xl border border-danger/30 bg-danger/10 p-4 text-center text-xs text-danger-ink">
@@ -63,22 +65,22 @@ export function CateringOverviewDialog({
         ) : !data || data.totalTokens === 0 ? (
           <EmptyState
             icon={<UtensilsCrossed />}
-            title="Noch keine Verpflegungs-Tokens erfasst"
-            description="Sobald sich Helfende eintragen oder einchecken, erscheinen hier die Zahlen für die Festkasse."
+            title={t('overviewEmptyTitle')}
+            description={t('overviewEmptyDesc')}
           />
         ) : (
           <div className="space-y-5">
             {/* Übersichtszahlen */}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <Card className="p-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-fg-muted">Ausgegeben gesamt</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-fg-muted">{t('overviewKpiIssued')}</p>
                 <p className="font-display text-2xl font-extrabold text-fg mt-1 tabular">
-                  {data.totalTokens} <span className="text-sm font-normal text-fg-muted">Bons</span>
+                  {data.totalTokens} <span className="text-sm font-normal text-fg-muted">{t('overviewTokensUnit')}</span>
                 </p>
               </Card>
 
               <Card className="p-4 bg-success/5 border-success/30">
-                <p className="text-xs font-semibold uppercase tracking-wider text-success-ink">Eingelöst (Stand)</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-success-ink">{t('overviewKpiRedeemed')}</p>
                 <p className="font-display text-2xl font-extrabold text-success-ink mt-1 tabular">
                   {data.redeemedTokens}{' '}
                   <span className="text-sm font-normal text-fg-muted">
@@ -88,23 +90,23 @@ export function CateringOverviewDialog({
               </Card>
 
               <Card className="p-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-fg-muted">Noch offen</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-fg-muted">{t('overviewKpiAvailable')}</p>
                 <p className="font-display text-2xl font-extrabold text-fg mt-1 tabular">
-                  {data.availableTokens} <span className="text-sm font-normal text-fg-muted">Bons</span>
+                  {data.availableTokens} <span className="text-sm font-normal text-fg-muted">{t('overviewTokensUnit')}</span>
                 </p>
               </Card>
             </div>
 
             {/* Aufschlüsselung nach Bon-Typ (z. B. Menü vs Getränk) */}
             <div className="space-y-2.5">
-              <h4 className="font-bold text-sm text-fg">Aufschlüsselung nach Angebot</h4>
+              <h4 className="font-bold text-sm text-fg">{t('overviewBreakdownTitle')}</h4>
               <div className="grid gap-2 sm:grid-cols-2">
                 {data.byItem.map((item) => (
                   <Card key={item.title} className="p-3.5 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-sm text-fg">{item.title}</span>
                       <Badge tone="accent" className="text-xs">
-                        {item.redeemed} / {item.total} bezogen
+                        {t('overviewRedeemedCount', { redeemed: item.redeemed, total: item.total })}
                       </Badge>
                     </div>
                     {/* Fortschrittsbalken */}
@@ -124,7 +126,7 @@ export function CateringOverviewDialog({
             {/* Letzte Entwertungen */}
             {data.recentRedemptions.length > 0 && (
               <div className="space-y-2.5">
-                <h4 className="font-bold text-sm text-fg">Letzte Entwertungen am Stand</h4>
+                <h4 className="font-bold text-sm text-fg">{t('overviewRecentTitle')}</h4>
                 <div className="rounded-xl border border-line divide-y divide-line overflow-hidden max-h-52 overflow-y-auto">
                   {data.recentRedemptions.map((r) => (
                     <div key={r.id} className="p-2.5 px-3 flex items-center justify-between text-xs bg-surface">
@@ -137,7 +139,7 @@ export function CateringOverviewDialog({
                         </div>
                       </div>
                       <span className="text-fg-muted tabular font-mono">
-                        {fmtTime(r.redeemedAt)} Uhr
+                        {t('overviewRecentTime', { time: fmtTime(r.redeemedAt) })}
                       </span>
                     </div>
                   ))}
@@ -149,10 +151,10 @@ export function CateringOverviewDialog({
 
         <div className="flex justify-between items-center pt-2">
           <Button variant="outline" size="sm" onClick={loadData} disabled={loading}>
-            Aktualisieren
+            {t('overviewRefreshBtn')}
           </Button>
           <Button variant="secondary" onClick={onClose}>
-            Schliessen
+            {t('overviewCloseBtn')}
           </Button>
         </div>
       </div>

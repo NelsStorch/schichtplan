@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Copy, Mail, Send, Users } from 'lucide-react';
 import { zurichDateTimeFormat, type EventMessageDto, type EventMessageResultDto, type EventMessageTarget } from '@schichtplan/shared';
 import { Badge, Button, Callout, Card, EmptyState, Field, Input, Skeleton, Textarea, cn, useConfirm, useToast } from '@schichtplan/ui';
@@ -21,6 +22,7 @@ const stampFmt = zurichDateTimeFormat({
 });
 
 export default function MessagesPage() {
+  const t = useTranslations('web.ok.messages');
   const { event, base, messageDraft, setMessageDraft } = useOkEvent();
   const toast = useToast();
   const confirm = useConfirm();
@@ -102,9 +104,9 @@ export default function MessagesPage() {
     e.preventDefault();
     if (!preview || preview.recipientCount === 0) return;
     const ok = await confirm({
-      title: `An ${preview.recipientCount} Person${preview.recipientCount === 1 ? '' : 'en'} senden?`,
-      description: 'Jede Person bekommt eine eigene E-Mail. Die Adressen der anderen sieht niemand.',
-      confirmLabel: 'Jetzt senden',
+      title: t('confirmTitle', { count: preview.recipientCount }),
+      description: t('confirmDesc'),
+      confirmLabel: t('confirmButton'),
     });
     if (!ok) return;
     setSending(true);
@@ -113,51 +115,51 @@ export default function MessagesPage() {
         method: 'POST',
         json: { ...targetPayload, subject: subject.trim(), body: body.trim() },
       });
-      toast({ title: 'Nachricht wird verschickt', description: `An ${res.sent} Person${res.sent === 1 ? '' : 'en'}` });
+      toast({ title: t('sendSuccess'), description: t('sendSuccessDesc', { count: res.sent }) });
       setSubject('');
       setBody('');
       setMessageDraft(null);
       if (target === 'PEOPLE') setTarget('ALL');
       await loadHistory();
     } catch (err) {
-      toast({ title: 'Senden fehlgeschlagen', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('sendFailed'), description: errorMessage(err), tone: 'error' });
     } finally {
       setSending(false);
     }
   };
 
   const options: { key: EventMessageTarget; label: string; text: string; show: boolean }[] = [
-    { key: 'ALL', label: 'Alle Eingetragenen', text: 'Alle mit mindestens einer Schicht (inkl. Verantwortliche)', show: true },
+    { key: 'ALL', label: t('targetAllLabel'), text: t('targetAllText'), show: true },
     {
       key: 'OPEN',
-      label: event.minShiftsPerPerson ? 'Unter dem Soll' : 'Noch ohne Schicht',
+      label: event.minShiftsPerPerson ? t('targetOpenTargetLabel') : t('targetOpenNoneLabel'),
       text: event.minShiftsPerPerson
-        ? `Alle im Helfer-Pool mit weniger als ${event.minShiftsPerPerson} Schichten (ohne Abgemeldete)`
-        : 'Alle im Helfer-Pool ohne Schicht (ohne Abgemeldete)',
+        ? t('targetOpenTargetText', { min: event.minShiftsPerPerson })
+        : t('targetOpenNoneText'),
       show: true,
     },
-    { key: 'SHIFTS', label: 'Bestimmte Schichten', text: 'Nur wer in den gewählten Schichten ist (inkl. Verantwortliche)', show: event.shifts.length > 0 },
+    { key: 'SHIFTS', label: t('targetShiftsLabel'), text: t('targetShiftsText'), show: event.shifts.length > 0 },
     {
       key: 'PEOPLE',
-      label: 'Ausgewählte Personen',
-      text: messageDraft?.target === 'PEOPLE' ? messageDraft.label : 'Unter «Helfende» auswählen',
+      label: t('targetPeopleLabel'),
+      text: messageDraft?.target === 'PEOPLE' ? messageDraft.label : t('targetPeopleSelectHint'),
       show: true,
     },
-    { key: 'OK', label: 'Das OK', text: 'Alle im OK dieses Anlasses', show: true },
+    { key: 'OK', label: t('targetOkLabel'), text: t('targetOkText'), show: true },
   ];
 
   return (
     <div>
       <OkPageHeader
-        title="Nachrichten"
-        description="E-Mail an Helfende schicken, z. B. Treffpunkt, Änderungen oder ein Aufruf für offene Schichten. Antworten kommen direkt zu dir."
+        title={t('title')}
+        description={t('desc')}
         help="/ok/nachrichten/"
       />
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <form onSubmit={submit} className="space-y-6">
           <fieldset>
-            <legend className="mb-3 text-[13px] font-semibold text-fg">An wen?</legend>
+            <legend className="mb-3 text-[13px] font-semibold text-fg">{t('targetLegend')}</legend>
             <div className="grid gap-2.5 sm:grid-cols-2">
               {options
                 .filter((o) => o.show)
@@ -186,7 +188,7 @@ export default function MessagesPage() {
                         <span className="mt-0.5 block text-xs text-fg-muted">
                           {o.key === 'PEOPLE' && disabled ? (
                             <Link href={`${base}/helfende`} className="font-semibold text-accent-ink hover:underline">
-                              Unter «Helfende» auswählen
+                              {t('targetPeopleSelectHint')}
                             </Link>
                           ) : (
                             o.text
@@ -232,12 +234,12 @@ export default function MessagesPage() {
             >
               <p className="flex items-center gap-2 font-semibold text-fg">
                 <Users className="size-4" />
-                Geht an {preview.recipientCount} Person{preview.recipientCount === 1 ? '' : 'en'}
+                {t('recipientsCount', { count: preview.recipientCount })}
               </p>
               {preview.withoutEmail.length > 0 && (
                 <details className="mt-1.5 text-xs text-fg-muted">
                   <summary className="cursor-pointer">
-                    {preview.withoutEmail.length} ohne bestätigte E-Mail-Adresse, bekommen nichts
+                    {t('recipientsWithoutEmail', { count: preview.withoutEmail.length })}
                   </summary>
                   <p className="mt-1">{preview.withoutEmail.join(', ')}</p>
                 </details>
@@ -245,19 +247,19 @@ export default function MessagesPage() {
             </div>
           ) : null}
 
-          <Field label="Betreff" required>
-            <Input value={subject} maxLength={150} placeholder="z. B. Treffpunkt am Samstag" onChange={(e) => setSubject(e.target.value)} />
+          <Field label={t('subjectLabel')} required>
+            <Input value={subject} maxLength={150} placeholder={t('subjectPlaceholder')} onChange={(e) => setSubject(e.target.value)} />
           </Field>
           <Field
-            label="Nachricht"
+            label={t('bodyLabel')}
             required
-            hint={`${body.length}/${MAX_BODY} Zeichen. Tipp: {name} setzt automatisch den Namen der Person ein. Ein Link zum Schichtplan wird unten angefügt.`}
+            hint={t('bodyHint', { count: body.length, max: MAX_BODY })}
           >
             <Textarea
               rows={8}
               value={body}
               maxLength={MAX_BODY}
-              placeholder={'Hallo {name}\n\nWir treffen uns um 17:30 beim Festzelt …'}
+              placeholder={t('bodyPlaceholder')}
               onChange={(e) => setBody(e.target.value)}
             />
           </Field>
@@ -268,19 +270,19 @@ export default function MessagesPage() {
               loading={sending}
               disabled={!targetReady || !preview || preview.recipientCount === 0 || subject.trim().length < 3 || !body.trim()}
             >
-              <Send className="size-4" /> Senden
+              <Send className="size-4" /> {t('sendButton')}
             </Button>
           </div>
         </form>
 
         <section aria-labelledby="history-title">
           <h3 id="history-title" className="mb-3 text-sm font-bold uppercase tracking-wider text-fg-subtle">
-            Verschickt
+            {t('historySection')}
           </h3>
           {history === null ? (
             <Skeleton className="h-32 rounded-card" />
           ) : history.length === 0 ? (
-            <EmptyState icon={<Mail />} title="Noch keine Nachrichten" description="Verschickte Nachrichten erscheinen hier." />
+            <EmptyState icon={<Mail />} title={t('noHistory')} description={t('noHistoryDesc')} />
           ) : (
             <div className="space-y-3">
               {history.map((m) => {
@@ -292,10 +294,10 @@ export default function MessagesPage() {
                       <p className="font-semibold text-fg">{m.subject}</p>
                       {m.failedCount > 0 ? (
                         <Badge tone="danger" size="sm">
-                          <AlertTriangle className="size-3" /> {m.failedCount} nicht zugestellt
+                          <AlertTriangle className="size-3" /> {t('failedBadge', { count: m.failedCount })}
                         </Badge>
                       ) : (
-                        <CheckCircle2 className="size-4 shrink-0 text-success-ink" aria-label="verschickt" />
+                        <CheckCircle2 className="size-4 shrink-0 text-success-ink" aria-label={t('sentAria')} />
                       )}
                     </div>
                     <p className="mt-0.5 text-2xs text-fg-muted">
@@ -320,11 +322,11 @@ export default function MessagesPage() {
                         >
                           {isExpanded ? (
                             <>
-                              <ChevronUp className="size-3.5" /> Weniger
+                              <ChevronUp className="size-3.5" /> {t('showLess')}
                             </>
                           ) : (
                             <>
-                              <ChevronDown className="size-3.5" /> Ganz lesen
+                              <ChevronDown className="size-3.5" /> {t('readFull')}
                             </>
                           )}
                         </button>
@@ -336,11 +338,11 @@ export default function MessagesPage() {
                         onClick={() => {
                           setSubject(m.subject);
                           setBody(m.body);
-                          toast({ title: 'Als Vorlage übernommen', description: m.subject });
+                          toast({ title: t('templateApplied'), description: m.subject });
                         }}
                         className="inline-flex items-center gap-1 font-semibold text-accent-ink hover:underline"
                       >
-                        <Copy className="size-3" /> Als Vorlage übernehmen
+                        <Copy className="size-3" /> {t('useAsTemplate')}
                       </button>
                     </div>
                   </Card>

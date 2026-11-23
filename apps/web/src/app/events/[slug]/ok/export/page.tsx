@@ -3,6 +3,7 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 import { CalendarDays, ClipboardCheck, Clock, Download, FileSpreadsheet, Printer, Users } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { type EventRosterResponseDto } from '@schichtplan/shared';
 import { Button, Card, Chip, Dialog, Switch, cn, trackUi, useOrganization, useToast } from '@schichtplan/ui';
 import { HelperHoursDialog } from '@/components/ok/HelperHoursDialog';
@@ -16,6 +17,7 @@ import { usePortal } from '@/lib/portal';
 import { PRINT_LAYOUTS, createShiftPlanPdf, downloadBlob, pdfFilename, printBlob, type PrintLayout } from '@/lib/printPlan';
 
 export default function ExportPage() {
+  const t = useTranslations('web.ok.export');
   const { event, base } = useOkEvent();
   const toast = useToast();
   const org = useOrganization();
@@ -103,7 +105,7 @@ export default function ExportPage() {
       downloadCsv(`helfende-${event.slug}.csv`, rows);
       trackUi('UI_CSV', 'ROSTER');
     } catch (err) {
-      toast({ title: 'Export fehlgeschlagen', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('exportFailed'), description: errorMessage(err), tone: 'error' });
     } finally {
       setLoadingRoster(false);
     }
@@ -120,69 +122,69 @@ export default function ExportPage() {
   return (
     <div>
       <OkPageHeader
-        title="Export & Drucken"
-        description="Listen für Excel und Ausdrucke zum Aufhängen. Die Dateien enthalten Personendaten: nur im OK weitergeben und nach dem Anlass löschen."
+        title={t('pageTitle')}
+        description={t('pageDesc')}
         help="/ok/export/"
       />
 
       <div className="grid gap-4 md:grid-cols-2">
         <ExportCard
           icon={<Printer className="size-5" />}
-          title="Schichtplan drucken oder als PDF"
-          text="Übersicht, Aushang mit Zeilen zum Eintragen oder Einteilung pro Person. Tage und Format wählbar."
+          title={t('printPdfTitle')}
+          text={t('printPdfDesc')}
         >
           <Button size="sm" onClick={() => setPrintOpen(true)} disabled={empty}>
-            <Printer className="size-4" /> Drucken oder PDF
+            <Printer className="size-4" /> {t('printPdfBtn')}
           </Button>
         </ExportCard>
         <ExportCard
           icon={<CalendarDays className="size-5" />}
-          title="Schichtplan als Tabelle"
-          text="Eine Zeile pro Schicht und Arbeit, mit Plätzen und Eingeteilten (CSV für Excel)."
+          title={t('planCsvTitle')}
+          text={t('planCsvDesc')}
         >
           <Button size="sm" variant="secondary" onClick={exportPlan} disabled={empty}>
-            <FileSpreadsheet className="size-4" /> CSV herunterladen
+            <FileSpreadsheet className="size-4" /> {t('downloadCsvBtn')}
           </Button>
         </ExportCard>
         <ExportCard
           icon={<Users className="size-5" />}
-          title="Einteilung pro Person"
-          text="Wer wann wo hilft, nach Namen sortiert. Bei Gästen mit Kontaktdaten."
+          title={t('assignmentsCsvTitle')}
+          text={t('assignmentsCsvDesc')}
         >
           <Button size="sm" variant="secondary" onClick={exportAssignments} disabled={empty}>
-            <FileSpreadsheet className="size-4" /> CSV herunterladen
+            <FileSpreadsheet className="size-4" /> {t('downloadCsvBtn')}
           </Button>
         </ExportCard>
         <ExportCard
           icon={<Users className="size-5" />}
-          title="Helfende mit Soll"
-          text="Alle Personen aus «Helfende» mit Stufe, Anzahl Schichten und Abmeldungen."
+          title={t('rosterCsvTitle')}
+          text={t('rosterCsvDesc')}
         >
           <Button size="sm" variant="secondary" onClick={exportRoster} loading={loadingRoster}>
-            <FileSpreadsheet className="size-4" /> CSV herunterladen
+            <FileSpreadsheet className="size-4" /> {t('downloadCsvBtn')}
           </Button>
         </ExportCard>
         <ExportCard
           icon={<Clock className="size-5" />}
-          title="Helferstunden-Statistik"
-          text="Wer hat wie viele Stunden geleistet? Übersicht aller Helfenden mit Gesamtstunden für Helfer-Bons und Jahresbericht (Auf-/Abbau und Anlass getrennt, als Tabelle und CSV-Export)."
+          title={t('hoursTitle')}
+          text={t('hoursDesc')}
         >
           <div className="flex flex-wrap gap-2">
             <Button size="sm" onClick={() => setHelperHoursOpen(true)} disabled={empty}>
-              <Clock className="size-4" /> Statistik öffnen
+              <Clock className="size-4" /> {t('openStatsBtn')}
             </Button>
             <Button size="sm" variant="secondary" onClick={exportHelperHours} disabled={empty}>
-              <FileSpreadsheet className="size-4" /> CSV herunterladen
+              <FileSpreadsheet className="size-4" /> {t('downloadCsvBtn')}
             </Button>
           </div>
         </ExportCard>
         <ExportCard
           icon={<ClipboardCheck className="size-5" />}
-          title="Anwesenheitsliste"
-          text="Liste zum Abhaken und Auswertung, wer da war."
+          title={t('attendanceTitle')}
+          text={t('attendanceDesc')}
         >
           <Link href={`${base}/anwesenheit`} className="text-sm font-semibold text-accent-ink hover:underline">
-            Zur Anwesenheit
+            {t('toAttendanceLink')}
           </Link>
         </ExportCard>
       </div>
@@ -213,6 +215,7 @@ function ExportCard({ icon, title, text, children }: { icon: ReactNode; title: s
 }
 
 function PrintDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const t = useTranslations('web.ok.export');
   const { event } = useOkEvent();
   const { department } = usePortal();
   const toast = useToast();
@@ -238,7 +241,7 @@ function PrintDialog({ open, onClose }: { open: boolean; onClose: () => void }) 
       else downloadBlob(blob, pdfFilename(event, options));
       trackUi('UI_PDF', `${layout}_${action}`);
     } catch (err) {
-      toast({ title: 'PDF konnte nicht erstellt werden', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('pdfError'), description: errorMessage(err), tone: 'error' });
     } finally {
       setBusy(null);
     }
@@ -248,22 +251,22 @@ function PrintDialog({ open, onClose }: { open: boolean; onClose: () => void }) 
     <Dialog
       open={open}
       onClose={onClose}
-      title="Schichtplan drucken oder als PDF"
-      description="Als PDF mit Logo, direkt drucken oder herunterladen."
+      title={t('printDialogTitle')}
+      description={t('printDialogDesc')}
       footer={
         <>
           <Button variant="secondary" onClick={() => run('download')} loading={busy === 'download'} disabled={chosen.length === 0 || busy !== null}>
-            <Download className="size-4" /> PDF herunterladen
+            <Download className="size-4" /> {t('downloadPdfBtn')}
           </Button>
           <Button onClick={() => run('print')} loading={busy === 'print'} disabled={chosen.length === 0 || busy !== null}>
-            <Printer className="size-4" /> Drucken
+            <Printer className="size-4" /> {t('printBtn')}
           </Button>
         </>
       }
     >
       <div className="flex flex-col gap-5">
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-[13px] font-semibold text-fg">Art</legend>
+          <legend className="mb-2 text-[13px] font-semibold text-fg">{t('typeLegend')}</legend>
           {PRINT_LAYOUTS.map((l) => (
             <label
               key={l.value}
@@ -289,7 +292,7 @@ function PrintDialog({ open, onClose }: { open: boolean; onClose: () => void }) 
 
         {days.length > 1 && (
           <fieldset>
-            <legend className="mb-2 text-[13px] font-semibold text-fg">Tage</legend>
+            <legend className="mb-2 text-[13px] font-semibold text-fg">{t('daysLegend')}</legend>
             <div className="flex flex-wrap gap-2">
               {days.map((key) => (
                 <Chip key={key} selected={chosen.includes(key)} onClick={() => toggleDay(key)}>
@@ -301,21 +304,21 @@ function PrintDialog({ open, onClose }: { open: boolean; onClose: () => void }) 
         )}
 
         <div className="flex flex-col gap-4">
-          <Switch checked={landscape} onChange={setLandscape} label="Querformat" description="Mehr Platz für viele Namen pro Zeile." />
+          <Switch checked={landscape} onChange={setLandscape} label={t('landscapeLabel')} description={t('landscapeDesc')} />
           {layout !== 'personen' && (
             <>
-              <Switch checked={pageBreakPerDay} onChange={setPageBreakPerDay} label="Jeder Tag auf einer neuen Seite" />
+              <Switch checked={pageBreakPerDay} onChange={setPageBreakPerDay} label={t('pageBreakPerDay')} />
               <Switch
                 checked={showDetails}
                 onChange={setShowDetails}
-                label="Details zeigen"
-                description="Kategorie, Beschreibung, Altersgrenze und Verantwortliche."
+                label={t('showDetails')}
+                description={t('showDetailsDesc')}
               />
               <Switch
                 checked={onlyOpen}
                 onChange={setOnlyOpen}
-                label="Nur offene Plätze"
-                description="Zum Aufhängen, wenn noch Helfende gesucht werden."
+                label={t('onlyOpen')}
+                description={t('onlyOpenDesc')}
               />
             </>
           )}

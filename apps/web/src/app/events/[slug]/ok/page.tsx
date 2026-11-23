@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   AlertTriangle,
   ArrowRight,
@@ -40,18 +41,21 @@ interface Todo {
   action?: string;
 }
 
-function relTime(iso: string) {
+type RelTimeKey = 'relTimeJustNow' | 'relTimeMinutes' | 'relTimeHours' | 'relTimeYesterday' | 'relTimeDays';
+
+function relTime(iso: string, t: (key: RelTimeKey, values?: Record<string, string | number>) => string) {
   const diff = Date.now() - new Date(iso).getTime();
   const min = Math.round(diff / 60000);
-  if (min < 1) return 'gerade eben';
-  if (min < 60) return `vor ${min} Min.`;
+  if (min < 1) return t('relTimeJustNow');
+  if (min < 60) return t('relTimeMinutes', { count: min });
   const h = Math.round(min / 60);
-  if (h < 24) return `vor ${h} Std.`;
+  if (h < 24) return t('relTimeHours', { count: h });
   const d = Math.round(h / 24);
-  return d === 1 ? 'gestern' : `vor ${d} Tagen`;
+  return d === 1 ? t('relTimeYesterday') : t('relTimeDays', { count: d });
 }
 
 export default function OkOverviewPage() {
+  const t = useTranslations('web.ok.overview');
   const { event, base, stats, permissions } = useOkEvent();
   const toast = useToast();
   const { department } = usePortal();
@@ -90,22 +94,22 @@ export default function OkOverviewPage() {
     if (event.shifts.length === 0) {
       list.push({
         tone: 'warning',
-        title: 'Noch keine Schichten',
-        text: 'Lege die erste Schicht an oder übernimm die Schichten aus einer Vorlage.',
+        title: t('todos.noShiftsTitle'),
+        text: t('todos.noShiftsText'),
         href: `${base}/schichten?neu=1`,
-        action: 'Schicht anlegen',
+        action: t('todos.noShiftsAction'),
       });
     }
     if (warnings.length > 0) {
       list.push({
         tone: 'warning',
-        title: `Jugendschutz: ${warnings.length} Arbeit${warnings.length === 1 ? '' : 'en'} ohne volljährige Person`,
+        title: t('todos.youthTitle', { count: warnings.length }),
         text: warnings
           .slice(0, 3)
           .map((w) => `${shiftName(w.shift)} (${w.task.title}, ab ${w.task.minAge})`)
           .join(' · '),
         href: `${base}/schichten?warnung=1`,
-        action: 'Schichten ansehen',
+        action: t('todos.youthAction'),
       });
     }
     if (event.responsibleMode === 'BY_DAY') {
@@ -113,23 +117,23 @@ export default function OkOverviewPage() {
       if (missing.length > 0) {
         list.push({
           tone: 'warning',
-          title: `${missing.length} Tag${missing.length === 1 ? '' : 'e'} ohne Tagesleitung`,
+          title: t('todos.dayRespTitle', { count: missing.length }),
           text: missing.map((d) => `${fmtWeekday(dayKeyToIso(d.key))} ${fmtDayMonth(dayKeyToIso(d.key))}`).join(', '),
           href: `${base}/schichten`,
-          action: 'Tagesleitung festlegen',
+          action: t('todos.dayRespAction'),
         });
       }
     }
     if (stats.freeSlots > 0 && !isPast) {
       list.push({
         tone: daysUntilStart <= 7 ? 'warning' : 'info',
-        title: `${stats.freeSlots} Plätze in ${stats.openShiftCount} Schicht${stats.openShiftCount === 1 ? '' : 'en'} noch frei`,
+        title: t('todos.slotsFreeTitle', { slots: stats.freeSlots, shifts: stats.openShiftCount }),
         text:
           daysUntilStart <= 7 && daysUntilStart >= 0
-            ? `Der Anlass beginnt in ${daysUntilStart} Tag${daysUntilStart === 1 ? '' : 'en'}. Eine Nachricht an die Helfenden kann helfen.`
-            : 'Teile den Link zum Schichtplan oder teile Personen direkt ein.',
+            ? t('todos.slotsFreeUrgent', { days: daysUntilStart })
+            : t('todos.slotsFreeRegular'),
         href: `${base}/schichten?offen=1`,
-        action: 'Offene Schichten',
+        action: t('todos.slotsFreeAction'),
       });
     }
     const replacementWanted = event.shifts.filter(
@@ -142,103 +146,103 @@ export default function OkOverviewPage() {
       );
       list.push({
         tone: 'warning',
-        title: `${count} Person${count === 1 ? ' sucht' : 'en suchen'} Ersatz`,
+        title: t('todos.replacementTitle', { count }),
         text: replacementWanted
           .slice(0, 3)
           .map((sh) => `${shiftName(sh)} (${fmtWeekday(sh.startTime)} ${fmtTime(sh.startTime)})`)
           .join(' · '),
         href: `/events/${event.slug}`,
-        action: 'Im Schichtplan ansehen',
+        action: t('todos.replacementAction'),
       });
     }
     if (underTarget) {
       list.push({
         tone: 'info',
-        title: `${underTarget} Person${underTarget === 1 ? '' : 'en'} unter dem Soll`,
-        text: `Soll: mindestens ${event.minShiftsPerPerson} Schichten pro Person.`,
+        title: t('todos.underTargetTitle', { count: underTarget }),
+        text: t('todos.underTargetText', { min: event.minShiftsPerPerson ?? 1 }),
         href: `${base}/helfende?status=offen`,
-        action: 'Helfende ansehen',
+        action: t('todos.underTargetAction'),
       });
     }
     if (!event.allowPublicSignup) {
       list.push({
         tone: 'info',
-        title: 'Eintragen ist geschlossen',
-        text: 'Nur das OK und die Abteilungsleitung teilen Personen ein.',
+        title: t('todos.signupClosedTitle'),
+        text: t('todos.signupClosedText'),
         href: permissions.canEditSettings ? `${base}/einstellungen#eintragen` : undefined,
-        action: 'Ändern',
+        action: t('todos.signupClosedAction'),
       });
     }
     if (event.attendanceMode && event.attendanceMode !== 'OFF' && daysUntilStart <= 3 && !isPast) {
       list.push({
         tone: 'info',
-        title: 'Anwesenheit vorbereiten',
+        title: t('todos.attendancePrepTitle'),
         text:
           event.attendanceMode === 'OK_AND_QR'
-            ? 'QR-Code für den Check-in ausdrucken und am Eingang aufhängen.'
-            : 'Die Liste zum Abhaken steht unter «Anwesenheit» bereit.',
+            ? t('todos.attendancePrepQrText')
+            : t('todos.attendancePrepListText'),
         href: `${base}/anwesenheit`,
-        action: 'Zur Anwesenheit',
+        action: t('todos.attendancePrepAction'),
       });
     }
     if (isPast) {
       list.push({
         tone: 'info',
-        title: 'Der Anlass ist vorbei',
-        text: 'Werte die Anwesenheit aus und speichere den Plan als Vorlage fürs nächste Mal.',
+        title: t('todos.eventPastTitle'),
+        text: t('todos.eventPastText'),
         href: `${base}/schichten/vorlagen`,
-        action: 'Als Vorlage speichern',
+        action: t('todos.eventPastAction'),
       });
     }
     if (list.length === 0) {
       list.push({
         tone: 'success',
-        title: 'Alles erledigt',
-        text: stats.freeSlots === 0 ? 'Alle Schichten sind besetzt.' : 'Im Moment gibt es nichts zu tun.',
+        title: t('todos.allDoneTitle'),
+        text: stats.freeSlots === 0 ? t('todos.allDoneFull') : t('todos.allDoneIdle'),
       });
     }
     return list;
-  }, [event, base, days, warnings, stats, underTarget, isPast, daysUntilStart, permissions.canEditSettings]);
+  }, [event, base, days, warnings, stats, underTarget, isPast, daysUntilStart, permissions.canEditSettings, t]);
 
   const copyLink = async () => {
     const url = `${window.location.origin}/events/${event.slug}`;
     try {
       await navigator.clipboard.writeText(url);
-      toast({ title: 'Link kopiert', description: url });
+      toast({ title: t('linkCopied'), description: url });
     } catch {
-      toast({ title: 'Kopieren nicht möglich', description: url, tone: 'error' });
+      toast({ title: t('copyFailed'), description: url, tone: 'error' });
     }
   };
 
   return (
     <div className="space-y-6">
       <OkPageHeader
-        title="Übersicht"
-        description="Was am Anlass ansteht und was noch fehlt."
+        title={t('title')}
+        description={t('desc')}
         help="/ok/ok-bereich/"
         actions={
           <>
             {permissions.can.SHIFTS && (
               <Link href={`${base}/schichten?neu=1`} className={buttonClasses({ size: 'sm' })}>
-                <Plus className="size-4" /> Neue Schicht
+                <Plus className="size-4" /> {t('newShift')}
               </Link>
             )}
             {permissions.can.MESSAGES && (
               <Link href={`${base}/nachrichten`} className={buttonClasses({ size: 'sm', variant: 'secondary' })}>
-                <Mail className="size-4" /> Nachricht
+                <Mail className="size-4" /> {t('message')}
               </Link>
             )}
             <button type="button" onClick={copyLink} className={buttonClasses({ size: 'sm', variant: 'secondary' })}>
-              <Copy className="size-4" /> Link kopieren
+              <Copy className="size-4" /> {t('copyLink')}
             </button>
             {storyAvailable && (
               <a
                 href={`/events/${encodeURIComponent(event.slug)}/story?download=1`}
                 download
-                title="Hochformat-Bild mit QR-Code für Instagram-Story oder WhatsApp-Status"
+                title={t('storyImageTitle')}
                 className={buttonClasses({ size: 'sm', variant: 'secondary' })}
               >
-                <ImageDown className="size-4" /> Story-Bild
+                <ImageDown className="size-4" /> {t('storyImage')}
               </a>
             )}
           </>
@@ -250,16 +254,18 @@ export default function OkOverviewPage() {
         <AccessTypeBadge type={event.accessType} leadersOnly={event.leadersOnly} />
         {opensLater ? (
           <Badge tone="warning">
-            <CalendarClock className="size-3" /> Freischaltung {fmtFullDate(event.signupOpensAt!)},{' '}
-            {fmtTime(event.signupOpensAt!)}
+            <CalendarClock className="size-3" /> {t('signupOpensAt', {
+              date: fmtFullDate(event.signupOpensAt!),
+              time: fmtTime(event.signupOpensAt!),
+            })}
           </Badge>
         ) : event.allowPublicSignup ? (
           <Badge tone="success">
-            <Unlock className="size-3" /> Eintragen offen
+            <Unlock className="size-3" /> {t('signupOpen')}
           </Badge>
         ) : (
           <Badge tone="warning">
-            <Lock className="size-3" /> Eintragen geschlossen
+            <Lock className="size-3" /> {t('signupClosed')}
           </Badge>
         )}
         {event.attendanceMode && event.attendanceMode !== 'OFF' && (
@@ -268,7 +274,7 @@ export default function OkOverviewPage() {
           </Badge>
         )}
         {event.minShiftsPerPerson ? (
-          <Badge tone="neutral">Soll: {event.minShiftsPerPerson} Schichten pro Person</Badge>
+          <Badge tone="neutral">{t('targetShiftsPerPerson', { count: event.minShiftsPerPerson })}</Badge>
         ) : null}
       </div>
 
@@ -284,18 +290,18 @@ export default function OkOverviewPage() {
             tone={stats.totalSlots > 0 && stats.freeSlots === 0 ? 'success' : 'accent'}
           />
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-fg-subtle">Belegung</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-fg-subtle">{t('occupancy')}</p>
             <p className="font-display text-xl font-bold text-fg">
-              {stats.filledSlots} <span className="text-sm font-normal text-fg-muted">/ {stats.totalSlots} Plätze</span>
+              {stats.filledSlots} <span className="text-sm font-normal text-fg-muted">{t('slotsFraction', { count: stats.totalSlots })}</span>
             </p>
           </div>
         </Card>
-        <Stat label="Freie Plätze" value={stats.freeSlots} tone={stats.freeSlots > 0 ? 'warning' : 'success'} />
-        <Stat label="Helfende" value={stats.helperCount} hint="mit mindestens einer Schicht" />
+        <Stat label={t('freeSlots')} value={stats.freeSlots} tone={stats.freeSlots > 0 ? 'warning' : 'success'} />
+        <Stat label={t('helpers')} value={stats.helperCount} hint={t('helpersHint')} />
         <Stat
-          label="Schichten"
+          label={t('shifts')}
           value={event.shifts.length}
-          hint={`${stats.openShiftCount} noch nicht voll`}
+          hint={t('shiftsHint', { count: stats.openShiftCount })}
         />
       </div>
 
@@ -303,7 +309,7 @@ export default function OkOverviewPage() {
         {/* To-dos */}
         <section aria-labelledby="todo-title" className="space-y-3">
           <h3 id="todo-title" className="text-sm font-bold uppercase tracking-wider text-fg-subtle">
-            Zu erledigen
+            {t('todoSection')}
           </h3>
           {todos.map((todo) => (
             <TodoCard key={todo.title} todo={todo} />
@@ -315,7 +321,7 @@ export default function OkOverviewPage() {
           {days.length > 0 && (
             <section aria-labelledby="days-title">
               <h3 id="days-title" className="mb-3 text-sm font-bold uppercase tracking-wider text-fg-subtle">
-                Belegung pro Tag
+                {t('daysSection')}
               </h3>
               <Card className="divide-y divide-line">
                 {days.map((d) => {
@@ -334,7 +340,7 @@ export default function OkOverviewPage() {
                           {fmtWeekday(iso)} <span className="font-normal text-fg-muted">{fmtDayMonth(iso)}</span>
                         </span>
                         <span className="tabular text-xs text-fg-muted">
-                          {filled}/{total} · {d.items.length} Schicht{d.items.length === 1 ? '' : 'en'}
+                          {filled}/{total} · {t('shiftsCount', { count: d.items.length })}
                         </span>
                       </div>
                       <div className="mt-2 h-2 overflow-hidden rounded-full bg-fg/10">
@@ -354,17 +360,17 @@ export default function OkOverviewPage() {
           <section aria-labelledby="activity-title">
             <div className="mb-3 flex items-baseline justify-between">
               <h3 id="activity-title" className="text-sm font-bold uppercase tracking-wider text-fg-subtle">
-                Letzte Aktivitäten
+                {t('activitySection')}
               </h3>
               <Link href={`${base}/protokoll`} className="text-xs font-semibold text-accent-ink hover:underline">
-                Ganzes Protokoll
+                {t('fullLog')}
               </Link>
             </div>
             <Card className="divide-y divide-line">
               {logs === null ? (
-                <p className="px-4 py-3 text-sm text-fg-muted">Wird geladen…</p>
+                <p className="px-4 py-3 text-sm text-fg-muted">{t('loading')}</p>
               ) : logs.length === 0 ? (
-                <p className="px-4 py-3 text-sm text-fg-muted">Noch keine Ein- oder Austragungen.</p>
+                <p className="px-4 py-3 text-sm text-fg-muted">{t('noLogs')}</p>
               ) : (
                 logs.slice(0, 6).map((l) => (
                   <div key={l.id} className="flex items-start gap-3 px-4 py-2.5 text-sm">
@@ -382,21 +388,21 @@ export default function OkOverviewPage() {
                         <span className="font-semibold">{l.helperName}</span>{' '}
                         <span className="text-fg-muted">
                           {l.action === 'SIGNUP'
-                            ? 'eingetragen in'
+                            ? t('actionSignup')
                             : l.action === 'SIGNOFF'
-                              ? 'ausgetragen aus'
+                              ? t('actionSignoff')
                               : l.action === 'REPLACE'
-                                ? 'übernimmt'
-                                : 'Anwesenheit bei'}
+                                ? t('actionReplace')
+                                : t('actionAttendance')}
                         </span>{' '}
                         {l.shiftTitle}
                       </p>
                       <p className="text-2xs text-fg-subtle">
-                        {relTime(l.createdAt)}
+                        {relTime(l.createdAt, t)}
                         {l.performedByName
                           ? l.action === 'REPLACE'
-                            ? ` · von ${l.performedByName}`
-                            : ` · durch ${l.performedByName}`
+                            ? t('fromPerson', { name: l.performedByName })
+                            : t('byPerson', { name: l.performedByName })
                           : ''}
                       </p>
                     </div>

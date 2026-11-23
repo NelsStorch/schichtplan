@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   CheckCircle2,
   ClipboardCheck,
@@ -33,12 +34,6 @@ import { CateringOverviewDialog } from './ok/CateringOverviewDialog';
 type AttendanceFields = Pick<ShiftSignupDto, 'attendance' | 'attendanceAt' | 'attendanceSource' | 'attendanceByName'>;
 type StatusFilter = 'ALL' | 'OPEN' | AttendanceStatus;
 
-const STATUS_BUTTONS: Array<{ status: AttendanceStatus; short: string; icon: typeof CheckCircle2; active: string }> = [
-  { status: 'PRESENT', short: 'Da', icon: CheckCircle2, active: 'border-success/50 bg-success/15 text-success-ink' },
-  { status: 'EXCUSED', short: 'Entsch.', icon: FileText, active: 'border-warning/50 bg-warning/15 text-warning-ink' },
-  { status: 'NO_SHOW', short: 'Fehlt', icon: UserX, active: 'border-danger/50 bg-danger/15 text-danger-ink' },
-];
-
 const statusLabel = (status: AttendanceStatus | null | undefined) => (status ? ATTENDANCE_STATUSES[status] : 'Offen');
 
 /** «per QR-Code, 18:02» bzw. «Nels / Inferno (OK), 18:02» */
@@ -68,6 +63,7 @@ export function EventAttendancePanel({
   onOpenSettings: () => void;
   onChanged: () => Promise<void>;
 }) {
+  const t = useTranslations('web.ok.attendance');
   const org = useOrganization();
   const toast = useToast();
   const confirm = useConfirm();
@@ -146,7 +142,7 @@ export function EventAttendancePanel({
       });
       setOverrides((prev) => ({ ...prev, [signup.id]: res }));
     } catch (err) {
-      toast({ title: 'Anwesenheit nicht gespeichert', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('saveFailed'), description: errorMessage(err), tone: 'error' });
     } finally {
       setSaving(null);
     }
@@ -175,7 +171,7 @@ export function EventAttendancePanel({
         tone: 'success',
       });
     } catch (err) {
-      toast({ title: 'Anwesenheit nicht gespeichert', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('saveFailed'), description: errorMessage(err), tone: 'error' });
     } finally {
       setMarkingShiftId(null);
     }
@@ -205,10 +201,9 @@ export function EventAttendancePanel({
 
   const rotateCode = async () => {
     const ok = await confirm({
-      title: 'QR-Code erneuern?',
-      description:
-        'Der bisherige QR-Code und alle ausgedruckten Plakate funktionieren danach nicht mehr. Du musst den neuen Code ausdrucken.',
-      confirmLabel: 'Erneuern',
+      title: t('qrConfirmRotateTitle'),
+      description: t('qrConfirmRotateDesc'),
+      confirmLabel: t('qrConfirmRotateBtn'),
       tone: 'danger',
     });
     if (!ok) return;
@@ -217,9 +212,9 @@ export function EventAttendancePanel({
       await api(`/api/events/${event.slug}/checkin-token`, { method: 'POST' });
       await onChanged();
       setQrVersion((v) => v + 1);
-      toast({ title: 'Neuer QR-Code erstellt', tone: 'success' });
+      toast({ title: t('qrRotatedToast'), tone: 'success' });
     } catch (err) {
-      toast({ title: 'QR-Code nicht erneuert', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('qrRotateFailed'), description: errorMessage(err), tone: 'error' });
     } finally {
       setRotating(false);
     }
@@ -310,7 +305,7 @@ export function EventAttendancePanel({
           action={
             canEditSettings ? (
               <Button size="sm" onClick={onOpenSettings}>
-                <Settings className="size-4" /> Einstellungen öffnen
+                <Settings className="size-4" /> {t('settingsBtn')}
               </Button>
             ) : undefined
           }
@@ -323,22 +318,22 @@ export function EventAttendancePanel({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-bold text-fg">Anwesenheitsliste</h3>
+          <h3 className="text-base font-bold text-fg">{t('title')}</h3>
           <p className="text-xs text-fg-muted">{ATTENDANCE_MODES[mode]}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" loading={refreshing} onClick={refresh}>
-            <RefreshCw className="size-3.5" /> Aktualisieren
+            <RefreshCw className="size-3.5" /> {t('refreshBtn')}
           </Button>
           <Button variant="secondary" size="sm" onClick={downloadCsv} disabled={counts.total === 0}>
-            <Download className="size-4" /> CSV
+            <Download className="size-4" /> {t('exportCsvBtn')}
           </Button>
           <Button variant="secondary" size="sm" onClick={printList} disabled={counts.total === 0}>
-            <Printer className="size-4" /> Drucken
+            <Printer className="size-4" /> {t('printListBtn')}
           </Button>
           {event.cateringTokensEnabled && (
             <Button variant="secondary" size="sm" onClick={() => setCateringStatsOpen(true)}>
-              <UtensilsCrossed className="size-4" /> Verpflegung
+              <UtensilsCrossed className="size-4" /> {t('cateringBtn')}
             </Button>
           )}
         </div>
@@ -348,10 +343,10 @@ export function EventAttendancePanel({
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {(
           [
-            ['Anwesend', counts.PRESENT, 'text-success-ink'],
-            ['Entschuldigt', counts.EXCUSED, 'text-warning-ink'],
-            ['Nicht erschienen', counts.NO_SHOW, 'text-danger-ink'],
-            ['Offen', counts.OPEN, 'text-fg'],
+            [t('chips.present'), counts.PRESENT, 'text-success-ink'],
+            [t('chips.excused'), counts.EXCUSED, 'text-warning-ink'],
+            [t('chips.noShow'), counts.NO_SHOW, 'text-danger-ink'],
+            [t('chips.open'), counts.OPEN, 'text-fg'],
           ] as const
         ).map(([label, value, tone]) => (
           <Card key={label} className="p-4">
@@ -376,11 +371,10 @@ export function EventAttendancePanel({
           <div className="min-w-0 space-y-3">
             <div>
               <p className="flex items-center gap-2 font-bold text-fg">
-                <QrCode className="size-4" /> Selbst-Check-in per QR-Code
+                <QrCode className="size-4" /> {t('qrTitle')}
               </p>
               <p className="mt-1 text-sm text-fg-muted">
-                Häng den Code am Eingang auf. Wer eingetragen ist, scannt ihn, meldet sich an und wird für die Schicht
-                abgehakt, die gerade läuft (ab 30 Minuten vor Beginn bis Schichtende).
+                {t('qrDesc')}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -390,14 +384,14 @@ export function EventAttendancePanel({
                   'inline-flex h-9 items-center gap-2 rounded-full bg-accent px-3.5 text-[13px] font-semibold text-accent-fg shadow-glow hover:brightness-110 [&_svg]:size-4'
                 )}
               >
-                <Printer /> A4-Plakat (PDF)
+                <Printer /> {t('qrPrintBtn')} (PDF)
               </a>
               <Button size="sm" variant="secondary" onClick={copyLink} disabled={!checkinLink}>
                 <Copy className="size-4" /> Link kopieren
               </Button>
               {canEditSettings && (
                 <Button size="sm" variant="ghost" loading={rotating} onClick={rotateCode}>
-                  <RotateCcw className="size-4" /> Code erneuern
+                  <RotateCcw className="size-4" /> {t('qrRotateBtn')}
                 </Button>
               )}
             </div>
@@ -412,8 +406,8 @@ export function EventAttendancePanel({
       {counts.total === 0 ? (
         <EmptyState
           icon={<ClipboardCheck />}
-          title="Noch niemand eingetragen"
-          description="Sobald Helfende in Schichten eingetragen sind, kannst du sie hier abhaken."
+          title={t('emptyTitle')}
+          description={t('emptyDesc')}
         />
       ) : (
         <>
@@ -434,10 +428,10 @@ export function EventAttendancePanel({
                 {(
                   [
                     ['ALL', `Alle (${counts.total})`],
-                    ['OPEN', `Offen (${counts.OPEN})`],
-                    ['PRESENT', `Anwesend (${counts.PRESENT})`],
-                    ['EXCUSED', `Entschuldigt (${counts.EXCUSED})`],
-                    ['NO_SHOW', `Nicht erschienen (${counts.NO_SHOW})`],
+                    ['OPEN', `${t('chips.open')} (${counts.OPEN})`],
+                    ['PRESENT', `${t('chips.present')} (${counts.PRESENT})`],
+                    ['EXCUSED', `${t('chips.excused')} (${counts.EXCUSED})`],
+                    ['NO_SHOW', `${t('chips.noShow')} (${counts.NO_SHOW})`],
                   ] as const
                 ).map(([key, label]) => (
                   <Chip key={key} selected={statusFilter === key} onClick={() => setStatusFilter(key)}>
@@ -449,7 +443,7 @@ export function EventAttendancePanel({
                 <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-subtle" />
                 <Input
                   className="h-9 pl-9 pr-8 text-sm"
-                  placeholder="Name, Schicht oder Arbeit…"
+                  placeholder={t('searchPlaceholder')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -468,7 +462,7 @@ export function EventAttendancePanel({
           </div>
 
           {visibleDays.length === 0 ? (
-            <EmptyState icon={<Search />} title="Keine passenden Einträge" description="Passe den Filter oder die Suche an." />
+            <EmptyState icon={<Search />} title={t('emptyTitle')} description={t('emptyDesc')} />
           ) : (
             visibleDays.map((d) => (
               <section key={d.key} className="space-y-3">
@@ -524,10 +518,17 @@ function ShiftAttendanceCard({
   onSet: (signup: ShiftSignupDto, status: AttendanceStatus | null) => void;
   onMarkAllOpen: (openSignups: ShiftSignupDto[]) => void;
 }) {
+  const t = useTranslations('web.ok.attendance');
   const present = allSignups.filter((su) => su.attendance === 'PRESENT').length;
   const openSignups = shift.signups.filter((su) => !su.attendance);
   const now = Date.now();
   const running = new Date(shift.startTime).getTime() - 30 * 60_000 <= now && now <= new Date(shift.endTime).getTime();
+
+  const statusButtons: Array<{ status: AttendanceStatus; short: string; icon: typeof CheckCircle2; active: string }> = [
+    { status: 'PRESENT', short: t('statusPresent'), icon: CheckCircle2, active: 'border-success/50 bg-success/15 text-success-ink' },
+    { status: 'EXCUSED', short: t('statusExcused'), icon: FileText, active: 'border-warning/50 bg-warning/15 text-warning-ink' },
+    { status: 'NO_SHOW', short: t('statusNoShow'), icon: UserX, active: 'border-danger/50 bg-danger/15 text-danger-ink' },
+  ];
 
   return (
     <Card className={cn('p-4', running && 'border-accent/50')}>
@@ -554,7 +555,7 @@ function ShiftAttendanceCard({
               disabled={saving !== null || markingAll}
               onClick={() => onMarkAllOpen(openSignups)}
             >
-              <CheckCircle2 className="size-3.5" /> Alle offenen als Da ({openSignups.length})
+              <CheckCircle2 className="size-3.5" /> {t('markAllPresent')} ({openSignups.length})
             </Button>
           )}
           <Badge tone={present === allSignups.length ? 'success' : 'neutral'}>
@@ -574,7 +575,7 @@ function ShiftAttendanceCard({
                 </p>
               </div>
               <fieldset className="flex shrink-0 items-center gap-1.5 border-0 p-0 m-0" aria-label={`Anwesenheit ${su.displayName}`}>
-                {STATUS_BUTTONS.map(({ status, short, icon: Icon, active }) => {
+                {statusButtons.map(({ status, short, icon: Icon, active }) => {
                   const selected = su.attendance === status;
                   return (
                     <button
@@ -602,3 +603,4 @@ function ShiftAttendanceCard({
     </Card>
   );
 }
+

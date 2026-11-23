@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Crown, Edit, Lock, Shield, Trash2, UserPlus, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   Avatar,
   Button,
@@ -24,18 +25,17 @@ import { OrganizerDialog } from '@/components/ShiftDialogs';
 import { api, errorMessage } from '@/lib/api';
 import type { EventOrganizer } from '@/lib/types';
 
-const SECTIONS = [
-  ['ok-team', 'OK-Team'],
-  ['grunddaten', 'Grunddaten'],
-  ['eintragen', 'Eintragen & Fristen'],
-  ['zugang', 'Zugang & Angaben'],
-  ['zustaendigkeiten', 'Zuständigkeiten'],
-  ['anwesenheit', 'Anwesenheit'],
-  ['catering', 'Verpflegung & Bons'],
-  ['design', 'Design'],
+const SECTION_IDS = [
+  'ok-team',
+  'grunddaten',
+  'eintragen',
+  'zugang',
+  'zustaendigkeiten',
+  'anwesenheit',
+  'catering',
+  'design',
 ] as const;
 
-const SECTION_IDS = SECTIONS.map(([id]) => id);
 /** Selten gebraucht: Beim Öffnen eingeklappt mit Zusammenfassung */
 const COLLAPSED_SECTIONS = ['zustaendigkeiten', 'anwesenheit', 'design'];
 
@@ -54,6 +54,7 @@ function DeleteEventSection({
   shiftCount: number;
   signupCount: number;
 }) {
+  const t = useTranslations('web.ok.settings');
   const router = useRouter();
   const toast = useToast();
   const [open, setOpen] = useState(false);
@@ -73,7 +74,7 @@ function DeleteEventSection({
     setError(null);
     try {
       await api(`/api/events/${slug}`, { method: 'DELETE', json: { confirm: typed.trim() } });
-      toast({ title: 'Anlass gelöscht', description: title, tone: 'success' });
+      toast({ title: t('deleteSection.deletedToast'), description: title, tone: 'success' });
       router.replace('/');
     } catch (err) {
       setError(errorMessage(err));
@@ -88,14 +89,13 @@ function DeleteEventSection({
       <Card className="border-danger/30 bg-danger/5 p-5 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="font-display text-lg font-bold text-danger-ink">Anlass löschen</h3>
+            <h3 className="font-display text-lg font-bold text-danger-ink">{t('deleteSection.title')}</h3>
             <p className="mt-0.5 text-sm text-fg-muted">
-              Löscht den Anlass mit allen Schichten, Eintragungen, dem OK, Fragen, Zugangs-Links, Protokoll und
-              Nachrichten. Das lässt sich nicht rückgängig machen. Nur die Abteilungsleitung kann das.
+              {t('deleteSection.desc')}
             </p>
           </div>
           <Button variant="danger" className="shrink-0" onClick={() => setOpen(true)}>
-            <Trash2 aria-hidden /> Anlass löschen
+            <Trash2 aria-hidden /> {t('deleteSection.btn')}
           </Button>
         </div>
       </Card>
@@ -103,30 +103,27 @@ function DeleteEventSection({
       <Dialog
         open={open}
         onClose={close}
-        title={`«${title}» löschen?`}
+        title={t('deleteSection.confirmTitle', { title })}
         footer={
           <>
             <Button variant="secondary" onClick={close} disabled={busy}>
-              Abbrechen
+              {t('deleteSection.cancelBtn')}
             </Button>
             <Button variant="danger" onClick={remove} disabled={busy || !matches}>
               <Trash2 aria-hidden />
-              {busy ? 'Wird gelöscht …' : 'Endgültig löschen'}
+              {busy ? t('deleteSection.deletingBtn') : t('deleteSection.confirmDeleteBtn')}
             </Button>
           </>
         }
       >
         <div className="space-y-5">
           <Callout tone="danger">
-            Weg sind danach {shiftCount} Schichten mit {signupCount} Eintragungen und alles, was zum Anlass gehört. Die
-            Helfenden bekommen keine Nachricht. Wenn du sie informieren willst, schreib ihnen vorher unter «Nachrichten».
+            {t('deleteSection.warningNotice', { shiftCount, signupCount })}
           </Callout>
           <Field
-            label={
-              <>
-                Zur Bestätigung <span className="font-mono text-danger-ink">{slug}</span> eintippen
-              </>
-            }
+            label={t.rich('deleteSection.confirmLabel', {
+              slug: () => <span className="font-mono text-danger-ink">{slug}</span>,
+            })}
             error={error ?? undefined}
           >
             <Input
@@ -146,6 +143,7 @@ function DeleteEventSection({
 }
 
 export default function SettingsPage() {
+  const t = useTranslations('web.ok.settings');
   const { event, reload, permissions } = useOkEvent();
   const router = useRouter();
   const toast = useToast();
@@ -154,30 +152,45 @@ export default function SettingsPage() {
   const [okDialog, setOkDialog] = useState(false);
   const [editingOrganizer, setEditingOrganizer] = useState<EventOrganizer | null>(null);
 
+  const sections = useMemo(
+    () =>
+      [
+        ['ok-team', t('sections.okTeam')],
+        ['grunddaten', t('sections.basicData')],
+        ['eintragen', t('sections.signupRules')],
+        ['zugang', t('sections.accessRules')],
+        ['zustaendigkeiten', t('sections.responsibilities')],
+        ['anwesenheit', t('sections.attendance')],
+        ['catering', t('sections.catering')],
+        ['design', t('sections.design')],
+      ] as const,
+    [t]
+  );
+
   if (!permissions.canEditSettings) {
     return (
       <EmptyState
         icon={<Lock />}
-        title="Nur für OK-Leitung und Abteilungsleitung"
-        description="Die Einstellungen des Anlasses und das OK-Team ändern die OK-Leitung oder die Abteilungsleitung."
+        title={t('emptyTitle')}
+        description={t('emptyDesc')}
       />
     );
   }
 
   const removeOrganizer = async (id: string, name: string) => {
     const ok = await confirm({
-      title: `${name} aus dem OK entfernen?`,
-      description: 'Die Person sieht den OK-Bereich danach nicht mehr.',
-      confirmLabel: 'Entfernen',
+      title: t('removeConfirmTitle', { name }),
+      description: t('removeConfirmDesc'),
+      confirmLabel: t('removeConfirmBtn'),
       tone: 'danger',
     });
     if (!ok) return;
     try {
       await api(`/api/events/${event.slug}/organizers/${id}`, { method: 'DELETE' });
-      toast({ title: `${name} entfernt` });
+      toast({ title: t('removedToast', { name }) });
       await reload();
     } catch (err) {
-      toast({ title: 'Entfernen fehlgeschlagen', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('removeFailedToast'), description: errorMessage(err), tone: 'error' });
     }
   };
 
@@ -186,21 +199,20 @@ export default function SettingsPage() {
   return (
     <SectionsProvider sections={SECTION_IDS} collapsed={COLLAPSED_SECTIONS}>
       <OkPageHeader
-        title="Einstellungen"
-        description="Alles, was für den ganzen Anlass gilt. Änderungen werden automatisch gespeichert, eine neue Adresse erst nach deiner Bestätigung."
+        title={t('pageTitle')}
+        description={t('pageDesc')}
         help="/ok/anlass-erstellen/"
       />
 
-      <SectionNav sections={SECTIONS} />
+      <SectionNav sections={sections} />
 
       <section id="ok-team" className="mb-6">
         <Card className="p-5 shadow-soft sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h3 className="font-display text-lg font-bold text-fg">OK-Team</h3>
+              <h3 className="font-display text-lg font-bold text-fg">{t('okTeam')}</h3>
               <p className="mt-0.5 text-sm text-fg-muted">
-                OK-Mitglieder planen Schichten und teilen Helfende ein. Die OK-Leitung ändert zusätzlich Einstellungen und das
-                OK-Team.
+                {t('okTeamDesc')}
               </p>
             </div>
             <Button
@@ -211,12 +223,12 @@ export default function SettingsPage() {
                 setOkDialog(true);
               }}
             >
-              <UserPlus className="size-4" /> Person aufnehmen
+              <UserPlus className="size-4" /> {t('addOrganizerBtn')}
             </Button>
           </div>
           {organizers.length === 0 ? (
             <Callout tone="warning" className="mt-4">
-              Noch niemand im OK. Bis jemand eingetragen ist, plant nur die Abteilungsleitung.
+              {t('noOrganizersNotice')}
             </Callout>
           ) : (
             <ul className="mt-4 divide-y divide-line rounded-field border border-line">
@@ -232,7 +244,7 @@ export default function SettingsPage() {
                         {lead ? <Crown className="size-3.5 text-accent-ink" /> : <Shield className="size-3.5 text-fg-subtle" />}
                       </span>
                       <span className="block text-xs text-fg-muted">
-                        {lead ? 'OK-Leitung' : 'OK-Mitglied'}
+                        {lead ? t('leadRole') : t('memberRole')}
                         {org.roleTitle && org.roleTitle !== 'OK-Mitglied' && org.roleTitle !== 'OK-Leitung'
                           ? ` · ${org.roleTitle}`
                           : ''}
@@ -246,8 +258,8 @@ export default function SettingsPage() {
                           setEditingOrganizer(org);
                           setOkDialog(true);
                         }}
-                        aria-label={`${name} bearbeiten`}
-                        title="Rolle und Ressort bearbeiten"
+                        aria-label={t('editOrganizerAria', { name })}
+                        title={t('editOrganizerTitle')}
                       >
                         <Edit className="size-3.5" />
                       </Button>
@@ -255,7 +267,7 @@ export default function SettingsPage() {
                         size="icon-sm"
                         variant="ghost"
                         onClick={() => removeOrganizer(org.id, name)}
-                        aria-label={`${name} aus dem OK entfernen`}
+                        aria-label={t('removeOrganizerAria', { name })}
                         className="text-fg-subtle hover:text-danger-ink"
                       >
                         <X className="size-4" />
