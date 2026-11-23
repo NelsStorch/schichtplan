@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   DEPARTMENT_PERMISSIONS,
   formatZurichTime,
@@ -12,24 +13,12 @@ import { Button, EmptyState, Skeleton, useOrganization, useToast } from '@schich
 import { api, errorMessage } from '@/lib/api';
 import { fmtShortDate } from '@/lib/format';
 
-const ACTION_LABELS: Record<string, string> = {
-  PERMISSIONS_SET: 'Rechte geändert',
-  LEADER_GRANT: 'Abteilungsleitung erhalten',
-  LEADER_REVOKE: 'Abteilungsleitung entzogen',
-  STUFEN_SET: 'Stufen geändert',
-  MEMBER_REMOVE: 'Aus der Abteilung entfernt',
-  MEMBER_CONFIRM: 'Zugehörigkeit bestätigt',
-  MEMBER_UNCONFIRM: 'Bestätigung aufgehoben',
-  MEMBER_JOIN: 'Dazugekommen',
-  MEMBER_LEAVE: 'Nicht mehr dabei',
-};
-
 const list = (value: unknown): string[] => (Array.isArray(value) ? value.filter((v) => typeof v === 'string') : []);
 const permLabel = (p: string) => (isDepartmentPermission(p) ? DEPARTMENT_PERMISSIONS[p].label : p);
 const time = (iso: string) => formatZurichTime(iso);
 
 /** Was sich geändert hat, in Worten: «+ Anlässe erstellen · − Anlässe löschen» */
-function changeText(entry: DepartmentAuditEntryDto, org: OrganizationConfig): string | null {
+function changeText(entry: DepartmentAuditEntryDto, org: OrganizationConfig, t: ReturnType<typeof useTranslations<'web.department.audit'>>): string | null {
   const d = entry.details ?? {};
   if (entry.action === 'PERMISSIONS_SET' || entry.action === 'STUFEN_SET') {
     const before = list(d.before);
@@ -41,21 +30,34 @@ function changeText(entry: DepartmentAuditEntryDto, org: OrganizationConfig): st
     return parts.length ? parts.join(' · ') : null;
   }
   const provider = org.authProviderShort || 'Verband';
-  if (entry.action === 'LEADER_REVOKE' && d.reason === 'NO_LEADER_ROLE') return `Keine Leitungsrolle mehr in ${provider}`;
-  if (entry.action === 'LEADER_REVOKE' && d.reason === 'OTHER_DEPARTMENT') return `Andere Ortsgruppe in ${provider}`;
-  if (entry.action === 'LEADER_GRANT' && (d.source === 'CEVIDB' || d.source === 'HITOBITO')) return `Leitungsrolle in ${provider}`;
-  if (entry.action === 'MEMBER_JOIN') return `Rolle bei euch in ${provider}`;
-  if (entry.action === 'MEMBER_LEAVE') return `Keine Rolle mehr bei euch in ${provider}`;
+  if (entry.action === 'LEADER_REVOKE' && d.reason === 'NO_LEADER_ROLE') return t('reasonNoLeader', { provider });
+  if (entry.action === 'LEADER_REVOKE' && d.reason === 'OTHER_DEPARTMENT') return t('reasonOtherDept', { provider });
+  if (entry.action === 'LEADER_GRANT' && (d.source === 'CEVIDB' || d.source === 'HITOBITO')) return t('reasonLeaderRole', { provider });
+  if (entry.action === 'MEMBER_JOIN') return t('reasonRoleHere', { provider });
+  if (entry.action === 'MEMBER_LEAVE') return t('reasonNoRoleHere', { provider });
   return null;
 }
 
 /** Protokoll der Abteilung: wer wem welche Rechte gegeben hat, Abteilungsleitung, Stufen */
 export function DepartmentAuditPanel() {
+  const t = useTranslations('web.department.audit');
   const toast = useToast();
   const org = useOrganization();
   const [items, setItems] = useState<DepartmentAuditEntryDto[] | null>(null);
   const [page, setPage] = useState(1);
   const [pageCount, setPageCount] = useState(1);
+
+  const actionLabels: Record<string, string> = {
+    PERMISSIONS_SET: t('actionPermissionsSet'),
+    LEADER_GRANT: t('actionLeaderGrant'),
+    LEADER_REVOKE: t('actionLeaderRevoke'),
+    STUFEN_SET: t('actionStufenSet'),
+    MEMBER_REMOVE: t('actionMemberRemove'),
+    MEMBER_CONFIRM: t('actionMemberConfirm'),
+    MEMBER_UNCONFIRM: t('actionMemberUnconfirm'),
+    MEMBER_JOIN: t('actionMemberJoin'),
+    MEMBER_LEAVE: t('actionMemberLeave'),
+  };
 
   const load = useCallback(
     async (p: number) => {
@@ -67,11 +69,11 @@ export function DepartmentAuditPanel() {
         setPageCount(res.pageCount);
         setPage(p);
       } catch (err) {
-        toast({ title: 'Protokoll konnte nicht geladen werden', description: errorMessage(err), tone: 'error' });
+        toast({ title: t('loadFailedToast'), description: errorMessage(err), tone: 'error' });
         setItems([]);
       }
     },
-    [toast]
+    [toast, t]
   );
 
   useEffect(() => {
@@ -80,18 +82,18 @@ export function DepartmentAuditPanel() {
 
   if (items === null) return <Skeleton className="h-40 rounded-card" />;
   if (items.length === 0) {
-    return <EmptyState title="Noch keine Einträge" description="Hier erscheint, wer wem welche Rechte gegeben hat." />;
+    return <EmptyState title={t('emptyTitle')} description={t('emptyDesc')} />;
   }
 
   return (
     <div className="space-y-3">
       <ul className="max-h-[28rem] divide-y divide-line overflow-y-auto rounded-card border border-line">
         {items.map((entry) => {
-          const change = changeText(entry, org);
+          const change = changeText(entry, org, t);
           return (
             <li key={entry.id} className="px-4 py-3">
               <p className="text-sm text-fg">
-                <span className="font-semibold">{entry.targetLabel}</span>: {ACTION_LABELS[entry.action] ?? entry.action}
+                <span className="font-semibold">{entry.targetLabel}</span>: {actionLabels[entry.action] ?? entry.action}
               </p>
               {change && <p className="mt-0.5 text-xs text-fg-muted">{change}</p>}
               <p className="mt-0.5 text-2xs text-fg-subtle">
@@ -102,8 +104,8 @@ export function DepartmentAuditPanel() {
         })}
       </ul>
       {page < pageCount && (
-        <Button size="sm" variant="ghost" onClick={() => load(page + 1)}>
-          Ältere laden
+        <Button variant="secondary" size="sm" onClick={() => load(page + 1)}>
+          {t('loadMoreBtn')}
         </Button>
       )}
     </div>

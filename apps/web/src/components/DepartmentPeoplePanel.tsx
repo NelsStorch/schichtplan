@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { BadgeCheck, Check, Crown, Database, LayoutList, Pencil, Table2, UserMinus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   DEPARTMENT_PERMISSION_KEYS,
   DEPARTMENT_PERMISSIONS,
@@ -32,6 +33,7 @@ const isMemberHere = (p: DepartmentPersonDto) => p.isMember ?? p.isHomeDepartmen
 
 /** Personen der Abteilung: Rechte und Stufen bearbeiten, Übersicht wer was darf. */
 export function DepartmentPeoplePanel() {
+  const t = useTranslations('web.department.people');
   const toast = useToast();
   const confirm = useConfirm();
   const { user, isDeptAdmin, permissions } = usePortal();
@@ -51,10 +53,10 @@ export function DepartmentPeoplePanel() {
       setPeople(list);
       setStufen(st);
     } catch (err) {
-      toast({ title: 'Personen konnten nicht geladen werden', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('loadFailedToast'), description: errorMessage(err), tone: 'error' });
       setPeople([]);
     }
-  }, [toast, withGuests]);
+  }, [toast, withGuests, t]);
 
   useEffect(() => {
     load();
@@ -68,10 +70,9 @@ export function DepartmentPeoplePanel() {
 
   const remove = async (person: DepartmentPersonDto) => {
     const ok = await confirm({
-      title: `${person.nickname || person.ceviName || person.firstName} entfernen?`,
-      description:
-        `Die Person gehört danach nicht mehr zur ${org.unitTerm}, verliert ihre Rechte hier und wird beim nächsten Login erneut gefragt.`,
-      confirmLabel: 'Entfernen',
+      title: t('removeConfirmTitle', { name: person.nickname || person.ceviName || person.firstName }),
+      description: t('removeConfirmDesc', { unitTerm: org.unitTerm }),
+      confirmLabel: t('removeConfirmBtn'),
       tone: 'danger',
     });
     if (!ok) return;
@@ -80,25 +81,24 @@ export function DepartmentPeoplePanel() {
       setEditing(null);
       await load();
     } catch (err) {
-      toast({ title: 'Entfernen hat nicht geklappt', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('removeFailedToast'), description: errorMessage(err), tone: 'error' });
     }
   };
 
   const confirmHome = async (person: DepartmentPersonDto) => {
     const name = person.nickname || person.ceviName || person.firstName;
     const ok = await confirm({
-      title: `${name} bestätigen?`,
-      description:
-        `Die Person gehört laut dir zu eurer ${org.unitTerm} und zählt danach auch bei internen Anlässen. Das steht im Protokoll.`,
-      confirmLabel: 'Bestätigen',
+      title: t('confirmHomeTitle', { name }),
+      description: t('confirmHomeDesc', { unitTerm: org.unitTerm }),
+      confirmLabel: t('confirmHomeBtn'),
     });
     if (!ok) return;
     try {
       await api(`/api/departments/current/people/${person.userId}/confirm`, { method: 'POST', json: {} });
-      toast({ title: `${name} bestätigt` });
+      toast({ title: t('confirmedToast', { name }) });
       await load();
     } catch (err) {
-      toast({ title: 'Bestätigen hat nicht geklappt', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('confirmFailedToast'), description: errorMessage(err), tone: 'error' });
     }
   };
 
@@ -108,7 +108,7 @@ export function DepartmentPeoplePanel() {
       setEditing(null);
       await load();
     } catch (err) {
-      toast({ title: 'Aufheben hat nicht geklappt', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('unconfirmFailedToast'), description: errorMessage(err), tone: 'error' });
     }
   };
 
@@ -124,16 +124,16 @@ export function DepartmentPeoplePanel() {
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-fg-muted">
-          {people.length} Personen.{' '}
+          {t('summaryCount', { count: people.length })}{' '}
           {isVerein
-            ? 'Vereinsleitung und Rechte vergibst du hier.'
-            : `${org.leadTerm} kommt aus ${org.authProviderShort}, Rechte vergibst du hier.`}
+            ? t('summaryHintVerein')
+            : t('summaryHintOrg', { leadTerm: org.leadTerm, provider: org.authProviderShort })}
         </p>
         <div role="tablist" aria-label="Ansicht" className="flex rounded-full bg-surface-2 p-0.5">
           {(
             [
-              { key: 'list', label: 'Liste', icon: LayoutList },
-              { key: 'matrix', label: 'Wer darf was', icon: Table2 },
+              { key: 'list', label: t('viewList'), icon: LayoutList },
+              { key: 'matrix', label: t('viewMatrix'), icon: Table2 },
             ] as const
           ).map((v) => (
             <button
@@ -155,14 +155,16 @@ export function DepartmentPeoplePanel() {
 
       {leaders.length > 0 && (
         <p className="flex flex-wrap items-center gap-1.5 text-xs text-fg-muted">
-          <Crown className="size-3.5 text-accent-ink" /> {org.unitTerm}-Leitung:
+          <Crown className="size-3.5 text-accent-ink" /> {t('leadersLabel', { unitTerm: org.unitTerm })}
           <span className="font-semibold text-fg">{leaders.map((p) => p.nickname || p.ceviName || p.firstName).join(', ')}</span>
         </p>
       )}
       {missingLeaders.length > 0 && (
         <p className="text-xs text-warning-ink">
-          In {org.authProviderShort} Leitung, hier noch nicht: {missingLeaders.map((p) => p.nickname || p.ceviName || p.firstName).join(', ')}.
-          Das wird beim nächsten {org.authProviderShort}-Login der Person nachgeführt.
+          {t('missingLeadersNotice', {
+            provider: org.authProviderShort,
+            names: missingLeaders.map((p) => p.nickname || p.ceviName || p.firstName).join(', '),
+          })}
         </p>
       )}
 
@@ -172,8 +174,8 @@ export function DepartmentPeoplePanel() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Person suchen"
-            aria-label="Person suchen"
+            placeholder={t('searchPlaceholder')}
+            aria-label={t('searchPlaceholder')}
             className="h-10 min-w-48 flex-1"
           />
         )}
@@ -184,12 +186,12 @@ export function DepartmentPeoplePanel() {
             onChange={(e) => setWithGuests(e.target.checked)}
             className="size-4 rounded border-line"
           />
-          Gäste anzeigen (ohne Heimabteilung, z. B. um ihnen Rechte zu geben)
+          {t('guestsCheckbox')}
         </label>
       </div>
 
       {visible.length === 0 ? (
-        <EmptyState title="Noch niemand" description="Personen erscheinen hier, sobald sie beim Login diese Abteilung angeben." />
+        <EmptyState title={t('emptyTitle')} description={t('emptyDesc')} />
       ) : view === 'matrix' ? (
         <PermissionMatrix people={visible} />
       ) : (
@@ -210,32 +212,32 @@ export function DepartmentPeoplePanel() {
                     )}
                     {p.source === 'CONFIRMED' && (
                       <Badge size="sm">
-                        <BadgeCheck className="size-3" /> Bestätigt
+                        <BadgeCheck className="size-3" /> {t('badgeConfirmed')}
                       </Badge>
                     )}
                   </p>
                   <p className="mt-0.5 truncate text-xs text-fg-subtle">
                     {!isMemberHere(p)
-                      ? 'Andere oder keine Heimabteilung'
+                      ? t('memberOther')
                       : p.isAdditionalMember && !p.stufen.length
-                        ? 'Zusätzlich beigetreten (andere Heimabteilung)'
+                        ? t('memberAdditional')
                         : p.stufen.length
                         ? p.stufen.map((s) => `${s.name} (${STUFE_ROLES[s.role]})`).join(', ')
-                        : 'Keine Stufe'}
+                        : t('noStufe')}
                   </p>
                   {p.source === 'CONFIRMED' && (
                     <p className="mt-0.5 text-xs text-fg-subtle">
                       {p.isAdditionalMember
-                        ? `Beitritt bestätigt${p.confirmedBy ? ` von ${p.confirmedBy}` : ' (Einladung)'}`
-                        : `Von Hand bestätigt${p.confirmedBy ? ` von ${p.confirmedBy}` : ''}`}
-                      {p.confirmedAt ? ` am ${formatZurichDate(p.confirmedAt)}` : ''}
-                      {!isVerein && !p.isAdditionalMember && `, nicht aus ${org.authProviderShort}`}
+                        ? (p.confirmedBy ? t('confirmedByPerson', { name: p.confirmedBy }) : t('confirmedByInvite'))
+                        : t('confirmedManual', { by: p.confirmedBy ? ` von ${p.confirmedBy}` : '' })}
+                      {p.confirmedAt ? t('confirmedOn', { date: formatZurichDate(p.confirmedAt) }) : ''}
+                      {!isVerein && !p.isAdditionalMember && t('notFromProvider', { provider: org.authProviderShort })}
                     </p>
                   )}
                 </div>
                 {p.canConfirmHome && (
                   <Button size="sm" variant="ghost" onClick={() => confirmHome(p)} aria-label={`${p.displayName} bestätigen`}>
-                    <BadgeCheck /> <span className="hidden sm:inline">Bestätigen</span>
+                    <BadgeCheck /> <span className="hidden sm:inline">{t('confirmBtn')}</span>
                   </Button>
                 )}
                 {p.canEdit && (
@@ -246,7 +248,7 @@ export function DepartmentPeoplePanel() {
                     aria-expanded={editing === p.userId}
                     aria-label={`${p.displayName} bearbeiten`}
                   >
-                    <Pencil /> <span className="hidden sm:inline">Bearbeiten</span>
+                    <Pencil /> <span className="hidden sm:inline">{t('editBtn')}</span>
                   </Button>
                 )}
               </div>
@@ -263,7 +265,7 @@ export function DepartmentPeoplePanel() {
                   onUnconfirm={isDeptAdmin && p.source === 'CONFIRMED' ? () => unconfirmHome(p) : undefined}
                   onSaved={async () => {
                     setEditing(null);
-                    toast({ title: `${p.ceviName || p.firstName} gespeichert` });
+                    toast({ title: t('personSavedToast', { name: p.ceviName || p.firstName }) });
                     await load();
                   }}
                 />
@@ -278,9 +280,10 @@ export function DepartmentPeoplePanel() {
 
 /** Übersicht: Personen mit Rechten (Zeilen) und Rechte (Spalten) */
 function PermissionMatrix({ people }: { people: DepartmentPersonDto[] }) {
+  const t = useTranslations('web.department.people');
   const rows = people.filter((p) => p.departmentRole === 'ADMIN' || p.permissions.length > 0);
   if (rows.length === 0) {
-    return <EmptyState title="Noch niemand mit Rechten" description="Ausser der Abteilungsleitung hat niemand besondere Rechte." />;
+    return <EmptyState title={t('matrixEmptyTitle')} description={t('matrixEmptyDesc')} />;
   }
   return (
     <div className="max-h-[28rem] overflow-auto rounded-card border border-line">
@@ -362,6 +365,7 @@ function PersonEditor({
   onUnconfirm?: () => void;
   onSaved: () => void;
 }) {
+  const t = useTranslations('web.department.people');
   const isVerein = org.slug === 'verein';
   const [role, setRole] = useState<'ADMIN' | 'HELPER'>(person.departmentRole === 'ADMIN' ? 'ADMIN' : 'HELPER');
   const [roles, setRoles] = useState<Record<string, StufeRole>>(
@@ -400,8 +404,8 @@ function PersonEditor({
       {error && <Callout tone="danger">{error}</Callout>}
       {isVerein && isDeptAdmin && !person.isCeviNameProfile && (
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-fg-subtle">Rolle im Verein</p>
-          <div role="radiogroup" aria-label="Rolle im Verein" className="flex rounded-full bg-surface p-0.5">
+          <p className="text-xs font-semibold text-fg-subtle">{t('roleInVerein')}</p>
+          <div role="radiogroup" aria-label={t('roleInVerein')} className="flex rounded-full bg-surface p-0.5">
             {/* biome-ignore lint/a11y/useSemanticElements: Segmented Control mit ARIA-Radio-Pattern */}
             <button
               type="button"
@@ -413,7 +417,7 @@ function PersonEditor({
                 role === 'ADMIN' ? 'bg-surface-3 text-fg' : 'text-fg-muted hover:text-fg'
               )}
             >
-              <Crown className="size-3.5 text-accent-ink" /> Vereinsleitung
+              <Crown className="size-3.5 text-accent-ink" /> {t('roleVereinsleitung')}
             </button>
             {/* biome-ignore lint/a11y/useSemanticElements: Segmented Control mit ARIA-Radio-Pattern */}
             <button
@@ -426,7 +430,7 @@ function PersonEditor({
                 role === 'HELPER' ? 'bg-surface-3 text-fg' : 'text-fg-muted hover:text-fg'
               )}
             >
-              Mitglied
+              {t('roleMitglied')}
             </button>
           </div>
         </div>
@@ -435,21 +439,28 @@ function PersonEditor({
         <p className="text-xs leading-relaxed text-fg-muted">
           <Crown className="mr-1 inline size-3.5 text-accent-ink" />
           {isVerein
-            ? 'Vereinsleitung: hat alle Rechte und kann weitere Vereinsleitungen ernennen.'
-            : `${org.leadTerm} ${person.leaderSource === 'CEVIDB' ? `laut ${org.authProviderShort}` : 'vom Admin-Portal'}: hat alle Rechte. Das ändert sich nur über die Rolle in ${org.authProviderShort} oder im Admin-Portal.`}
+            ? t('leaderExplanationVerein')
+            : t('leaderExplanationOrg', {
+                leadTerm: org.leadTerm,
+                source: person.leaderSource === 'CEVIDB' ? `laut ${org.authProviderShort}` : 'vom Admin-Portal',
+                provider: org.authProviderShort,
+              })}
         </p>
       ) : person.isCeviNameProfile ? (
         <p className="text-xs leading-relaxed text-warning-ink">
-          Nur {org.nicknameTerm}-Profil (ohne Passwort): bekommt keine Rechte. Dafür braucht die Person ein Konto{' '}
-          {isVerein ? 'mit E-Mail und Passwort.' : `mit ${org.authProviderShort} oder mit E-Mail und Passwort.`}
+          {t('nicknameOnlyWarning', {
+            nicknameTerm: org.nicknameTerm,
+            accountHint: isVerein
+              ? 'mit E-Mail und Passwort.'
+              : `mit ${org.authProviderShort} oder mit E-Mail und Passwort.`,
+          })}
         </p>
       ) : (
         <div>
-          <p className="mb-2 text-xs font-semibold text-fg-subtle">Rechte in der {org.unitTerm}</p>
+          <p className="mb-2 text-xs font-semibold text-fg-subtle">{t('rightsInUnit', { unitTerm: org.unitTerm })}</p>
           <PermissionEditor value={perms} onChange={setPerms} grantable={isSelf ? new Set() : grantable} />
           <div className="mt-3 rounded-card border border-line/60 bg-surface/60 p-2 text-2xs leading-normal text-fg-subtle">
-            💡 Wer nur bei einem einzelnen Anlass mitplant, kommt besser ins OK-Team dieses Anlasses (Anlass →
-            Einstellungen → OK-Team) statt hier Rechte für alle Anlässe zu bekommen.
+            {t('okTeamHint')}
           </div>
         </div>
       )}
@@ -466,10 +477,10 @@ function PersonEditor({
                   <span className="text-sm text-fg">
                     {stufe.name}
                     {isLocked && !isVerein && (
-                      <span className="ml-1.5 text-xs text-fg-subtle">aus {org.authProviderShort}</span>
+                      <span className="ml-1.5 text-xs text-fg-subtle">{t('fromProvider', { provider: org.authProviderShort })}</span>
                     )}
                   </span>
-                  <div role="radiogroup" aria-label={`Rolle in ${stufe.name}`} className="flex rounded-full bg-surface p-0.5">
+                  <div role="radiogroup" aria-label={t('roleInStufeAria', { name: stufe.name })} className="flex rounded-full bg-surface p-0.5">
                     {([null, 'TEILNEHMER', 'LEITUNG'] as const).map((value) => (
                       /* biome-ignore lint/a11y/useSemanticElements: Segmented Control mit ARIA-Radio-Pattern */
                       <button
@@ -491,7 +502,7 @@ function PersonEditor({
                           current === value ? 'bg-surface-3 text-fg' : 'text-fg-muted hover:text-fg'
                         )}
                       >
-                        {value ? STUFE_ROLES[value] : 'Nein'}
+                        {value ? STUFE_ROLES[value] : t('roleNone')}
                       </button>
                     ))}
                   </div>
@@ -506,21 +517,21 @@ function PersonEditor({
         <div className="flex flex-wrap gap-2">
           {isMemberHere(person) && person.source !== 'CEVIDB' && (!isLeader || isVerein) && (
             <Button size="sm" variant="ghost" onClick={onRemove} className="hover:text-danger-ink">
-              <UserMinus /> Aus {org.unitTerm} entfernen
+              <UserMinus /> {t('removeFromUnit', { unitTerm: org.unitTerm })}
             </Button>
           )}
           {onUnconfirm && (
             <Button size="sm" variant="ghost" onClick={onUnconfirm}>
-              Bestätigung aufheben
+              {t('unconfirmHome')}
             </Button>
           )}
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="ghost" onClick={onCancel}>
-            Abbrechen
+            {t('cancel')}
           </Button>
           <Button size="sm" loading={saving} onClick={save}>
-            Speichern
+            {t('save')}
           </Button>
         </div>
       </div>

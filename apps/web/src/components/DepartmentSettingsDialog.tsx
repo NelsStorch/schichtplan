@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Check, ChevronDown, QrCode, Settings2 } from 'lucide-react';
-import type { DepartmentJoinMode, DepartmentPermission, PasswordlessAccountsDto } from '@schichtplan/shared';
+import { useTranslations } from 'next-intl';
+import type { DepartmentJoinMode, PasswordlessAccountsDto } from '@schichtplan/shared';
 import {
   Button,
   Callout,
@@ -30,20 +31,7 @@ import { DepartmentBrandingPreview } from './DepartmentBrandingPreview';
 const SWATCHES_PRIMARY = ['#e11d48', '#64284b', '#283583', '#dc2626', '#ea580c', '#d97706', '#16a34a', '#0d9488', '#2563eb', '#7c3aed'];
 const SWATCHES_SECONDARY = ['#003d8f', '#1e293b', '#e11d48', '#16a34a', '#d97706', '#4f46e5', '#0f766e', '#be123c'];
 
-// Jeder Reiter braucht sein Recht (die Abteilungsleitung hat alle)
-const TABS: {
-  key: 'general' | 'stufen' | 'people' | 'stats' | 'audit';
-  label: string;
-  isAllowed: (can: (p: DepartmentPermission) => boolean) => boolean;
-}[] = [
-  { key: 'general', label: 'Allgemein', isAllowed: (can) => can('DEPARTMENT_SETTINGS') },
-  { key: 'stufen', label: 'Stufen', isAllowed: (can) => can('STUFEN_MANAGE') },
-  { key: 'people', label: 'Personen', isAllowed: (can) => can('PEOPLE_VIEW') },
-  { key: 'stats', label: 'Statistik & GV', isAllowed: (can) => can('PEOPLE_VIEW') || can('DEPARTMENT_SETTINGS') },
-  { key: 'audit', label: 'Protokoll', isAllowed: (can) => can('PEOPLE_MANAGE') },
-];
-
-type TabKey = (typeof TABS)[number]['key'];
+type TabKey = 'general' | 'stufen' | 'people' | 'stats' | 'audit';
 
 export function DepartmentSettingsDialog({
   open,
@@ -54,20 +42,28 @@ export function DepartmentSettingsDialog({
   onClose: () => void;
   initialTab?: TabKey;
 }) {
+  const t = useTranslations('web.department.dialog');
   const { department, can } = usePortal();
-  const tabs = useMemo(() => TABS.filter((t) => t.isAllowed(can)), [can]);
+
+  const tabs: { key: TabKey; label: string; isAllowed: boolean }[] = useMemo(() => [
+    { key: 'general' as const, label: t('tabGeneral'), isAllowed: can('DEPARTMENT_SETTINGS') },
+    { key: 'stufen' as const, label: t('tabStufen'), isAllowed: can('STUFEN_MANAGE') },
+    { key: 'people' as const, label: t('tabPeople'), isAllowed: can('PEOPLE_VIEW') },
+    { key: 'stats' as const, label: t('tabStats'), isAllowed: can('PEOPLE_VIEW') || can('DEPARTMENT_SETTINGS') },
+    { key: 'audit' as const, label: t('tabAudit'), isAllowed: can('PEOPLE_MANAGE') },
+  ].filter((tabItem) => tabItem.isAllowed), [can, t]);
+
   const [tab, setTab] = useState<TabKey>(initialTab ?? tabs[0]?.key ?? 'general');
 
   useEffect(() => {
     if (!open) return;
-    if (initialTab && TABS.some((t) => t.key === initialTab && t.isAllowed(can))) {
+    if (initialTab && tabs.some((t) => t.key === initialTab)) {
       setTab(initialTab);
     } else {
-      const firstAllowed = TABS.find((t) => t.isAllowed(can))?.key ?? 'general';
-      setTab(firstAllowed);
+      setTab(tabs[0]?.key ?? 'general');
     }
     // Nur beim Öffnen oder gezielten Wechsel von initialTab synchronisieren
-  }, [open, initialTab, can]);
+  }, [open, initialTab, tabs]);
 
   const activeTab = tabs.some((t) => t.key === tab) ? tab : (tabs[0]?.key ?? 'general');
   const close = () => {
@@ -83,23 +79,23 @@ export function DepartmentSettingsDialog({
       size="lg"
       className={activeTab === 'stats' ? 'sm:max-w-4xl' : undefined}
       icon={<Settings2 />}
-      title="Abteilung"
-      description="Name, Logo, Farbe, Stufen und Rechte gelten für alle Anlässe dieser Abteilung."
+      title={t('title')}
+      description={t('desc')}
     >
       <div role="tablist" aria-label="Bereiche" className="-mt-1 mb-6 flex gap-1 rounded-full bg-surface-2 p-1 overflow-x-auto">
-        {tabs.map((t) => (
+        {tabs.map((tabItem) => (
           <button
-            key={t.key}
+            key={tabItem.key}
             type="button"
             role="tab"
-            aria-selected={activeTab === t.key}
-            onClick={() => setTab(t.key)}
+            aria-selected={activeTab === tabItem.key}
+            onClick={() => setTab(tabItem.key)}
             className={cn(
               'h-9 flex-1 whitespace-nowrap px-3 rounded-full text-sm font-semibold transition',
-              activeTab === t.key ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
+              activeTab === tabItem.key ? 'bg-surface text-fg shadow-sm' : 'text-fg-muted hover:text-fg'
             )}
           >
-            {t.label}
+            {tabItem.label}
           </button>
         ))}
       </div>
@@ -113,6 +109,7 @@ export function DepartmentSettingsDialog({
 }
 
 function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: () => void }) {
+  const t = useTranslations('web.department.dialog');
   const { department, refresh } = usePortal();
   const toast = useToast();
   const org = useOrganization();
@@ -186,7 +183,7 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
         },
       });
       await refresh();
-      toast({ title: 'Abteilung gespeichert' });
+      toast({ title: t('savedToast') });
       onDone();
     } catch (err) {
       setError(errorMessage(err));
@@ -198,7 +195,7 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
     <form onSubmit={submit} className="space-y-6">
       {error && <Callout tone="danger">{error}</Callout>}
 
-      <Field label="Name der Abteilung" hint="z. B. Cevi Uster">
+      <Field label={t('nameLabel')} hint={t('nameHint')}>
         <Input
           value={form.name}
           onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
@@ -208,25 +205,25 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
       </Field>
 
       <Field
-        label="Kontaktperson"
-        hint="Wird im Hilfebereich und bei Fragen als Ansprechperson angezeigt. Wählbar sind die Abteilungsleitung und Personen mit dem Recht «Personen und Rechte verwalten»."
+        label={t('contactLabel')}
+        hint={t('contactHint')}
       >
         <Select
           value={form.contactUserId}
           onChange={(e) => setForm((f) => ({ ...f, contactUserId: e.target.value }))}
         >
-          <option value="">Keine Kontaktperson ausgewählt</option>
+          <option value="">{t('contactNone')}</option>
           {candidates?.map((c) => (
             <option key={c.userId} value={c.userId}>
-              {c.displayName} {c.isLeader ? '(Abteilungsleitung)' : ''}
+              {c.displayName} {c.isLeader ? t('contactLeaderSuffix') : ''}
             </option>
           ))}
         </Select>
       </Field>
 
       <ImageUpload
-        label="Abteilungslogo"
-        hint="Quadratisches PNG oder JPEG, max. 5 MB. Erscheint in der Navigation, auf Aushängen und zentriert in QR-Codes."
+        label={t('logoLabel')}
+        hint={t('logoHint')}
         value={form.logoUrl}
         onChange={(url) => setForm((f) => ({ ...f, logoUrl: url ?? '' }))}
       />
@@ -234,15 +231,15 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
       <Switch
         checked={form.membersOnly}
         onChange={(v) => setForm((f) => ({ ...f, membersOnly: v }))}
-        label="Startseite nur für Mitglieder"
-        description="Aussenstehende sehen die Liste der Anlässe nicht. Öffentliche Anlässe bleiben über ihren Link erreichbar, interne nur mit Zugangs-Link."
+        label={t('membersOnlyLabel')}
+        description={t('membersOnlyDesc')}
       />
 
       <Switch
         checked={form.allowPasswordless}
         onChange={(v) => setForm((f) => ({ ...f, allowPasswordless: v }))}
-        label="Passwortlose Anmeldung erlauben"
-        description={`Helfende können sich auf diesem Portal mit ${org.nicknameTerm} und Geburtsdatum ohne Passwort anmelden.`}
+        label={t('passwordlessLabel')}
+        description={t('passwordlessDesc', { nicknameTerm: org.nicknameTerm })}
       />
 
       {!form.allowPasswordless && passwordless && passwordless.count > 0 && (
@@ -250,15 +247,12 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
           tone="warning"
           title={
             passwordless.count === 1
-              ? '1 Konto wird ausgesperrt'
-              : `${passwordless.count} Konten werden ausgesperrt`
+              ? t('passwordlessLockoutOne')
+              : t('passwordlessLockoutOther', { count: passwordless.count })
           }
         >
           <p className="mt-1 text-[13px] leading-relaxed text-fg">
-            {passwordless.count === 1 ? 'Diese Person hat' : 'Diese Personen haben'} weder E-Mail noch Passwort noch
-            Verbands-Login. Ohne passwortlose Anmeldung {passwordless.count === 1 ? 'kommt sie' : 'kommen sie'} hier
-            nicht mehr hinein und {passwordless.count === 1 ? 'kann' : 'können'} das Konto auch nicht selbst wiederherstellen.
-            Ihre Eintragungen bleiben bestehen.
+            {passwordless.count === 1 ? t('passwordlessLockoutTextOne') : t('passwordlessLockoutTextOther')}
           </p>
           <button
             type="button"
@@ -266,7 +260,7 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
             onClick={() => setShowLockedOut((v) => !v)}
             className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-accent-ink underline underline-offset-2"
           >
-            {showLockedOut ? 'Details ausblenden' : 'Details anzeigen'}
+            {showLockedOut ? t('hideDetails') : t('showDetails')}
             <ChevronDown className={cn('size-3.5 transition-transform', showLockedOut && 'rotate-180')} />
           </button>
           {showLockedOut && (
@@ -283,7 +277,7 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
                     )}
                   </span>
                   <span className="shrink-0 text-2xs text-fg-subtle">
-                    {p.lastSeenOn ? `zuletzt aktiv ${p.lastSeenOn.split('-').reverse().join('.')}` : 'nie aktiv'}
+                    {p.lastSeenOn ? t('lastSeenOn', { date: p.lastSeenOn.split('-').reverse().join('.') }) : t('neverActive')}
                   </span>
                 </li>
               ))}
@@ -293,20 +287,20 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
       )}
 
       <Field
-        label="Beitritt für E-Mail-Konten"
+        label={t('joinModeLabel')}
         hint={
           department?.organization === 'OTHER'
-            ? 'Steuert, wie neue Personen mit E-Mail-Konto dieser Organisation beitreten können.'
-            : 'Steuert, wie neue Personen mit E-Mail-Konto dieser Organisation beitreten können. Wer laut Verbandsdatenbank Rollen bei euch hat, gehört immer automatisch dazu.'
+            ? t('joinModeHintOther')
+            : t('joinModeHintHitobito')
         }
       >
         <Select
           value={form.joinMode}
           onChange={(e) => setForm((f) => ({ ...f, joinMode: e.target.value as DepartmentJoinMode }))}
         >
-          <option value="LINK_ONLY">Über den Link dieser Seite (Standard)</option>
-          <option value="INVITE_ONLY">Nur per Einladung (Einladungs-Link oder E-Mail)</option>
-          <option value="OPEN">Offen (auch in der allgemeinen Auswahlliste)</option>
+          <option value="LINK_ONLY">{t('joinModeLinkOnly')}</option>
+          <option value="INVITE_ONLY">{t('joinModeInviteOnly')}</option>
+          <option value="OPEN">{t('joinModeOpen')}</option>
         </Select>
       </Field>
 
@@ -314,12 +308,12 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
 
       {/* Farben & QR-Code Gestaltung */}
       <fieldset className="space-y-5 rounded-2xl border border-line bg-surface p-4">
-        <legend className="px-1 text-[13px] font-bold text-fg">Farben & QR-Code Gestaltung</legend>
+        <legend className="px-1 text-[13px] font-bold text-fg">{t('colorsLegend')}</legend>
 
         {/* 1. Primärfarbe */}
         <div className="space-y-2">
           <span className="block text-xs font-semibold text-fg">
-            Hauptfarbe der Abteilung (Portal, Buttons & Akzente)
+            {t('primaryColorLabel')}
           </span>
           <div className="flex flex-wrap items-center gap-2.5">
             {SWATCHES_PRIMARY.map((color) => (
@@ -340,14 +334,14 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
             ))}
             <label
               className="relative flex size-9 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-dashed border-line-strong text-xs font-bold text-fg-subtle hover:border-fg"
-              title="Eigene Farbe wählen"
+              title={t('customColorTitle')}
             >
               <span aria-hidden>+</span>
               <input
                 type="color"
                 value={form.primaryColor.startsWith('#') && form.primaryColor.length === 7 ? form.primaryColor : '#e11d48'}
                 onChange={(e) => pickPrimaryColor(e.target.value)}
-                aria-label="Eigene Hauptfarbe wählen"
+                aria-label={t('customColorTitle')}
                 className="absolute inset-0 cursor-pointer opacity-0"
               />
             </label>
@@ -358,7 +352,7 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
                 placeholder="#e11d48"
                 maxLength={7}
                 className="h-9 font-mono text-xs uppercase"
-                aria-label="Hex-Wert Hauptfarbe"
+                aria-label={t('hexPrimaryAria')}
               />
             </div>
           </div>
@@ -376,8 +370,8 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
                 qrColorSecondary: v && !f.qrColorSecondary ? f.primaryColor : f.qrColorSecondary,
               }))
             }
-            label="Eigene Farben für den QR-Code verwenden"
-            description="Erlaubt zwei komplett unabhängige Farben für den QR-Code (z. B. Marineblau & Gold), losgelöst von der Abteilungsfarbe."
+            label={t('qrCustomColorsLabel')}
+            description={t('qrCustomColorsDesc')}
           />
 
           {/* FALL A: Eigene QR-Code Farben */}
@@ -385,13 +379,13 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
             <div className="space-y-4 rounded-xl border border-line/70 bg-surface-2/40 p-3.5">
               <div className="flex items-center gap-1.5 text-xs font-bold text-fg">
                 <QrCode className="size-4 text-accent-ink" />
-                <span>QR-Code Farbpalette</span>
+                <span>{t('qrPaletteTitle')}</span>
               </div>
 
               {/* QR-Hauptfarbe */}
               <div className="space-y-2">
                 <span className="block text-xs font-semibold text-fg">
-                  QR-Code Hauptfarbe (Körper)
+                  {t('qrPrimaryLabel')}
                 </span>
                 <div className="flex flex-wrap items-center gap-2.5">
                   {SWATCHES_PRIMARY.map((color) => (
@@ -412,14 +406,14 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
                   ))}
                   <label
                     className="relative flex size-9 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-dashed border-line-strong text-xs font-bold text-fg-subtle hover:border-fg"
-                    title="Eigene QR-Hauptfarbe wählen"
+                    title={t('customQrPrimaryTitle')}
                   >
                     <span aria-hidden>+</span>
                     <input
                       type="color"
                       value={form.qrColorPrimary.startsWith('#') && form.qrColorPrimary.length === 7 ? form.qrColorPrimary : '#0f172a'}
                       onChange={(e) => pickQrPrimaryColor(e.target.value)}
-                      aria-label="Eigene QR-Hauptfarbe wählen"
+                      aria-label={t('customQrPrimaryTitle')}
                       className="absolute inset-0 cursor-pointer opacity-0"
                     />
                   </label>
@@ -430,7 +424,7 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
                       placeholder="#0f172a"
                       maxLength={7}
                       className="h-9 font-mono text-xs uppercase"
-                      aria-label="Hex-Wert QR-Hauptfarbe"
+                      aria-label={t('hexQrPrimaryAria')}
                     />
                   </div>
                 </div>
@@ -439,7 +433,7 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
               {/* QR-Zweitfarbe */}
               <div className="space-y-2">
                 <span className="block text-xs font-semibold text-fg">
-                  QR-Code Zweitfarbe (Positions-Ecken oder Verlauf)
+                  {t('qrSecondaryLabel')}
                 </span>
                 <div className="flex flex-wrap items-center gap-2.5">
                   {SWATCHES_SECONDARY.map((color) => (
@@ -460,14 +454,14 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
                   ))}
                   <label
                     className="relative flex size-9 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-dashed border-line-strong text-xs font-bold text-fg-subtle hover:border-fg"
-                    title="Eigene QR-Zweitfarbe wählen"
+                    title={t('customQrSecondaryTitle')}
                   >
                     <span aria-hidden>+</span>
                     <input
                       type="color"
                       value={form.qrColorSecondary.startsWith('#') && form.qrColorSecondary.length === 7 ? form.qrColorSecondary : '#e11d48'}
                       onChange={(e) => pickQrSecondaryColor(e.target.value)}
-                      aria-label="Eigene QR-Zweitfarbe wählen"
+                      aria-label={t('customQrSecondaryTitle')}
                       className="absolute inset-0 cursor-pointer opacity-0"
                     />
                   </label>
@@ -478,7 +472,7 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
                       placeholder="#e11d48"
                       maxLength={7}
                       className="h-9 font-mono text-xs uppercase"
-                      aria-label="Hex-Wert QR-Zweitfarbe"
+                      aria-label={t('hexQrSecondaryAria')}
                     />
                   </div>
                 </div>
@@ -486,7 +480,7 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
 
               {/* Stil-Auswahl: CORNERS vs GRADIENT vs SOLID */}
               <div className="space-y-1.5">
-                <span className="block text-xs font-semibold text-fg">QR-Code Stil</span>
+                <span className="block text-xs font-semibold text-fg">{t('qrStyleLabel')}</span>
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
@@ -498,9 +492,9 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
                         : 'border-line bg-surface text-fg-muted hover:border-fg-subtle'
                     )}
                   >
-                    <span className="block text-xs font-bold text-fg">Ecken abgesetzt</span>
+                    <span className="block text-xs font-bold text-fg">{t('qrStyleCornersTitle')}</span>
                     <span className="block text-[11px] text-fg-subtle mt-0.5">
-                      Scanner-Ecken in Zweitfarbe
+                      {t('qrStyleCornersDesc')}
                     </span>
                   </button>
                   <button
@@ -513,9 +507,9 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
                         : 'border-line bg-surface text-fg-muted hover:border-fg-subtle'
                     )}
                   >
-                    <span className="block text-xs font-bold text-fg">Farbverlauf</span>
+                    <span className="block text-xs font-bold text-fg">{t('qrStyleGradientTitle')}</span>
                     <span className="block text-[11px] text-fg-subtle mt-0.5">
-                      Diagonaler Farbfluss
+                      {t('qrStyleGradientDesc')}
                     </span>
                   </button>
                   <button
@@ -528,9 +522,9 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
                         : 'border-line bg-surface text-fg-muted hover:border-fg-subtle'
                     )}
                   >
-                    <span className="block text-xs font-bold text-fg">Einfarbig</span>
+                    <span className="block text-xs font-bold text-fg">{t('qrStyleSolidTitle')}</span>
                     <span className="block text-[11px] text-fg-subtle mt-0.5">
-                      Nur Hauptfarbe
+                      {t('qrStyleSolidDesc')}
                     </span>
                   </button>
                 </div>
@@ -548,15 +542,15 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
                     secondaryColor: v && !f.secondaryColor ? '#003d8f' : f.secondaryColor,
                   }))
                 }
-                label="Zweifarbiges Design der Abteilung übernehmen"
-                description="Färbt die Positions-Ecken oder erzeugt einen Farbverlauf für einen markanten Wiedererkennungswert."
+                label={t('enableTwoToneLabel')}
+                description={t('enableTwoToneDesc')}
               />
 
               {form.enableTwoTone && (
                 <div className="space-y-4 rounded-xl border border-line/60 bg-surface-2/40 p-3.5">
                   <div className="space-y-2">
                     <span className="block text-xs font-semibold text-fg">
-                      Zweitfarbe der Abteilung
+                      {t('secondaryColorLabel')}
                     </span>
                     <div className="flex flex-wrap items-center gap-2.5">
                       {SWATCHES_SECONDARY.map((color) => (
@@ -577,14 +571,14 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
                       ))}
                       <label
                         className="relative flex size-9 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-dashed border-line-strong text-xs font-bold text-fg-subtle hover:border-fg"
-                        title="Eigene Zweitfarbe wählen"
+                        title={t('customSecondaryColorTitle')}
                       >
                         <span aria-hidden>+</span>
                         <input
                           type="color"
                           value={form.secondaryColor.startsWith('#') && form.secondaryColor.length === 7 ? form.secondaryColor : '#003d8f'}
                           onChange={(e) => pickSecondaryColor(e.target.value)}
-                          aria-label="Eigene Zweitfarbe wählen"
+                          aria-label={t('customSecondaryColorTitle')}
                           className="absolute inset-0 cursor-pointer opacity-0"
                         />
                       </label>
@@ -595,14 +589,14 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
                           placeholder="#003d8f"
                           maxLength={7}
                           className="h-9 font-mono text-xs uppercase"
-                          aria-label="Hex-Wert Zweitfarbe"
+                          aria-label={t('hexQrSecondaryAria')}
                         />
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <span className="block text-xs font-semibold text-fg">QR-Code Stil</span>
+                    <span className="block text-xs font-semibold text-fg">{t('qrStyleLabel')}</span>
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
@@ -614,9 +608,9 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
                             : 'border-line bg-surface text-fg-muted hover:border-fg-subtle'
                         )}
                       >
-                        <span className="block text-xs font-bold text-fg">Ecken hervorgehoben</span>
+                        <span className="block text-xs font-bold text-fg">{t('qrStyleCornersTitle')}</span>
                         <span className="block text-[11px] text-fg-subtle mt-0.5">
-                          Positions-Ecken in Zweitfarbe (optimal für Scanner)
+                          {t('qrStyleCornersTwoToneDesc')}
                         </span>
                       </button>
                       <button
@@ -629,9 +623,9 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
                             : 'border-line bg-surface text-fg-muted hover:border-fg-subtle'
                         )}
                       >
-                        <span className="block text-xs font-bold text-fg">Farbverlauf</span>
+                        <span className="block text-xs font-bold text-fg">{t('qrStyleGradientTitle')}</span>
                         <span className="block text-[11px] text-fg-subtle mt-0.5">
-                          Diagonaler Übergang von Haupt- zu Zweitfarbe
+                          {t('qrStyleGradientTwoToneDesc')}
                         </span>
                       </button>
                     </div>
@@ -658,10 +652,10 @@ function DepartmentForm({ onDone, onCancel }: { onDone: () => void; onCancel: ()
 
       <div className="flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:justify-end">
         <Button variant="ghost" onClick={onCancel}>
-          Abbrechen
+          {t('cancelBtn')}
         </Button>
         <Button type="submit" loading={saving}>
-          Speichern
+          {saving ? t('savingBtn') : t('saveBtn')}
         </Button>
       </div>
     </form>

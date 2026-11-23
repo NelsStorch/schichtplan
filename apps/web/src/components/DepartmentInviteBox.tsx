@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Copy, Mail, RefreshCw } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   DEPARTMENT_PERMISSION_PRESETS,
   normalizePermissions,
@@ -41,6 +42,7 @@ function parseEmailList(raw: string): string[] {
 }
 
 export function DepartmentInviteBox({ onError }: { onError?: (msg: string) => void }) {
+  const t = useTranslations('web.department.invite');
   const { department, refresh, isDeptAdmin, permissions, can } = usePortal();
   const toast = useToast();
 
@@ -81,11 +83,9 @@ export function DepartmentInviteBox({ onError }: { onError?: (msg: string) => vo
     <div className="space-y-3 rounded-2xl border border-line bg-surface p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="text-xs font-bold text-fg">Personen einladen &amp; Einladungs-Link</p>
+          <p className="text-xs font-bold text-fg">{t('title')}</p>
           <p className="text-2xs text-fg-muted">
-            Wer diesen Link nutzt oder per E-Mail eingeladen wird, wird direkt als bestätigtes Mitglied aufgenommen.
-            Einladungen per E-Mail sind 14 Tage gültig; mit Rechten gelten sie nur für die eingeladene Adresse und
-            einmal. «Neu erzeugen» macht alle bisherigen Links und Einladungen ungültig.
+            {t('desc')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -98,10 +98,10 @@ export function DepartmentInviteBox({ onError }: { onError?: (msg: string) => vo
                 const base = getLoginUrl(window.location.origin);
                 const url = `${base}${base.includes('?') ? '&' : '?'}invite=${encodeURIComponent(inviteToken)}`;
                 await navigator.clipboard.writeText(url);
-                toast({ title: 'Einladungs-Link kopiert' });
+                toast({ title: t('copiedToast') });
               }}
             >
-              <Copy className="size-3.5" /> Link kopieren
+              <Copy className="size-3.5" /> {t('copyLinkBtn')}
             </Button>
           )}
           <Button
@@ -117,7 +117,7 @@ export function DepartmentInviteBox({ onError }: { onError?: (msg: string) => vo
                 });
                 setInviteToken(res.inviteToken);
                 await refresh();
-                toast({ title: 'Neuer Einladungs-Link erzeugt' });
+                toast({ title: t('copiedToast') });
               } catch (err) {
                 reportError(err);
               } finally {
@@ -125,7 +125,7 @@ export function DepartmentInviteBox({ onError }: { onError?: (msg: string) => vo
               }
             }}
           >
-            <RefreshCw className="size-3.5" /> {inviteToken ? 'Neu erzeugen' : 'Link erzeugen'}
+            <RefreshCw className="size-3.5" /> {t('rotateBtn')}
           </Button>
         </div>
       </div>
@@ -135,7 +135,7 @@ export function DepartmentInviteBox({ onError }: { onError?: (msg: string) => vo
           rows={2}
           value={inviteEmail}
           onChange={(e) => setInviteEmail(e.target.value)}
-          placeholder="person@beispiel.ch, zweite@beispiel.ch … (einzeln oder Liste mit Komma, Semikolon oder Zeilenumbruch)"
+          placeholder={t('emailPlaceholder')}
           aria-label="E-Mail-Adressen für Einladung"
           className="min-h-[2.5rem] text-sm"
         />
@@ -185,13 +185,8 @@ export function DepartmentInviteBox({ onError }: { onError?: (msg: string) => vo
                 setInviteEmail('');
                 await refresh();
                 const count = res.sentCount ?? parsedEmails.length;
-                const skippedNote = res.skippedCount ? ` (${res.skippedCount} heute bereits eingeladen)` : '';
                 toast({
-                  title: res.sent
-                    ? count === 1
-                      ? `Einladung per E-Mail gesendet${skippedNote}`
-                      : `${count} Einladungen per E-Mail gesendet${skippedNote}`
-                    : 'Einladung hinterlegt (kein Mailversand konfiguriert – bitte Link kopieren)',
+                  title: t('sentSuccess', { count }),
                 });
               } catch (err) {
                 reportError(err);
@@ -201,7 +196,7 @@ export function DepartmentInviteBox({ onError }: { onError?: (msg: string) => vo
             }}
           >
             <Mail className="size-3.5" />{' '}
-            {parsedEmails.length > 1 ? `${parsedEmails.length} Personen einladen` : 'Einladen'}
+            {t('sendBtn')}
           </Button>
         </div>
       </div>

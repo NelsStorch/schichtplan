@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Users,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   formatZurichDate,
   zurichDayKey,
@@ -30,6 +31,7 @@ import { downloadBlob, printBlob } from '@/lib/printPlan';
 import { usePortal } from '@/lib/portal';
 
 export function DepartmentStatsPanel() {
+  const t = useTranslations('web.department.stats');
   const { department } = usePortal();
   const toast = useToast();
 
@@ -64,14 +66,14 @@ export function DepartmentStatsPanel() {
       setData(res);
     } catch (err) {
       toast({
-        title: 'Statistik konnte nicht geladen werden',
+        title: t('loadFailedToast'),
         description: errorMessage(err),
         tone: 'error',
       });
     } finally {
       setLoading(false);
     }
-  }, [selectedYear, countAttendedOnly, includeSetupTeardown, toast]);
+  }, [selectedYear, countAttendedOnly, includeSetupTeardown, toast, t]);
 
   useEffect(() => {
     loadStats();
@@ -203,8 +205,8 @@ export function DepartmentStatsPanel() {
 
     downloadCsv(filename, rows);
     toast({
-      title: 'CSV exportiert',
-      description: `Datei «${filename}» wurde heruntergeladen.`,
+      title: t('csvExported'),
+      description: t('csvExportedDesc', { filename }),
       tone: 'success',
     });
   };
@@ -227,7 +229,7 @@ export function DepartmentStatsPanel() {
       printBlob(blob, filename);
     } catch (err) {
       toast({
-        title: 'PDF konnte nicht erstellt werden',
+        title: t('pdfError'),
         description: errorMessage(err),
         tone: 'error',
       });
@@ -247,13 +249,13 @@ export function DepartmentStatsPanel() {
       const filename = `cevi-jahresbericht-${deptSlug}-${yearLabel}.pdf`;
       downloadBlob(blob, filename);
       toast({
-        title: 'PDF heruntergeladen',
-        description: `Datei «${filename}» wurde erfolgreich gespeichert.`,
+        title: t('pdfDownloaded'),
+        description: t('pdfDownloadedDesc', { filename }),
         tone: 'success',
       });
     } catch (err) {
       toast({
-        title: 'PDF konnte nicht erstellt werden',
+        title: t('pdfError'),
         description: errorMessage(err),
         tone: 'error',
       });
@@ -270,10 +272,10 @@ export function DepartmentStatsPanel() {
           <div>
             <h3 className="flex items-center gap-2 font-display text-lg font-bold text-fg sm:text-xl">
               <BarChart3 className="size-5 text-accent-ink" />
-              Statistiken & Jahresrückblick
+              {t('title')}
             </h3>
             <p className="mt-0.5 text-xs text-fg-muted sm:text-sm">
-              Auswertung aller Helferstunden, Anlässe und Stufen für die Generalversammlung (GV) und Berichte.
+              {t('desc')}
             </p>
           </div>
 
@@ -283,29 +285,29 @@ export function DepartmentStatsPanel() {
               size="sm"
               onClick={handlePrintPdf}
               disabled={loading || !data || generatingPdf}
-              title="Sauberes A4-PDF direkt drucken"
+              title={t('printPdfTitle')}
             >
               <Printer className="size-4" />
-              {generatingPdf ? 'PDF wird erstellt...' : 'PDF drucken'}
+              {generatingPdf ? t('generatingPdf') : t('printPdf')}
             </Button>
             <Button
               variant="secondary"
               size="sm"
               onClick={handleDownloadPdf}
               disabled={loading || !data || generatingPdf}
-              title="A4-PDF für die GV als Datei herunterladen"
+              title={t('downloadPdfTitle')}
             >
               <FileText className="size-4" />
-              PDF Bericht
+              {t('downloadPdf')}
             </Button>
             <Button
               variant="secondary"
               size="sm"
               onClick={handleExportCsv}
               disabled={loading || !data || generatingPdf}
-              title="Rohdaten für Excel herunterladen"
+              title={t('exportCsvTitle')}
             >
-              <Download className="size-4" /> CSV für GV
+              <Download className="size-4" /> {t('exportCsv')}
             </Button>
           </div>
         </div>
@@ -314,7 +316,7 @@ export function DepartmentStatsPanel() {
         <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-border/60 print:hidden">
           {/* Jahres-Auswahl */}
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-semibold text-fg-muted">Jahr:</span>
+            <span className="text-xs font-semibold text-fg-muted">{t('yearFilter')}:</span>
             <div className="flex flex-wrap gap-1">
               {data?.availableYears && data.availableYears.length > 0 ? (
                 <>
@@ -343,7 +345,7 @@ export function DepartmentStatsPanel() {
                         : 'bg-surface-2 text-fg-muted hover:text-fg'
                     )}
                   >
-                    Alle Jahre
+                    {t('allYears')}
                   </button>
                 </>
               ) : (
@@ -359,12 +361,12 @@ export function DepartmentStatsPanel() {
             <Switch
               checked={countAttendedOnly}
               onChange={setCountAttendedOnly}
-              label="Nur bestätigte Anwesenheiten"
+              label={t('attendedOnlySwitch')}
             />
             <Switch
               checked={includeSetupTeardown}
               onChange={setIncludeSetupTeardown}
-              label="Auf- & Abbau einbeziehen"
+              label={t('includeSetupSwitch')}
             />
           </div>
         </div>
@@ -383,8 +385,8 @@ export function DepartmentStatsPanel() {
       ) : !data || data.summary.totalEvents === 0 ? (
         <EmptyState
           icon={<Calendar />}
-          title={`Keine Anlässe im Jahr ${selectedYear === 'ALL' ? 'überhaupt' : selectedYear}`}
-          description="In diesem Zeitraum wurden keine Anlässe oder Schichten für die Abteilung gefunden."
+          title={t('emptyTitle', { year: selectedYear === 'ALL' ? t('allYears') : selectedYear })}
+          description={t('emptyDesc')}
         />
       ) : (
         <>
@@ -393,7 +395,7 @@ export function DepartmentStatsPanel() {
             {/* Kachel 1: Gesamtstunden */}
             <div className="rounded-card border border-border bg-surface p-4 shadow-xs transition hover:border-border/80">
               <div className="flex items-center justify-between text-fg-muted">
-                <span className="text-xs font-medium uppercase tracking-wider">Helferstunden</span>
+                <span className="text-xs font-medium uppercase tracking-wider">{t('kpiHoursTitle')}</span>
                 <Clock className="size-4 text-accent-ink" />
               </div>
               <div className="mt-2 text-2xl font-bold tracking-tight text-fg sm:text-3xl">
@@ -403,33 +405,33 @@ export function DepartmentStatsPanel() {
                 {data.summary.formattedTime}
               </div>
               <div className="mt-2 flex items-center gap-1.5 text-[11px] text-fg-subtle">
-                <span>{data.summary.eventHours}h Anlass</span>
+                <span>{t('kpiHoursEvent', { hours: data.summary.eventHours })}</span>
                 <span>·</span>
-                <span>{data.summary.setupHours}h Auf/Abbau</span>
+                <span>{t('kpiHoursSetup', { hours: data.summary.setupHours })}</span>
               </div>
             </div>
 
             {/* Kachel 2: Aktive Helfende */}
             <div className="rounded-card border border-border bg-surface p-4 shadow-xs transition hover:border-border/80">
               <div className="flex items-center justify-between text-fg-muted">
-                <span className="text-xs font-medium uppercase tracking-wider">Helfende</span>
+                <span className="text-xs font-medium uppercase tracking-wider">{t('kpiTotalHelpers')}</span>
                 <Users className="size-4 text-accent-ink" />
               </div>
               <div className="mt-2 text-2xl font-bold tracking-tight text-fg sm:text-3xl">
                 {data.summary.totalHelpers}
               </div>
               <div className="mt-1 text-xs text-fg-muted">
-                Ø {data.summary.averageHoursPerHelper} h pro Person
+                {t('kpiHelpersAvg', { hours: data.summary.averageHoursPerHelper })}
               </div>
               <div className="mt-2 text-[11px] text-fg-subtle">
-                in {data.summary.totalEvents} {data.summary.totalEvents === 1 ? 'Anlass' : 'Anlässen'}
+                {t('kpiHelpersEvents', { count: data.summary.totalEvents })}
               </div>
             </div>
 
             {/* Kachel 3: Besetzungsgrad */}
             <div className="rounded-card border border-border bg-surface p-4 shadow-xs transition hover:border-border/80">
               <div className="flex items-center justify-between text-fg-muted">
-                <span className="text-xs font-medium uppercase tracking-wider">Besetzungsgrad</span>
+                <span className="text-xs font-medium uppercase tracking-wider">{t('tableFillRate')}</span>
                 <CheckCircle2 className="size-4 text-emerald-600" />
               </div>
               <div className="mt-2 text-2xl font-bold tracking-tight text-fg sm:text-3xl">
@@ -442,24 +444,24 @@ export function DepartmentStatsPanel() {
                 />
               </div>
               <div className="mt-2 text-[11px] text-fg-subtle">
-                {data.summary.totalFilledSlots} von {data.summary.totalRequiredSlots} Schichten
+                {t('kpiFillSlots', { filled: data.summary.totalFilledSlots, required: data.summary.totalRequiredSlots })}
               </div>
             </div>
 
             {/* Kachel 4: Anwesenheitsquote */}
             <div className="rounded-card border border-border bg-surface p-4 shadow-xs transition hover:border-border/80">
               <div className="flex items-center justify-between text-fg-muted">
-                <span className="text-xs font-medium uppercase tracking-wider">Anwesenheit</span>
+                <span className="text-xs font-medium uppercase tracking-wider">{t('tableAttendance')}</span>
                 <ShieldCheck className="size-4 text-accent-ink" />
               </div>
               <div className="mt-2 text-2xl font-bold tracking-tight text-fg sm:text-3xl">
                 {data.summary.attendedRatePct} <span className="text-sm font-normal text-fg-muted">%</span>
               </div>
               <div className="mt-1 text-xs text-fg-muted">
-                {data.summary.attendedHours} h bestätigt
+                {t('kpiAttendedHours', { hours: data.summary.attendedHours })}
               </div>
               <div className="mt-2 text-[11px] text-fg-subtle">
-                {data.summary.totalShifts} Schichten gesamt
+                {t('kpiAttendedShifts', { total: data.summary.totalShifts })}
               </div>
             </div>
           </div>
@@ -478,7 +480,7 @@ export function DepartmentStatsPanel() {
                 )}
               >
                 <Award className="size-4" />
-                Ehrentafel & Helfende ({data.topHelpers.length})
+                {t('tabHelpersCount', { count: data.topHelpers.length })}
               </button>
               <button
                 type="button"
@@ -491,7 +493,7 @@ export function DepartmentStatsPanel() {
                 )}
               >
                 <Calendar className="size-4" />
-                Anlässe ({data.events.length})
+                {t('tabEventsCount', { count: data.events.length })}
               </button>
               <button
                 type="button"
@@ -504,7 +506,7 @@ export function DepartmentStatsPanel() {
                 )}
               >
                 <Layers className="size-4" />
-                Stufen ({data.stufen.length})
+                {t('tabStufenCount', { count: data.stufen.length })}
               </button>
             </div>
           </div>
@@ -522,7 +524,7 @@ export function DepartmentStatsPanel() {
                         <Medal className="size-5" />
                       </div>
                       <span className="mt-1 block text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                        2. Rang (Silber)
+                        {t('rankSecond')}
                       </span>
                       <h4 className="mt-1 text-base font-bold text-fg truncate" title={data.topHelpers[1].displayName}>
                         {data.topHelpers[1].nickname || data.topHelpers[1].ceviName || data.topHelpers[1].displayName}
@@ -535,7 +537,7 @@ export function DepartmentStatsPanel() {
                     </div>
                     <div className="mt-3 border-t border-border/50 pt-2 text-xs">
                       <span className="font-bold text-fg text-sm">{data.topHelpers[1].hours} h</span>
-                      <span className="text-fg-muted"> ({data.topHelpers[1].shiftCount} Schichten)</span>
+                      <span className="text-fg-muted"> ({t('shiftsCount', { count: data.topHelpers[1].shiftCount })})</span>
                     </div>
                   </div>
 
@@ -546,7 +548,7 @@ export function DepartmentStatsPanel() {
                         <Award className="size-6" />
                       </div>
                       <span className="mt-1 block text-xs font-bold text-amber-600 uppercase tracking-wider dark:text-amber-400">
-                        1. Rang (Gold) 🏆
+                        {t('rankFirst')}
                       </span>
                       <h4 className="mt-1 text-lg font-bold text-fg truncate" title={data.topHelpers[0].displayName}>
                         {data.topHelpers[0].nickname || data.topHelpers[0].ceviName || data.topHelpers[0].displayName}
@@ -561,7 +563,7 @@ export function DepartmentStatsPanel() {
                       <span className="font-extrabold text-amber-700 text-base dark:text-amber-300">
                         {data.topHelpers[0].hours} h
                       </span>
-                      <span className="text-fg-muted"> ({data.topHelpers[0].shiftCount} Schichten in {data.topHelpers[0].eventCount} Anlässen)</span>
+                      <span className="text-fg-muted"> ({t('shiftsInEvents', { shifts: data.topHelpers[0].shiftCount, events: data.topHelpers[0].eventCount })})</span>
                     </div>
                   </div>
 
@@ -572,7 +574,7 @@ export function DepartmentStatsPanel() {
                         <Medal className="size-5" />
                       </div>
                       <span className="mt-1 block text-xs font-semibold text-amber-700 uppercase tracking-wider dark:text-amber-400">
-                        3. Rang (Bronze)
+                        {t('rankThird')}
                       </span>
                       <h4 className="mt-1 text-base font-bold text-fg truncate" title={data.topHelpers[2].displayName}>
                         {data.topHelpers[2].nickname || data.topHelpers[2].ceviName || data.topHelpers[2].displayName}
@@ -585,7 +587,7 @@ export function DepartmentStatsPanel() {
                     </div>
                     <div className="mt-3 border-t border-border/50 pt-2 text-xs">
                       <span className="font-bold text-fg text-sm">{data.topHelpers[2].hours} h</span>
-                      <span className="text-fg-muted"> ({data.topHelpers[2].shiftCount} Schichten)</span>
+                      <span className="text-fg-muted"> ({t('shiftsCount', { count: data.topHelpers[2].shiftCount })})</span>
                     </div>
                   </div>
                 </div>
@@ -597,7 +599,7 @@ export function DepartmentStatsPanel() {
                   <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-muted" />
                   <Input
                     type="search"
-                    placeholder="Helfende nach Name oder Stufe suchen..."
+                    placeholder={t('searchPlaceholder')}
                     value={helperSearch}
                     onChange={(e) => setHelperSearch(e.target.value)}
                     className="pl-9 text-sm"
@@ -605,7 +607,7 @@ export function DepartmentStatsPanel() {
                 </div>
                 {helperSearch && (
                   <Button variant="secondary" size="sm" onClick={() => setHelperSearch('')}>
-                    Zurücksetzen
+                    {t('resetSearch')}
                   </Button>
                 )}
               </div>
@@ -615,20 +617,20 @@ export function DepartmentStatsPanel() {
                 <table className="w-full text-left text-xs sm:text-sm">
                   <thead className="border-b border-border bg-surface-2 text-fg-muted">
                     <tr>
-                      <th scope="col" className="py-2.5 px-3 font-semibold w-12 text-center">#</th>
-                      <th scope="col" className="py-2.5 px-3 font-semibold">Name / {org.nicknameTerm}</th>
-                      <th scope="col" className="py-2.5 px-3 font-semibold">Stufen</th>
-                      <th scope="col" className="py-2.5 px-3 font-semibold text-right">Anlässe</th>
-                      <th scope="col" className="py-2.5 px-3 font-semibold text-right">Schichten</th>
-                      <th scope="col" className="py-2.5 px-3 font-semibold text-right">Bestätigt</th>
-                      <th scope="col" className="py-2.5 px-3 font-semibold text-right">Stunden</th>
+                      <th scope="col" className="py-2.5 px-3 font-semibold w-12 text-center">{t('tableRank')}</th>
+                      <th scope="col" className="py-2.5 px-3 font-semibold">{t('tableName', { nicknameTerm: org.nicknameTerm })}</th>
+                      <th scope="col" className="py-2.5 px-3 font-semibold">{t('tableStufen')}</th>
+                      <th scope="col" className="py-2.5 px-3 font-semibold text-right">{t('tableEvents')}</th>
+                      <th scope="col" className="py-2.5 px-3 font-semibold text-right">{t('tableShifts')}</th>
+                      <th scope="col" className="py-2.5 px-3 font-semibold text-right">{t('tableAttended')}</th>
+                      <th scope="col" className="py-2.5 px-3 font-semibold text-right">{t('tableHours')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
                     {filteredHelpers.length === 0 ? (
                       <tr>
                         <td colSpan={7} className="py-8 text-center text-fg-muted">
-                          Keine Helfenden für «{helperSearch}» gefunden.
+                          {t('noHelpersFound', { query: helperSearch })}
                         </td>
                       </tr>
                     ) : (
@@ -649,7 +651,7 @@ export function DepartmentStatsPanel() {
                               )}
                               {h.isGuest && (
                                 <Badge tone="neutral" size="sm" className="ml-1 text-[10px]">
-                                  Gast
+                                  {t('badgeGuest')}
                                 </Badge>
                               )}
                             </div>
@@ -693,13 +695,13 @@ export function DepartmentStatsPanel() {
               <table className="w-full text-left text-xs sm:text-sm">
                 <thead className="border-b border-border bg-surface-2 text-fg-muted">
                   <tr>
-                    <th scope="col" className="py-2.5 px-3 font-semibold">Anlass</th>
-                    <th scope="col" className="py-2.5 px-3 font-semibold">Datum</th>
-                    <th scope="col" className="py-2.5 px-3 font-semibold text-right">Helfende</th>
-                    <th scope="col" className="py-2.5 px-3 font-semibold text-right">Schichten</th>
-                    <th scope="col" className="py-2.5 px-3 font-semibold text-right">Besetzungsgrad</th>
-                    <th scope="col" className="py-2.5 px-3 font-semibold text-right">Anwesenheit</th>
-                    <th scope="col" className="py-2.5 px-3 font-semibold text-right">Stunden</th>
+                    <th scope="col" className="py-2.5 px-3 font-semibold">{t('tabEvents')}</th>
+                    <th scope="col" className="py-2.5 px-3 font-semibold">{t('tableDate')}</th>
+                    <th scope="col" className="py-2.5 px-3 font-semibold text-right">{t('tabHelpers')}</th>
+                    <th scope="col" className="py-2.5 px-3 font-semibold text-right">{t('tableShifts')}</th>
+                    <th scope="col" className="py-2.5 px-3 font-semibold text-right">{t('tableFillRate')}</th>
+                    <th scope="col" className="py-2.5 px-3 font-semibold text-right">{t('tableAttendance')}</th>
+                    <th scope="col" className="py-2.5 px-3 font-semibold text-right">{t('tableHours')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
@@ -713,7 +715,7 @@ export function DepartmentStatsPanel() {
                           {ev.title}
                           {!ev.isPublished && (
                             <Badge tone="neutral" size="sm" className="text-[10px]">
-                              Entwurf
+                              {t('badgeDraft')}
                             </Badge>
                           )}
                         </Link>
@@ -764,7 +766,7 @@ export function DepartmentStatsPanel() {
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-base text-fg">{st.name}</span>
                       <Badge tone="accent" size="sm">
-                        {st.percentageOfTotal}% aller Stunden
+                        {t('stufenPercentage', { pct: st.percentageOfTotal })}
                       </Badge>
                     </div>
 
@@ -776,7 +778,7 @@ export function DepartmentStatsPanel() {
                     </div>
 
                     <div className="flex items-center justify-between text-xs text-fg-muted pt-1">
-                      <span>{st.helpersCount} Helfende · {st.totalShifts} Einsätze</span>
+                      <span>{t('stufenHelpersCount', { helpers: st.helpersCount, shifts: st.totalShifts })}</span>
                       <span className="font-bold text-fg font-mono text-sm">{st.totalHours} Std.</span>
                     </div>
                   </div>

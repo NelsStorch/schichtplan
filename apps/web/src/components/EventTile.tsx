@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, CalendarDays, Layers } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { EventDto } from '@schichtplan/shared';
 import { Badge, CeviLogo, cn } from '@schichtplan/ui';
 import { fmtRelativeDay, fmtShortDate, fmtShortWeekday, isPast } from '@/lib/format';
@@ -13,6 +14,7 @@ export function eventStatus(event: Pick<EventDto, 'startDate' | 'endDate'>) {
 
 /** Bild-Kachel für einen Anlass. `featured` = grosse Bühne für den nächsten Anlass. */
 export function EventTile({ event, featured, index = 0 }: { event: EventDto; featured?: boolean; index?: number }) {
+  const t = useTranslations('web.tile');
   const status = eventStatus(event);
   const dateLabel = `${fmtShortWeekday(event.startDate)} ${fmtShortDate(event.startDate)}`;
 
@@ -45,7 +47,7 @@ export function EventTile({ event, featured, index = 0 }: { event: EventDto; fea
         <div className="flex flex-wrap items-center gap-2">
           {status === 'live' ? (
             <Badge tone="glass">
-              <span className="size-2 animate-pulse rounded-full bg-success" /> Läuft gerade
+              <span className="size-2 animate-pulse rounded-full bg-success" /> {t('statusLive')}
             </Badge>
           ) : (
             <Badge tone="glass">
@@ -55,12 +57,12 @@ export function EventTile({ event, featured, index = 0 }: { event: EventDto; fea
           )}
           <AccessTypeBadge type={event.accessType} leadersOnly={event.leadersOnly} tone="glass" />
           {/* Entwürfe sehen nur das OK und wer «Alle Anlässe sehen» darf */}
-          {event.isPublished === false && <Badge tone="warning">Entwurf</Badge>}
+          {event.isPublished === false && <Badge tone="warning">{t('draftBadge')}</Badge>}
           {status !== 'past' && event.totalSlots ? (
             <Badge tone="glass">
               {event.totalSlots - (event.filledSlots ?? 0) > 0
-                ? `${event.totalSlots - (event.filledSlots ?? 0)} Plätze frei`
-                : 'Alles besetzt'}
+                ? t('openSlots', { count: event.totalSlots - (event.filledSlots ?? 0) })
+                : t('allFilled')}
             </Badge>
           ) : null}
         </div>
@@ -95,10 +97,10 @@ export function EventTile({ event, featured, index = 0 }: { event: EventDto; fea
 
         <div className="mt-1 flex items-center justify-between gap-3">
           <span className="inline-flex items-center gap-1.5 text-sm font-medium text-white/75">
-            <Layers className="size-4" /> {event.shiftCount ?? 0} Schichten
+            <Layers className="size-4" /> {t('shiftsCount', { count: event.shiftCount ?? 0 })}
           </span>
           <span className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-stone-900 transition-[gap] duration-300 group-hover:gap-3">
-            Schichten ansehen <ArrowRight className="size-4" />
+            {t('viewShiftsBtn')} <ArrowRight className="size-4" />
           </span>
         </div>
       </div>

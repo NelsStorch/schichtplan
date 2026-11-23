@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, BarChart3, Building2, CalendarPlus, CalendarX2, Clock, Lock, LogIn, Plus, Settings2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { type EventDto } from '@schichtplan/shared';
 import { Button, Card, EmptyState, NotFoundView, Skeleton, buttonClasses, useOrganization } from '@schichtplan/ui';
 import { AppShell } from '@/components/AppShell';
@@ -17,6 +18,7 @@ import { displayName, usePortal } from '@/lib/portal';
 import type { MyShift } from '@/lib/types';
 
 export default function DepartmentHomePage() {
+  const tHome = useTranslations('web.home');
   const router = useRouter();
   const { department, user, loading, error, can } = usePortal();
   const org = useOrganization();
@@ -86,8 +88,8 @@ export default function DepartmentHomePage() {
     <AppShell
       actions={
         canCreate && (
-          <Button size="sm" onClick={() => setShowEventForm(true)} aria-label="Neuer Anlass">
-            <Plus /> <span className="hidden sm:inline">Neuer Anlass</span>
+          <Button size="sm" onClick={() => setShowEventForm(true)} aria-label={tHome('createEventAria')}>
+            <Plus /> <span className="hidden sm:inline">{tHome('createEventBtn')}</span>
           </Button>
         )
       }
@@ -104,13 +106,13 @@ export default function DepartmentHomePage() {
           ) : (
             <>
               <p className="text-sm font-semibold text-accent-ink">
-                {user ? `Hoi ${displayName(user)}!` : 'Willkommen beim Schichtplan'}
+                {user ? tHome('welcomeUser', { name: displayName(user) }) : tHome('welcomeGuest')}
               </p>
               <h1 className="mt-3 font-display text-[2.75rem] font-extrabold leading-[0.95] tracking-[-0.04em] text-fg text-balance sm:text-6xl lg:text-7xl">
                 {department.name}
               </h1>
               <p className="mt-5 max-w-xl text-base leading-relaxed text-fg-muted sm:text-lg">
-                Such dir einen Anlass aus und trag dich in eine Schicht ein. Jede helfende Hand zählt.
+                {tHome('subtitle')}
               </p>
               {canOpenDepartment && (
                 <div className="mt-6 flex flex-wrap gap-2">
@@ -119,7 +121,7 @@ export default function DepartmentHomePage() {
                   </Button>
                   {(can('PEOPLE_VIEW') || can('DEPARTMENT_SETTINGS')) && (
                     <Button variant="secondary" size="sm" onClick={() => { setInitialDeptTab('stats'); setShowDeptForm(true); }}>
-                      <BarChart3 /> Statistik & GV
+                      <BarChart3 /> {tHome('statsGvBtn')}
                     </Button>
                   )}
                 </div>
@@ -135,9 +137,9 @@ export default function DepartmentHomePage() {
       <section className="mx-auto mt-12 max-w-6xl px-4 sm:mt-16 sm:px-6" aria-labelledby="events-heading">
         <div className="mb-5 flex items-baseline justify-between gap-4">
           <h2 id="events-heading" className="font-display text-2xl font-bold tracking-tight text-fg sm:text-3xl">
-            Anlässe
+            {tHome('eventsHeading')}
           </h2>
-          {current.length > 0 && <span className="text-sm text-fg-subtle">{current.length} aktiv</span>}
+          {current.length > 0 && <span className="text-sm text-fg-subtle">{tHome('activeCount', { count: current.length })}</span>}
         </div>
 
         {events === null ? (
@@ -151,16 +153,16 @@ export default function DepartmentHomePage() {
         ) : current.length === 0 ? (
           <EmptyState
             icon={<CalendarX2 />}
-            title="Gerade keine Anlässe"
+            title={tHome('emptyTitle')}
             description={
               canCreate
-                ? 'Lege den ersten Anlass an. Danach planst du die Schichten und teilst den Link mit deinen Helfer*innen.'
-                : 'Für diese Abteilung sind momentan keine Schichtpläne offen. Wenn du einen Anlass planen möchtest, wende dich an deine Abteilungsleitung: Sie kann dir das Recht «Anlässe erstellen» geben oder den Anlass für dich anlegen.'
+                ? tHome('emptyDescLeader')
+                : tHome('emptyDescHelper')
             }
             action={
               canCreate && (
                 <Button onClick={() => setShowEventForm(true)}>
-                  <CalendarPlus /> Anlass erstellen
+                  <CalendarPlus /> {tHome('createFirstEventBtn')}
                 </Button>
               )
             }
@@ -180,7 +182,7 @@ export default function DepartmentHomePage() {
 
         {past.length > 0 && (
           <div className="mt-14">
-            <h3 className="mb-3 text-sm font-semibold text-fg-subtle">Vergangene Anlässe</h3>
+            <h3 className="mb-3 text-sm font-semibold text-fg-subtle">{tHome('pastEventsHeading')}</h3>
             <div className="grid gap-2 sm:grid-cols-2">
               {past.map((event) => (
                 <Link
@@ -212,10 +214,11 @@ export default function DepartmentHomePage() {
 }
 
 function NextShiftCard({ shift }: { shift: MyShift }) {
+  const tHome = useTranslations('web.home');
   return (
     <Card variant="raised" className="relative animate-fade-up overflow-hidden p-6 [animation-delay:120ms]">
       <div aria-hidden className="absolute -right-16 -top-16 size-48 rounded-full bg-accent/20 blur-3xl" />
-      <p className="text-sm font-semibold text-fg-muted">Dein nächster Einsatz</p>
+      <p className="text-sm font-semibold text-fg-muted">{tHome('nextShiftTitle')}</p>
       <p className="mt-2 font-display text-4xl font-extrabold tracking-tight text-accent-ink">
         {fmtRelativeDay(shift.startTime)}
       </p>
@@ -228,26 +231,27 @@ function NextShiftCard({ shift }: { shift: MyShift }) {
         {fmtWeekday(shift.startTime)}, {fmtDayMonth(shift.startTime)} · {fmtTimeRange(shift.startTime, shift.endTime)}
       </p>
       <Link href="/meine-schichten" className={buttonClasses({ variant: 'secondary', size: 'sm', className: 'mt-5' })}>
-        Alle meine Schichten <ArrowRight />
+        {tHome('allMyShiftsBtn')} <ArrowRight />
       </Link>
     </Card>
   );
 }
 
 function TenantNotFound() {
+  const tHome = useTranslations('web.home');
   const org = useOrganization();
   const homeHref = `https://${org.domain}`;
   return (
     <NotFoundView
-      badge={`${org.unitTerm} unbekannt`}
-      title={`${org.unitTerm} nicht gefunden`}
-      description={`Unter dieser Adresse ist noch kein Schichtplan eingerichtet. Prüfe die Web-Adresse oder such deine ${org.unitTerm} auf dem Hauptportal.`}
+      badge={tHome('tenantNotFoundBadge', { unitTerm: org.unitTerm })}
+      title={tHome('tenantNotFoundTitle', { unitTerm: org.unitTerm })}
+      description={tHome('tenantNotFoundDesc', { unitTerm: org.unitTerm })}
       homeHref={homeHref}
-      homeLabel="Zum Hauptportal"
+      homeLabel={tHome('toPortalBtn')}
       showBackStep={false}
       secondaryActions={[
         {
-          label: `Neue ${org.unitTerm} registrieren`,
+          label: tHome('registerTenantBtn', { unitTerm: org.unitTerm }),
           href: `${homeHref}/?registrieren=1`,
           external: true,
         },
@@ -258,6 +262,7 @@ function TenantNotFound() {
 
 /** Startseite «nur für Mitglieder»: Aussenstehende sehen nur, dass es die Abteilung gibt. */
 function MembersOnlyView({ loggedIn }: { loggedIn: boolean }) {
+  const tHome = useTranslations('web.home');
   const { department, user } = usePortal();
   // Schon eine Heimabteilung: hier zusätzlich beitreten (die Heimabteilung bleibt)
   const hasHome = Boolean(user?.homeDepartment);
@@ -274,29 +279,29 @@ function MembersOnlyView({ loggedIn }: { loggedIn: boolean }) {
           description={
             loggedIn
               ? pending
-                ? `Dein Beitritt wartet noch auf die Bestätigung der Leitung. Danach siehst du hier die Anlässe. Für einzelne Anlässe reicht auch der Link, den du vom OK bekommen hast.`
+                ? tHome('membersOnlyPendingDesc')
                 : hasHome
-                  ? `Diese ${org.unitTerm} zeigt ihre Anlässe nur Mitgliedern. Gehörst du auch dazu, tritt ihr zusätzlich bei. Deine bisherige ${org.unitTerm} bleibt. Für einzelne Anlässe reicht auch der Link, den du vom OK bekommen hast.`
-                  : `Diese ${org.unitTerm} zeigt ihre Anlässe nur Mitgliedern. Gehörst du dazu, gib deine ${org.unitTerm} an. Für einzelne Anlässe reicht auch der Link, den du vom OK bekommen hast.`
-              : `Diese ${org.unitTerm} zeigt ihre Anlässe nur Mitgliedern. Melde dich an, um zu sehen, ob du dazugehörst. Für einzelne Anlässe reicht auch der Link, den du vom OK bekommen hast.`
+                  ? tHome('membersOnlyHasHomeDesc', { unitTerm: org.unitTerm })
+                  : tHome('membersOnlyNoHomeDesc', { unitTerm: org.unitTerm })
+              : tHome('membersOnlyGuestDesc', { unitTerm: org.unitTerm })
           }
           action={
             loggedIn ? (
               pending ? undefined : (
                 <a href={departmentSetupHref} className={buttonClasses({})}>
-                  <Building2 /> {hasHome ? `${department?.name ?? org.unitTerm} beitreten` : `${org.unitTerm} angeben`}
+                  <Building2 /> {hasHome ? tHome('joinTenantBtn', { name: department?.name ?? org.unitTerm }) : tHome('specifyTenantBtn', { unitTerm: org.unitTerm })}
                 </a>
               )
             ) : (
               <a href={loginHref} className={buttonClasses({})}>
-                <LogIn /> Anmelden
+                <LogIn /> {tHome('loginBtn')}
               </a>
             )
           }
         />
         {department?.contactPerson && (
           <p className="mt-6 text-center text-sm text-fg-muted">
-            Fragen? Kontakt: <span className="font-semibold text-fg">{department.contactPerson.displayName}</span>
+            {tHome('contactPrefix')}<span className="font-semibold text-fg">{department.contactPerson.displayName}</span>
             {department.contactPerson.email && (
               <>
                 {' · '}

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Database, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   type DepartmentStufeDto,
   type StufeSuggestionDto,
@@ -21,6 +22,7 @@ import { api, errorMessage } from '@/lib/api';
 
 /** Stufen der Abteilung pflegen. Mit Cevi.DB-Gruppe verknüpfte Stufen werden Cevi.DB-Personen automatisch zugeordnet. */
 export function DepartmentStufenPanel() {
+  const t = useTranslations('web.department.stufen');
   const toast = useToast();
   const confirm = useConfirm();
   const org = useOrganization();
@@ -65,7 +67,7 @@ export function DepartmentStufenPanel() {
     e.preventDefault();
     const parsed = groupId.trim() ? Number(groupId.trim()) : null;
     if (parsed !== null && (!Number.isInteger(parsed) || parsed <= 0)) {
-      setError(`Die ${org.authProviderShort}-Gruppen-ID ist eine Zahl, z. B. 1234.`);
+      setError(t('groupIdError', { provider: org.authProviderShort }));
       return;
     }
     if (await create({ name: name.trim(), ceviDbGroupId: parsed })) {
@@ -80,15 +82,15 @@ export function DepartmentStufenPanel() {
       await api(`/api/departments/current/stufen/${stufe.id}`, { method: 'PATCH', json: { name: nextName.trim() } });
       await load();
     } catch (err) {
-      toast({ title: 'Umbenennen hat nicht geklappt', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('renameFailedToast'), description: errorMessage(err), tone: 'error' });
     }
   };
 
   const remove = async (stufe: DepartmentStufeDto) => {
     const ok = await confirm({
-      title: `Stufe «${stufe.name}» löschen?`,
-      description: 'Personen verlieren diese Stufe, Anlässe mit diesem Stufen-Filter verlieren den Filter.',
-      confirmLabel: 'Löschen',
+      title: t('removeConfirmTitle', { name: stufe.name }),
+      description: t('removeConfirmDesc'),
+      confirmLabel: t('removeConfirmBtn'),
       tone: 'danger',
     });
     if (!ok) return;
@@ -96,7 +98,7 @@ export function DepartmentStufenPanel() {
       await api(`/api/departments/current/stufen/${stufe.id}`, { method: 'DELETE' });
       await load();
     } catch (err) {
-      toast({ title: 'Löschen hat nicht geklappt', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('removeFailedToast'), description: errorMessage(err), tone: 'error' });
     }
   };
 
@@ -109,10 +111,10 @@ export function DepartmentStufenPanel() {
       {!isVerein && suggestions.length > 0 && (
         <div className="rounded-card border border-accent/25 bg-accent/5 p-4">
           <p className="flex items-center gap-2 text-sm font-semibold text-fg">
-            <Sparkles className="size-4 text-accent-ink" /> Vorschläge aus {org.authProviderShort}
+            <Sparkles className="size-4 text-accent-ink" /> {t('suggestionsTitle', { provider: org.authProviderShort })}
           </p>
           <p className="mt-1 text-xs text-fg-muted">
-            Stufen, in denen Mitglieder dieser {org.unitTerm} laut {org.authProviderShort} eine Rolle haben.
+            {t('suggestionsSubtitle', { unitTerm: org.unitTerm, provider: org.authProviderShort })}
           </p>
           <ul className="mt-3 flex flex-wrap gap-2">
             {suggestions.map((s) => (
@@ -134,11 +136,14 @@ export function DepartmentStufenPanel() {
 
       {stufen.length === 0 ? (
         <EmptyState
-          title={isVerein ? 'Noch keine Gruppen' : 'Noch keine Stufen'}
+          title={isVerein ? t('emptyTitleVerein') : t('emptyTitleOrg')}
           description={
             isVerein
-              ? 'Lege die Gruppen oder Teams deines Vereins an, z. B. Aktivriege, Junioren, Vorstand.'
-              : `Lege die Stufen deiner ${org.unitTerm} an, z. B. ${org.slug === 'pfadi' ? 'Biber, Wölfe, Pfadi, Pio' : org.slug === 'jubla' ? 'Jungwacht, Blauring, Leiterteam' : 'Fröschli, Jungschi, Leiterteam'}.`
+              ? t('emptyDescVerein')
+              : t('emptyDescOrg', {
+                  unitTerm: org.unitTerm,
+                  examples: org.slug === 'pfadi' ? 'Biber, Wölfe, Pfadi, Pio' : org.slug === 'jubla' ? 'Jungwacht, Blauring, Leiterteam' : 'Fröschli, Jungschi, Leiterteam',
+                })
           }
         />
       ) : (
@@ -197,13 +202,12 @@ export function DepartmentStufenPanel() {
           />
         )}
         <Button type="submit" size="sm" className="h-10" loading={saving} disabled={name.trim().length < 2}>
-          <Plus /> Hinzufügen
+          <Plus /> {t('addBtn')}
         </Button>
       </form>
       {!isVerein && (
         <p className="-mt-3 text-xs text-fg-subtle">
-          {org.authProviderShort}-ID optional: die Nummer der Stufen-Gruppe in {dbHost}. Stufen aus {org.authProviderShort}{' '}
-          werden automatisch angelegt und verknüpft.
+          {t('groupIdHint', { provider: org.authProviderShort, dbHost })}
         </p>
       )}
     </div>

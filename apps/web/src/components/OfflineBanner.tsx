@@ -1,6 +1,7 @@
 'use client';
 
 import { WifiOff } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useOfflineStatus } from '@/lib/offline';
 
 /**
@@ -9,6 +10,7 @@ import { useOfflineStatus } from '@/lib/offline';
  * Rendert strikt null, wenn online.
  */
 export function OfflineBanner() {
+  const t = useTranslations('web.shell');
   const { isOffline, formattedStand } = useOfflineStatus();
 
   if (!isOffline) {
@@ -24,9 +26,9 @@ export function OfflineBanner() {
       <div className="mx-auto flex max-w-6xl items-center justify-center gap-2">
         <WifiOff className="size-4 shrink-0 text-warning-ink" aria-hidden="true" />
         <span>
-          <strong className="font-semibold">Offline-Modus:</strong>{' '}
-          {formattedStand ? `Stand: ${formattedStand}. ` : ''}
-          Nur Leseansicht (Eintragen und Austragen erfordert Internet).
+          <strong className="font-semibold">{t('offlineStatus')}</strong>{' '}
+          {formattedStand ? t('offlineAsOf', { stand: formattedStand }) : ''}
+          {t('offlineReadOnlyNotice')}
         </span>
       </div>
     </div>

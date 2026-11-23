@@ -47,15 +47,11 @@ import { usePushHint } from '@/lib/pushHint';
 import { CommandPaletteButton } from './command';
 import { OfflineBanner } from './OfflineBanner';
 
-const NAV = [
-  { href: '/', label: 'Anlässe', icon: CalendarDays, match: (p: string) => p === '/' || p.startsWith('/events') },
-  { href: '/meine-schichten', label: 'Meine Schichten', icon: Ticket, match: (p: string) => p.startsWith('/meine-schichten') },
-];
-
 export function AppShell({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   const pathname = usePathname();
   const { department, user } = usePortal();
   const tFooter = useTranslations('common.footer');
+  const tShell = useTranslations('web.shell');
   const org = useOrganization();
   const [accountOpen, setAccountOpen] = useState(false);
   const loginHref = useLoginHref();
@@ -65,6 +61,11 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
     setAccountOpen(true);
     markPushHintSeen();
   };
+
+  const nav = [
+    { href: '/', label: tShell('navEvents'), icon: CalendarDays, match: (p: string) => p === '/' || p.startsWith('/events') },
+    { href: '/meine-schichten', label: tShell('navMyShifts'), icon: Ticket, match: (p: string) => p.startsWith('/meine-schichten') },
+  ];
 
   // `?konto=push` (z. B. von der Profilseite auf der Startseite) öffnet den Konto-Dialog mit dem Push-Schalter
   useEffect(() => {
@@ -87,12 +88,12 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
               <span className="block truncate font-display text-[15px] font-bold tracking-tight text-fg">
                 {department?.name ?? org.name}
               </span>
-              <span className="block text-2xs font-medium text-fg-subtle">Schichtplan</span>
+              <span className="block text-2xs font-medium text-fg-subtle">{tShell('brandSubtitle')}</span>
             </span>
           </Link>
 
           <nav aria-label="Hauptnavigation" className="ml-6 hidden items-center gap-1 md:flex">
-            {NAV.map((item) => {
+            {nav.map((item) => {
               const active = item.match(pathname);
               return (
                 <Link
@@ -119,7 +120,7 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
                 type="button"
                 onClick={openAccount}
                 className="hidden items-center gap-2.5 rounded-full py-1 pl-1 pr-3.5 transition hover:bg-surface-2 md:flex"
-                aria-label={pushHintShown ? 'Konto öffnen, Push ist auf diesem Gerät noch aus' : 'Konto öffnen'}
+                aria-label={pushHintShown ? tShell('openAccountAriaPushOff') : tShell('openAccountAria')}
               >
                 <span className="relative">
                   <Avatar name={displayName(user)} size="sm" highlight />
@@ -129,7 +130,7 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
               </button>
             ) : (
               <a href={loginHref} className={buttonClasses({ variant: 'secondary', size: 'sm', className: 'hidden md:inline-flex' })}>
-                <LogIn /> Anmelden
+                <LogIn /> {tShell('loginBtn')}
               </a>
             )}
           </div>
@@ -143,11 +144,11 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
         <div className="border-b border-warning/25 bg-warning/10">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-sm sm:px-6">
             <p className="text-fg">
-              <span className="font-semibold">Zu welcher Abteilung gehörst du?</span>{' '}
-              <span className="text-fg-muted">Manche Anlässe sind nur für eine Abteilung oder Stufe.</span>
+              <span className="font-semibold">{tShell('needsDepartmentTitle', { unitTerm: org.unitTerm })}</span>{' '}
+              <span className="text-fg-muted">{tShell('needsDepartmentDesc', { unitTerm: org.unitTerm })}</span>
             </p>
             <a href={departmentSetupHref} className={buttonClasses({ size: 'sm', variant: 'secondary' })}>
-              <Building2 /> Abteilung angeben
+              <Building2 /> {tShell('specifyDepartmentBtn', { unitTerm: org.unitTerm })}
             </a>
           </div>
         </div>
@@ -193,7 +194,7 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
         className="fixed inset-x-0 bottom-0 z-header border-t border-line/70 bg-canvas/85 pb-safe-b backdrop-blur-xl backdrop-saturate-150 md:hidden"
       >
         <div className="grid h-16 grid-cols-3">
-          {NAV.map((item) => {
+          {nav.map((item) => {
             const active = item.match(pathname);
             const Icon = item.icon;
             return (
@@ -222,21 +223,21 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
             <button
               type="button"
               onClick={openAccount}
-              aria-label={pushHintShown ? 'Konto, Push ist auf diesem Gerät noch aus' : undefined}
+              aria-label={pushHintShown ? tShell('mobileNavAccountPushOff') : undefined}
               className="flex flex-col items-center justify-center gap-1 text-2xs font-semibold text-fg-subtle"
             >
               <span className="relative flex h-7 w-12 items-center justify-center">
                 <Avatar name={displayName(user)} size="sm" className="size-6 text-[9px]" />
                 {pushHintShown && <HintDot />}
               </span>
-              Konto
+              {tShell('mobileNavAccount')}
             </button>
           ) : (
             <a href={loginHref} className="flex flex-col items-center justify-center gap-1 text-2xs font-semibold text-fg-subtle">
               <span className="flex h-7 w-12 items-center justify-center">
                 <UserRound className="size-5" />
               </span>
-              Anmelden
+              {tShell('mobileNavLogin')}
             </a>
           )}
         </div>
@@ -262,6 +263,7 @@ function HintDot() {
  * Nötigste: Push für dieses Gerät (gilt im ganzen Schichtplan), App installieren und das Design.
  */
 function AccountSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const tShell = useTranslations('web.shell');
   const { user, setUser, department, logout } = usePortal();
   const org = useOrganization();
   const { canInstall, install } = useInstallPrompt();
@@ -292,7 +294,7 @@ function AccountSheet({ open, onClose }: { open: boolean; onClose: () => void })
   if (!user) return null;
   const role =
     user.isGlobalAdmin && user.departmentRole !== 'ADMIN'
-      ? 'Plattform-Admin'
+      ? tShell('rolePlatformAdmin')
       : departmentRoleLabel({
           isLeader: user.departmentRole === 'ADMIN',
           permissions: user.departmentPermissions ?? [],
@@ -302,7 +304,7 @@ function AccountSheet({ open, onClose }: { open: boolean; onClose: () => void })
         });
 
   return (
-    <Dialog open={open} onClose={onClose} size="sm" title="Dein Konto">
+    <Dialog open={open} onClose={onClose} size="sm" title={tShell('accountDialogTitle')}>
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <Avatar name={displayName(user)} size="lg" highlight className="shrink-0" />
@@ -315,7 +317,7 @@ function AccountSheet({ open, onClose }: { open: boolean; onClose: () => void })
             </div>
             <p className="flex items-center gap-1 truncate text-xs text-fg-subtle">
               <Building2 className="size-3 shrink-0" />
-              {user.homeDepartment ? user.homeDepartment.name : user.needsDepartmentSetup ? 'Abteilung fehlt' : 'Keine Abteilung'}
+              {user.homeDepartment ? user.homeDepartment.name : user.needsDepartmentSetup ? tShell('missingDepartment') : tShell('noDepartment')}
             </p>
           </div>
           <ThemeToggle className="shrink-0" />
@@ -326,30 +328,30 @@ function AccountSheet({ open, onClose }: { open: boolean; onClose: () => void })
         <div className="grid gap-2">
           <Link href="/meine-schichten" onClick={onClose} className={buttonClasses({ variant: 'secondary', className: 'justify-start' })}>
             <Ticket className="size-4 text-accent" />
-            <span>Meine Schichten</span>
+            <span>{tShell('navMyShifts')}</span>
             {stats && stats.shiftCount > 0 && (
-              <span className="ml-auto text-xs font-medium text-fg-subtle">{stats.totalHours} Std.</span>
+              <span className="ml-auto text-xs font-medium text-fg-subtle">{tShell('myShiftsHours', { hours: stats.totalHours })}</span>
             )}
           </Link>
           <a href={profileHref} className={buttonClasses({ variant: 'secondary', className: 'justify-start' })}>
             <Settings className="size-4 text-accent" />
-            <span>Profil &amp; Einstellungen</span>
-            {standalone && <span className="ml-auto text-xs font-medium text-fg-subtle">öffnet im Browser</span>}
+            <span>{tShell('profileAndSettings')}</span>
+            {standalone && <span className="ml-auto text-xs font-medium text-fg-subtle">{tShell('opensInBrowser')}</span>}
             <ArrowUpRight className={cn('size-4 text-fg-subtle', !standalone && 'ml-auto')} />
           </a>
           {canInstall && (
             <Button variant="secondary" className="justify-start" onClick={() => void install()}>
-              <Smartphone className="size-4 text-accent" /> App installieren
+              <Smartphone className="size-4 text-accent" /> {tShell('installAppBtn')}
             </Button>
           )}
         </div>
 
         <div className="flex items-center justify-between gap-2 border-t border-line/70 pt-3">
           <a href={helpUrl('/', org.domain)} className={buttonClasses({ variant: 'ghost', size: 'sm', className: 'text-xs' })}>
-            <LifeBuoy className="size-3.5" /> Hilfe
+            <LifeBuoy className="size-3.5" /> {tShell('helpBtn')}
           </a>
           <Button variant="ghost" size="sm" onClick={logout} className="text-xs">
-            <LogOut className="size-3.5" /> Abmelden
+            <LogOut className="size-3.5" /> {tShell('logoutBtn')}
           </Button>
         </div>
       </div>

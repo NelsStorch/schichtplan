@@ -1,6 +1,7 @@
 'use client';
 
 import { Check } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   DEPARTMENT_PERMISSION_KEYS,
   DEPARTMENT_PERMISSION_PRESETS,
@@ -13,8 +14,8 @@ import {
 import { cn } from '@schichtplan/ui';
 
 const GROUPS = [
-  { key: 'DEPARTMENT', label: 'Abteilung' },
-  { key: 'EVENTS', label: 'Anlässe (gilt für alle Anlässe der Abteilung)' },
+  { key: 'DEPARTMENT' },
+  { key: 'EVENTS' },
 ] as const;
 
 /** Rechte, die `p` voraussetzen (fallen weg, wenn man `p` entfernt) */
@@ -43,6 +44,7 @@ export function PermissionEditor({
   grantable: ReadonlySet<DepartmentPermission> | null;
   disabled?: boolean;
 }) {
+  const t = useTranslations('web.department.permissions');
   const current = normalizePermissions(value);
   const preset = permissionPresetOf(current);
   const set = (next: DepartmentPermission[]) => {
@@ -53,7 +55,7 @@ export function PermissionEditor({
     set(on ? [...current, p] : current.filter((x) => x !== p && !dependentsOf(p).includes(x)));
 
   const presets: { key: DepartmentPermissionPreset | null; label: string; permissions: readonly DepartmentPermission[] }[] = [
-    { key: null, label: 'Keine Rechte', permissions: [] },
+    { key: null, label: t('presetNone'), permissions: [] },
     ...(Object.entries(DEPARTMENT_PERMISSION_PRESETS) as [DepartmentPermissionPreset, (typeof DEPARTMENT_PERMISSION_PRESETS)[DepartmentPermissionPreset]][]).map(
       ([key, p]) => ({ key, label: p.label, permissions: p.permissions })
     ),
@@ -62,8 +64,8 @@ export function PermissionEditor({
   return (
     <div className="space-y-4">
       <div>
-        <p className="mb-1.5 text-xs font-semibold text-fg-subtle">Vorlage</p>
-        <div role="radiogroup" aria-label="Vorlage für Rechte" className="flex flex-wrap gap-1.5">
+        <p className="mb-1.5 text-xs font-semibold text-fg-subtle">{t('presetLegend')}</p>
+        <div role="radiogroup" aria-label={t('presetRadiogroupAria')} className="flex flex-wrap gap-1.5">
           {presets.map((p) => {
             const normalized = normalizePermissions(p.permissions);
             const active = p.key === null ? current.length === 0 : preset === p.key;
@@ -88,7 +90,7 @@ export function PermissionEditor({
           })}
           {current.length > 0 && !preset && (
             <span className="inline-flex h-8 items-center rounded-full border border-accent bg-accent/12 px-3 text-xs font-semibold text-accent-ink">
-              Eigene Rechte
+              {t('presetCustom')}
             </span>
           )}
         </div>
@@ -97,7 +99,9 @@ export function PermissionEditor({
 
       {GROUPS.map((group) => (
         <fieldset key={group.key}>
-          <legend className="mb-1.5 text-xs font-semibold text-fg-subtle">{group.label}</legend>
+          <legend className="mb-1.5 text-xs font-semibold text-fg-subtle">
+            {group.key === 'DEPARTMENT' ? t('groupDepartment') : t('groupEvents')}
+          </legend>
           <ul className="space-y-1">
             {DEPARTMENT_PERMISSION_KEYS.filter((p) => DEPARTMENT_PERMISSIONS[p].group === group.key).map((p) => {
               const checked = current.includes(p);
@@ -131,8 +135,7 @@ export function PermissionEditor({
       ))}
       {grantable && (
         <p className="flex items-start gap-1.5 text-2xs leading-normal text-fg-subtle">
-          <Check className="mt-px size-3 shrink-0" /> Du kannst nur Rechte vergeben, die du selbst hast, und insgesamt
-          weniger, als du selbst hast.
+          <Check className="mt-px size-3 shrink-0" /> {t('grantableHint')}
         </p>
       )}
     </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ArrowUpRight, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { getLoginUrl, type DepartmentCreationEligibilityDto } from '@schichtplan/shared';
 import { Callout, buttonClasses, useOrganization } from '@schichtplan/ui';
 import { api } from '@/lib/api';
@@ -24,6 +25,7 @@ function readDismissed(): string[] {
  * würden das Anlegen sonst nicht sehen. Pro Ebene ausblendbar (nur in diesem Browser).
  */
 export function OtherLevelsHint() {
+  const t = useTranslations('web.shell');
   const { user } = usePortal();
   const org = useOrganization();
   const [open, setOpen] = useState<{ id: number; name: string }[]>([]);
@@ -62,24 +64,23 @@ export function OtherLevelsHint() {
   const label = names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} und ${names[names.length - 1]}`;
 
   return (
-    <Callout tone="info" className="mt-6 max-w-xl" title={`Du leitest auch ${label}`}>
+    <Callout tone="info" className="mt-6 max-w-xl" title={t('otherLevelsTitle', { label })}>
       <p className="text-[14px] leading-relaxed">
-        Laut {org.authProviderShort} bist du dort Leitung. Dafür gibt es noch keinen eigenen Schichtplan, du kannst ihn mit
-        einem Klick einrichten.
+        {t('otherLevelsDesc', { provider: org.authProviderShort })}
       </p>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <a
           href={getLoginUrl(undefined, '/abteilung-erstellen')}
           className={buttonClasses({ size: 'sm', className: 'justify-between gap-1' })}
         >
-          Schichtplan einrichten <ArrowUpRight className="size-3.5" />
+          {t('otherLevelsSetupBtn')} <ArrowUpRight className="size-3.5" />
         </a>
         <button
           type="button"
           onClick={dismiss}
           className="inline-flex items-center gap-1 text-[13px] font-medium text-fg-muted hover:text-fg"
         >
-          <X className="size-3.5" aria-hidden /> Nicht mehr anzeigen
+          <X className="size-3.5" aria-hidden /> {t('otherLevelsDismissBtn')}
         </button>
       </div>
     </Callout>
