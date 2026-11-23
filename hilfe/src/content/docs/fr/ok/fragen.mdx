@@ -1,0 +1,72 @@
+---
+title: Questions aux bénévoles
+description: Demander l'adresse, les allergies, la taille de t-shirt ou des questions sur mesure, et définir quand les réponses sont supprimées.
+audience: [ok, abteilung]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+Si vous avez besoin d'informations complémentaires au-delà du nom et des coordonnées, vous pouvez configurer des questions propres à chaque événement :
+
+<Path steps={['Événement', 'Espace CO', 'Questions']} />
+
+La modification des questions est réservée à la direction de section et à la direction du CO. Enregistrez avec <Btn variant="primary">Enregistrer</Btn> en haut à droite.
+
+:::tip[Ne demandez que le strict nécessaire]
+Toute information collectée constitue une donnée personnelle à protéger. Ne demandez que ce qui est réellement indispensable pour l'événement et supprimez les réponses le plus tôt possible.
+:::
+
+## Questions prédéfinies
+
+Vous pouvez ajouter une question prête à l'emploi en un clic :
+
+| Question | Type |
+| --- | --- |
+| Adresse (rue, NPA, localité) | Texte libre |
+| Allergies / Régime alimentaire | Texte libre, considérée comme [donnée de santé](#donnees-de-sante) |
+| Taille de t-shirt | Choix unique XS à XXL |
+| Contact d'urgence (nom et téléphone) | Texte libre |
+
+Le plan de créneaux ne conserve pas les adresses postales dans le profil des utilisateurs. Si vous en avez besoin (par exemple pour un envoi par courrier), utilisez la question **Adresse**.
+
+## Questions personnalisées
+
+Avec <Btn>Nouvelle question</Btn>, composez votre propre question :
+
+| Paramètre | Options |
+| --- | --- |
+| Type de réponse | Texte libre, Oui / Non, Choix unique (une option par ligne) |
+| Moment de la saisie | **Une fois par événement** (p. ex. allergies, taille de t-shirt) ou **À chaque inscription** (p. ex. « Viens-tu en voiture ? ») |
+| Obligatoire | Inscription impossible sans réponse |
+| Données de santé | Cochez cette case pour les questions relatives aux allergies, médicaments, etc. Voir [Données de santé](#donnees-de-sante) |
+| Suppression des réponses | Directement après l'événement, 10, 30, 90 ou 365 jours après, ou Jamais. Pas d'option « Jamais » pour les données de santé |
+
+Les flèches permettent de réorganiser l'ordre des questions. Si vous supprimez une question, toutes les réponses associées sont également effacées lors de l'enregistrement.
+
+## Données de santé
+
+Les informations de santé, comme les allergies ou les traitements médicaux, bénéficient d'une protection renforcée. Pour toute question de ce type, cochez la case **Données de santé**. Pour la question prédéfinie **Allergies / Régime alimentaire**, elle est cochée d'office.
+
+Cela implique deux règles strictes :
+
+- **Consentement explicite :** Dès qu'un bénévole répond à une telle question, il doit expressément consentir lors de son inscription à ce que le CO utilise ces informations dans le cadre de cet événement. Sans validation de la case, l'inscription est bloquée. Si la question est laissée vide, aucune confirmation n'est requise.
+- **Délai d'effacement automatique :** L'option « Jamais » est impossible. Les réponses sont systématiquement supprimées après un délai défini. Si « Jamais » avait été sélectionné auparavant, le délai bascule automatiquement sur 30 jours dès que la case est cochée.
+
+Pensez à marquer ainsi toute autre question touchant à la santé (p. ex. « Médicaments », « Problèmes de santé particuliers »). Le système ne peut pas le deviner automatiquement.
+
+## Quand les réponses sont-elles supprimées ?
+
+Pour chaque question, vous définissez sous **Suppression des réponses** la durée de conservation. Les nouvelles questions démarrent par défaut à **30 jours**.
+
+- Le délai court à partir de la **fin du dernier créneau** de l'événement.
+- « Directement après l'événement » signifie : au plus tard une heure après la fin du dernier créneau.
+- Seules les réponses sont effacées. La question elle-même reste enregistrée pour mémoire.
+- Les bénévoles voient la date d'effacement directement sous chaque question lors de la saisie.
+- Ne choisissez « Jamais » que si vous avez une réelle obligation de conserver ces informations. Elles restent alors jusqu'à la suppression de l'événement ou du compte. C'est interdit pour les [données de santé](#donnees-de-sante).
+
+Si vous avez besoin de conserver les réponses pour vos archives, téléchargez-les au préalable en [CSV](/fr/ok/auswertung/).
+
+## Où consulter les réponses ?
+
+Les réponses ne sont visibles que par le CO et la direction de section, sous [Accès & Réponses](/fr/ok/auswertung/). La date de suppression programmée est affichée au-dessus de chaque colonne.

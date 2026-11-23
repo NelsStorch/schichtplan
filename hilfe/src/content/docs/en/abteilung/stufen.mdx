@@ -1,0 +1,42 @@
+---
+title: Set up units & age groups
+description: Units allow events limited to the leaders or specific groups. With Cevi.DB, members map themselves automatically.
+audience: [abteilung]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Department', 'Units']} />
+
+Units are the distinct groups within your department, such as Beavers, Cubs, Scouts, Youth, or the Leader team. When signing in, helpers specify whether they are a **Participant** or a **Leader** in each unit. Events can then be [restricted to specific units](/en/ok/zugang/).
+
+## Automatically from Cevi.DB
+
+As soon as members sign in with Cevi.DB, their unit groups are recognized automatically and added permanently to the list. You do not need to confirm or insert them manually. The Cevi.DB group ID is linked directly, and members are automatically assigned to their respective units.
+
+## Manually
+
+<Steps>
+1. Enter the unit name at the bottom, e.g. "Hiskia".
+2. Optionally enter the **Cevi.DB ID** of the group (see below).
+3. Tap <Btn variant="primary">Add</Btn>.
+</Steps>
+
+**Rename**: Click on the name, edit it, and click away. **Delete**: Click the trash can icon. When deleted, members lose their association with that unit, and any events filtering by that unit lose the filter.
+
+## Finding the Cevi.DB ID
+
+Open the unit in `db.cevi.ch`. The number in the URL after `groups/` is the ID, for example `db.cevi.ch/groups/1234` → `1234`.
+
+When a unit is linked, the ID is displayed as a badge next to it. Members signing in with Cevi.DB will then be assigned the unit automatically on every login:
+
+- Roles such as **Gruppenleiter*in** (Group leader) or **Stufenleiter*in** (Unit leader) become **Leader**
+- **Teilnehmer*in** (Participant) remains **Participant**
+
+These assignments are marked with "from Cevi.DB" and cannot be edited within the shift planner. If changes occur in Cevi.DB, they take effect upon the user's next login.
+
+:::tip[Leader team as a separate unit?]
+You do not need to create a dedicated unit for leader-only events. The **Leaders only** switch on the event automatically includes everyone who holds a leadership role in any unit.
+:::

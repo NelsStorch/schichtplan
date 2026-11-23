@@ -1,0 +1,62 @@
+---
+title: Why Can't I Sign Up?
+description: A banner at the top of the event explains why. Here is what every message means and how to proceed.
+audience: [helfer, ok]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import FaqItem from '../../../../components/FaqItem.astro';
+
+Each event defines [who is allowed to sign up](/en/ok/zugang/). If you don't match the criteria, a banner appears at the top of the event and shifts display “Not unlocked for you”. You can still view the schedule, though names may be hidden on internal events.
+
+## Common restriction messages
+
+<FaqItem q="“Log in to sign up”" open>
+You are currently not signed in. Tap <Btn variant="primary">Log in</Btn>. A nickname without a password is often sufficient. See [Logging In](/en/start/anmelden/).
+</FaqItem>
+
+<FaqItem q="“Specify your department first”">
+The event is restricted to specific departments, and the shift planner does not know where you belong yet. Tap <Btn>Specify department</Btn> and select your unit. See [Department and Groups](/en/start/abteilung-und-stufen/).
+</FaqItem>
+
+<FaqItem q="“Cevi.DB login only”">
+The OC requires your department and leader roles to be verified via Cevi.DB. Log out and sign in with <Btn variant="primary">Log in with Cevi.DB</Btn>. If you don't have a Cevi.DB account, ask the OC for an [access link](/en/ok/zugangs-links/).
+</FaqItem>
+
+<FaqItem q="“This event is only for …”">
+According to your profile, you belong to a different department. If this is incorrect, adjust it via <Btn>Change department or group</Btn>. With Cevi.DB accounts, departments are determined by official roles and must be updated in Cevi.DB. If your roles do not link to a department, you select it manually and your department leadership must [confirm your profile](/en/abteilung/personen/).
+</FaqItem>
+
+<FaqItem q="“Your group is not included”">
+The event is restricted to specific groups or units, such as the leadership team. If you haven't assigned your groups yet, update them under <Btn>Change department or group</Btn>.
+</FaqItem>
+
+<FaqItem q="“This event is for leaders only”">
+You must hold the **Leader** role in at least one group. With Cevi.DB, official leadership positions count automatically (e.g. group leader, department head). Without Cevi.DB, assign the leader role to yourself in your group settings.
+</FaqItem>
+
+<FaqItem q="“Sign-up closed”">
+The OC closed self-registration, often shortly before the event starts. From this point on, only organizers can assign helpers. Reach out directly to the OC if you still want to help.
+</FaqItem>
+
+<FaqItem q="I don't see any events on the department page">
+The department configured its homepage to be [members-only](/en/abteilung/einstellungen/). If you are a member, ensure your department is configured in your profile. For specific events, you can also use direct links provided by the organizers. Public events are always accessible via their direct URL.
+</FaqItem>
+
+<FaqItem q="“Members only”">
+The event is internal and the department only shows it to [enrolled members](/en/abteilung/einstellungen/). If you are logged out, log in: if you belong to the department, the event will appear. If you are already logged in, update your department or request an access link from the OC.
+</FaqItem>
+
+<FaqItem q="“This event does not exist”">
+The link is invalid or the event has been deleted.
+</FaqItem>
+
+## Bypassing restrictions with access links
+
+The OC can send you a personal access link that unlocks sign-ups for you even if you don't meet standard requirements:
+
+1. Open the link. A banner at the top will indicate **You have an invitation link**.
+2. Sign in (a nickname is sufficient).
+3. The message **You are unlocked via a personal link** confirms your status. You can now choose your shifts.
+
+Access links require you to log in. A personal link can only be claimed by the first account that uses it. If registration is closed, invitation links cannot override that deadline.

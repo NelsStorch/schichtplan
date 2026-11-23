@@ -1,0 +1,55 @@
+---
+title: Roles and permissions
+description: 'Who can do what? Two distinct levels: the department as a whole and the organizing committee (OC) of a specific event.'
+audience: [ok, abteilung]
+---
+
+import Btn from '../../../../components/Btn.astro';
+
+There are two distinct levels of permissions in the shift planner. **Permissions in the department** apply across all events belonging to that department. The **Organizing Committee (OC)** applies strictly to a single event. This allows someone to plan the annual fair without having full administrative control over the entire department.
+
+## In the department
+
+| Role | Permissions |
+| --- | --- |
+| Department leadership | Full control over the entire department. Derived from association database (Cevi.DB) |
+| Members with permissions | Specifically granted rights, e.g. "Create events" or full "Administration" |
+| Member | Can sign up for shifts. Planning access is granted per event via the OC |
+
+All permissions and presets are detailed under [Permissions in the department](/en/abteilung/rechte/), and assigned under [Members](/en/abteilung/personen/).
+
+## Roles in the event OC
+
+| Role | Permissions |
+| --- | --- |
+| OC Lead | Event settings and design, access control, appointing and removing OC members, plus all permissions of regular OC members |
+| OC Member | Create, edit, duplicate, and delete shifts; assign and remove helpers; view access links and volunteer details |
+
+Each OC member can be assigned a **Ressort / area**, such as "Construction & Tech", "Cashier", or "Grill". The assigned area is shown next to their name on the event page so volunteers know whom to contact with questions.
+
+Creating an event does **not automatically** add you to the OC. When creating the event, configure the OC and add yourself via <Btn>Add me as OC Lead</Btn>.
+
+## Adding someone to the OC
+
+1. Open the event and tap <Btn>Appoint OC</Btn> next to the OC section (or in the OC area: **Settings** → **OC Team**).
+2. Enter the person's **nickname or email address**. They must have an account via association login or email and password. If multiple people share the same name, use their email address.
+3. Choose **OC Lead** or **OC Member** and optionally specify their area.
+4. Tap <Btn variant="primary">Add to OC</Btn>.
+
+In the OC area under **Settings** → **OC Team**, you can adjust the role (**OC Lead** / **OC Member**) and area at any time using the edit icon. To remove an OC member, click the small cross next to their name. They only lose planning privileges; their own volunteer shift assignments remain intact.
+
+:::caution[Not available with nickname-only profiles]
+Users who log in using only a nickname and date of birth cannot join the OC and cannot receive department permissions. Dates of birth are widely known, which makes them unsuitable for administrative security. To receive permissions, users must sign in once via association database or set up an account with email and password.
+:::
+
+:::tip[Add OC during event creation]
+When setting up a new event, you can add OC members directly from the department roster right on the creation form.
+:::
+
+## Platform administrators
+
+Platform administrators operate the shift planner system. They hold the equivalent of department leadership in every department and can view all user accounts in the Admin Portal. For technical inquiries, see the [Contact page](/en/wissen/kontakt/).
+
+## Who can access the OC area?
+
+The OC area (<Btn>OC Area</Btn> button at the top of the event) is accessible to OC Leads, OC Members, department leadership, and anyone holding the "View all events" permission. Everyone else will see an "Access denied" notice. Within the OC area, sections only appear if you hold the relevant permissions: **Settings**, for example, is restricted to OC Leads, department leadership, and users with "Edit events". Learn more: [The OC area](/en/ok/ok-bereich/).

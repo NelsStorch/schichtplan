@@ -1,0 +1,72 @@
+---
+title: Domande ai volontari
+description: Indirizzo, allergie, taglia maglietta o domande personalizzate e definizione della scadenza per l'eliminazione delle risposte.
+audience: [ok, abteilung]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+Se per l'evento avete bisogno di ulteriori indicazioni oltre a nome e contatti, potete impostare domande personalizzate per ciascun evento:
+
+<Path steps={['Evento', 'Area CO', 'Domande']} />
+
+Le domande possono essere modificate dalla direzione di sezione e dal responsabile del CO. Ricordati di salvare le modifiche toccando <Btn variant="primary">Salva</Btn> in alto a destra.
+
+:::tip[Chiedete solo ciò che vi serve realmente]
+Ogni informazione raccolta è un dato personale da tutelare. Chiedete solo quanto strettamente indispensabile per l'evento ed eliminate le risposte non appena non sono più necessarie.
+:::
+
+## Domande predefinite
+
+Con un semplice tocco puoi inserire domande già pronte:
+
+| Domanda | Tipologia |
+| --- | --- |
+| Indirizzo (via, CAP, località) | Testo libero |
+| Allergie / Alimentazione | Testo libero, considerata [Dato sulla salute](#dati-sulla-salute) |
+| Taglia maglietta | Scelta multipla da XS a XXL |
+| Contatto di emergenza (nome e telefono) | Testo libero |
+
+Il piano dei turni non memorizza gli indirizzi postali nel profilo utente. Se ne avete bisogno, ad esempio per inviare materiale cartaceo, attivate la domanda predefinita **Indirizzo**.
+
+## Domande personalizzate
+
+Con <Btn>Domanda personalizzata</Btn> puoi creare qualsiasi quesito:
+
+| Impostazione | Possibilità |
+| --- | --- |
+| Tipo di risposta | Testo libero, Sì / No, Scelta multipla (un'opzione per riga) |
+| Quando viene chiesta? | **Una volta per evento** (ad es. allergie, taglia t-shirt) o **A ogni iscrizione** (ad es. «Porti un'automobile?») |
+| Obbligatoria | Senza risposta non è possibile completare l'iscrizione |
+| Dati sulla salute | Spunta per domande su allergie, farmaci o patologie. Vedi [Dati sulla salute](#dati-sulla-salute) |
+| Elimina risposte | Subito dopo l'evento, 10, 30, 90 o 365 giorni dopo, oppure Mai. Per i dati sulla salute l'opzione «Mai» non è consentita |
+
+Con le frecce puoi modificare l'ordine di visualizzazione. Rimuovendo una domanda ed effettuando il salvataggio, tutte le risposte già raccolte per quella domanda andranno perse definitivamente.
+
+## Dati sulla salute
+
+Le informazioni sullo stato di salute (come allergie alimentari, intolleranze o farmaci salvavita) sono dati particolarmente sensibili. Seleziona la casella **Dati sulla salute** per queste domande. Nella domanda predefinita **Allergie / Alimentazione** questa opzione è già preimpostata.
+
+Questo comporta due conseguenze fondamentali:
+
+- **Consenso esplicito:** quando una persona compila una domanda di questo tipo, al momento dell'iscrizione deve confermare espressamente di acconsentire al trattamento di tali dati da parte del CO per le finalità dell'evento. Senza la spunta non sarà possibile iscriversi. Chi lascia la risposta vuota non deve confermare nulla.
+- **Cancellazione obbligatoria:** l'opzione «Non eliminare mai» non è consentita. Le risposte verranno sempre eliminate trascorso il termine stabilito. Se era selezionato «Mai», la scadenza passerà automaticamente a 30 giorni all'attivazione della spunta.
+
+Qualsiasi altra domanda che raccolga indicazioni sanitarie (ad es. «Farmaci da assumere» o «Problemi fisici particolari») deve essere contrassegnata in questo modo, poiché il sistema non può rilevarlo automaticamente dal testo.
+
+## Scadenza per l'eliminazione delle risposte
+
+Nelle impostazioni di ciascuna domanda puoi stabilire per quanto tempo conservare le risposte tramite **Elimina risposte**. Le nuove domande partono con un valore predefinito di **30 giorni**.
+
+- Il termine decorre dalla **fine dell'ultimo turno** dell'evento.
+- «Subito dopo l'evento» significa al massimo un'ora dopo il termine dell'ultimo turno programmato.
+- Vengono rimosse unicamente le risposte fornite dagli utenti. Il testo della domanda rimane conservato per memoria storica.
+- I volontari vedono la scadenza di cancellazione direttamente sotto la domanda durante la compilazione.
+- Scegli «Non eliminare mai» soltanto se avete realmente necessità a lungo termine di questi dati. Rimarranno conservati fino all'eliminazione dell'evento o dell'account. Per i [Dati sulla salute](#dati-sulla-salute) questa opzione è disabilitata.
+
+Se dovessi aver bisogno di conservare i dati dopo la manifestazione, ricordati di esportarli per tempo in formato [CSV](/it/ok/auswertung/).
+
+## Dove consultare le risposte
+
+Le risposte sono visibili unicamente ai membri del CO e alla direzione di sezione nella scheda [Accesso & Risposte](/it/ok/auswertung/). Sopra ogni colonna è indicata la data programmata per l'eliminazione dei dati.

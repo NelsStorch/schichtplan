@@ -1,0 +1,56 @@
+---
+title: Association databases (Hitobito) & clubs
+description: How Cevi.DB, PBS MiData, Jubla-DB, and club management interact in the shift planner.
+audience: [abteilung, ok]
+sidebar:
+  label: Association DB & clubs
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+For youth associations, the shift planner connects directly to the official association databases (Hitobito). Independent clubs manage their members and leadership roles autonomously right within the shift planner.
+
+<Tabs>
+  <TabItem label="For associations (Cevi.DB, MiData, Jubla-DB)">
+    The platforms **Cevi.DB** (`db.cevi.ch`), **PBS MiData** (`db.scout.ch`), and **Jubla-Datenbank** (`db.jubla.ch`) are built on the proven open-source association software **Hitobito**.
+
+    ### What the shift planner syncs
+
+    | From association database | In the shift planner |
+    | --- | --- |
+    | Association nickname (Cevi name, scout name, leader name) | Display name on the shift schedule |
+    | First and last name | Official identity verification |
+    | Date of birth | Automatic age verification for shifts (cannot be manipulated by users) |
+    | Email address | System notifications and shift confirmations |
+    | Group hierarchy (local group, department, troop) | Permanent home department |
+    | Roles in units and groups | Allocation to [units](/en/abteilung/stufen/) as leader or participant |
+    | Department or troop leadership role | Automatic leadership and administration rights |
+
+    For exact details on which groups and roles qualify, including for regions and cantonal associations, see [Groups & roles](/en/abteilung/gruppen-und-rollen/).
+
+    :::note[The shift planner only reads]
+    The shift planner strictly reads data from the association database. It never alters or overwrites data in your association database.
+    :::
+
+    ### When data is updated
+
+    Data synchronization occurs automatically upon **every login**. If details change in the association database (e.g. appointment to department leadership or moving to another unit), they take effect the next time that person logs in to the shift planner.
+
+    :::tip[Role newly assigned?]
+    If someone has just been assigned a new role in the association database, they simply need to **log out and log in again** in the shift planner. Permissions are stored in the login token and are updated immediately.
+    :::
+  </TabItem>
+
+  <TabItem label="For clubs (Autonomous management)">
+    Independent clubs, musical societies, sports clubs, and festival committees do **not need an external association database**:
+
+    - **Email & password:** Members and leaders register easily with their email address and password.
+    - **Permissions & roles:** The board flexibly assigns planning and administrative permissions under [Members & permissions](/en/abteilung/rechte/).
+    - **Groups & teams:** Under [Units & groups](/en/abteilung/stufen/), you can set up custom club teams (e.g. Active Team, Board, Seniors).
+    - **Access links:** For helpers who do not need a permanent club account, the OC simply generates direct [Access links](/en/ok/zugangs-links/).
+  </TabItem>
+</Tabs>
+
+## Data privacy & data minimization
+
+For data privacy reasons, the shift planner **never** imports residential addresses or sensitive personal records. If the OC requires additional information for an event (e.g. an emergency contact number or a T-shirt size), this is requested as a specific [Custom question in the event](/en/ok/fragen/).

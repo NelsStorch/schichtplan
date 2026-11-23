@@ -1,0 +1,90 @@
+---
+title: Groups and roles from association databases
+description: Which groups the shift planner recognizes as a department and which roles count as leadership, unit leaders, or participants – for Cevi, Pfadi, and Jubla.
+audience: [abteilung]
+sidebar:
+  label: Groups & roles
+---
+
+import { Tabs, TabItem, LinkCard } from '@astrojs/starlight/components';
+
+When signing in via the association database (Cevi.DB, PBS MiData, Jubla-DB), the shift planner reads your roles and the groups they belong to. This determines:
+
+- which **department** you belong to (or troop, region, cantonal association),
+- whether you are a **leader** there and allowed to set up and manage the shift planner,
+- in which **units** you are a leader or a participant.
+
+A role always belongs to the **nearest department level above it**. Someone in the Wolf pack of a Scout group belongs to that local group, not to the region above it.
+
+:::note[Regions and cantonal associations too]
+Not only local departments and troops, but also **regions and cantonal associations** can create their own shift planner, for example for a regional camp or festival. It is created by their respective leadership, just like a local department (see [Create an organization](/en/abteilung/anlegen/)).
+
+If you lead multiple levels, for example your local department and the region, you can choose which one to create when setting it up. The local department is proposed first. If you create the shift planner for the region, your local department still remains your home department.
+
+The **national level** (Cevi umbrella organization, Scout and Jubla national federations) can also set up a shift planner for national events. **Project teams** for cantonal or national events plan via the event's organizing committee (OC) or using specific permissions granted by the leadership of that level.
+:::
+
+<Tabs syncKey="verband">
+  <TabItem label="Cevi">
+    **Structure:** Dachverband (Umbrella) → Mitgliederorganisation (e.g. Cevi Region Zürich) → Sektion → Ortsgruppe → Jungschar → Stufe (Unit)
+
+    | Level with own shift planner | Who counts as leadership? |
+    | --- | --- |
+    | Ortsgruppe or Jungschar | Abteilungsleiter*in (Department leader) |
+    | Sektion | Administrator*in der Sektion |
+    | Mitgliederorganisation | Geschäftsleiter*in (Office manager), Präsidium (Board) |
+    | Dachverband | Geschäftsleiter*in (Office manager), Präsidium (Board) |
+
+    If a local group has multiple Jungscharen, each Jungschar gets its own shift planner.
+
+    **Units:** Groups of type "Stufe". Unit leaders (Stufenleiter*innen) and group leaders (Gruppenleiter*innen) are leaders; participants are participants.
+  </TabItem>
+
+  <TabItem label="Pfadi / Scouts">
+    **Structure:** Bund (National) → Kantonalverband → Region → Abteilung (Group) → Biber, Wölfe, Pfadi, Pio, Rover, PTA
+
+    | Level with own shift planner | Who counts as leadership? |
+    | --- | --- |
+    | Abteilung | Abteilungsleitung, Abteilungsleitung Stv, Sekretariat |
+    | Region | Regionalleitung, Sekretariat |
+    | Kantonalverband | Kantonsleitung, Sekretariat |
+    | Bund | Mitarbeiter*in Geschäftsstelle, Sekretariat |
+
+    **Units:** Beavers (Biber), Cubs/Wolves (Wölfe), Scouts (Pfadi), Pioneers (Pio), Rovers (Rover), and PTA. Unit leaders (Einheitsleitung) and co-leaders are leaders. Members of these units are participants, including patrol leaders (Leitwölfe and Leitpfadis).
+  </TabItem>
+
+  <TabItem label="Jubla">
+    **Structure:** Bund (National) → Kanton → Region → Schar (Troop) → Kindergruppen (Children's groups)
+
+    | Level with own shift planner | Who counts as leadership? |
+    | --- | --- |
+    | Schar | Scharleitung (Troop leaders) |
+    | Region | Leadership in the group "Regionalleitung" |
+    | Kanton | Leadership in the group "Kantonsleitung" or "Kantonsgeschäftsstelle" |
+    | Bund | Members or presidency of the Bundesleitung (National board) |
+
+    **Groups:** Children's groups in the troop. Leaders are leaders; children are participants.
+  </TabItem>
+</Tabs>
+
+## When changes take effect
+
+Role mapping is recalculated upon **every login**. If a role was newly assigned or removed in the association database, the person simply logs out and logs in again.
+
+If someone holds roles in **multiple departments or troops**, one of them becomes the home department (the primary group in the association database). The person automatically belongs to the others as well, even if those departments only accept members by invitation. Without a role there, one can only join another department via its direct link or an invitation.
+
+If the role in such a department is removed, membership there also ends. If the person had already joined manually before, they remain a member; only the verification through the association database is removed. A verification via invite link or by leadership remains intact.
+
+An account is linked to exactly one association database. If someone is active in both Cevi and Jubla with the same email address, login only works with the association database to which the account was initially connected. On the shift planner of the other association, they can log in using the same email and password, but the external roles from that second association will not be synchronized. To sync roles from both, use different email addresses in each association database to create separate accounts.
+
+Leaders who lose their role in the association database also lose leadership rights in the shift planner, as long as the department has at least one other leader remaining. Permissions granted directly within the shift planner (see [Members & permissions](/en/abteilung/rechte/)) remain unaffected.
+
+## Is your role or group missing?
+
+Every association organizes its structure slightly differently. If a role should count as leadership but is missing here, or if a group is mapped incorrectly, please report it to us on GitHub. Specify the association, the organizational level, and the exact role title from the association database.
+
+<LinkCard
+  title="Report group or role adjustment"
+  description="GitHub template: specify association, group, and role."
+  href="https://github.com/NelsStorch/schichtplan_v2/issues/new?template=rollen.yml"
+/>

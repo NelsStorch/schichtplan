@@ -1,0 +1,63 @@
+---
+title: Paramètres de la section
+description: Nom, logo, personne de contact, couleur et visibilité de la page d'accueil. S'applique à tous les événements de la section.
+audience: [abteilung]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Page d\'accueil de la section', 'Section', 'Général']} />
+
+Le bouton <Btn>Section</Btn> est visible par la direction de section et par toute personne disposant de l'un des droits « Modifier la section », « Gérer les branches » ou « Voir les personnes ». La fenêtre n'affiche que les rubriques pour lesquelles vous avez les autorisations requises : **Général**, [Branches](/fr/abteilung/stufen/), [Personnes](/fr/abteilung/personen/) et [Journal](/fr/abteilung/rechte/#protocole-dactivite).
+
+## Général
+
+| Champ | Utilisation |
+| --- | --- |
+| Nom de la section | s'affiche en grand sur la page d'accueil et en haut à gauche |
+| Logo de la section | blason ou logo. Si vide, le logo de la fédération ou du plan de créneaux est conservé |
+| Personne de contact | personne à contacter en cas de question. Peuvent être sélectionnées la direction de section et les personnes avec « Gérer les personnes et les droits ». Le nom figure dans l'indication « réservé aux membres », l'e-mail n'est visible que pour les personnes connectées |
+| Page d'accueil réservée aux membres | contrôle qui voit la liste des événements, voir plus bas |
+| Autoriser la connexion sans mot de passe | indique si les bénévoles peuvent se connecter sans mot de passe (uniquement avec surnom et date de naissance) sur ce portail |
+| Adhésion pour les comptes e-mail | manière dont les nouveaux comptes e-mail peuvent rejoindre votre organisation, voir ci-dessous |
+| Inviter des personnes & lien d'invitation | lien d'invitation confidentiel à copier et invitation par e-mail (avec attribution directe d'un modèle de droits) |
+| Couleur de la section | accent pour les boutons et les mises en évidence |
+
+Le sous-domaine ne peut pas être modifié.
+
+## Adhésion, invitations et connexion sans mot de passe
+
+Sous **Adhésion pour les comptes e-mail**, vous contrôlez qui peut se rattacher à votre section ou association :
+
+- **Via le lien de cette page (par défaut)** : l'organisation n'apparaît pas dans la liste publique de sélection. Toute personne qui ouvre votre adresse directe (`<sous-domaine>.…`) peut la rejoindre.
+- **Uniquement sur invitation** : l'adhésion est possible exclusivement via votre **lien d'invitation** confidentiel ou par **invitation e-mail**.
+- **Ouverte** : l'organisation apparaît en plus pour tout le monde dans la liste générale de sélection lors de la connexion.
+
+**Sections et groupes (Cevi, Scouts, Jubla) :** toute personne ayant un rôle chez vous selon la base de données de la fédération (Cevi.DB, MiData, Jubla-DB) en fait automatiquement partie, comme section principale ou en complément d'une autre, indépendamment de ce réglage. Cela s'applique dès la prochaine connexion et est considéré comme confirmé. Si le rôle disparaît de la base de données, l'appartenance prend fin à la connexion suivante. On ne peut pas la quitter soi-même, cela se modifie uniquement dans la base de données.
+
+**Les associations** n'ont pas de base de données fédérale : seuls le lien, les invitations et la liste de sélection y sont pris en compte.
+
+Via **Inviter des personnes & lien d'invitation** (également disponible dans l'onglet [Personnes](/fr/abteilung/personen/)), vous pouvez copier un lien d'invitation ou inviter des personnes par e-mail en leur accordant immédiatement, si souhaité, un modèle de droits tel que **Créer des événements**.
+
+Avec **Autoriser la connexion sans mot de passe**, vous déterminez si l'accès rapide par prénom/surnom et date de naissance est actif sur votre portail. Avant de le désactiver, le système vous avertit si des profils existants sont configurés exclusivement sans mot de passe.
+
+## Couleur de la section
+
+Choisissez l'une des huit couleurs proposées ou personnalisez-la avec le bouton **+**. L'aperçu est direct, vous visualisez la couleur immédiatement dans toute l'interface. Le plan de créneaux ajuste automatiquement les contrastes pour que le texte reste lisible sur n'importe quelle couleur, en mode clair comme en mode sombre.
+
+Le bouton <Btn variant="primary">Enregistrer</Btn> applique la couleur. Avec <Btn variant="ghost">Annuler</Btn>, elle revient à sa valeur antérieure.
+
+## Page d'accueil réservée aux membres
+
+Pour les nouvelles sections, cet interrupteur est **activé** par défaut. Cela implique que :
+
+- Les personnes externes voient seulement que la section existe, mais aucune liste d'événements.
+- Les événements **publics** restent accessibles à tout le monde via leur lien direct.
+- Les événements **internes** ne peuvent être ouverts par des personnes externes qu'avec un [lien d'accès](/fr/ok/zugangs-links/).
+
+Est considérée comme **membre** toute personne ayant la section comme section d'origine, faisant partie de la direction ou disposant de droits dans la section, membre du CO d'un événement ou administratrice de la plateforme. Les invités (connectés via le sous-domaine avec une autre section d'origine) ne comptent pas comme membres.
+
+:::note[Pourquoi l'activer ?]
+De nombreuses sections préfèrent éviter que tout le monde puisse voir les dates exactes des camps et week-ends de cabane. Désactivez cette option si vos manifestations sont de toute façon publiques et que votre page d'accueil doit servir d'aperçu général.
+:::

@@ -1,0 +1,46 @@
+---
+title: Setting Organization, Department & Groups
+description: Some events are only for a specific organization or specific groups. To allow the shift planner to verify this, you specify where you belong.
+audience: [helfer]
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+After logging in for the first time, a yellow notification appears at the top: **“Which organization do you belong to?”**. It stays visible until you have made a selection. Choosing “No organization” is also a valid response.
+
+## Choosing organization & groups
+
+<Steps>
+1. Tap <Btn>Specify organization</Btn>. You are taken to the selection page.
+2. Select your department, unit, or club from the list. The search field helps filter long lists.
+3. If you do not belong to a permanent unit (e.g. as a guest or one-time volunteer), select **I do not belong to any organization**.
+4. If groups or units are listed (e.g. leader team, active squad, juniors), select your role for each group (**No**, **Participant / Member**, or **Leader**).
+5. Tap <Btn variant="primary">Save and continue</Btn>. Your settings take effect immediately.
+</Steps>
+
+<Tabs>
+  <TabItem label="For Cevi / Pfadi / Jubla (Association)">
+    If you signed in with your association database (Cevi.DB, MiData, or Jubla-DB), your department or unit is usually **assigned automatically** based on your active leadership roles and does not need to be selected manually. Official association groups and units are also synchronized directly.
+  </TabItem>
+  <TabItem label="Via invitation or department link">
+    If you follow an **invitation link** (or email invite), you are enrolled directly into the invited department or club – without choosing from a list. If you access via a department's direct web address (`<name>.…`), that department is already pre-selected for you during setup.
+  </TabItem>
+  <TabItem label="Passwordless login">
+    If the department has enabled passwordless sign-in, you can log in on their page with your nickname and birth date and are directly assigned to that department.
+  </TabItem>
+</Tabs>
+
+## Changing settings later
+
+<Path steps={['Account', 'Profile & Settings', 'Overview', 'Department & Units']} />
+
+Tap <Btn>Change</Btn> there. For clubs this card is labeled “Club & Units”, for Jubla “Unit & Groups”.
+
+## Why this matters
+
+- Events set to **Internal** only admit members of that specific organization.
+- Events with a **group filter** only permit specific teams (e.g. only the leadership team or the 1st team).
+- Events marked **Leaders only** require the **Leader** role in at least one group.
+- If an organization's portal page is configured as [members-only](/en/abteilung/einstellungen/), volunteers can only view the events if they are linked to that organization.

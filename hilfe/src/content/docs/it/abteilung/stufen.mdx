@@ -1,0 +1,42 @@
+---
+title: Definire le branche e i gruppi
+description: Le branche consentono di limitare gli eventi solo al team di responsabili o ai giovani. Con Cevi.DB si assegnano automaticamente.
+audience: [abteilung]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Sezione', 'Branche']} />
+
+Le branche sono i gruppi della vostra sezione, ad esempio Castori, Lupetti, Esploratori, Pionieri o Team animatori. I volontari indicano al momento dell'accesso in quale branca sono **Partecipanti** o **Animatori/Capi**. Gli eventi possono quindi essere [limitati a determinate branche](/it/ok/zugang/).
+
+## Automaticamente da Cevi.DB
+
+Non appena le persone accedono con Cevi.DB, i loro gruppi di branca vengono riconosciuti automaticamente e inseriti stabilmente nell'elenco. Non è necessario confermarli o aggiungerli manualmente. L'ID di Cevi.DB viene collegato direttamente e le persone vengono assegnate alle rispettive branche.
+
+## Inserimento manuale
+
+<Steps>
+1. Inserisci il nome in basso, ad esempio «Lupetti».
+2. Facoltativamente inserisci l'**ID Cevi.DB** del gruppo di branca (vedi sotto).
+3. Tocca <Btn variant="primary">Aggiungi</Btn>.
+</Steps>
+
+**Rinominare**: fai clic sul nome, modifica il testo e fai clic fuori dal campo. **Eliminare**: icona del cestino. In questo caso le persone perderanno l'associazione a questa branca e gli eventi con questo filtro di branca perderanno la restrizione.
+
+## Trovare l'ID Cevi.DB
+
+Apri la branca su `db.cevi.ch`. Il numero nell'indirizzo dopo `groups/` corrisponde all'ID, ad esempio `db.cevi.ch/groups/1234` → `1234`.
+
+Quando una branca è collegata, l'ID appare come un piccolo badge accanto al nome. Gli utenti Cevi.DB riceveranno quindi la branca automaticamente a ogni accesso:
+
+- Ruoli come **Capo gruppo** o **Capo branca** diventano **Animatore/trice (Direzione)**
+- **Partecipante** rimane **Partecipante**
+
+Queste assegnazioni sono contrassegnate dalla dicitura «da Cevi.DB» e non possono essere modificate manualmente nel piano dei turni. Se qualcosa cambia nella Cevi.DB, l'aggiornamento sarà attivo dal successivo accesso dell'utente.
+
+:::tip[Team di animatori come branca separata?]
+Per gli eventi riservati esclusivamente ai responsabili non è necessario creare una branca a parte. L'opzione **Solo animatori/capi** nell'evento include automaticamente chiunque abbia un ruolo direttivo in qualsiasi branca.
+:::

@@ -1,0 +1,49 @@
+---
+title: Information and Questions When Signing Up
+description: The OC can request a mobile number or custom questions, such as your address. Each question shows when answers are deleted.
+audience: [helfer]
+---
+
+import Btn from '../../../../components/Btn.astro';
+
+When registering for an event for the first time, a dialog titled **“A few more details”** may appear. The OC needs this information to coordinate with you at short notice or to order catering.
+
+Fill in all required fields (marked with an asterisk) and tap <Btn variant="primary">Save and sign up</Btn>. You are signed up immediately afterward.
+
+## Profile fields requested by events
+
+An event can request the following details:
+
+| Detail | Stored | With Cevi.DB |
+| --- | --- | --- |
+| Mobile number | in your profile | from profile, otherwise requested |
+| Email | in your profile | from Cevi.DB |
+| Date of birth | in your profile | from Cevi.DB |
+| First and last name | in your profile | from Cevi.DB |
+
+Any values entered here are saved to your profile so you don't need to re-enter them for subsequent events. You can update them at any time on your [profile page](/en/helfen/konto/).
+
+## Custom OC questions
+
+The OC can configure custom questions as free text, yes/no toggles, or multiple-choice dropdowns. There are two types:
+
+- **Once per event**, such as “Dietary requirements / allergies?” or “T-shirt size”. Asked during your first sign-up. If you take on another shift later, you will not be asked again.
+- **With each shift sign-up**, such as “Do you bring a car?”. Asked for each individual shift; the answer belongs specifically to that shift.
+
+Optional questions without an asterisk can be left blank.
+
+If the OC asks for your **postal address**, the answer is linked solely to this event. The shift planner never stores addresses in your persistent profile.
+
+## Consent for health-related information
+
+If the OC asks about health-related details (such as allergies), a mandatory consent checkbox is displayed below the question. When providing medical or dietary information, you must explicitly consent to the OC processing this data for the event. Without this consent, you cannot complete registration with that response.
+
+If you leave the optional question blank, no special consent is needed. Health information is always automatically deleted after the stated retention period.
+
+## When your answers are deleted
+
+Each question specifies how long your answer will be kept, e.g. “Deleted 30 days after the event.” The OC sets this retention policy per question. Afterward, the system purges the data automatically.
+
+:::note[Who can see this?]
+Your answers and contact details are only visible to the event OC and department leadership. Other volunteers only see your name on the schedule. Read more under [Who sees what](/en/wissen/wer-sieht-was/).
+:::

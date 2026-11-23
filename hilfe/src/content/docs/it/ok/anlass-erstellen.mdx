@@ -1,0 +1,89 @@
+---
+title: Creare un evento
+description: Definire titolo, date, comitato organizzatore (CO) e accesso. Poi seguiranno i turni.
+audience: [ok, abteilung]
+numbered: true
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+
+I nuovi eventi vengono creati dalla **Direzione di sezione** e dalle persone con il diritto **Creare eventi**. Se fai parte del CO di un evento esistente ma non hai questo diritto, chiedi a loro di creare l'evento.
+
+## Aprire il modulo
+
+Sulla pagina iniziale della tua sezione, tocca <Btn variant="primary">Nuovo evento</Btn> in alto a destra. Se non sono ancora presenti eventi, al centro troverai <Btn variant="primary">Crea evento</Btn>.
+
+## Le informazioni richieste
+
+<Steps>
+1. **Crea da un modello** (facoltativo): se lo scorso anno hai salvato un [modello](/it/ok/vorlagen/), selezionalo qui. Tutti i turni, le mansioni e i limiti di età verranno importati automaticamente.
+
+2. **Titolo**: ad esempio «Festa di paese 2026».
+
+3. **Indirizzo (Slug)**: la parte finale del link, ad esempio `festa-2026`. Viene suggerita automaticamente a partire dal titolo. Solo lettere minuscole, numeri e trattini, univoca per ciascuna sezione. **Suggerimento:** aggiungi l'anno (ad es. `festa-2026`), così l'indirizzo base tornerà libero l'anno successivo.
+
+4. **Data**: il primo giorno dell'evento. Non è necessario indicare una data di fine: non appena ci sono turni, la durata dell'evento si estende automaticamente dal primo all'ultimo turno (montaggio e smontaggio inclusi).
+
+5. **Descrizione**: cosa devono sapere i volontari? Punto di ritrovo, abbigliamento, pasti. Viene visualizzata in alto nel banner.
+
+6. **Comitato organizzatore (CO)**: risulti già inserito come responsabile del CO. Puoi aggiungere altre persone dall'elenco dei membri, tramite nome scout / Cevi o via e-mail, assegnando loro ruolo e settore di competenza.
+
+7. **Competenze & turni**:
+   - **Responsabile del piano dei turni** (facoltativo): persona di riferimento per i volontari nel caso in cui un turno sia al completo.
+   - **Responsabili di turno / giornalieri**: stabilisce se le responsabilità sono assegnate per singolo turno (ad es. responsabile dello smontaggio) o come responsabili giornalieri per intere giornate.
+   - **Ora di cambio giornata**: orario a partire dal quale i turni vengono attribuiti al nuovo giorno (ad es. `04:00` per feste serali o sagre, in modo che i turni notturni fino alle 04:00 del mattino appartengano al giorno precedente).
+   - **Contatti dei responsabili**: scegli quali recapiti possono vedere i volontari per i responsabili del piano, del giorno e del turno: cellulare ed e-mail, solo cellulare, solo e-mail o nessun recapito (solo nome).
+   - **Obiettivo: turni per persona** (facoltativo): numero minimo di turni per persona, ad esempio 2 per ogni animatore/trice. Il CO vedrà poi in [Volontari](/it/ok/helfer-pool/) chi ha raggiunto l'obiettivo.
+   - **Blocco cancellazione autonoma** (facoltativo): numero di giorni prima dell'inizio dell'evento a partire dai quali i volontari non possono più disiscriversi autonomamente (ad es. `2` = a partire da 2 giorni prima dell'evento; `0` = fino all'inizio; vuoto = nessun blocco). Il CO può comunque cancellare chiunque in ogni momento.
+   - **Cerca sostituto** (predefinito: attivo): i volontari possono offrire il proprio turno ad altri, che possono rilevarlo con un clic, anche dopo l'entrata in vigore del blocco delle cancellazioni. Puoi scegliere fino a quando sia consentito: fino all'inizio del turno oppure 1, 2, 6, 12 o 24 ore prima. Maggiori dettagli in [Cercare un sostituto](/it/helfen/ersatz-suchen/).
+   - **Sovrapposizione dei turni per passaggi di consegne**: seleziona di quanti minuti due turni consecutivi possono sovrapporsi (0, 10, 15, 20 o 30 minuti; consigliato: 15 minuti). In questo modo i volontari possono iscriversi a due turni consecutivi che prevedono un breve momento comune per il passaggio di consegne o istruzioni.
+   - **Sblocco iscrizioni per i volontari** (facoltativo): data e ora (fuso orario svizzero) a partire da cui i volontari possono iscriversi autonomamente (lasciare vuoto = subito aperto). I turni sono visibili in anteprima; quando mancano meno di 24 ore compare un conto alla rovescia in tempo reale (da 10 minuti con i secondi, dall'ultimo minuto con i millisecondi). Al termine del countdown la pagina si ricarica automaticamente per consentire l'iscrizione immediata. Il CO può comunque assegnare manualmente le persone in anticipo.
+   - **Lista presenze** (facoltativo): disattivata, spunta solo manuale da parte del CO oppure con check-in autonomo tramite codice QR. Maggiori dettagli in [Lista presenze e check-in QR](/it/ok/anwesenheit/).
+
+8. **Chi può iscriversi?** e ulteriori regole di accesso. Maggiori dettagli in [Regolare l'accesso](/it/ok/zugang/).
+
+9. **Banner e logo**: vedi [Design](/it/ok/design/).
+
+10. Tocca <Btn variant="primary">Crea evento</Btn>.
+</Steps>
+
+## E poi?
+
+L'evento è subito visibile, ma è ancora vuoto. Tocca <Btn variant="primary">Crea turno</Btn> e pianifica il primo turno. La procedura è descritta in [Pianificare i turni](/it/ok/schichten-planen/).
+
+Una volta pronti i turni, copia il link dalla barra degli indirizzi e condividilo nella chat di gruppo. Per chi non soddisfa le regole ordinarie di accesso, sono disponibili i [Link di accesso](/it/ok/zugangs-links/).
+
+:::tip[Prima pianificare, poi condividere]
+I volontari possono iscriversi non appena viene inserito il primo turno. Se desideri pianificare con calma, disattiva nelle impostazioni l'opzione **Iscrizioni aperte ai volontari** e riattivala solo al momento del lancio ufficiale.
+:::
+
+## Modifiche successive
+
+Tutti i dettagli possono essere modificati in seguito nell'area CO alla voce **Impostazioni** (o all'interno dell'evento sotto «CO» tramite <Btn>Impostazioni</Btn>). I moduli salvano automaticamente in background e le finestre di dialogo sono protette contro le chiusure accidentali:
+
+- **Titolo, descrizione, accesso, obiettivo turni, banner e logo** possono essere aggiornati direttamente in qualsiasi momento.
+- **Periodo**: viene calcolato in base al primo e all'ultimo turno programmato e si aggiorna automaticamente al variare dei turni. Vedi [Spostare l'evento](#spostare-levento).
+- **Indirizzo (Slug)** può essere modificato. Tuttavia, poiché tutti i link condivisi in precedenza (ad es. in WhatsApp o per e-mail) diventerebbero non più validi, la modifica richiede la conferma con un conto alla rovescia di sicurezza di 10 secondi.
+
+## Spostare l'evento
+
+Se l'evento si svolge in una data diversa, puoi spostarlo nel suo complesso:
+
+1. Apri **Impostazioni** nell'area CO. Nella sezione **Dati di base** trovi il periodo dell'evento.
+2. Tocca <Btn>Sposta</Btn> e seleziona il nuovo giorno d'inizio.
+3. Il piano dei turni ti mostrerà un avviso con il numero di giorni di cui verranno spostati tutti i turni e il nuovo periodo risultante. Conferma con <Btn variant="primary">Sposta</Btn>.
+
+Tutti i turni slitteranno dello stesso numero di giorni, mantenendo invariati gli orari (anche in caso di passaggio dall'ora solare a quella legale e viceversa). I responsabili giornalieri e l'eventuale **data di sblocco delle iscrizioni** si sposteranno di conseguenza. Le iscrizioni rimangono confermate, ma i volontari non ricevono una notifica automatica: puoi inviare loro una comunicazione da [Messaggi](/it/ok/nachrichten/). Lo spostamento può essere eseguito dalla direzione di sezione e dal responsabile del CO.
+
+## Eliminare l'evento
+
+L'eliminazione di un evento può essere eseguita esclusivamente dalla **Direzione di sezione**. Il responsabile del CO non dispone di questo permesso, ma può disattivare l'opzione **Iscrizioni aperte ai volontari** nelle impostazioni.
+
+1. Apri **Impostazioni** nell'area CO e scorri fino in fondo.
+2. Tocca <Btn variant="danger">Elimina evento</Btn>.
+3. Per confermare, digita l'**indirizzo (slug)** dell'evento (ad es. `festa-2026`) e conferma con <Btn variant="danger">Elimina definitivamente</Btn>.
+
+:::caution[Operazione irreversibile]
+Con l'eliminazione dell'evento verranno cancellati per sempre tutti i turni, le iscrizioni, il CO, le domande e le risposte, i link di accesso, il registro delle attività e i messaggi inviati. I volontari non riceveranno alcuna notifica automatica. Se desideri informarli, invia loro un avviso prima dell'eliminazione da [Messaggi](/it/ok/nachrichten/).
+:::

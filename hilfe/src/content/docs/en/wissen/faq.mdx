@@ -1,0 +1,157 @@
+---
+title: Frequently Asked Questions (FAQ)
+description: Quick answers to commonly asked questions.
+audience: [helfer, ok, abteilung]
+---
+
+import FaqItem from '../../../../components/FaqItem.astro';
+
+## For volunteers
+
+<FaqItem q="Do I need an account to sign up for a shift?">
+Yes, but you can join without a password: on your department's page, your nickname and date of birth are all you need. [Logging in](/en/start/anmelden/)
+</FaqItem>
+
+<FaqItem q="Do I have to register again for each department?">
+No. Once logged in, your account works across all departments on the platform.
+</FaqItem>
+
+<FaqItem q="Where is “With nickname / Cevi name”?">
+On `login.cevi-schichtplan.ch`, only association login and email/password are shown. The fast passwordless login with nickname is found on your own department's portal page. [Logging in](/en/start/anmelden/)
+</FaqItem>
+
+<FaqItem q="Someone in my department shares the exact same nickname as me.">
+When two people share the same nickname, the shift planner differentiates them automatically on the schedule: first by appending their group in parentheses (e.g. “Robin (Scouts)”). In multi-department events, the department name is added (“Robin (Zurich)”) or both (“Robin (Scouts, Zurich)”). If still identical, the first name is prepended (“Max a.k.a. Robin”), or even the last name. The schedule always makes clear who is who.
+</FaqItem>
+
+<FaqItem q="I forgot my password.">
+On the login screen, click “Forgot password?” and enter your email address. You will receive an email with a link to reset your password.
+</FaqItem>
+
+<FaqItem q="I previously logged in with a nickname and now want to use association login (Cevi.DB / MiData / Jubla-DB). What happens to my shifts?">
+Simply log in with your association credentials. If your name and birth date match, the shift planner merges the profiles automatically. Your shifts are fully preserved.
+</FaqItem>
+
+<FaqItem q="During association login, the system asks for a password.">
+You already have an existing account registered with that email and a password. Enter your password once to permanently link both login methods to the same account.
+</FaqItem>
+
+<FaqItem q="The association database (Cevi.DB, MiData, Jubla-DB) is down. What can I do?">
+If you configured a fallback password in your [profile](/en/helfen/konto/), sign in with your email and password. If not, click “Forgot password?” on the login page, enter your association account's email, and set an emergency password via the email link. Your shifts and administrative privileges remain intact.
+</FaqItem>
+
+<FaqItem q="Which app should I use for two-factor authentication?">
+Any standard TOTP authenticator app, such as Google Authenticator, Microsoft Authenticator, Aegis, 2FAS, 1Password, or Bitwarden. Configure it on your profile page. [Two-factor authentication](/en/helfen/konto/#two-factor-authentication-2fa)
+</FaqItem>
+
+<FaqItem q="I lost the phone with my authenticator app.">
+Log in using one of your backup recovery codes, then generate a new set of codes in your profile. If you have no codes left, contact [Support](/en/wissen/kontakt/) to reset your 2FA after identity verification.
+</FaqItem>
+
+<FaqItem q="Can I delete my account?">
+Yes, under the **Security & Data** tab on your profile page. Your shift assignments will be released and your personal details erased. Nickname-only profiles cannot self-delete immediately; they can submit a deletion request via **Request deletion**, which is processed within 30 days. [Deleting your account](/en/helfen/konto/#deleting-your-account)
+</FaqItem>
+
+<FaqItem q="Can I download a copy of my stored personal data?">
+Yes. In the **Security & Data** tab of your profile, click **Download my data** to download all personal information associated with your account as a JSON file. [Data export](/en/helfen/konto/#deleting-your-account)
+</FaqItem>
+
+<FaqItem q="I received an email stating my account is scheduled for deletion. Why?">
+You haven't logged in for over two years. The shift planner automatically purges inactive accounts to avoid retaining data unnecessarily. Simply log in once within 30 days to keep your account active for another two years. [Inactive accounts](/en/helfen/konto/#inactive-accounts)
+</FaqItem>
+
+<FaqItem q="What happens to my historical shifts if my account is deleted?">
+Past event rosters preserve your completed shifts under an anonymous “Deleted person” label without your name. Your profile, contact info, and question answers are completely purged.
+</FaqItem>
+
+<FaqItem q="Can I sign up for two tasks in the same shift?">
+No. You can only hold one task assignment per shift.
+</FaqItem>
+
+<FaqItem q="Can I sign up for two consecutive shifts that overlap slightly?">
+Yes! When the OC sets a handover allowance (e.g. 15 minutes), you can sign up for consecutive shifts that overlap briefly for handoff or briefing. The system only blocks genuine scheduling clashes. [Signing up for shifts](/en/helfen/eintragen/)
+</FaqItem>
+
+<FaqItem q="I am sick or cannot help out after all. What should I do?">
+Cancel your shift under **My Shifts** as early as possible so your spot becomes available for others. For last-minute cancellations on the event day itself, please also call or message the OC or shift coordinator directly. [Canceling your sign-up](/en/helfen/austragen/)
+</FaqItem>
+
+<FaqItem q="It says “Not unlocked for you”. What now?">
+The event is restricted to a specific department, group, or association members. Check your department assignment or ask the OC for an access link. [Why can't I sign up?](/en/helfen/nicht-freigeschaltet/)
+</FaqItem>
+
+<FaqItem q="I want to work the same shift with a friend.">
+Check that the task has at least two available slots, and have both of you sign up.
+</FaqItem>
+
+<FaqItem q="Will I receive a reminder before my shift?">
+The OC can send announcements to enrolled helpers. For peace of mind, add your shifts to your Google Calendar or download the `.ics` file. [My Shifts and Calendar](/en/helfen/meine-schichten/)
+</FaqItem>
+
+<FaqItem q="I am unable to select a bar shift although I am already 16.">
+Check your birth date in your [profile](/en/helfen/konto/). For Cevi.DB accounts, it is pulled directly from the database. The system verifies age on the day of the shift. [Minimum age requirements](/en/helfen/mindestalter/)
+</FaqItem>
+
+## For the OC (Organizing Committee)
+
+<FaqItem q="How do I create recurring 2-hour shifts across a day (shift series)?">
+In the OC dashboard under **Shifts**, tap **Create series**. Select date range, shift duration (e.g. 2 hours), and roles. The shift planner generates all slots in one click. [Planning shifts](/en/ok/schichten-planen/#schichtserien-erstellen-raster-planung)
+</FaqItem>
+
+<FaqItem q="Where can I see total volunteer hours (e.g. for catering vouchers)?">
+Under **Helpers** or **Export & Print**, tap **Helper hours**. There you can inspect logged volunteer hours and download a CSV list for distributing meal or drink vouchers. [Evaluation & stats](/en/ok/auswertung/#helferstunden--einsatz-statistik)
+</FaqItem>
+
+<FaqItem q="Are there keyboard shortcuts or quick search for shifts and helpers?">
+Yes! Press <kbd>⌘K</kbd> (Mac) or <kbd>Ctrl</kbd>+<kbd>K</kbd> (Windows) anywhere to open the Command Palette. Search for shifts, events, or volunteers, assign helpers, and find unfilled slots without using the mouse. [Command Palette](/en/wissen/befehlsmenue/)
+</FaqItem>
+
+<FaqItem q="How do I invite helpers from outside our department?">
+Generate an access link in the OC dashboard under “Access & info”. You can create personal links for specific people or group links for chats. [Access links](/en/ok/zugangs-links/)
+</FaqItem>
+
+<FaqItem q="Can I assign someone who does not have an account?">
+Yes, choose **Guest / free name** when assigning, with optional email and phone number. [Assigning helpers](/en/ok/einteilen/)
+</FaqItem>
+
+<FaqItem q="How can I create three identical consecutive shifts?">
+In the OC dashboard under **Shifts**, click **Copy** next to the shift. The duplicated shift begins where the previous one ends. Repeat twice, done. For longer sequences, use **Create series**. [Planning shifts](/en/ok/schichten-planen/)
+</FaqItem>
+
+<FaqItem q="Can I reuse an event template from last year?">
+Yes, use **Save as template**, and next year choose **Create from template**. [Templates](/en/ok/vorlagen/)
+</FaqItem>
+
+<FaqItem q="I want to prepare the schedule before opening sign-ups.">
+Under **Settings**, specify an opening time under **Registration opens at** (complete with a live countdown). Alternatively, disable **Helpers can self-register** and turn it back on when ready. [Creating an event](/en/ok/anlass-erstellen/)
+</FaqItem>
+
+<FaqItem q="Does the OC receive an alert when a helper cancels?">
+No. The OC dashboard always shows live staffing levels, and the **Activity log** records every cancellation with exact timestamps. For last-minute cancellations, ask volunteers to notify you by phone. [Activity log](/en/ok/auswertung/#aktivitaets-protokoll)
+</FaqItem>
+
+<FaqItem q="I cannot add a user to the OC team.">
+They likely only have a nickname profile. Administrative roles require an account authenticated via association database or email and password. If multiple people share a name, invite them by email address. [Roles and permissions](/en/ok/rollen/)
+</FaqItem>
+
+<FaqItem q="I cannot create a new event.">
+Creating events requires Department Leadership privileges or the **Create events** permission. Ask your department administrator to grant you this permission or create the event and add you to its OC. [Roles and permissions](/en/ok/rollen/)
+</FaqItem>
+
+## For Department Leadership
+
+<FaqItem q="How do we add our department to the shift planner?">
+The department leader listed in Cevi.DB creates the department on `cevi-schichtplan.ch` via **Create department**. [Setting up a department](/en/abteilung/anlegen/)
+</FaqItem>
+
+<FaqItem q="Can I change our subdomain later?">
+No, the subdomain is permanent. Choose it thoughtfully during setup. The department name, logo, and brand colors can be customized at any time.
+</FaqItem>
+
+<FaqItem q="A department leader from Cevi.DB does not have admin rights in the shift planner.">
+Whoever is designated as department leader in Cevi.DB automatically receives the Department Leadership role upon logging in via Cevi.DB. If issues occur, log out and sign in fresh via Cevi.DB. [Association databases (Hitobito)](/en/abteilung/hitobito/)
+</FaqItem>
+
+<FaqItem q="Parents cannot see our upcoming events.">
+The homepage is configured as “Members only”. Public events remain accessible via direct link, and internal events can use access links. Alternatively, change the setting to open visibility. [Department settings](/en/abteilung/einstellungen/)
+</FaqItem>

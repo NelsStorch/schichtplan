@@ -1,0 +1,121 @@
+---
+title: Compte et profil
+description: Fenêtre de compte et page de profil, push par appareil, téléchargement des données et suppression de compte.
+audience: [helfer]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+## La fenêtre de compte
+
+Dans le plan de créneaux de votre section, cliquez en bas à droite sur **Compte** (sur ordinateur, en haut à droite sur votre nom). Cette fenêtre est volontairement compacte : elle affiche votre nom, votre section et votre rôle (par exemple « Bénévole » ou « Direction de section ») et ne contient que ce qui se rapporte à cette adresse :
+
+- **Thème visuel** : clair, sombre ou identique à votre appareil
+- **Push sur cet appareil** (voir [ci-dessous](#le-push-sapplique-par-appareil))
+- <Btn>Mes créneaux</Btn> avec vos heures de bénévolat
+- <Btn>Profil & paramètres</Btn>, qui ouvre la page de profil sur le site principal. En haut à gauche, **Retour à …** vous ramène à votre plan de créneaux. Dans l'application installée, la page de profil s'ouvre dans le navigateur.
+- <Btn>Installer l'application</Btn>, si votre navigateur le propose
+- <Btn variant="ghost">Aide</Btn> et <Btn variant="ghost">Déconnexion</Btn>
+
+Tout le reste, comme vos coordonnées, notifications, mot de passe, **Télécharger mes données** et **Supprimer le compte**, se trouve sur la page de profil.
+
+## La page de profil
+
+<Path steps={['cevi-schichtplan.ch/profil']} />
+
+La page de profil n'existe que sur le domaine principal. `<section>.cevi-schichtplan.ch/profil` y redirige automatiquement. Elle comporte quatre onglets :
+
+- **Aperçu** : vos prochains créneaux avec abonnement calendrier, vos heures de bénévolat, votre section et vos branches, ainsi que les éléments manquants de votre profil
+- **Coordonnées** : nom, numéro de portable, date de naissance et e-mail
+- **Notifications** : e-mail et notifications push
+- **Sécurité & données** : mot de passe, authentification à deux facteurs, téléchargement de vos données et suppression du compte
+
+Dans l'onglet **Coordonnées**, vous modifiez vos **prénom, nom, numéro de portable et date de naissance**. Le plan de créneaux utilise ces informations lorsqu'un événement les [exige](/fr/helfen/angaben-und-fragen/).
+
+Pour les comptes Cevi.DB, la date de naissance provient de la Cevi.DB et ne peut pas être modifiée ici. Le nom est réimporté à chaque connexion depuis la Cevi.DB : modifiez-le de préférence là-bas. Le numéro de portable est géré uniquement ici. Le plan de créneaux n'enregistre aucune adresse postale.
+
+Si vous vous connectez avec un prénom/surnom Cevi, la date de naissance fait partie de vos identifiants. Si vous la modifiez ici, la nouvelle date s'applique dès lors.
+
+### Confirmer l'e-mail
+
+Si la mention **Non confirmé** s'affiche à côté de votre e-mail, cliquez sur **Demander le lien de confirmation** et ouvrez le lien reçu dans l'e-mail. Sans e-mail confirmé, vous ne pouvez pas vous connecter avec un e-mail et un mot de passe.
+
+Si vous n'avez pas encore renseigné d'adresse e-mail, vous pouvez l'ajouter dans l'onglet **Coordonnées**.
+
+### Mot de passe et connexion de secours
+
+Dans l'onglet **Sécurité & données**, vous gérez votre mot de passe personnel :
+
+- **Compte avec mot de passe :** vous pouvez modifier votre mot de passe actuel à tout moment (saisir l'ancien mot de passe, puis choisir le nouveau).
+- **Compte avec Cevi.DB / MiData / Jubla-DB :** vous pouvez définir un **mot de passe de secours**. Il vous permet de vous connecter avec votre adresse e-mail et ce mot de passe si la base de données de votre fédération venait à être temporairement indisponible. Vos créneaux et vos droits de responsable restent intégralement conservés.
+
+### Authentification à deux facteurs
+
+Avec l'authentification à deux facteurs, le plan de créneaux demande lors de la connexion un code à 6 chiffres généré par une **application d'authentification** sur votre téléphone. Toute application compatible avec le standard ouvert TOTP fonctionne, par exemple Google Authenticator, Microsoft Authenticator, Aegis, 2FAS, 1Password ou Bitwarden. Cette option est disponible pour les comptes avec mot de passe ou connexion de fédération, mais pas pour les profils avec surnom seul.
+
+Voici comment la configurer :
+
+1. Dans l'onglet **Sécurité & données**, sous **Authentification à deux facteurs**, cliquez sur <Btn variant="secondary">Configurer</Btn>. Si vous avez un mot de passe, saisissez-le pour confirmer.
+2. Dans votre application d'authentification, ajoutez un nouveau compte et scannez le code QR (ou saisissez la clé secrète).
+3. Entrez le code généré par l'application et cliquez sur <Btn variant="primary">Activer</Btn>.
+4. Conservez précieusement les **10 codes de récupération**, par exemple dans votre gestionnaire de mots de passe ou sur papier imprimé. Ils ne s'affichent qu'une seule fois.
+
+**Quand le code est-il demandé ?**
+
+- **Connexion avec mot de passe** (y compris le mot de passe de secours) : systématiquement.
+- **Connexion avec Cevi.DB / MiData / Jubla-DB** : pas par défaut, sauf si vous activez l'interrupteur **Demander aussi le code lors de la connexion via …**. La base de données de la fédération dispose de sa propre double authentification. Si elle y est déjà activée, vous n'avez pas besoin d'activer l'interrupteur ici.
+
+Désactiver la fonction, changer l'interrupteur ou générer de nouveaux codes de récupération nécessite obligatoirement un code actif. Une personne ayant un accès temporaire à votre appareil déverrouillé ne peut donc pas la désactiver.
+
+:::caution[Téléphone égaré ?]
+Connectez-vous avec l'un de vos codes de récupération (sur la page du code, cliquez sur **Utiliser un code de récupération**). Chaque code n'est utilisable qu'une seule fois. Générez ensuite de nouveaux codes dans votre profil. Si vous n'avez plus non plus vos codes de récupération, contactez l'[adresse de contact](/fr/wissen/kontakt/). Après vérification, l'authentification à deux facteurs pourra être réinitialisée.
+:::
+
+### Notifications et rappels
+
+Dans l'onglet **Notifications** de la page de profil, vous configurez comment et quand vous souhaitez recevoir des rappels. Tout est enregistré immédiatement.
+
+- **Push sur cet appareil** : active les notifications push pour le navigateur que vous utilisez actuellement (également pour les profils avec surnom sans e-mail). Cliquez sur **Envoyer un test** pour vérifier le bon fonctionnement.
+- **Appareils avec push** : tous les appareils sur lesquels le push est activé, par ex. « iPhone · App » ou « Windows · Chrome ». Avec **Supprimer**, vous retirez un appareil, par exemple un ancien téléphone ou un iPhone configuré en double (Safari et application).
+- **Ce qui est envoyé par e-mail, ce qui est envoyé par push** : un tableau avec les colonnes E-mail et Push pour le rappel de créneau, les bons repas restants, « Remplaçant trouvé » et les messages du CO. Les e-mails nécessitent une adresse confirmée.
+- **Quand rappeler ?** : les moments où le rappel est envoyé avant le début du créneau (par ex. 1 semaine, 2 jours, 1 jour ou 2 heures avant, ou plusieurs choix combinés). Les rappels par e-mail contiennent une pièce jointe calendrier (`.ics`).
+
+### Le push s'applique par appareil
+
+Le push s'active une fois par appareil et navigateur, que ce soit depuis la **fenêtre de compte** dans le plan de créneaux d'une section ou sur la page de profil. Vous recevez ensuite les notifications de toutes les sections et événements, et le commutateur indique partout **Actif**. Vous pouvez également désactiver le push depuis n'importe où. Sur votre smartphone ou d'autres ordinateurs, activez le push séparément.
+
+Tant que le push n'est pas encore activé sur un appareil, un petit point sur le bouton **Compte** vous le signale. Il disparaît après la première ouverture de la fenêtre de compte.
+
+Si votre navigateur renouvelle spontanément l'abonnement push, le plan de créneaux le met à jour automatiquement. Vous n'avez rien à réactiver.
+
+Comme expéditeur, votre appareil indique l'adresse sur laquelle vous avez activé le push. Si vous appuyez sur une notification, l'événement correspondant s'ouvre, même s'il appartient à une autre section.
+
+:::note[iPhone et iPad]
+Sur iPhone et iPad, les notifications push fonctionnent uniquement dans l'application installée sur l'écran d'accueil. Sur la page de profil dans le navigateur, il n'y a donc pas de bouton push, mais un lien vers le plan de créneaux de votre section. Ajoutez-le via **Partager → Sur l'écran d'accueil** et activez le push dans l'application depuis la **fenêtre de compte**.
+:::
+
+## Supprimer le compte
+
+La suppression efface définitivement votre compte, l'ensemble de vos inscriptions à des créneaux ainsi que vos rôles de section et de CO. Vous êtes immédiatement déconnecté. Cette action est irréversible. Par mesure de sécurité, le bouton ne devient actif qu'après quelques secondes.
+
+- Les comptes avec **Cevi.DB** ou **mot de passe** se suppriment en toute autonomie, sur la page de profil dans l'onglet **Sécurité & données**.
+- Les profils avec **surnom seul** ne peuvent pas se supprimer directement. Ils sont conçus comme profils de bénévoles temporaires. Dans le même onglet, cliquez sur **Demander la suppression** : le compte sera alors supprimé sous 30 jours.
+
+Sous **Télécharger mes données** (onglet **Sécurité & données**), vous pouvez préalablement obtenir au format JSON toutes les données stockées par le plan de créneaux sur votre compte.
+
+:::caution[Se désinscrire au préalable est plus courtois]
+La suppression vous retire de tous les créneaux futurs. Prévenez le CO si vous étiez inscrit à des créneaux prévus prochainement.
+:::
+
+## Si vous n'utilisez pas votre compte pendant longtemps
+
+Pour éviter de conserver des données plus longtemps que nécessaire, les comptes inutilisés depuis deux ans sont supprimés :
+
+1. Après **24 mois sans connexion**, vous recevez un e-mail indiquant la date prévue de suppression.
+2. Si vous vous connectez une fois dans les **30 jours** qui suivent, votre compte est conservé et le délai de deux ans repart à zéro.
+3. Sinon, il est supprimé à l'issue des 30 jours.
+
+Sont supprimés votre profil, vos coordonnées et vos réponses aux questions du CO. Dans les événements passés, votre créneau reste mentionné comme **« Personne supprimée »** sans nom, afin de préserver l'exactitude des plannings et des bilans.
+
+Les comptes sans adresse e-mail, comme les profils avec surnom pur, sont supprimés sans avertissement préalable car nous ne pouvons pas vous contacter. L'unique responsable d'une section et les administrateurs de la plateforme en sont exemptés.

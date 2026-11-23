@@ -1,0 +1,86 @@
+---
+title: Diritti nella sezione
+description: Quali diritti esistono, i modelli disponibili e chi può assegnare i permessi.
+audience: [abteilung]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Pagina iniziale della sezione', 'Sezione', 'Persone', 'Modifica']} />
+
+Chi nella sezione deve poter svolgere operazioni oltre alla semplice iscrizione ai turni riceve specifici **diritti**. Puoi assegnarli singolarmente spuntandoli oppure scegliere un **modello** che imposta in un colpo solo una combinazione tipica di permessi. I diritti sono validi per l'intera sezione e per tutti i suoi eventi.
+
+Chi collabora alla pianificazione di un solo evento specifico non ha bisogno di diritti di sezione: è sufficiente inserire la persona nel [CO dell'evento](/it/ok/rollen/).
+
+## Direzione di sezione
+
+La **Direzione di sezione** dispone sempre di tutti i diritti. Viene desunta automaticamente dalla Cevi.DB: chi è registrato come responsabile di sezione diventa automaticamente responsabile della propria sezione al login. Se il ruolo decade nella Cevi.DB, il piano dei turni rimuove i diritti direttivi al successivo accesso, a meno che non si tratti dell'ultimo responsabile rimasto per la sezione.
+
+All'interno della sezione non è possibile assegnare o revocare manualmente il ruolo di direzione di sezione. Se una sezione non collegata a Cevi.DB necessita di una direzione, questa viene impostata dagli [amministratori della piattaforma](/it/wissen/kontakt/).
+
+## I diritti
+
+**Sezione**
+
+| Diritto | Autorizzazione |
+| --- | --- |
+| Modificare sezione | Nome, logo, colore, persona di contatto e «Pagina iniziale solo per i membri» |
+| Gestire branche | Creare branche, rinominarle, collegarle a Cevi.DB ed eliminarle |
+| Visualizzare persone | L'elenco delle persone con branche e diritti |
+| Gestire persone e diritti | Assegnare branche alle persone, rimuovere persone, attribuire diritti (vedi sotto), visualizzare il protocollo |
+| Gestire modelli | Salvare eventi come modelli ed eliminare modelli esistenti |
+
+**Eventi** (vale per tutti gli eventi della sezione)
+
+| Diritto | Autorizzazione |
+| --- | --- |
+| Visualizzare tutti gli eventi | Anche bozze e l'area CO di tutti gli eventi, inclusi i dati di contatto dei volontari |
+| Creare eventi | Creare nuovi eventi, anche a partire da modelli |
+| Modificare eventi | Modificare le impostazioni di tutti gli eventi come responsabile CO, spostare eventi |
+| Pianificare turni | Gestire turni, mansioni e responsabili di giornata |
+| Assegnare volontari | Iscrivere e cancellare volontari, gestire disdette e link di accesso |
+| Inviare messaggi | Spedire e-mail ai volontari |
+| Registrare presenze | Gestire lista presenze e codice QR per il check-in |
+| Esportare | Elenchi, PDF del piano dei turni e ore di servizio svolte |
+| Nominare CO | Nominare e rimuovere responsabili e membri del CO |
+| Eliminare eventi | Eliminare definitivamente gli eventi con tutti i turni e le iscrizioni |
+
+Ogni diritto legato agli eventi presuppone **Visualizzare tutti gli eventi**; «Gestire persone e diritti» presuppone «Visualizzare persone». Il piano dei turni attiva automaticamente queste dipendenze.
+
+:::note[Chi crea l'evento non è automaticamente nel CO]
+Con il diritto «Creare eventi» puoi creare un nuovo evento e visualizzarlo. Le impostazioni operative vengono gestite dal CO. Se desideri essere tu stesso responsabile del CO, tocca <Btn>Iscrivimi come responsabile CO</Btn> durante la creazione.
+:::
+
+## I modelli
+
+| Modello | Diritti inclusi |
+| --- | --- |
+| Amministrazione | Tutti i diritti. Quasi equivalente alla direzione di sezione, ma con delega dei diritti limitata |
+| Coordinamento eventi | Creare eventi e pianificare, assegnare, inviare messaggi, presenze, export e modelli in tutti gli eventi (ex ruolo «Pianificazione») |
+| Modificare eventi | Modificare tutti gli eventi esistenti come responsabile CO, compresa la nomina del CO, senza crearne di nuovi |
+| Creare eventi | Solo creare nuovi eventi |
+
+Se nessun modello corrisponde esattamente alle tue esigenze, puoi spuntare i singoli permessi. La persona verrà contrassegnata con «Diritti personalizzati».
+
+## Chi può assegnare i diritti?
+
+- La **Direzione di sezione** può assegnare e revocare qualsiasi diritto.
+- Chi ha il diritto **Gestire persone e diritti** può assegnare solo i diritti di cui dispone personalmente e, nel complesso, **meno diritti** di quelli che possiede. Non può modificare persone che hanno un numero uguale o superiore di permessi, né la direzione di sezione, né se stesso.
+- Le persone con un profilo basato solo sul nome Cevi (senza Cevi.DB e senza password) non possono ricevere diritti.
+
+In questo modo un amministratore può ad esempio concedere a un collega il permesso di «Creare eventi», ma non può promuovere nessuno a un secondo amministratore completo.
+
+## Denominazioni delle persone
+
+| Denominazione | Significato |
+| --- | --- |
+| Direzione di sezione | Tutti i diritti, determinati tramite Cevi.DB |
+| Nome di un modello | Possiede esattamente i diritti previsti dal modello |
+| Diritti personalizzati | Possiede una combinazione personalizzata di diritti |
+| Membro | La vostra sezione è la sezione principale, nessun diritto speciale |
+| Ospite | Ha effettuato l'accesso dal vostro sottodominio, ma appartiene a un'altra sezione principale o a nessuna |
+
+## Protocollo
+
+In <Btn>Protocollo</Btn> viene registrato chi ha concesso o revocato diritti, quando, le promozioni o revoche della direzione di sezione (anche automatiche via Cevi.DB) e le modifiche alle branche. Il protocollo è accessibile alla direzione di sezione e a chi possiede «Gestire persone e diritti».

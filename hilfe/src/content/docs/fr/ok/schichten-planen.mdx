@@ -1,0 +1,98 @@
+---
+title: Planifier les créneaux et les postes
+description: Un créneau est une plage horaire qui contient un ou plusieurs postes avec leurs propres places.
+audience: [ok]
+numbered: true
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+
+## Créneau ou poste ?
+
+Un **créneau** est une plage horaire, par exemple « Samedi 17:00 à 20:00 ». Un **poste** (ou tâche) correspond à ce qu'il y a à faire durant ce créneau, par exemple grill, bar, caisse. Chaque poste a son propre nombre de places et sa propre limite d'âge. Le total des places de tous les postes forme la capacité globale du créneau.
+
+Si vous n'avez pas besoin de subdivision, le créneau ne contient qu'un seul poste générique, par exemple « Bénévole ».
+
+## Créer un nouveau créneau
+
+Ouvrez l'événement et cliquez sur <Btn variant="primary">Créneau</Btn> en haut, ou rendez-vous dans l'espace CO sous **Créneaux** et cliquez sur <Btn variant="primary">Nouveau créneau</Btn>.
+
+<Steps>
+1. **Titre du créneau**, par exemple « Bar & Grill samedi soir ».
+
+2. Cochez **Montage ou démontage** s'il s'agit de travaux préparatoires ou de rangement. Les bénévoles pourront filtrer spécifiquement sur ces créneaux.
+
+3. **Début** et **Fin**. Si le créneau commence avant l'**heure de bascule quotidienne** de l'événement (par défaut 04:00, configurable sous Paramètres → Responsabilités), il est rattaché à la journée de la veille sur le planning.
+
+4. **Âge minimum pour tout le créneau** : Aucun, dès 14 ans, dès 16 ans ou dès 18 ans. S'applique à l'ensemble des postes du créneau.
+
+5. **Postes dans ce créneau** : Chaque poste possède un nom, un nombre de places (de 1 à 20) et facultativement sa propre limite d'âge. Pour une limite d'âge, indiquez si **tous** doivent avoir cet âge ou **au moins 1 personne dans le créneau**. Voir [Âge minimum](/fr/helfen/mindestalter/).
+
+6. **Consignes / Description** : « Chaussures confortables, tablier fourni ».
+
+7. Cliquez sur <Btn variant="primary">Créer le créneau</Btn>.
+</Steps>
+
+:::tip[Postes issus du catalogue]
+En haut de la section « Postes », la rubrique **Ajout rapide depuis le catalogue** liste les postes de votre [catalogue de postes](/fr/ok/arbeiten-katalog/). Un clic insère le poste avec sa description et sa règle d'âge. S'il est déjà présent dans le créneau, une place supplémentaire lui est ajoutée.
+:::
+
+## Créer des séries de créneaux (planification par grille)
+
+Si vous avez besoin de nombreux créneaux répétitifs sur un même rythme lors d'une fête (par ex. toutes les 2 heures de 10:00 à 22:00 avec grill et bar à chaque fois), vous pouvez les générer automatiquement en série :
+
+Sous **Créneaux**, cliquez en haut sur <Btn variant="secondary">Créer une série</Btn>.
+
+<Steps>
+1. **Plage horaire globale** : Définissez le début et la fin de la période complète (p. ex. Samedi de 10:00 à 22:00).
+2. **Durée d'un créneau** : Choisissez un intervalle standard comme 1h30, 2h, 3h ou indiquez librement le nombre de minutes.
+3. **Chevauchement pour passation** : Définissez par exemple 10 ou 15 minutes si l'équipe suivante doit arriver un peu avant pour assurer la relève et les consignes sur place.
+4. **Titre & postes** : Indiquez le titre (p. ex. « Stand grillade fête ») et sélectionnez les postes depuis le [catalogue de postes](/fr/ok/arbeiten-katalog/) ou ajoutez-les (p. ex. 2× Grill, 1× Caisse).
+5. **Vérifier l'aperçu en direct** : En bas, visualisez immédiatement tous les créneaux calculés (p. ex. « 6 créneaux · 18 places »).
+6. Cliquez sur <Btn variant="primary">Créer les créneaux</Btn>. Tous les créneaux sont générés en une seule étape.
+</Steps>
+
+## Modifier, dupliquer, supprimer
+
+Dans l'espace CO sous **Créneaux**, chaque créneau dispose de trois boutons d'action :
+
+- **Modifier** : ajuster toutes les informations. Les inscriptions existantes sont conservées. Un clic accidentel en dehors de la boîte de dialogue ne ferme pas la fenêtre (protection contre la perte de saisie).
+- **Dupliquer** : crée un **créneau consécutif**. Il démarre exactement à la fin du précédent et dure le même temps. Tous les postes et quotas de places sont clonés, mais pas les inscriptions de personnes. Vous montez ainsi une soirée de trois créneaux identiques en quelques secondes.
+- **Supprimer** : supprime le créneau ainsi que toutes ses inscriptions. Cette action est irréversible.
+
+La modification peut également s'effectuer directement sur la page de l'événement : cliquez sur le créneau, puis sur <Btn>Modifier</Btn>.
+
+## Vue liste et vue planning
+
+Sous **Créneaux**, vous pouvez basculer entre deux modes d'affichage en haut de page :
+
+- **Liste** : chaque créneau sous forme de carte détaillée avec l'ensemble des postes et des personnes affectées. Vous y affectez des personnes via <Btn>Affecter</Btn> et les retirez avec la croix.
+- **Planning** : une frise chronologique par jour. Chaque créneau est représenté par une barre : verte si complet, colorée si partiellement rempli, hachurée si totalement vacant. Les trous et chevauchements sautent immédiatement aux yeux. Cliquer sur une barre ouvre le détail du créneau.
+
+Vous pouvez filtrer par jour, **Incomplets uniquement**, **Alerte protection des mineurs**, **Montage/démontage uniquement**, ainsi que par **Poste** et **Catégorie**. La barre de recherche trouve instantanément les créneaux, catégories, postes et personnes inscrites.
+
+## Modifier plusieurs créneaux en bloc
+
+<Steps>
+1. Cliquez sur <Btn>Sélectionner</Btn>.
+
+2. Cochez les créneaux souhaités, ou cliquez sur <Btn variant="ghost">Sélectionner toute la journée</Btn>.
+
+3. Une barre d'outils apparaît en bas :
+   - <Btn>Déplacer</Btn> : avancer ou reculer l'horaire (en jours, heures et minutes). Les décalages de journées entières conservent l'heure exacte, y compris lors des changements d'heure d'été/d'hiver.
+   - <Btn>Places</Btn> : uniformiser le nombre de places (uniquement pour les créneaux à poste unique).
+   - Définir la <Btn>Catégorie</Btn> et l'option <Btn>Montage/démontage</Btn>.
+   - <Btn>Message</Btn> : envoyer un e-mail groupé à toutes les personnes inscrites sur ces créneaux.
+   - <Btn variant="danger">Supprimer</Btn> : supprime les créneaux sélectionnés ainsi que leurs inscriptions.
+
+4. Cliquez sur <Btn variant="primary">Terminer</Btn> pour quitter le mode sélection.
+</Steps>
+
+:::caution[Déplacement avec personnes inscrites]
+Les personnes déjà inscrites restent affectées et ne sont pas informées automatiquement du changement d'horaire. Pensez à leur envoyer un [message](/fr/ok/nachrichten/) explicatif.
+:::
+
+:::caution[Supprimer des postes ou réduire les places]
+Si vous réduisez le nombre de places d'un poste en dessous du nombre d'inscrits actuels, toutes les personnes restent inscrites. Si vous supprimez totalement un poste, les personnes demeurent dans le créneau mais ne sont plus rattachées à aucun poste spécifique. Vérifiez ensuite sous **Bénévoles** qui est concerné pour réaffecter les personnes si nécessaire.
+:::

@@ -1,0 +1,44 @@
+---
+title: Persone
+description: Chi appartiene alla sezione, chi ha quali diritti? Qui gestisci le persone e assegni i permessi.
+audience: [abteilung]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Sezione', 'Persone']} />
+
+La scheda **Persone** è visibile per chi possiede il diritto «Visualizzare persone» (la direzione di sezione sempre). L'elenco mostra tutti coloro che hanno la vostra sezione come sezione principale, chi è nella direzione o possiede diritti. In alto è indicato chi ricopre la **Direzione di sezione**.
+
+Con **Mostra ospiti** compaiono anche le persone che hanno effettuato l'accesso tramite il vostro sottodominio, ma appartengono a un'altra sezione o a nessuna. In questo modo puoi ad esempio concedere diritti a un responsabile della sezione vicina.
+
+## Invitare persone e assegnare diritti direttamente
+
+In alto nella scheda **Persone** (visibile con il diritto «Gestire persone e diritti» o «Modificare sezione») trovi l'area **Invita persone & link di invito**:
+
+- **Copia link**: copia il link di invito riservato da condividere nella chat di gruppo o via e-mail. Chi accede tramite questo link viene subito registrato come membro confermato. Con <Btn variant="ghost">Genera nuovo</Btn> puoi invalidare i link di invito precedenti.
+- **Invita via e-mail**: inserisci l'indirizzo e-mail e seleziona facoltativamente un modello di diritti (ad es. **Con diritto: Creare eventi** o **Coordinamento eventi**). Non appena la persona fa clic sul link ricevuto via e-mail, viene accolta nella sezione e riceve automaticamente i diritti selezionati – anche se deve ancora creare un nuovo account.
+
+## Elenco e «Chi può fare cosa»
+
+- **Elenco**: per ciascuna persona compare lo stato (Direzione di sezione, modello, «Diritti personalizzati», Membro, Ospite), se l'appartenenza proviene da Cevi.DB e le branche di appartenenza, ad esempio «Hiskia (Animatore/trice)».
+- **Chi può fare cosa**: una tabella riassuntiva con tutte le persone che possiedono permessi speciali e una spunta per ciascun diritto.
+
+## Modificare una persona
+
+Tocca <Btn variant="ghost">Modifica</Btn>. Il pulsante è visibile solo per le persone che sei autorizzato a modificare (vedi [Chi può assegnare i diritti?](/it/abteilung/rechte/#chi-puo-assegnare-i-diritti)).
+
+**Diritti nella sezione**: scegli un modello oppure seleziona singolarmente i singoli diritti. Il significato di ciascun diritto è descritto in [Diritti nella sezione](/it/abteilung/rechte/).
+
+**Branche**: per ciascuna branca seleziona No, Partecipante o Animatore/trice (Direzione). Le branche provenienti da Cevi.DB sono protette e non modificabili manualmente.
+
+Salva con <Btn variant="primary">Salva</Btn>. La modifica verrà registrata nel [Protocollo](/it/abteilung/rechte/#protocollo).
+
+## Limitazioni e regole
+
+- La **Direzione di sezione** proviene dalla Cevi.DB e non può essere modificata qui. Se una persona è registrata nella Cevi.DB come responsabile di sezione ma non risulta ancora tale nel piano dei turni, il dato verrà sincronizzato al suo prossimo login.
+- Le persone con un profilo basato solo sul nome Cevi (senza Cevi.DB e senza password) non possono ricevere diritti finché non associano un account Cevi.DB oppure e-mail e password.
+- <Btn variant="ghost">Rimuovi dalla sezione</Btn> è disponibile solo per le persone che si sono associate autonomamente. I loro diritti nella sezione decadranno e al login successivo verrà loro chiesto nuovamente a quale sezione appartengono. Per gli utenti Cevi.DB, la sezione è determinata dai ruoli ufficiali.
+- <Btn variant="ghost">Conferma</Btn> è visibile solo alla direzione di sezione, per le persone con account Cevi.DB del vostro gruppo locale che hanno selezionato manualmente la sezione (ad es. membri del comitato senza ruolo in una specifica unità). Dopo la conferma, saranno conteggiati anche per gli eventi con accesso «Interno alla sezione, Cevi.DB». L'elenco e il protocollo registrano chi ha confermato la persona e quando. Sotto «Modifica» la conferma può essere revocata. Decade automaticamente se la persona cambia sezione o perde il ruolo nel gruppo locale.
+- Chi deve coordinare solo uno specifico evento non necessita di diritti a livello di sezione: basta inserirlo nel [CO dell'evento](/it/ok/rollen/).

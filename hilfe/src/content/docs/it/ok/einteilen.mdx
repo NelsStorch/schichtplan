@@ -1,0 +1,59 @@
+---
+title: Assegnare e cancellare volontari
+description: Come membro del CO assegni direttamente le persone, anche ospiti senza account, e le rimuovi se necessario.
+audience: [ok]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+
+## Assegnare una persona
+
+Nell'area CO sotto **Turni**, ogni mansione presenta il pulsante <Btn>Assegna</Btn>. Nella visualizzazione normale dell'evento puoi aprire il turno e toccare <Btn>Assegna persona</Btn>.
+
+<Steps>
+1. Se il turno comprende più mansioni, seleziona la **Mansione** in alto (con indicazione dei posti occupati). La mansione su cui hai premuto <Btn>Assegna</Btn> è preselezionata, altrimenti verrà proposta la prima con posti liberi.
+2. Scegli **Persona con account** e cerca la persona nell'elenco (vedi sotto).
+3. Oppure scegli **Ospite / Nome libero** e inserisci nome o soprannome scout/Cevi, facoltativamente con e-mail e telefono. Questa opzione è ideale per chi non ha un account, ad esempio la vicina di casa che ha dato la propria disponibilità a voce.
+4. Tocca <Btn variant="primary">Assegna</Btn>.
+</Steps>
+
+### L'elenco delle persone
+
+L'elenco mostra le persone presenti sotto **Volontari**. Per ciascuna persona vedi sezione, branche, età all'inizio del turno e, a destra, **quanti turni** ha già assegnati in questo evento. Se è definito un obiettivo, compare ad esempio «1/2» (in verde = obiettivo raggiunto).
+
+- **Cerca**: per nome, soprannome scout o branca.
+- **Ordina**: l'opzione predefinita è «Meno turni per primi», per distribuire il carico di lavoro in modo equo. Altre opzioni: più turni, nome alfabetico, età.
+- **Sezione** (per eventi multi-sezione) e **Branche**: filtri mirati. È possibile selezionare più branche contemporaneamente.
+- **Solo da … anni**: se il turno o la mansione prevede un'età minima per tutti, le persone troppo giovani vengono nascoste. Disattivando il filtro compaiono contrassegnate da «troppo giovane», ma non saranno comunque selezionabili. Chi non ha una data di nascita inserita è contrassegnato con «età sconosciuta».
+- **Mostra disdetti**: chi ha segnalato di non poter aiutare è nascosto di default.
+- **Mostra membri della sezione senza accesso**: persone della vostra sezione che non soddisfano le regole ordinarie di accesso all'evento. I membri di altre sezioni compaiono solo se dispongono di accesso.
+
+Segnalazioni utili nell'elenco: «già in questo turno» (non selezionabile) e «in contemporanea: …» se la persona è già impegnata in un altro turno nello stesso orario.
+
+Se una mansione richiede un'età minima con la regola «almeno 1 persona nel turno», la finestra mostra un avviso. Per le persone registrate con account il sistema verifica l'età come nell'auto-iscrizione; per gli ospiti senza data di nascita la responsabilità di verificare l'età ricade su di te.
+
+:::tip[L'assegnazione manuale è sempre possibile]
+Come membro del CO puoi assegnare persone anche quando le iscrizioni per i volontari sono chiuse o se la persona non soddisfa i requisiti di accesso. Le domande obbligatorie non vengono sollecitate in questo caso.
+:::
+
+## Cancellare un'iscrizione
+
+- **Da un singolo turno**: fai clic sulla piccola croce accanto al nome, sotto **Turni**, sotto **Volontari** o all'interno della finestra del turno.
+- **Dall'intero evento**: in **Volontari** tocca la persona, poi <Btn variant="danger">Cancella da tutti i turni</Btn>.
+
+La persona non riceve una notifica automatica. È consigliabile avvisarla direttamente, ad esempio tramite [Messaggi](/it/ok/nachrichten/).
+
+## Cercare un sostituto per qualcuno
+
+Se un volontario chiama dicendo di essere impossibilitato a partecipare, non devi necessariamente cancellarlo subito. Apri il turno nell'evento e tocca l'icona con le frecce accanto al nome (Cerca sostituto). La persona rimarrà iscritta fino a quando un'altra persona non subentrerà nel turno. Con la stessa icona puoi interrompere la ricerca in qualsiasi momento.
+
+Chi sta cercando un sostituto è visibile nella panoramica dell'area CO. L'avvenuto subentro viene registrato nel [Registro delle attività](/it/ok/auswertung/#registro-delle-attivita) con la dicitura «Subentrato/a». Come funziona per i volontari: vedi [Cercare un sostituto](/it/helfen/ersatz-suchen/).
+
+## Panoramica di tutte le persone
+
+Sotto **Volontari** ogni persona compare una sola volta. Toccando il nominativo si aprono tutti i turni assegnati e, per gli ospiti esterni, anche i recapiti e-mail e telefono. Vedi [Volontari e obiettivo turni](/it/ok/helfer-pool/).
+
+## Segnalare assenza («Disdetta») è diverso dal cancellare
+
+In **Volontari**, l'opzione **Non può aiutare (disdetta)** indica che la persona è esentata dall'aiutare a questo evento, ad esempio per ferie o infortunio. In questo modo la persona non viene più conteggiata nell'obiettivo turni, senza cancellare eventuali turni già pianificati.

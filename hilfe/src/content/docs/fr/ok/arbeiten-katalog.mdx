@@ -1,0 +1,36 @@
+---
+title: Le catalogue de postes
+description: Définir une fois les tâches types de la section et les insérer dans n'importe quel créneau en un clic.
+audience: [ok]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+Bar, grill, caisse, montage de tentes : de nombreuses tâches reviennent à chaque événement. Dans le catalogue, vous les définissez une fois pour toutes avec leur description et une limite d'âge. Lors de la planification, vous les ajoutez d'un seul clic à n'importe quel créneau.
+
+Le catalogue s'applique à **toute la section**, et pas seulement à un événement précis.
+
+<Path steps={['Événement', 'Espace CO', 'Catalogue de postes']} />
+
+## Créer un poste
+
+<Steps>
+1. Cliquez sur <Btn variant="primary">Créer un nouveau poste</Btn>.
+2. **Titre du poste**, par exemple « Bar ».
+3. **Description / Tâches** : En quoi consiste le travail ? Cette description est visible par les bénévoles dans le créneau.
+4. **Âge minimum** : Aucun, dès 14 ans, dès 16 ans ou dès 18 ans. Pour un âge donné, choisissez **Tous** ou **Au moins 1 par créneau**.
+5. Cliquez sur <Btn variant="primary">Créer le poste</Btn>.
+</Steps>
+
+## Travailler dans le catalogue
+
+Chaque carte indique la règle d'âge et la fréquence d'utilisation du poste dans l'événement actuel. Cliquer sur **Afficher dans X créneaux** ouvre le plan de créneaux filtré sur ce poste. Avec **+ Créneau**, vous créez directement un nouveau créneau.
+
+- **Modifier** met à jour le modèle dans le catalogue. Les créneaux qui contiennent déjà ce poste restent inchangés.
+- **Supprimer** retire le poste du catalogue (tant qu'il n'est utilisé dans aucun créneau de cet événement).
+
+:::tip[Un bon départ]
+Créez d'abord les cinq postes les plus fréquents, avec leurs limites d'âge. Vous pourrez ensuite planifier la fête en un quart d'heure, et personne n'oubliera la règle des 16 ans pour le bar.
+:::

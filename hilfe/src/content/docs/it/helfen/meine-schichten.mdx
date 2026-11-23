@@ -1,0 +1,59 @@
+---
+title: I miei turni e calendario
+description: Tutti i tuoi turni di tutte le sezioni su una sola pagina, con abbonamento live Webcal automatico ed esportazione .ics.
+audience: [helfer]
+---
+
+import Btn from '../../../../components/Btn.astro';
+
+In basso nella barra di navigazione (su computer in alto) trovi **I miei turni**. Lì è riportato tutto ciò a cui sei iscritto, compresi i turni presso altre sezioni.
+
+## Cosa vedi lì
+
+- **Prossimo turno**: il tuo prossimo turno in grande evidenza in alto, con «oggi», «domani» o «tra 5 giorni» oltre a un sintetico **briefing del turno**.
+- **Briefing del turno (disponibile anche offline)**: Nel tuo prossimo turno (e toccando *«Briefing del turno»* su qualsiasi altro turno) vedi subito:
+  - **Responsabile di turno o di giornata** e **contatto dell'evento** con pulsanti diretti per **chiamare** o inviare un'**e-mail** (se abilitati dal CO).
+  - **La tua squadra**: chi altro è assegnato al tuo stesso turno e quanti posti sono occupati.
+  - **Info & punto di ritrovo**: note importanti sul turno subito a colpo d'occhio – anche in assenza di segnale o in modalità aereo.
+- **Indicatore pause & turni consecutivi**: se hai più turni nello stesso giorno, la linea temporale (e la pagina dell'evento) mostra automaticamente il tuo **tempo di pausa** intermedio (`☕ Pausa intermedia`), un **collegamento diretto** (`⚡ Turno consecutivo immediato`) o un breve **passaggio di consegne**.
+- **In programma**: tutti i turni futuri come sequenza cronologica, ordinati per giorno.
+- **Ruolo di responsabilità**: se sei assegnato a un turno come responsabile di turno o di giornata, vedi un badge a scudo con link diretto alla pianificazione dell'evento.
+- **Completati**: i turni passati, visualizzati con tonalità più tenue.
+
+Un tocco sul nome dell'evento porta direttamente al piano dei turni.
+
+Sulla pagina iniziale della tua sezione la scheda **Il tuo prossimo turno** mostra la stessa informazione in forma sintetica.
+
+## Abbonamento al calendario live (sincronizzazione automatica)
+
+Con l'abbonamento live hai i tuoi turni sempre aggiornati nel calendario del tuo smartphone o computer, senza doverli inserire uno per uno.
+
+Il riquadro in cima alla pagina si adatta automaticamente al tuo dispositivo:
+
+- **Google Calendar (scelta consigliata per Android, PC & Web)**:
+  - <Btn>Abbonati in Google Calendar</Btn>: apre direttamente Google Calendar con la tua sottoscrizione personale. Conferma con *«Aggiungi»* – fatto con un clic!
+  - In alternativa manuale: clicca su *«Copia link»*, apri Google Calendar nel browser, clicca su **+** accanto ad *«Altri calendari»* ➜ *«Da URL»* e incolla il link.
+- **Apple Calendar (iPhone, iPad, Mac)**:
+  - <Btn>Abbonati in Apple Calendar</Btn>: apre direttamente l'app Calendario su iPhone o Mac. Conferma la richiesta di sistema con *«Abbonati»*.
+- **Microsoft Outlook & 365**:
+  - Supporta sia l'abbonamento con 1 clic per Outlook Web che l'integrazione nell'app desktop di Outlook via Webcal.
+- **Finestra «Dov'è il tuo calendario?»**:
+  - Clicca su <Btn variant="ghost">Dov'è il tuo calendario?</Btn> per vedere tutte le opzioni nel dettaglio, copiare l'URL per altri programmi (ad es. Thunderbird) o rigenerare il link.
+- **Aggiornamento automatico**: quando ti iscrivi a un nuovo turno, un turno viene spostato o ti cancelli, il calendario aggiorna automaticamente gli eventi in background.
+- **Rigenerare il link**: per revocare l'accesso a un dispositivo o calendario, puoi generare un nuovo link segreto tramite *«Rigenera link di abbonamento»*. Gli abbonamenti esistenti dovranno poi essere aggiornati.
+
+## Esportazione calendario una tantum (istantanea)
+
+Se preferisci non avere un abbonamento continuo ma salvare i turni come eventi fissi:
+
+- <Btn>Google Calendar</Btn> su un turno: apre Google Calendar con i dati precompilati del singolo turno per il salvataggio.
+- <Btn variant="ghost">.ics</Btn> su un turno: scarica un singolo file calendario (`.ics`) per quel turno.
+- <Btn variant="ghost">Esporta tutti come .ics</Btn> sotto «In programma» (o nel riquadro calendario): scarica tutti i tuoi prossimi turni in un unico file.
+
+:::note[Le voci manuali non si aggiornano]
+Se scegli il download singolo (`.ics` o pulsante turno singolo), si tratta di un'istantanea. Le modifiche o le cancellazioni non verranno aggiornate automaticamente. Per la sincronizzazione automatica usa l'abbonamento live.
+:::
+
+## Anche sul portale principale
+
+Su `cevi-schichtplan.ch/profil` nella scheda **Panoramica** sotto **I tuoi prossimi turni** trovi i turni successivi. Tramite **Abbonati al calendario** trovi anche lì le opzioni a 1 clic per Google Calendar e Apple/Outlook.

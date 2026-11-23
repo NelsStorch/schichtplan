@@ -1,0 +1,46 @@
+---
+title: Volunteers and shift targets
+description: Everyone who is volunteering or could volunteer for the event, who has reached their target, and who is excused.
+audience: [ok]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+Under **Volunteers**, each person appears once: those already assigned to shifts, those available to help, and those who have been excused. Combined with the **Shift target**, you can easily see who still needs to be asked.
+
+<Path steps={['Event', 'OC Area', 'Volunteers']} />
+
+## Who is in the list?
+
+- Everyone with at least one shift, including guests manually added by the OC.
+- For events restricted to the department or specific units: all members eligible to sign up.
+- For open events: all members of your department in addition to registered helpers.
+
+Members from other permitted departments only appear once they have signed up for a shift or redeemed an access link. You cannot browse the full roster of another department: cross-department access is controlled exclusively by each respective department.
+
+## The shift target
+
+The target represents the **minimum number of shifts per person**, for example 2. You configure it under **Settings** → **Registration & Deadlines**. Leaving it blank means no target is set.
+
+The target serves as guidance for the OC. Volunteers do not see it and are not restricted by it.
+
+## Counters and filters
+
+At the top, summary counters display **Total individuals**, **With shifts**, **Below target** (or **Without shifts** if no target is set), and **Excused**. Filter chips below allow you to view specific groups, combined with search, unit filters, and department filters for multi-department events.
+
+Tapping a person expands their assigned shifts. From there, click <Btn>Assign to shift</Btn> to immediately place them into an open slot, click on any shift name to view it on the schedule, or click the small cross to remove them from a shift (or <Btn variant="danger">Remove from all shifts</Btn> to withdraw them from the entire event).
+
+## Excusing someone
+
+If someone is away on vacation, on military service, or injured, tap <Btn variant="ghost">Cannot help (excuse)</Btn> next to their name and optionally provide a reason. They will no longer be counted towards the unfulfilled target. Any existing shift assignments remain intact.
+
+Click <Btn>Remove excuse</Btn> to undo this status.
+
+## Messaging multiple volunteers
+
+Check the boxes to the left of the desired individuals and click <Btn variant="primary">Message selection</Btn>. See [Messages](/en/ok/nachrichten/).
+
+:::tip[Who still needs shifts?]
+Filter by **Below target**, select all, and compose a message. That way, your call for helpers reaches exactly the right people.
+:::

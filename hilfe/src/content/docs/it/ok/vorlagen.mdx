@@ -1,0 +1,44 @@
+---
+title: Modelli per il prossimo anno
+description: Salvare un evento completo come modello e riutilizzare tutti i turni con nuove date l'anno successivo.
+audience: [ok, abteilung]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+
+La festa annuale ha spesso una struttura ricorrente. Anziché reinserire da capo cinquanta turni ogni anno, puoi salvare l'evento completo come modello riutilizzabile.
+
+## Salvare come modello
+
+<Steps>
+1. Nell'area CO sotto **Modelli**, tocca <Btn variant="primary">Salva questo evento come modello</Btn>.
+2. **Nome del modello**: il sistema propone ad esempio «Festa 2026 (Modello)».
+3. **Descrizione / Note per gli anni futuri**: cosa ha funzionato bene, cosa va migliorato? Sarà utilissimo al CO del prossimo anno.
+4. Tocca <Btn variant="primary">Crea modello</Btn>.
+</Steps>
+
+## Cosa include il modello
+
+| Incluso nel modello | Non incluso |
+| --- | --- |
+| Tutti i turni con titolo, note, montaggio/smontaggio | Iscrizioni delle persone |
+| Giorno relativo alla partenza (Giorno 1, Giorno 2…) e orari | Composizione del CO (chi crea il nuovo evento ne diventa responsabile) |
+| Tutte le mansioni con posti disponibili e limiti d'età | Banner e logo |
+| Regole d'accesso, Solo animatori, Dati obbligatori, Obiettivo turni | Link di accesso |
+| Domande personalizzate, sezioni e branche autorizzate | |
+
+## Creare un evento da un modello
+
+Puoi procedere in due modi:
+
+- Nell'area CO alla voce **Modelli**, tocca <Btn>Crea nuovo evento da questo modello</Btn> accanto al modello desiderato.
+- Oppure durante la creazione di un [nuovo evento](/it/ok/anlass-erstellen/), scegli **Crea da modello** in alto.
+
+Dovrai quindi solo impostare titolo, indirizzo web (slug) e la nuova **Data** (primo giorno). Il piano dei turni creerà tutti i turni mantenendo la medesima distanza temporale dall'inizio (Giorno 1, Giorno 2…) e gli stessi orari. Se la festa comincia in un giorno della settimana differente, i turni slitteranno di conseguenza. Il CO potrà essere completato successivamente con <Btn>Nomina CO</Btn>.
+
+La creazione da modello è consentita alla direzione di sezione e a chi possiede il diritto «Creare eventi». Il salvataggio di un modello è permesso a tutti i membri del CO e a chi possiede «Gestire modelli». Chi crea da un modello non viene aggiunto automaticamente al CO.
+
+## Gestione dei modelli
+
+La pagina **Modelli** mostra tutti i modelli salvati per la sezione, con il numero di turni previsti, la tipologia di accesso e un'anteprima dei primi turni. Puoi rimuovere i modelli obsoleti toccando l'icona del cestino: gli eventi già generati non subiranno alcuna modifica.

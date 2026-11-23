@@ -1,0 +1,36 @@
+---
+title: Task catalog
+description: Define recurring department tasks once and insert them into any shift with a single tap.
+audience: [ok]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+Bar, grill, cash register, tent setup: Many tasks recur at every event. In the task catalog, you define them once with their description and age requirements. When planning shifts, you can then insert them into any shift with a single tap.
+
+The catalog applies to the **entire department**, not just a single event.
+
+<Path steps={['Event', 'OC Area', 'Task Catalog']} />
+
+## Creating a task
+
+<Steps>
+1. Tap <Btn variant="primary">Create new task</Btn>.
+2. **Task title**, for example "Bar".
+3. **Description / Responsibilities**: What needs to be done? Volunteers see this description in the shift details.
+4. **Minimum age**: None, 14+, 16+, or 18+. If an age limit is set, choose **All volunteers** or **At least 1 in shift**.
+5. Tap <Btn variant="primary">Create task</Btn>.
+</Steps>
+
+## Working with the catalog
+
+Each task card shows its age restriction rule and how many times the task is used in the current event. Tapping **Show in X shifts** opens the shift schedule filtered by that task. Tapping **+ Shift** immediately opens a modal to create a new shift with this task preselected.
+
+- **Edit** updates the template in the catalog. Shifts already containing this task remain unchanged.
+- **Delete** removes the task from the catalog (as long as it is not currently used in any shift of this event).
+
+:::tip[A good way to start]
+Start by creating your five most common tasks along with their age limits. You will then be able to plan your event schedule in 15 minutes, and nobody will forget the 16+ age rule at the bar.
+:::

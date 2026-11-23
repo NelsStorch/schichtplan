@@ -1,0 +1,59 @@
+---
+title: Affecter et désinscrire des bénévoles
+description: En tant que CO, vous affectez vous-même les personnes, y compris les invités sans compte, et vous les désinscrivez si nécessaire.
+audience: [ok]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+
+## Affecter quelqu'un
+
+Dans l'espace CO sous **Créneaux**, chaque tâche dispose d'un bouton <Btn>Affecter</Btn>. Sur la page de l'événement lui-même, ouvrez le créneau et cliquez sur <Btn>Affecter une personne</Btn>.
+
+<Steps>
+1. Si le créneau compte plusieurs tâches, choisissez en haut le **poste** (avec son taux d'occupation). Le poste sur lequel vous avez cliqué sur <Btn>Affecter</Btn> est présélectionné, sinon le premier ayant des places libres.
+2. Choisissez **Personne avec un compte** et recherchez-la dans la liste (voir ci-dessous).
+3. Ou choisissez **Invité / nom libre** et saisissez un nom ou nom Cevi, avec éventuellement e-mail et téléphone. Pratique pour les personnes sans compte, comme la voisine qui a confirmé par téléphone.
+4. Cliquez sur <Btn variant="primary">Affecter</Btn>.
+</Steps>
+
+### La liste des personnes
+
+La liste présente les personnes sous **Bénévoles**. Pour chaque personne, vous voyez sa section, ses branches/groupes, son âge au début du créneau et, à droite, **le nombre de créneaux** qu'elle effectue déjà sur cet événement. Si un quota est défini, il est affiché sous forme de ratio, par exemple « 1/2 » (vert = quota atteint).
+
+- **Rechercher** par nom, nom Cevi ou branche.
+- **Trier** : le tri par défaut est « Moins de créneaux en premier ». Cela vous permet de répartir la charge équitablement. Autres options disponibles : plus de créneaux, nom, âge.
+- **Section** (pour les événements multi-sections) et **Branches** : filtres disponibles. Vous pouvez combiner plusieurs branches.
+- **Seulement dès … ans** : Si le créneau ou le poste requiert un âge minimum pour tous, les personnes trop jeunes sont masquées. Désactiver ce filtre les affiche avec la mention « trop jeune », mais elles restent non sélectionnables. Les personnes sans date de naissance apparaissent avec « âge inconnu ».
+- **Afficher les personnes excusées/désinscrites** : Les personnes désinscrites de l'événement sont masquées par défaut.
+- **Afficher sa section sans accès** : Personnes de votre section qui ne remplissent pas les règles d'accès de l'événement. Les personnes d'autres sections n'apparaissent que si elles ont accès.
+
+Mentions utiles dans la liste : « déjà sur ce créneau » (non sélectionnable) et « simultanément : … » si la personne est déjà affectée ailleurs sur la même plage horaire.
+
+Si une tâche requiert un âge minimum « au moins 1 personne dans le créneau », la fenêtre affiche un avertissement. Pour les personnes avec compte, le plan de créneaux vérifie l'âge comme lors de l'auto-inscription. Pour les invités sans date de naissance connue, c'est à vous de vous en assurer.
+
+:::tip[L'affectation manuelle fonctionne toujours]
+En tant que CO, vous pouvez affecter des personnes même si les inscriptions sont closes ou si la personne ne remplit pas les conditions d'accès. Les champs obligatoires et les questions personnalisées ne sont pas exigés dans ce cas.
+:::
+
+## Désinscrire
+
+- **D'un créneau** : cliquez sur la petite croix à côté du nom sous **Créneaux**, sous **Bénévoles** ou dans la fenêtre du créneau.
+- **De tout l'événement** : sous **Bénévoles**, cliquez sur la personne, puis sur <Btn variant="danger">Désinscrire de tous les créneaux</Btn>.
+
+La personne ne reçoit pas de notification automatique. Prévenez-la directement, par exemple via [Messages](/fr/ok/nachrichten/).
+
+## Chercher un remplaçant pour quelqu'un
+
+Si quelqu'un vous appelle pour signaler un empêchement, vous n'êtes pas obligé de désinscrire immédiatement la personne. Ouvrez le créneau dans l'événement et cliquez sur l'icône de flèche à côté de son nom (chercher un remplaçant). La personne reste inscrite jusqu'à ce que quelqu'un d'autre reprenne le créneau. Un nouveau clic sur l'icône annule la recherche.
+
+Vous pouvez voir qui cherche actuellement un remplaçant dans la vue d'ensemble de l'espace CO. La reprise est enregistrée dans l'[Historique](/fr/ok/auswertung/#historique-dactivite) avec la mention « Repris ». Pour savoir ce que voient les bénévoles : [Chercher un remplaçant](/fr/helfen/ersatz-suchen/).
+
+## Toutes les personnes d'un coup d'œil
+
+Sous **Bénévoles**, chaque personne n'apparaît qu'une seule fois. Cliquer sur une personne affiche tous ses créneaux, ainsi que l'e-mail et le téléphone pour les invités. Voir [Bénévoles et quotas](/fr/ok/helfer-pool/).
+
+## « Déclarer indisponible » est différent de désinscrire
+
+Sous **Bénévoles**, l'option **Ne peut pas aider (déclarer indisponible)** signifie que la personne n'a pas à effectuer de créneaux sur cet événement, par exemple en raison de vacances. Personne n'est désinscrit de ses créneaux actuels par cette action.

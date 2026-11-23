@@ -1,0 +1,98 @@
+---
+title: Planning shifts and tasks
+description: A shift is a time slot containing one or more tasks, each with its own capacity and requirements.
+audience: [ok]
+numbered: true
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+
+## Shift or task?
+
+A **shift** is a time slot, for example "Saturday 17:00 to 20:00". A **task** is what needs to be done during this time slot, such as Grill, Bar, or Cashier. Each task has its own number of slots and minimum age requirement. The sum of all task slots constitutes the total capacity of the shift.
+
+If you don't need subdivisions, the shift can simply contain a single general task, such as "Volunteer".
+
+## Creating a new shift
+
+Open the event and tap <Btn variant="primary">Shift</Btn> at the top, or in the OC area under **Shifts**, tap <Btn variant="primary">New shift</Btn>.
+
+<Steps>
+1. **Shift title**, for example "Bar & Grill Saturday Evening".
+
+2. Mark **Setup or teardown** if applicable. Volunteers can then filter specifically for these preparation shifts.
+
+3. **Start** and **End time**. If a shift begins before the event's **Day transition time** (default: 04:00, configurable under Settings → Responsibilities), it is grouped with the previous day on the schedule.
+
+4. **Minimum age for the entire shift**: None, 14+, 16+, or 18+. Applies to everyone volunteering in this shift.
+
+5. **Tasks in this shift**: Each task has a title, capacity (1 to 20 slots), and optionally its own minimum age. For age limits, choose whether **everyone** must meet the age or **at least 1 in shift**. See [Minimum age rules](/en/helfen/mindestalter/).
+
+6. **Notes / Instructions**: "Wear comfortable shoes; aprons will be provided."
+
+7. Tap <Btn variant="primary">Create shift</Btn>.
+</Steps>
+
+:::tip[Tasks from the catalog]
+At the top of the "Tasks" section, click **Quickly add catalog tasks** to insert items from your [Task catalog](/en/ok/arbeiten-katalog/). Tapping an item adds the task complete with its age rules and description. If it's already in the shift, its capacity is incremented by one.
+:::
+
+## Creating shift series (grid planning)
+
+When organizing a festival or fair with many regular time slots (e.g. shifts every 2 hours from 10:00 to 22:00 with Grill and Bar each time), you don't need to type them individually:
+
+Under **Shifts**, click <Btn variant="secondary">Create series</Btn> at the top.
+
+<Steps>
+1. **Time window**: Select the overall start and end of the entire duration (e.g. Saturday 10:00 to 22:00).
+2. **Shift duration**: Choose a preset like 1.5 hrs, 2 hrs, 3 hrs, or enter custom minutes.
+3. **Shift overlap for handovers**: Choose 10 or 15 minutes if the incoming shift should start slightly earlier to ensure a proper briefing and handover on site.
+4. **Shift title & tasks**: Enter the title (e.g. "Grill Stand Fair") and select tasks from the [Task catalog](/en/ok/arbeiten-katalog/) or add them manually (e.g. 2× Grill, 1× Cashier).
+5. **Review live preview**: The preview below immediately calculates and displays all generated shifts (e.g. "6 shifts · 18 slots").
+6. Tap <Btn variant="primary">Create shifts</Btn>. All shifts are generated in a single step.
+</Steps>
+
+## Editing, duplicating, and deleting
+
+In the OC area under **Shifts**, each shift card features three action buttons:
+
+- **Edit**: Adjust all shift parameters. Existing signups are preserved. Clicking outside the dialog will not discard your changes accidentally (dialog protection).
+- **Copy**: Creates an immediate **consecutive shift**. It starts exactly when the previous shift ends and has the same duration. All tasks and slots are duplicated, but volunteer signups are not. This lets you build an entire evening of three identical shifts in seconds.
+- **Delete**: Permanently removes the shift and all associated registrations. Cannot be undone.
+
+You can also edit shifts directly on the public event page: tap any shift, then click <Btn>Edit</Btn>.
+
+## List view vs. timeline view
+
+Under **Shifts**, choose your preferred layout at the top:
+
+- **List**: Shows each shift as a card with all tasks and assigned volunteers. Assign helpers via <Btn>Assign</Btn> and remove them with the cross icon.
+- **Timeline**: A visual time grid for each day. Each shift appears as a horizontal bar: green indicates full staffing, colored indicates partial occupancy, and dashed indicates completely unfilled shifts. This allows you to spot gaps and scheduling overlaps at a glance. Tapping a bar opens the shift details.
+
+You can filter by day, **Unfilled only**, **Youth protection warnings**, **Setup/teardown only**, and by **Task** or **Category**. The search bar instantly finds shifts, categories, tasks, and assigned helpers.
+
+## Batch-editing multiple shifts
+
+<Steps>
+1. Tap <Btn>Select</Btn>.
+
+2. Select the desired shifts, or click <Btn variant="ghost">Select entire day</Btn>.
+
+3. A batch toolbar appears at the bottom:
+   - <Btn>Reschedule</Btn>: Shift times earlier or later by days, hours, and minutes. Moving whole days maintains identical hours, even across daylight saving time shifts.
+   - <Btn>Slots</Btn>: Set identical capacity for all selected shifts (single-task shifts only).
+   - Assign <Btn>Category</Btn> or toggle <Btn>Setup/teardown</Btn>.
+   - Send <Btn>Message</Btn> to everyone assigned to the selected shifts.
+   - <Btn variant="danger">Delete</Btn> shifts along with all registrations.
+
+4. Click <Btn variant="primary">Done</Btn> to exit batch selection mode.
+</Steps>
+
+:::caution[Rescheduling shifts with registered helpers]
+Volunteers who are already signed up remain registered and will not automatically be alerted to the new time. Send them an email under [Messages](/en/ok/nachrichten/) afterwards.
+:::
+
+:::caution[Removing tasks or reducing slots]
+If you reduce a task's capacity below the number of registered helpers, all current helpers remain signed up. If you delete a task entirely, assigned individuals remain in the shift but are unassigned from any specific task. Review [Volunteers](/en/ok/helfer-pool/) afterwards to reassign affected helpers.
+:::

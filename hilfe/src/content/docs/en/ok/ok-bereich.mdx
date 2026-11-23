@@ -1,0 +1,67 @@
+---
+title: The OC area
+description: Where to find everything when organizing an event, and what the dashboard tells you.
+audience: [ok]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+The OC area is your central hub for organizing an event. Open it at the top of the event page via <Btn>OC Area</Btn>. It is accessible to the event's OC, department leadership, and anyone with the "View all events" permission. Specific sections like Messages or Settings only appear if you hold the required permissions.
+
+<Path steps={['Event', 'OC Area']} />
+
+## Structure
+
+The navigation menu is on the left (on mobile, accessible via **Section** → <Btn>Switch</Btn> at the top). The sections reflect the natural workflow of organizing an event:
+
+| Group | Section | Purpose |
+| --- | --- | --- |
+| | **Overview** | To-do items, daily occupancy, recent activities |
+| Planning | **Shifts** | Create shifts, assign helpers, batch-edit shifts. [Planning shifts](/en/ok/schichten-planen/) |
+| | **Task Catalog** | Recurring tasks in the department. [Task catalog](/en/ok/arbeiten-katalog/) |
+| | **Templates** | Save the event setup for next year. [Templates](/en/ok/vorlagen/) |
+| Volunteers | **Volunteers** | Helper roster, targets, excused members. [Volunteers and shift targets](/en/ok/helfer-pool/) |
+| | **Questions** | Address, dietary requirements, and custom questions with retention limits. [Questions](/en/ok/fragen/) |
+| | **Access & Answers** | Access links and responses to custom questions. [Access links](/en/ok/zugangs-links/) |
+| | **Messages** | Send emails to volunteers. [Messages](/en/ok/nachrichten/) |
+| During Event | **Attendance** | Check off attendance, QR code self-check-in. [Attendance](/en/ok/anwesenheit/) |
+| | **Export & Print** | Spreadsheets for Excel and printable sheets. [Export & Print](/en/ok/export/) |
+| Administration | **Settings** | Event-wide settings and OC team configuration |
+| | **Audit Log** | Timeline of volunteer signups and withdrawals. [Evaluation](/en/ok/auswertung/) |
+
+:::note[OC Members]
+**Settings** can only be accessed by the OC Lead and department leadership. Regular OC members can plan shifts, assign helpers, and send messages. See [Roles](/en/ok/rollen/).
+:::
+
+:::tip[Command menu & keyboard shortcuts]
+In the OC area, press <kbd>⌘K</kbd> / <kbd>Ctrl</kbd>+<kbd>K</kbd> to open the [Command menu](/en/wissen/befehlsmenue/). Use it to quickly create new shifts, assign helpers, or locate unfilled shift slots instantly without clicking through menus.
+:::
+
+## The dashboard overview
+
+At the top, you will see access rules, registration status (open or scheduled opening time), attendance tracking status, and the shift target. Below that is a circular progress ring showing overall shift occupancy alongside key metrics.
+
+Under **To-do list**, the shift planner flags items that still need attention, such as:
+
+- No shifts created yet
+- Tasks requiring "at least 1 person aged 18+" where no one in the shift meets the age requirement yet
+- Days without a designated daily supervisor (if planning with daily leads)
+- Open shift slots (flagged as warnings one week before the event)
+- Volunteers below target
+- Registration closed
+- Right before the event: Prepare attendance tracking and print QR posters
+- After the event: Save as template for next year
+
+Each to-do item links directly to the relevant tool. Under **Daily occupancy**, clicking any day immediately jumps to the shift view for that day.
+
+### Sharing the event
+
+- <Btn variant="secondary">Copy link</Btn> copies the direct link to the event. When shared in WhatsApp or social apps, a rich preview card with the banner, dates, and open slots appears.
+- <Btn variant="secondary">Story image</Btn> generates a portrait-oriented image with a QR code, formatted for Instagram Stories or WhatsApp Status. Since links aren't clickable in image stories, the QR code leads directly to the event. The image always reflects the current number of open slots, so download it shortly before posting.
+
+## Settings
+
+Under **Settings**, everything is consolidated onto a single page. A persistent navigation bar remains visible when scrolling on desktop to show your current location: **OC Team**, **Basic info**, **Registration & Deadlines**, **Access & Information**, **Responsibilities**, **Attendance**, and **Design**. The last three sections are initially collapsed, summarizing their key values in a single line.
+
+Form changes save automatically after a brief moment, and the bottom status bar confirms the save state. Click <Btn>Undo</Btn> to revert changes back to the state when the page was opened. Only changing the web address (slug) requires clicking <Btn variant="primary">Save</Btn> followed by manual confirmation. Changes to the OC team take effect immediately.

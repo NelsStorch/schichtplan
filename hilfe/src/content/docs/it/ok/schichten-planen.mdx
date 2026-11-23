@@ -1,0 +1,98 @@
+---
+title: Pianificare turni e mansioni
+description: Un turno è una fascia oraria, al cui interno sono definite una o più mansioni con i relativi posti disponibili.
+audience: [ok]
+numbered: true
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+
+## Turno o mansione?
+
+Un **turno** è una fascia temporale, ad esempio «Sabato dalle 17:00 alle 20:00». Una **mansione** è l'attività operativa svolta all'interno di quella fascia, ad esempio Griglia, Bar, Cassa. Ciascuna mansione ha i propri posti disponibili e un proprio limite di età. La somma dei posti di tutte le mansioni determina la capienza totale del turno.
+
+Se non ti occorrono distinzioni di compiti, il turno conterrà semplicemente un'unica mansione generica, ad esempio «Volontario/a».
+
+## Creare un nuovo turno
+
+Apri l'evento e tocca in alto <Btn variant="primary">Turno</Btn> oppure, nell'area CO alla voce **Turni**, tocca <Btn variant="primary">Nuovo turno</Btn>.
+
+<Steps>
+1. **Titolo del turno**: ad esempio «Bar & Griglia sabato sera».
+
+2. Spunta **Montaggio o smontaggio** se si tratta di turni preparatori o conclusivi. I volontari potranno così filtrarli specificamente.
+
+3. **Inizio** e **Fine**. Se il turno inizia prima dell'**ora di cambio giornata** dell'evento (predefinita alle 04:00, configurabile in Impostazioni → Competenze), nel programma farà parte della giornata precedente.
+
+4. **Età minima per l'intero turno**: Nessuna, da 14, da 16 o da 18 anni. Vale per chiunque partecipi al turno.
+
+5. **Mansioni in questo turno**: ogni mansione ha un nome, un numero di posti (da 1 a 20) e opzionalmente un'età minima dedicata. Per l'età minima puoi scegliere se deve essere rispettata da **tutti** o se basta **almeno 1 persona nel turno**. Vedi [Limiti di età](/it/helfen/mindestalter/).
+
+6. **Note / Descrizione**: ad es. «Scarpe comode, grembiule fornito sul posto».
+
+7. Tocca <Btn variant="primary">Crea turno</Btn>.
+</Steps>
+
+:::tip[Mansioni dal catalogo]
+In alto nella sezione mansioni, sotto **Aggiungi rapidamente mansioni dal catalogo**, trovi le attività salvate nel [Catalogo mansioni](/it/ok/arbeiten-katalog/). Un tocco aggiunge la mansione completa di descrizione e limiti di età. Se la mansione è già presente nel turno, ne aumenterà di uno i posti disponibili.
+:::
+
+## Creazione di serie di turni (Pianificazione a griglia)
+
+Se durante una festa o sagra hai bisogno di molti turni con la medesima cadenza regolare (ad es. ogni 2 ore dalle 10:00 alle 22:00 con griglia e bar), non è necessario digitarli singolarmente uno per uno:
+
+Sotto **Turni**, tocca in alto <Btn variant="secondary">Crea serie</Btn>.
+
+<Steps>
+1. **Fascia oraria**: scegli inizio e fine dell'intero arco temporale (ad es. sabato dalle 10:00 alle 22:00).
+2. **Durata del turno**: scegli un'impostazione predefinita come 1.5 ore, 2 ore, 3 ore o imposta liberamente i minuti.
+3. **Sovrapposizione per passaggi di consegne**: seleziona ad es. 10 o 15 minuti se il turno subentrante deve iniziare leggermente prima per garantire il passaggio di consegne e le spiegazioni sul posto.
+4. **Titolo & Mansioni**: indica il titolo (ad es. «Postazione Griglia») e seleziona le mansioni dal [Catalogo mansioni](/it/ok/arbeiten-katalog/) oppure aggiungile (ad es. 2× Griglia, 1× Cassa).
+5. **Verifica l'anteprima in tempo reale**: in basso vedi subito tutti i turni calcolati risultanti (ad es. «6 turni · 18 posti»).
+6. Tocca <Btn variant="primary">Genera turni</Btn>. Tutti i turni verranno creati simultaneamente.
+</Steps>
+
+## Modificare, duplicare, eliminare
+
+Nell'area CO sotto **Turni**, ciascun turno dispone di tre pulsanti:
+
+- **Modifica**: aggiorna tutti i dati del turno. Le iscrizioni già effettuate rimangono intatte. Facendo clic accidentalmente fuori dalla finestra di dialogo, i dati inseriti non andranno persi (protezione dialoghi).
+- **Copia**: crea un **turno successivo**. Inizierà dove finisce il precedente e avrà la medesima durata. Vengono duplicate tutte le mansioni e i posti, ma non le persone iscritte: permette di impostare una serata di tre turni identici in pochi secondi.
+- **Elimina**: cancella il turno e tutte le relative iscrizioni. L'operazione non può essere annullata.
+
+È possibile modificare un turno anche direttamente nella vista ordinaria dell'evento: tocca il turno, poi seleziona <Btn>Modifica</Btn>.
+
+## Vista Elenco e Vista Piano
+
+In **Turni** puoi scegliere la visualizzazione desiderata in alto:
+
+- **Elenco**: ogni turno compare come scheda con tutte le mansioni e gli iscritti. Da qui puoi assegnare volontari con <Btn>Assegna</Btn> o rimuoverli con la crocetta.
+- **Piano**: una linea temporale per ciascun giorno. Ciascun turno è rappresentato da una barra: verde significa al completo, colorata parzialmente occupato, tratteggiata ancora nessun volontario. Permette di individuare subito buchi e sovrapposizioni. Toccando una barra si apre il turno.
+
+Puoi filtrare per giorno, **Solo non al completo**, **Avviso tutela minori**, **Solo montaggio/smontaggio**, nonché per **Mansione** e **Categoria**. La ricerca individua turni, categorie, mansioni e nominativi dei volontari assegnati.
+
+## Modificare più turni contemporaneamente
+
+<Steps>
+1. Tocca <Btn>Seleziona</Btn>.
+
+2. Seleziona i turni desiderati, oppure tocca <Btn variant="ghost">Seleziona intera giornata</Btn> accanto al giorno.
+
+3. In basso compare una barra di azioni cumulative:
+   - <Btn>Sposta</Btn>: anticipa o posticipa di giorni, ore e minuti. Gli interi giorni mantengono invariato l'orario, anche in presenza di cambi d'ora legale.
+   - <Btn>Posti</Btn>: applica la stessa quantità di posti a tutti i turni selezionati (disponibile per turni con una sola mansione).
+   - Imposta <Btn>Categoria</Btn> e <Btn>Montaggio/Smontaggio</Btn>.
+   - <Btn>Messaggio</Btn> per scrivere a tutte le persone iscritte a questi specifici turni.
+   - <Btn variant="danger">Elimina</Btn> per cancellare i turni selezionati e le relative iscrizioni.
+
+4. Tocca <Btn variant="primary">Fatto</Btn> per terminare la selezione multipla.
+</Steps>
+
+:::caution[Spostamento con iscritti confermati]
+Chi era già iscritto rimane iscritto, ma non riceverà automaticamente un avviso del nuovo orario. Ricordati di inviare loro un [messaggio](/it/ok/nachrichten/).
+:::
+
+:::caution[Rimuovere mansioni o ridurre i posti]
+Se riduci i posti di una mansione a un numero inferiore rispetto agli iscritti già registrati, tutte le persone rimarranno iscritte. Se rimuovi completamente una mansione, le persone rimarranno nel turno ma non saranno più associate ad alcuna mansione. Verifica poi in **Volontari** chi è interessato per riassegnare correttamente le mansioni.
+:::

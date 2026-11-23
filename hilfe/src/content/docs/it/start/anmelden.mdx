@@ -1,0 +1,117 @@
+---
+title: Accesso
+description: Ci sono modalità adatte a ogni organizzazione. Con il login dell'associazione è velocissimo, per le associazioni con e-mail e per i volontari anche senza password.
+audience: [helfer, ok, abteilung]
+---
+
+import { Tabs, TabItem, Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+
+Per consultare un piano turni pubblico, nella maggior parte dei casi non serve un account. Per **iscriversi**, è necessario accedere una volta. Per i volontari spesso bastano il nome o soprannome e la data di nascita – completamente senza password.
+
+L'accesso avviene sempre sul dominio centrale di login della tua organizzazione (`login.cevi-schichtplan.ch`, `login.pfadi-schichtplan.ch`, `login.jubla-schichtplan.ch` o `login.vereins-schichtplan.ch`), indipendentemente dalla sezione o associazione di provenienza.
+
+## Quale metodo fa al caso mio?
+
+| Tu sei … | Scegli |
+| --- | --- |
+| Responsabile o membro nel **Cevi**, negli **Scout** o nella **Jubla** | **Login associativo** (Cevi.DB, PBS MiData o Jubla-DB) |
+| Membro, comitato o CO in un'**associazione** | **Con e-mail e password** |
+| Genitore, ex membro, conoscente, volontario occasionale | **Con soprannome / nome** (solo tramite la pagina dell'organizzazione) |
+| Nel CO o nella direzione di un'associazione | **Con e-mail e password** |
+
+## Come effettuare l'accesso
+
+<Tabs>
+  <TabItem label="Per Cevi / Scout / Jubla (Login associativo)">
+    I responsabili e i membri delle associazioni giovanili usano il loro consueto account associativo (Hitobito). In questo modo nome, ruoli e gruppi vengono riconosciuti automaticamente:
+
+    - **Cevi:** Login via `db.cevi.ch`
+    - **Scout:** Login via `db.scout.ch` (PBS MiData)
+    - **Jubla:** Login via `db.jubla.ch` (Jubla-Datenbank)
+
+    <Steps>
+    1. Nella pagina di login, tocca il pulsante della tua federazione (ad es. <Btn variant="primary">Accedi con Cevi.DB</Btn> o <Btn variant="primary">Accedi con PBS MiData</Btn>).
+    2. Verrai reindirizzato al database ufficiale della tua associazione. Accedi con le tue credenziali abituali.
+    3. Il database chiederà se il piano turni può leggere i tuoi dati di base (nome, e-mail, ruoli). Conferma l'autorizzazione.
+    4. Verrai reindirizzato automaticamente al piano dei turni e sarai subito connesso.
+    </Steps>
+
+    :::note[Hai già un account con e-mail e password?]
+    Se il tuo profilo associativo usa la stessa e-mail di un account creato in precedenza, il sistema ti chiederà la tua **password** al primo accesso associativo. Da quel momento i due metodi di accesso sono collegati: i tuoi turni e i diritti di gestione rimangono intatti.
+    :::
+
+    :::tip[Accesso di emergenza in caso di interruzione Hitobito]
+    Se il database associativo (Cevi.DB, MiData, Jubla-DB) dovesse essere temporaneamente non raggiungibile per manutenzione o guasti, puoi comunque accedere:
+    - Imposta preventivamente una **password di riserva (fallback)** sotto [Profilo](/it/helfen/konto/).
+    - Se non hai ancora impostato alcuna password, tocca **Password dimenticata?** nella pagina di login e inserisci l'indirizzo e-mail del tuo account associativo. Riceverai un link nella casella postale per impostare direttamente una password di emergenza.
+    :::
+
+    Il piano turni riprende dal database associativo il tuo nome scout/cevi, nome, cognome, data di nascita, la tua sezione/gruppo e le branche. L'indirizzo di domicilio non viene acquisito per motivi di protezione dei dati.
+  </TabItem>
+
+  <TabItem label="Per associazioni (E-mail & password)">
+    Per associazioni indipendenti, società sportive, feste di paese e comitati, l'accesso e la gestione dell'account avvengono direttamente con indirizzo e-mail e password:
+
+    <Steps>
+    1. Apri la pagina della tua associazione oppure `login.vereins-schichtplan.ch`.
+    2. Tocca <Btn>Con e-mail e password</Btn>.
+    3. Non hai ancora un account? Tocca **Crea account** e inserisci nome, cognome, indirizzo e-mail e la password desiderata (almeno 8 caratteri).
+    4. Riceverai un'e-mail di conferma. Clicca sul link contenuto nel messaggio per attivare il tuo account.
+    5. Successivamente effettua l'accesso con e-mail e password per iscriverti ai turni o gestire la tua associazione.
+    </Steps>
+
+    :::tip[Hai già un account Cevi, Scout o Jubla?]
+    Se possiedi già un account tramite **Cevi.DB**, **PBS MiData** o **Jubla-DB**, non devi creare un nuovo account: clicca su **Password dimenticata?** nel login via e-mail, inserisci il tuo indirizzo e-mail esistente e imposta una password. Potrai poi effettuare l'accesso normalmente all'associazione con questa password.
+    :::
+
+    ### Password dimenticata o reimpostazione
+
+    Se hai dimenticato la password, puoi reimpostarla in qualsiasi momento:
+
+    <Steps>
+    1. Sotto il campo di inserimento password, tocca **Password dimenticata?**.
+    2. Inserisci il tuo indirizzo e-mail e tocca <Btn>Invia link</Btn>.
+    3. Clicca sul link ricevuto via e-mail (valido 2 ore) e imposta una nuova password.
+    4. Accedi con la nuova password.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Senza password (Con soprannome / nome)">
+    Per aiutanti occasionali, pasticceri di torte, genitori o ospiti, esiste il comodissimo login **senza password**. Questo accesso è disponibile quando arrivi **tramite il link della tua organizzazione** (ad es. `torneo.vereins-schichtplan.ch` o `illnau.cevi-schichtplan.ch`):
+
+    <Steps>
+    1. Nella pagina di accesso tocca <Btn>Con soprannome</Btn> (o nome Cevi / nome scout).
+    2. Inserisci il tuo **soprannome** o il tuo **nome**.
+    3. Inserisci la tua **data di nascita**. Insieme al tuo nome, costituisce la tua chiave personale – completamente senza password.
+    4. Tocca <Btn variant="primary">Continua</Btn>. Se il sistema ti riconosce già, sarai subito connesso.
+    5. Se è la tua prima visita, controlla i tuoi dati e tocca <Btn variant="primary">Crea profilo e continua</Btn>.
+    </Steps>
+
+    :::caution[Nessuna protezione con password]
+    Un profilo senza password è pensato per volontari spontanei: chiunque conosca il tuo nome e la tua data di nascita può visualizzare i tuoi turni. Per ruoli nel comitato organizzatore o nel direttivo, crea invece un account protetto con password o tramite il database associativo.
+    :::
+
+    :::tip[Stesso nome nell'organizzazione?]
+    La data di nascita distingue in modo univoco le persone con lo stesso nome.
+    :::
+  </TabItem>
+</Tabs>
+
+## Dove si va dopo il login?
+
+Se arrivi da un'organizzazione o da un evento specifico, il piano turni ti reindirizza direttamente lì dopo l'accesso riuscito. Se apri la pagina di login direttamente, atterri sulla pagina principale della tua organizzazione.
+
+Al primo accesso il sistema ti chiederà [a quale organizzazione appartieni](/it/start/abteilung-und-stufen/). Con il login associativo questo dato è per lo più già preimpostato automaticamente.
+
+## Disconnessione
+
+Su smartphone tocca in basso a destra su **Account** (su computer in alto a destra sul tuo nome) e seleziona <Btn variant="ghost">Disconnetti</Btn>. Sarai disconnesso in modo sicuro ovunque.
+
+## Domande frequenti & risoluzione problemi
+
+- **«L'accesso associativo al momento non è disponibile»**: Si tratta solitamente di una breve interruzione del database esterno. Riprova più tardi.
+- **«E-mail o password errata»**: Verifica maiuscole e minuscole oppure reimposta la password tramite **Password dimenticata?**.
+- **«Conferma prima il tuo indirizzo e-mail»**: Controlla la tua casella di posta e la cartella spam per il link di conferma.
+- **«Con soprannome» non compare**: Il login senza password è attivo solo sul sottodominio specifico della tua organizzazione (ad es. `illnau.cevi-schichtplan.ch`), non sul portale di login globale.
+- **«Troppi tentativi»**: Dopo diversi inserimenti errati, l'accesso viene temporaneamente bloccato per alcuni minuti a tutela del tuo account.

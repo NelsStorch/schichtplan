@@ -1,0 +1,52 @@
+---
+title: Sending access links
+description: 'For helpers who do not meet standard access rules: personal links for individuals or group links for parent chats.'
+audience: [ok]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+Is your event department-internal, but a scout's godparent wants to help at the grill? Or should the parents from a specific unit be able to take shifts? Access links are designed for these exact situations.
+
+<Path steps={['Event', 'OC Area', 'Access & Answers', 'Access Links']} />
+
+On the main event page, the <Btn>Links</Btn> button in the OC section also takes you straight there.
+
+## Two types of links
+
+| Type | Valid for | Best for |
+| --- | --- | --- |
+| **Personal** | Only the first account that opens the link | A specific individual, e.g. "Falk's Mother" |
+| **Group** | Anyone who opens the link | A group chat, e.g. "Hiskia Parents WhatsApp" |
+
+## Creating a link
+
+<Steps>
+1. Tap <Btn variant="primary">Create link</Btn>.
+2. **For whom?** A label visible only to the OC, for example "Falk's Mother".
+3. Choose **Personal** or **Group**.
+4. Optionally set **Valid until**: The link expires after this date and time.
+5. Tap <Btn variant="primary">Create and copy</Btn>. The link is copied to your clipboard. Paste it into your message or chat.
+</Steps>
+
+You can copy the link again later by clicking <Btn>Share</Btn>. On mobile devices, this opens your system share sheet.
+
+## What the helper sees
+
+When opening the link and signing in (a nickname without a password is sufficient), the helper sees **You have been granted access via a personal link**. From then on, they can register for shifts, even if the department homepage is set to "members only".
+
+## Overview and revocation
+
+The list tracks who redeemed each link, when it expires, and whether it has **Expired**. In the [Evaluation summary](/en/ok/auswertung/), helpers who joined through a link are flagged with **via link**.
+
+If you delete an access link, anyone who accessed the event through it loses their special permission to sign up. However, their existing shift assignments are preserved.
+
+:::caution[Group links are like a key under the doormat]
+Anyone with a group link can register, even if the link is forwarded. Set an expiration date and delete the link after the event concludes.
+:::
+
+:::note[Closed registration remains closed]
+Access links only bypass eligibility requirements. If self-registration is closed for the event, no one can sign up, even with a valid access link.
+:::

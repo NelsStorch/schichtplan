@@ -1,0 +1,44 @@
+---
+title: Messages to volunteers
+description: Send meeting points, updates, or appeals for unfilled shifts directly to helpers via email.
+audience: [ok]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+Messages allow you to reach all registered helpers, specific shifts, or the OC without needing to manually look up email addresses.
+
+<Path steps={['Event', 'OC Area', 'Messages']} />
+
+<Steps>
+1. Choose **Recipients**:
+   - **All registered volunteers**: Everyone with at least one shift (including shift and daily supervisors).
+   - **Below target** (or **Without shifts** if no target): Everyone in the volunteer pool who has no shifts or hasn't reached their target yet (excluding excused individuals).
+   - **Specific shifts**: Check off individual shifts (includes their respective shift leads).
+   - **Selected individuals**: First select specific helpers under **Volunteers** and click <Btn variant="primary">Message selection</Btn>.
+   - **The Organizing Committee (OC)**: All OC members of this event.
+
+2. Below the selection, the system displays how many people will receive the message and notes anyone lacking a verified email address.
+
+3. Enter a **Subject** and **Message**. If you type `{name}` into your message (e.g. `Hi {name}`), the system automatically replaces it with the recipient's personal name. A direct link to the shift schedule is appended automatically.
+
+4. Click <Btn variant="primary">Send</Btn> and confirm.
+</Steps>
+
+Each recipient receives an individual email; email addresses are kept completely private. Any replies are delivered directly to your personal email address.
+
+:::tip[Shifts rescheduled?]
+If you rescheduled several shifts at once under **Shifts**, click <Btn>Message</Btn> in that same bottom toolbar. Those specific shifts will already be preselected as recipients.
+:::
+
+## Who will not receive emails?
+
+Only accounts with a **verified** email address will receive messages: association accounts (Cevi.DB, MiData, Jubla-DB) and accounts with email/password logins. Anyone signed in only with a nickname and birthdate or entered as a guest by the OC will not receive emails. Call or message these individuals directly.
+
+## Message history and limits
+
+On the right (or at the bottom on mobile) under **Sent**, you can view all previous messages for this event along with timestamps, sender, and recipient counts. Expand longer messages with **Read full message**, or click **Use as template** to copy the subject and body back into the composition form. If an email fails to deliver, it is marked as "delivery failed".
+
+A maximum of 10 messages can be sent per event per hour, with up to 1,000 recipients per message.

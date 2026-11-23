@@ -1,0 +1,62 @@
+---
+title: Je ne peux pas m'inscrire
+description: La raison est indiquée en haut de l'événement. Vous trouverez ici chaque message avec la marche à suivre.
+audience: [helfer, ok]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import FaqItem from '../../../../components/FaqItem.astro';
+
+Chaque événement définit [qui a le droit de s'inscrire](/fr/ok/zugang/). Si vous ne remplissez pas les critères, vous voyez un avertissement en haut de l'événement et la mention « Non débloqué pour toi » sur les créneaux. Vous pouvez néanmoins consulter le plan lui-même, mais sans les noms s'il s'agit d'un événement interne.
+
+## Les différents messages
+
+<FaqItem q="« Connecte-toi pour t'inscrire »" open>
+Vous n'êtes pas connecté. Cliquez sur <Btn variant="primary">Se connecter</Btn>. Un prénom ou surnom sans mot de passe suffit. Voir [Connexion](/fr/start/anmelden/).
+</FaqItem>
+
+<FaqItem q="« Indique d'abord ton organisation »">
+L'événement est réservé à certaines sections, et le plan de créneaux ne sait pas encore à laquelle vous appartenez. Cliquez sur <Btn>Indiquer l'organisation</Btn> et choisissez votre section. Voir [Section et branches](/fr/start/abteilung-und-stufen/).
+</FaqItem>
+
+<FaqItem q="« Uniquement avec connexion Cevi.DB »">
+Le CO a exigé que la section et la branche proviennent obligatoirement de Cevi.DB. Déconnectez-vous et reconnectez-vous avec <Btn variant="primary">Se connecter avec Cevi.DB</Btn>. Si vous n'avez pas de compte Cevi.DB, demandez un [lien d'accès](/fr/ok/zugangs-links/) au CO.
+</FaqItem>
+
+<FaqItem q="« Cet événement est réservé à … »">
+D'après votre profil, vous appartenez à une autre section. Si cette information est incorrecte, modifiez-la sous <Btn>Modifier la section ou la branche</Btn>. Avec les comptes Cevi.DB, la section dépend de vos rôles et ne peut être modifiée que dans la Cevi.DB. Si vos rôles ne mènent à aucune section, vous la choisissez vous-même. Pour les événements réservés à Cevi.DB, la direction de section devra alors vous [confirmer](/fr/abteilung/personen/).
+</FaqItem>
+
+<FaqItem q="« Ta branche n'est pas sélectionnée »">
+L'événement est réservé à certaines branches, par exemple uniquement à l'équipe de responsables. Si vous n'avez pas encore renseigné votre branche, ajoutez-la sous <Btn>Modifier la section ou la branche</Btn>.
+</FaqItem>
+
+<FaqItem q="« Cet événement est réservé aux responsables »">
+Vous devez avoir le rôle **Responsable** dans l'une de vos branches. Avec Cevi.DB, tout rôle de responsable y est pris en compte, par exemple responsable de groupe, responsable de branche ou responsable de section. Sans Cevi.DB, vous indiquez vous-même ce rôle pour votre branche.
+</FaqItem>
+
+<FaqItem q="« Inscriptions closes »">
+Le CO a fermé les inscriptions, souvent peu avant l'événement. Désormais, seul le CO peut attribuer des créneaux. Contactez directement le CO si vous souhaitez encore aider.
+</FaqItem>
+
+<FaqItem q="Je ne vois pas du tout les événements de la section">
+La section affiche sa page d'accueil [uniquement aux membres](/fr/abteilung/einstellungen/). Si vous en faites partie, indiquez votre rattachement à la section. Pour les événements individuels, le lien direct fourni par le CO suffit. Les événements publics restent toujours accessibles par leur lien direct.
+</FaqItem>
+
+<FaqItem q="« Réservé aux membres »">
+L'événement est interne et la section le montre [uniquement aux membres](/fr/abteilung/einstellungen/). Si vous n'êtes pas connecté, connectez-vous : si vous appartenez à la section, vous verrez l'événement ensuite. Si vous êtes connecté, indiquez votre section ou demandez un lien d'accès au CO.
+</FaqItem>
+
+<FaqItem q="« Cet événement n'existe pas »">
+Le lien est erroné ou l'événement a été supprimé.
+</FaqItem>
+
+## Participer quand même grâce à un lien d'accès
+
+Le CO peut vous envoyer un lien d'accès personnel qui débloque votre inscription, même si vous ne remplissez pas les conditions requises. Voici comment cela fonctionne :
+
+1. Ouvrez le lien. En haut s'affiche le message **Tu as un lien d'invitation**.
+2. Connectez-vous ; un surnom ou prénom suffit.
+3. Le message **Tu as été débloqué·e via un lien personnel** apparaît. Dès lors, vous pouvez vous inscrire.
+
+Le lien n'est valable qu'associé à une connexion. Un lien personnel n'est valable que pour le premier compte qui l'ouvre. Si les inscriptions sont closes, le lien ne permet pas de contourner cette fermeture.

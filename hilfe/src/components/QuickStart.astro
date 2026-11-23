@@ -6,6 +6,8 @@ import Ticket from '@lucide/astro/icons/ticket';
 
 const locale = Astro.locals.starlightRoute.locale;
 const isFr = locale === 'fr';
+const isIt = locale === 'it';
+const isEn = locale === 'en';
 
 const steps = isFr
   ? [
@@ -26,6 +28,48 @@ const steps = isFr
         title: 'S’inscrire',
         text: 'Choisir un créneau libre, cliquer sur « S’inscrire », et c’est prêt.',
         href: '/fr/helfen/meine-schichten/',
+      },
+    ]
+  : isIt
+  ? [
+      {
+        icon: LogIn,
+        title: 'Accesso',
+        text: 'Con account di associazione (Cevi.DB / MiData / Jubla-DB), via e-mail o con soprannome e data di nascita.',
+        href: '/it/start/anmelden/',
+      },
+      {
+        icon: CalendarDays,
+        title: 'Apri l’evento',
+        text: 'Tocca il link dell’evento o selezionalo dalla pagina della tua sezione o gruppo.',
+        href: '/it/helfen/eintragen/',
+      },
+      {
+        icon: Ticket,
+        title: 'Iscriviti',
+        text: 'Scegli un turno con posti liberi, tocca «Iscriviti» ed è fatta.',
+        href: '/it/helfen/meine-schichten/',
+      },
+    ]
+  : isEn
+  ? [
+      {
+        icon: LogIn,
+        title: 'Log in',
+        text: 'With association account (Cevi.DB / MiData / Jubla-DB), email or with nickname and birth date.',
+        href: '/en/start/anmelden/',
+      },
+      {
+        icon: CalendarDays,
+        title: 'Open event',
+        text: 'Click the link from the organizers or choose on your department or group page.',
+        href: '/en/helfen/eintragen/',
+      },
+      {
+        icon: Ticket,
+        title: 'Sign up',
+        text: 'Choose a shift with available slots, click “Sign up”, and done.',
+        href: '/en/helfen/meine-schichten/',
       },
     ]
   : [
@@ -49,8 +93,21 @@ const steps = isFr
       },
     ];
 
-const eyebrow = isFr ? 'Première fois ici ?' : 'Zum ersten Mal hier?';
-const heading = isFr ? 'Votre premier créneau en trois étapes' : 'In drei Schritten zur ersten Schicht';
+const eyebrow = isFr
+  ? 'Première fois ici ?'
+  : isIt
+  ? 'Prima volta qui?'
+  : isEn
+  ? 'First time here?'
+  : 'Zum ersten Mal hier?';
+
+const heading = isFr
+  ? 'Votre premier créneau en trois étapes'
+  : isIt
+  ? 'Il tuo primo turno in tre passaggi'
+  : isEn
+  ? 'Get your first shift in three steps'
+  : 'In drei Schritten zur ersten Schicht';
 ---
 
 <section class="qs not-content" aria-labelledby="qs-title">

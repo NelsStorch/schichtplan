@@ -1,0 +1,44 @@
+---
+title: Templates for next year
+description: Save a finished event as a template and reuse all shifts with new dates next year.
+audience: [ok, abteilung]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+
+Annual fairs and events follow a similar structure every year. Instead of manually retyping fifty shifts, you can save the entire event as a reusable template.
+
+## Saving an event as a template
+
+<Steps>
+1. In the OC area under **Templates**, click <Btn variant="primary">Save this event as template</Btn>.
+2. **Template name**: Suggested automatically, e.g. "Fair 2026 (Template)".
+3. **Description / Notes for future years**: What worked well, what didn't? Next year's OC will see these notes.
+4. Tap <Btn variant="primary">Create template</Btn>.
+</Steps>
+
+## What is included in a template
+
+| Included | Not included |
+| --- | --- |
+| All shifts with titles, notes, and setup/teardown flags | Volunteer signups and registrations |
+| Day relative to start (Day 1, Day 2…) and exact hours | The OC (the person creating from a template becomes OC Lead) |
+| All tasks with capacities and age limits | Banner and logo |
+| Access rules, Leaders only, mandatory profile fields, shift targets | Access links |
+| Custom questions, permitted departments, and units | |
+
+## Creating an event from a template
+
+Two ways:
+
+- In the OC area under **Templates**, click <Btn>Create new event from template</Btn> on the desired template card.
+- Or when [creating a new event](/en/ok/anlass-erstellen/), select **Create from template** at the top.
+
+Then specify the title, web address (slug), and the **Date** of the new event's first day. The shift planner generates all shifts maintaining the exact relative intervals from the start day (Day 1, Day 2…) and the same daily hours. If the event starts on a different day of the week this time, shifts adjust accordingly. You can then assemble your OC team using <Btn>Appoint OC</Btn>.
+
+Just like with standard events, creating from a template requires department leadership or the "Create events" permission. Any OC member or user with "Manage templates" can save a template. Creating an event from a template does not automatically grant you OC rights unless you add yourself.
+
+## Managing templates
+
+The **Templates** section displays all saved templates in your department, showing total shifts, access mode, and a preview of initial shifts. Click the trash icon to delete a template. Deleting a template does not affect any existing events created from it.

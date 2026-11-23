@@ -1,0 +1,55 @@
+---
+title: Ruoli e diritti
+description: 'Chi può fare cosa? Due livelli: la sezione nel suo complesso e il CO di un singolo evento.'
+audience: [ok, abteilung]
+---
+
+import Btn from '../../../../components/Btn.astro';
+
+Nel piano dei turni esistono due livelli distinti. I **diritti nella sezione** sono validi per tutti gli eventi della sezione. Il **CO** opera unicamente all'interno di uno specifico evento. In questo modo qualcuno può coordinare la festa annuale senza dover per forza gestire l'intera sezione.
+
+## Nella sezione
+
+| Chi | Autorizzazione |
+| --- | --- |
+| Direzione di sezione | Pieno controllo sulla sezione. Desunta automaticamente dalla Cevi.DB / federazione |
+| Persone con diritti | Secondo quanto attribuito, ad esempio «Creare eventi» o tutto come «Amministrazione» |
+| Membri | Possono iscriversi ai turni. La pianificazione avviene evento per evento tramite il CO |
+
+Tutti i diritti e i modelli sono consultabili in [Diritti nella sezione](/it/abteilung/rechte/), e vengono attribuiti in [Persone](/it/abteilung/personen/).
+
+## Ruoli nel CO di un evento
+
+| Ruolo | Autorizzazioni |
+| --- | --- |
+| Responsabile del CO | Impostazioni e design dell'evento, regole di accesso, nomina e revoca dei membri del CO, oltre a tutte le facoltà del membro del CO |
+| Membro del CO | Creare, modificare, duplicare ed eliminare turni, assegnare e cancellare volontari, visualizzare link di accesso e dati raccolti |
+
+A ciascun ruolo nel CO è possibile abbinare un **Settore di competenza** (ressort), ad esempio «Strutture & Logistica», «Cassa» o «Cucina». Il settore compare accanto al nome in alto nell'evento, così i volontari sanno subito a chi rivolgersi.
+
+Chi crea un evento **non viene inserito automaticamente** nel CO. Durante la creazione dell'evento puoi specificare i membri del CO, e aggiungere te stesso toccando <Btn>Iscrivimi come responsabile CO</Btn>.
+
+## Aggiungere qualcuno al CO
+
+1. Apri l'evento e tocca <Btn>Nomina CO</Btn> accanto a «CO» (nell'area CO: **Impostazioni** → **Team del CO**).
+2. Inserisci il **nome Cevi/scout o l'indirizzo e-mail** della persona. Deve possedere un account Cevi.DB o con e-mail e password. In presenza di omonimie, utilizza l'indirizzo e-mail.
+3. Seleziona **Responsabile del CO** oppure **Membro del CO** e indica facoltativamente il settore di competenza.
+4. Tocca <Btn variant="primary">Aggiungi al CO</Btn>.
+
+Nell'area CO sotto **Impostazioni** → **Team del CO** puoi modificare il ruolo (**Responsabile del CO** / **Membro del CO**) e il settore di competenza in qualsiasi momento tramite l'icona di modifica. Per rimuovere una persona basta fare clic sulla piccola croce accanto al nome: perderà solo i diritti di pianificazione, mentre le sue eventuali iscrizioni ai turni rimarranno intatte.
+
+:::caution[Non utilizzabile con il solo profilo nome Cevi/scout]
+Chi accede unicamente con nome Cevi/scout e data di nascita non può far parte del CO né ricevere diritti nella sezione. Molte persone conoscono le date di nascita altrui, il che renderebbe l'accesso ai privilegi troppo vulnerabile. La persona dovrà quindi effettuare un accesso con Cevi.DB oppure creare un account con e-mail e password.
+:::
+
+:::tip[Direttamente al momento della creazione]
+Quando crei un nuovo evento puoi compilare direttamente il team del CO, attingendo anche dall'elenco della sezione.
+:::
+
+## Amministratori della piattaforma
+
+Gli amministratori della piattaforma gestiscono l'infrastruttura del piano dei turni. Possiedono gli stessi diritti della direzione di sezione in ciascuna sezione e possono visualizzare tutti gli utenti dal portale amministrativo globale. Per domande di carattere tecnico sul funzionamento del servizio, sono il [punto di contatto](/it/wissen/kontakt/).
+
+## Chi vede l'area CO?
+
+L'area CO (<Btn>Area CO</Btn> in alto nella pagina dell'evento) è visibile a: responsabili del CO, membri del CO, direzione di sezione e a chi possiede il diritto «Visualizzare tutti gli eventi». Tutti gli altri utenti riceveranno un messaggio di «Nessuna autorizzazione». All'interno dell'area CO compariranno solo le sezioni per cui si dispone dei relativi permessi: **Impostazioni**, ad esempio, è accessibile solo ai responsabili del CO, alla direzione di sezione e a chi ha «Modificare eventi». Per i dettagli sull'interfaccia vedi [L'area CO](/it/ok/ok-bereich/).

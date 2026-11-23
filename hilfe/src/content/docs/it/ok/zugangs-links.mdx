@@ -1,0 +1,52 @@
+---
+title: Inviare link di accesso
+description: 'Per persone che non soddisfano i requisiti ordinari: un link personale per una persona o un link di gruppo per la chat dei genitori.'
+audience: [ok]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+Il tuo evento è interno alla sezione, ma la madrina di un ragazzo vorrebbe dare una mano alla griglia? Oppure desideri consentire la partecipazione alla chat dei genitori dei lupetti? Per queste situazioni esistono i link di accesso.
+
+<Path steps={['Evento', 'Area CO', 'Accesso & Risposte', 'Link di accesso']} />
+
+Nella pagina dell'evento, anche il pulsante <Btn>Link</Btn> accanto a «CO» porta direttamente a questa schermata.
+
+## Due tipologie
+
+| Tipo | Validità | Ideale per |
+| --- | --- | --- |
+| **Personale** | Solo per il primo account che apre il link | Una persona specifica, ad es. «Mamma di Luca» |
+| **Gruppo** | Per chiunque disponga del link | Una chat collettiva, ad es. «Genitori Lupetti» |
+
+## Creare un link
+
+<Steps>
+1. Tocca <Btn variant="primary">Crea link</Btn>.
+2. **Per chi?**: un'etichetta visibile solo al CO, ad esempio «Mamma di Luca».
+3. Scegli tra **Personale** o **Gruppo**.
+4. Facoltativamente imposta **Valido fino al**: oltre tale data il link non funzionerà più.
+5. Tocca <Btn variant="primary">Crea e copia</Btn>. Il link viene generato e salvato negli appunti, pronto per essere incollato in chat o via e-mail.
+</Steps>
+
+In seguito puoi ricopiarlo toccando <Btn>Condividi</Btn>. Sui telefoni cellulari si aprirà direttamente il menu di condivisione di sistema.
+
+## L'esperienza del volontario
+
+La persona apre il link, effettua il login (è sufficiente un soprannome senza password) e visualizza la conferma **Sei stato abilitato tramite un link personale**. Da quel momento potrà iscriversi a tutti i turni, anche se la pagina iniziale della sezione è configurata «solo per i membri».
+
+## Gestione ed eliminazione
+
+Nell'elenco compare per ciascun link chi lo ha riscattato, la scadenza e l'eventuale stato di **Scaduto**. Nella sezione [Analisi](/it/ok/auswertung/) le persone arrivate tramite link sono contrassegnate dalla dicitura **tramite link**.
+
+Se elimini un link, tutte le persone che lo avevano utilizzato perderanno l'accesso speciale, ma i loro turni già registrati rimarranno confermati.
+
+:::caution[I link di gruppo sono come una chiave sotto lo zerbino]
+Chiunque riceva il link di gruppo può accedere, anche in caso di inoltro del messaggio. Imposta sempre una data di scadenza ed elimina il link al termine dell'evento.
+:::
+
+:::note[Chiuso resta chiuso]
+I link di accesso superano esclusivamente le restrizioni di appartenenza. Se le iscrizioni all'evento sono state chiuse, nessuno potrà iscriversi, nemmeno tramite link speciale.
+:::

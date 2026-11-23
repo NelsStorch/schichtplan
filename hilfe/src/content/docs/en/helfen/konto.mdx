@@ -1,0 +1,121 @@
+---
+title: Account and Profile
+description: Account modal and profile page, push per device, download data and delete account.
+audience: [helfer]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+## The Account modal
+
+In your department's shift planner, tap **Account** in the bottom-right corner (or click your name in the top right on desktop). This compact modal shows your name, department, and role (such as “Volunteer” or “Department Leadership”), containing only controls relevant to that domain:
+
+- **Theme**: light, dark, or system preference
+- **Push on this device** (see [below](#push-notifications-are-per-device))
+- <Btn>My Shifts</Btn> including your volunteer hours
+- <Btn>Profile & Settings</Btn>, opening the full profile page on the main site. In the top left, **Back to …** returns to your shift planner. In an installed PWA, the profile page opens in your browser.
+- <Btn>Install App</Btn>, if supported by your browser
+- <Btn variant="ghost">Help</Btn> and <Btn variant="ghost">Log out</Btn>
+
+All broader settings, including contact details, notifications, password, **Download my data**, and **Delete account**, are found on the profile page.
+
+## The Profile page
+
+<Path steps={['cevi-schichtplan.ch/profil']} />
+
+The profile page is located on the main domain. Visiting `<department>.cevi-schichtplan.ch/profil` redirects you there. It features four tabs:
+
+- **Overview**: Upcoming shifts with calendar subscription, volunteer hours, department and groups, plus profile completion prompts
+- **Details**: Name, mobile number, date of birth, and email address
+- **Notifications**: Email and push settings
+- **Security & Data**: Password, two-factor authentication, data export, and account deletion
+
+In the **Details** tab, you can update your **first name, last name, mobile number, and date of birth**. These values are used whenever an event [requires them](/en/helfen/angaben-und-fragen/).
+
+For Cevi.DB accounts, your birth date is synced from Cevi.DB and cannot be changed here. Your name is refreshed from Cevi.DB on every login. Mobile numbers are managed exclusively in the shift planner. Addresses are never stored in your profile.
+
+If you sign in with a Cevi/scout name, your date of birth is part of your login identity. Updating it here updates your future login credential.
+
+### Confirming your email
+
+If **Unconfirmed** appears next to your email address, tap **Request verification link** and click the link sent to your inbox. You cannot sign in with email/password without a confirmed email address.
+
+If you haven't added an email address yet, you can provide one in the **Details** tab.
+
+### Password & fallback login
+
+Under **Security & Data**, you manage your authentication password:
+
+- **Account with password:** Change your password anytime (enter existing password, choose new password).
+- **Account with Cevi.DB / MiData / Jubla-DB:** You can configure a **fallback password**. This allows you to log in with your email address and password if the association database is temporarily down. Your shifts and permissions remain fully preserved.
+
+### Two-factor authentication (2FA)
+
+With two-factor authentication, the shift planner requires a 6-digit verification code from an **authenticator app** on your phone upon login. Any standard TOTP app works (e.g. Google Authenticator, Microsoft Authenticator, Aegis, 2FAS, 1Password, or Bitwarden). This option is available for password accounts and association logins, but not for nickname-only profiles.
+
+How to set it up:
+
+1. In the **Security & Data** tab under **Two-factor authentication**, tap <Btn variant="secondary">Set up</Btn>. If you have a password, enter it to verify.
+2. In your authenticator app, add a new account and scan the QR code (or type in the secret key).
+3. Enter the 6-digit code from the app and tap <Btn variant="primary">Enable</Btn>.
+4. Store the **10 recovery codes** in a secure place (such as your password manager or printed out). They are displayed only once.
+
+**When are you asked for a code?**
+
+- **Login with password** (including fallback password): always.
+- **Login with Cevi.DB / MiData / Jubla-DB**: disabled by default, unless you turn on the toggle **Also require code when logging in via …**. Association databases feature their own 2FA systems; if enabled there, this toggle is optional.
+
+Disabling 2FA, changing settings, or regenerating recovery codes requires entering a valid 2FA code. This ensures someone briefly using your unlocked device cannot disable your protection.
+
+:::caution[Lost your phone?]
+Log in with one of your recovery codes (select **Use recovery code** on the prompt screen). Each recovery code works once. Generate new codes in your profile immediately afterward. If you also lost your codes, reach out to the [support contact](/en/wissen/kontakt/) to reset 2FA following identity verification.
+:::
+
+### Notifications & reminders
+
+In the **Notifications** tab, customize how and when you receive alerts. All settings save instantly.
+
+- **Push on this device**: Enables push alerts for your current browser (also works for nickname profiles without email). Use **Send test** to verify delivery.
+- **Devices with push**: Shows all registered devices, e.g. “iPhone · App” or “Windows · Chrome”. Use **Remove** to unregister old devices or duplicates.
+- **Email vs. Push matrix**: A toggle table for shift reminders, open catering vouchers, “Replacement found” alerts, and messages from organizers. Emails require a verified address.
+- **When to remind?**: Select reminder intervals before shift start (e.g. 1 week, 2 days, 1 day, or 2 hours prior, or multiple simultaneously). Email reminders include a calendar invite (`.ics`).
+
+### Push notifications are per device
+
+Push notifications must be activated per device and browser, either in the **Account modal** or on the profile page. Once active, you receive notifications from all your departments and events, and the status shows **Active** everywhere. You can disable push at any time from any device.
+
+If push notifications are not yet activated on a device, a subtle dot on the **Account** button hints at this. It disappears once you open the modal.
+
+When a browser refreshes its push subscription token automatically, the shift planner updates it transparently without requiring re-activation.
+
+Notifications list the domain where you registered as the sender. Tapping a notification opens the relevant event, even if it belongs to a different department.
+
+:::note[iPhone and iPad]
+On iOS/iPadOS, Web Push is only supported when the site is installed on your Home Screen as a Web App. On Safari browser tabs, the push toggle is replaced by a shortcut link to your department's planner. Add the site to your Home Screen via **Share → Add to Home Screen**, then activate push inside the app's **Account modal**.
+:::
+
+## Deleting your account
+
+Deleting your account removes your profile, all shift sign-ups, and department/OC roles. You are signed out immediately. This action cannot be undone. For safety, the delete button activates only after a few seconds.
+
+- Accounts using **Cevi.DB** or **Password** delete themselves directly in the **Security & Data** tab.
+- Profiles using only a **nickname** cannot self-delete directly. Use **Request deletion** in the same tab, and the profile will be removed within 30 days.
+
+Under **Download my data** (in the **Security & Data** tab), you can download a complete JSON export of all personal data held in your account.
+
+:::caution[Canceling shifts first is courteous]
+Deleting your account removes you from all upcoming shifts. Please give the OC a quick heads-up if you were scheduled in the near future.
+:::
+
+## Inactive accounts
+
+To prevent holding personal data longer than necessary, accounts inactive for two years are automatically purged:
+
+1. After **24 months without logging in**, you receive a notification email with a scheduled deletion date.
+2. If you log in within **30 days** after receiving the email, your account remains active and the 2-year countdown resets.
+3. Otherwise, the account is deleted after 30 days.
+
+This purges your profile, contact details, and custom question answers. In past events, your assigned shifts remain attributed to an anonymous **“Deleted person”** entry so historical records and volunteer hours balance correctly.
+
+Accounts without an email address (such as standalone nickname profiles) are deleted automatically after two years without advance notice. Sole department administrators and platform administrators are exempt from automatic deletion.

@@ -1,0 +1,72 @@
+---
+title: Questions for volunteers
+description: Ask for address, dietary requirements, T-shirt sizes, or custom questions, and define when responses should be deleted.
+audience: [ok, abteilung]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+If you need more than just names and contact information from your helpers, you can set up custom questions for each event:
+
+<Path steps={['Event', 'OC Area', 'Questions']} />
+
+Department leaders and OC Leads can edit questions. Save changes by clicking <Btn variant="primary">Save</Btn> in the top right.
+
+:::tip[Ask only what you need]
+Every piece of information is personal data that must be protected. Only ask for what is strictly necessary for running the event, and delete responses as early as possible.
+:::
+
+## Predefined questions
+
+Add common questions with a single tap:
+
+| Question | Type |
+| --- | --- |
+| Address (Street, postal code, city) | Free text |
+| Allergies / Dietary requirements | Free text, marked as [health data](#health-related-data) |
+| T-shirt size | Choice from XS to XXL |
+| Emergency contact (Name and phone number) | Free text |
+
+The shift planner does not store residential addresses in user profiles. If you need physical addresses (e.g. for mailing materials), use the **Address** question.
+
+## Custom questions
+
+Click <Btn>Custom question</Btn> to design your own question:
+
+| Setting | Options |
+| --- | --- |
+| Response type | Free text, Yes / No, Multiple choice (one option per line) |
+| When to ask? | **Once per event** (e.g. allergies, T-shirt size) or **On every signup** (e.g. "Will you bring a car?") |
+| Required | Must be answered before signing up |
+| Health-related data | Checkbox for questions regarding allergies, medications, and similar data. See [Health-related data](#health-related-data) |
+| Retention period | Delete immediately after event, after 10, 30, 90, or 365 days, or Never delete. Not available for health data |
+
+Reorder questions using the arrow buttons. If you remove a question, all previously collected answers to it are also deleted upon saving.
+
+## Health-related data
+
+Health information, such as allergies, intolerances, or medications, constitutes sensitive personal data. Check the **Health-related data** box for any such question. The predefined **Allergies / Dietary requirements** question has this enabled by default.
+
+This applies two important safeguards:
+
+- **Explicit consent:** Whenever someone answers such a question, they must explicitly tick a consent checkbox during signup permitting the OC to process the data for this event. Without consent, registration cannot proceed. If a volunteer leaves the optional question blank, no consent is required.
+- **Mandatory retention limit:** "Never delete" is disabled. Responses must have an expiration date. If "Never delete" was previously selected, it automatically switches to 30 days when marking the question as health data.
+
+Be sure to flag any questions regarding medical conditions or dietary restrictions accordingly. The shift planner does not automatically classify questions.
+
+## When answers are deleted
+
+Under **Retention period**, choose how long answers are kept. New questions default to **30 days**.
+
+- The retention period begins at the **end of the final shift** of the event.
+- "Immediately after event" means within one hour after the final shift ends.
+- Only the answers are purged. The question definition remains visible so you can see what was asked.
+- Volunteers see the retention deadline displayed directly below each question when filling it out.
+- Only select "Never delete" if you genuinely need the data long-term. Answers will then remain until the event or user account is deleted. This option is disabled for [health data](#health-related-data).
+
+If you need the answers after the event for reporting, export them as [CSV](/en/ok/auswertung/) beforehand.
+
+## Viewing answers
+
+Answers are accessible exclusively to the OC and department leadership under [Access & Answers](/en/ok/auswertung/). The column header displays when the responses will be deleted.

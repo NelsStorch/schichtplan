@@ -1,0 +1,44 @@
+---
+title: Messaggi ai volontari
+description: Inviare via e-mail ai volontari informazioni sul punto di ritrovo, variazioni d'orario o un appello per i turni scoperti.
+audience: [ok]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+Tramite i messaggi puoi raggiungere tutti gli iscritti, i volontari di singoli turni o il CO, senza dover conoscere o cercare i singoli indirizzi e-mail.
+
+<Path steps={['Evento', 'Area CO', 'Messaggi']} />
+
+<Steps>
+1. Scegli **A chi inviare?**
+   - **Tutti gli iscritti**: chiunque abbia almeno un turno assegnato (inclusi responsabili di turno e giornalieri)
+   - **Sotto l'obiettivo** (se l'obiettivo non è attivo: **Ancora senza turni**): tutti coloro nel bacino dei volontari che non hanno turni o non hanno ancora raggiunto l'obiettivo (escluse le disdette)
+   - **Turni specifici**: spunta i turni desiderati (inclusi i rispettivi responsabili)
+   - **Persone selezionate**: seleziona prima le persone desiderate sotto **Volontari** e tocca <Btn variant="primary">Messaggio alla selezione</Btn>
+   - **Il CO**: tutti i membri del comitato organizzatore dell'evento
+
+2. Sotto la selezione viene indicato a quante persone verrà recapitato il messaggio e quanti nominativi non possiedono un indirizzo e-mail verificato.
+
+3. Scrivi **Oggetto** e **Messaggio**. Se inserisci il segnaposto `{name}` nel testo (ad es. `Ciao {name}`), al momento dell'invio verrà sostituito automaticamente con il nome del destinatario. Il link diretto al piano dei turni viene aggiunto automaticamente in calce.
+
+4. Tocca <Btn variant="primary">Invia</Btn> e conferma l'operazione.
+</Steps>
+
+Ogni persona riceve una propria e-mail individuale in cui nessun altro indirizzo è visibile. Le eventuali risposte arriveranno direttamente al tuo indirizzo e-mail.
+
+:::tip[Turni spostati?]
+Se sotto **Turni** hai spostato più turni contemporaneamente, tocca <Btn>Messaggio</Btn> nella barra inferiore: i turni appena modificati risulteranno già preselezionati come destinatari.
+:::
+
+## Chi non riceve l'e-mail?
+
+I messaggi vengono recapitati esclusivamente agli account con **indirizzo e-mail confermato**: account Cevi.DB/MiData e account creati con e-mail e password. Chi ha effettuato l'accesso solo con nome Cevi/scout o è stato inserito dal CO come ospite esterno senza e-mail non riceverà comunicazioni: per queste persone è necessario telefonare o inviare un messaggio diretto.
+
+## Cronologia e limitazioni
+
+A destra (sui dispositivi mobili in basso) sotto **Inviati** trovi lo storico di tutti i messaggi spediti per questo evento, con orario, mittente e numero di destinatari. Puoi visualizzare testi lunghi toccando **Leggi tutto**, e con **Usa come modello** puoi ricopiare oggetto e testo nel modulo per una nuova spedizione. Se un'e-mail non è potuta partire, viene indicata con «non recapitata».
+
+Per ciascun evento è possibile inviare al massimo 10 messaggi all'ora, con un limite massimo di 1000 destinatari per singolo invio.

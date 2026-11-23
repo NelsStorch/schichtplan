@@ -1,0 +1,67 @@
+---
+title: L'area CO
+description: Dove trovare ogni funzione durante la pianificazione di un evento e cosa indica la panoramica.
+audience: [ok]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+Nell'area CO pianifichi e gestisci il tuo evento. Puoi accedervi toccando <Btn>Area CO</Btn> in alto nella pagina dell'evento. L'accesso è consentito ai membri del CO dell'evento, alla direzione di sezione e a chi possiede il diritto di sezione «Visualizzare tutti gli eventi». Sezioni specifiche come Messaggi o Impostazioni compaiono solo a chi possiede i diritti corrispondenti.
+
+<Path steps={['Evento', 'Area CO']} />
+
+## Struttura
+
+A sinistra trovi il menu di navigazione (su smartphone in alto sotto **Sezione** → <Btn>Cambia</Btn>). Le voci seguono il normale flusso di gestione di un evento:
+
+| Gruppo | Sezione | Scopo |
+| --- | --- | --- |
+| | **Panoramica** | Cosa manca ancora, occupazione per giorno, ultime attività |
+| Pianificazione | **Turni** | Creare turni, assegnare volontari, modificare più turni contemporaneamente. [Pianificare turni](/it/ok/schichten-planen/) |
+| | **Catalogo mansioni** | Mansioni ricorrenti della sezione. [Catalogo mansioni](/it/ok/arbeiten-katalog/) |
+| | **Modelli** | Salvare l'evento per la prossima edizione. [Modelli](/it/ok/vorlagen/) |
+| Volontari | **Volontari** | Elenco persone, obiettivo turni, disdette. [Volontari e obiettivo](/it/ok/helfer-pool/) |
+| | **Domande** | Indirizzo, allergie e domande personalizzate con scadenza. [Domande](/it/ok/fragen/) |
+| | **Accesso & Risposte** | Link di accesso e risposte alle vostre domande. [Link di accesso](/it/ok/zugangs-links/) |
+| | **Messaggi** | Inviare e-mail ai volontari. [Messaggi](/it/ok/nachrichten/) |
+| Durante l'evento | **Presenze** | Registrare chi era presente, check-in QR. [Presenze](/it/ok/anwesenheit/) |
+| | **Esporta & Stampa** | Tabelle per Excel e liste da appendere. [Esporta & Stampa](/it/ok/export/) |
+| Amministrazione | **Impostazioni** | Tutte le regole generali dell'evento e il team del CO |
+| | **Protocollo** | Chi si è iscritto o cancellato e quando. [Analisi](/it/ok/auswertung/) |
+
+:::note[Membri del CO]
+Le **Impostazioni** sono visibili solo al responsabile del CO e alla direzione di sezione. I membri ordinari del CO pianificano i turni, assegnano le persone e inviano messaggi. Vedi [Ruoli nel CO](/it/ok/rollen/).
+:::
+
+:::tip[Menu comandi e tastiera]
+Nell'area CO puoi premere <kbd>⌘K</kbd> / <kbd>Ctrl</kbd>+<kbd>K</kbd> per aprire direttamente il [Menu comandi](/it/wissen/befehlsmenue/). Da qui puoi inserire nuovi turni, assegnare volontari o individuare subito i posti vacanti senza dover navigare tra i menu.
+:::
+
+## La panoramica
+
+In alto trovi la modalità di accesso, lo stato delle iscrizioni (aperte o da quando apriranno), la lista presenze e l'obiettivo turni. Sotto compaiono l'occupazione complessiva sotto forma di grafico circolare e i dati numerici principali.
+
+Sotto **Da completare**, il piano dei turni riepiloga automaticamente le questioni aperte, ad esempio:
+
+- nessun turno ancora creato
+- mansioni con regola «almeno 1 persona da 18 anni» in cui nessun iscritto ha ancora l'età richiesta
+- giornate prive di responsabile giornaliero (se la pianificazione è giornaliera)
+- posti ancora liberi a una settimana dall'evento (avviso in arancione)
+- persone ancora sotto l'obiettivo turni
+- iscrizioni chiuse
+- poco prima dell'evento: preparare lista presenze e codice QR
+- dopo l'evento: salvare come modello per l'anno prossimo
+
+Ogni avviso rimanda direttamente alla sezione competente con un solo tocco. In **Occupazione per giorno**, facendo clic su una giornata si aprono direttamente i relativi turni.
+
+### Diffondere l'evento
+
+- <Btn variant="secondary">Copia link</Btn> copia il link dell'evento negli appunti. In WhatsApp e altre app di messaggistica genera un'anteprima ricca con banner, date e posti vacanti.
+- <Btn variant="secondary">Immagine per Stories</Btn> scarica un'immagine in formato verticale con codice QR, ideale per le Storie di Instagram o lo stato di WhatsApp. Nelle storie i link non sempre sono cliccabili: il codice QR porta direttamente all'evento. L'immagine mostra sempre il conteggio aggiornato dei posti liberi, scaricala quindi poco prima di pubblicare.
+
+## Impostazioni
+
+In **Impostazioni** ogni parametro è organizzato su un'unica schermata. La barra di salto superiore rimane fissata durante lo scorrimento sul computer e indica la posizione corrente: **Team del CO**, **Dati di base**, **Iscrizioni & Scadenze**, **Accesso & Dati**, **Competenze**, **Presenze** e **Design**. Le ultime tre sezioni sono inizialmente compresse e mostrano i valori principali su una singola riga di riassunto.
+
+Le modifiche apportate ai campi si salvano automaticamente in background dopo pochi istanti e la barra inferiore segnala lo stato. Con <Btn>Annulla</Btn> ripristini i valori iniziali all'apertura della pagina. Solo la modifica dell'indirizzo (slug) richiede il salvataggio esplicito con <Btn variant="primary">Salva</Btn> e la conferma con timer. Le modifiche al team del CO si applicano immediatamente.

@@ -1,0 +1,54 @@
+---
+title: Finding a Replacement and Taking Over Shifts
+description: Can't make it? Offer your shift and someone else can take it over with one click.
+audience: [helfer]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+import ShiftSwapFlow from '../../../../components/ShiftSwapFlow.astro';
+
+If you cannot attend a shift, you do not have to cancel outright. With the built-in **Find replacement** swap feature, you can offer your shift for others to take over. Anyone authorized to register for the event can accept your shift with a single click.
+
+Shift swapping works even when the [cancellation lock](/en/helfen/austragen/#good-to-know) for the event is active.
+
+<ShiftSwapFlow />
+
+## Finding a replacement
+
+<Path steps={['My Shifts', 'Upcoming', 'Find replacement']} />
+
+<Steps>
+1. Tap **My Shifts** and locate the shift under **Upcoming**. Alternatively, open the shift directly on the event page.
+2. Tap <Btn>Find replacement</Btn>.
+3. Optionally add a short note, e.g. “On vacation this weekend”.
+4. Confirm with <Btn>Find replacement</Btn>.
+</Steps>
+
+The reason is visible to anyone who can see names on the schedule. Avoid personal details, such as medical conditions.
+
+## What happens next
+
+- **You remain assigned** until someone takes over. Until then, the shift remains your responsibility.
+- In the shift planner, the shift is marked with **Replacement requested**, showing your name and note.
+- **As soon as someone takes over**, your assignment is cleared and you receive an email notification. This requires a verified email address on your account.
+- If no one steps up, you stay registered. Please get in touch with the OC in good time.
+- Changed your plans? Tap <Btn variant="secondary">Cancel replacement request</Btn> (or <Btn variant="secondary">Withdraw</Btn> on the event page).
+- **Spread the word:** Open the shift in the event view and tap <Btn variant="secondary">Share request</Btn>. A preview saying “Replacement requested” with date and time will be generated for WhatsApp & social platforms, without displaying your name.
+
+## Taking over a shift
+
+<Steps>
+1. On the event page, shifts with replacement requests appear at the top under **Still looking for** and carry the **Replacement requested** tag. Use the filter **Replacement requested** to display only these.
+2. Open the shift and tap <Btn>Take over</Btn> next to the helper's name.
+3. Confirm. If the shift requires missing information or answers to custom questions, the system will prompt you.
+</Steps>
+
+You take over that exact task. The same criteria as regular sign-ups apply: event access permissions, [minimum age](/en/helfen/mindestalter/), and no conflicting overlaps with your other shifts. Taking over also works when general registration for the event is already closed.
+
+## Good to know
+
+- Finding and taking over replacements only works if enabled by the OC (enabled by default), and only up to the event deadline: until shift start or several hours prior.
+- The OC can also initiate a replacement search on your behalf, for example following a phone call.
+- The OC sees who is looking for a replacement in the dashboard and can trace who took over which shift in the activity log.

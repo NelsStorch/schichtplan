@@ -1,0 +1,66 @@
+---
+title: Regulating access
+description: Who is allowed to sign up, and what information must be provided?
+audience: [ok, abteilung]
+numbered: true
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+import AccessTypes from '../../../../components/AccessTypes.astro';
+import AccessGuide from '../../../../components/AccessGuide.astro';
+
+You establish access rules when [creating an event](/en/ok/anlass-erstellen/) and can update them at any time:
+
+<Path steps={['Event', 'Settings']} />
+
+You can review a summary in the OC area under **Access & Answers**: "Allowed to sign up: …" with all required fields and total active custom questions.
+
+:::note[Always applies]
+- Signing up always requires an account. A nickname without a password is sufficient.
+- The OC and department leadership can assign anyone manually, including people without accounts.
+- Anyone who redeems a valid [Access link](/en/ok/zugangs-links/) can sign up, even if they do not meet the standard criteria.
+:::
+
+<AccessGuide />
+
+## Who is allowed to sign up?
+
+In Settings, select one of the six access types:
+
+<AccessTypes />
+
+**Association DB (Cevi.DB)** modes strictly check department and unit affiliations synced from Cevi.DB. Self-selected department memberships do not qualify unless the department leadership has manually [confirmed](/en/abteilung/personen/) the person. If your department is not yet linked to Cevi.DB, the form displays a warning: no one will satisfy the criteria except through individual access links.
+
+### Permitting additional departments
+
+When selecting **Multiple departments**, a list of all known departments appears. Your own department is always included; check the boxes for any others. This is ideal for regional jamborees or when neighboring troops assist at your annual fair.
+
+Volunteers from permitted departments can sign up directly. However, they will only appear in your volunteer pool, messaging lists, and manual assignment dropdowns after they have signed up for a shift or redeemed an access link. Make sure to share the event link with the visiting department.
+
+## Restricting to specific units
+
+For all access types except **Public** and **Cevi.DB, all departments**, you can select specific units. Selecting no units allows all units. If you select units for a department, only volunteers from those units can register. For multiple departments, unit filters can be configured per department.
+
+If required units are missing here, department leaders can create them under [Units](/en/abteilung/stufen/).
+
+## Leaders only
+
+Toggle **Leaders only** to restrict signups exclusively to people with a leadership role:
+
+- Without association DB: Leadership in a unit, specified upon login
+- With Cevi.DB: Unit leader or department leader according to Cevi.DB
+
+When combined with a unit filter, leadership in any of the selected units satisfies the requirement.
+
+## Mandatory contact details
+
+Select what contact info is required from all volunteers: **Mobile phone**, **Email**, **Date of birth**, **First and last name**. Residential street addresses are not stored in user profiles; if needed, add the [Custom question "Address"](/en/ok/fragen/). If a volunteer's profile is missing a required detail, they are prompted to provide it upon their first signup. For Cevi.DB accounts, most details are imported automatically.
+
+:::tip[Age limits? Require date of birth]
+Without a date of birth, the shift planner cannot verify age restrictions. If your event includes shifts requiring helpers to be 16+ or 18+, enable **Date of birth** as a mandatory field.
+:::
+
+## Custom questions
+
+If you need extra information such as T-shirt sizes, dietary requirements, or emergency contacts, configure them under [Questions](/en/ok/fragen/). Each question can have an automatic data retention and deletion schedule.

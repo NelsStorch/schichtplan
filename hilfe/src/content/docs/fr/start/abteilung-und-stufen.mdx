@@ -1,0 +1,46 @@
+---
+title: Indiquer l'organisation, la section et les groupes
+description: Certains événements sont réservés à une organisation spécifique ou à certains groupes. Pour que le plan de créneaux puisse le vérifier, indiquez où vous participez.
+audience: [helfer]
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+Après la première connexion, une bannière jaune apparaît en haut : **« À quelle organisation appartiens-tu ? »**. Elle reste visible tant que vous n'avez pas fait de choix. « Aucune organisation » est également une réponse valable.
+
+## Choisir l'organisation et les groupes
+
+<Steps>
+1. Cliquez sur <Btn>Indiquer l'organisation</Btn>. Vous arrivez sur la page de sélection.
+2. Choisissez votre section, votre groupe ou votre association dans la liste. En présence de nombreux éléments, utilisez le champ de recherche.
+3. Si vous n'appartenez à aucune unité fixe, par exemple comme invité ou bénévole ponctuel, choisissez **Je n'appartiens à aucune organisation**.
+4. Si des groupes ou des branches sont définis (par ex. équipe de responsables, actifs, juniors), choisissez votre fonction pour chaque groupe (**Non**, **Participant·e / Membre** ou **Responsable**).
+5. Cliquez sur <Btn variant="primary">Enregistrer et continuer</Btn>. Le choix s'applique immédiatement.
+</Steps>
+
+<Tabs>
+  <TabItem label="Pour Cevi / Scouts / Jubla (Fédération)">
+    Si vous vous êtes connecté avec la base de données de votre fédération (Cevi.DB, MiData ou Jubla-DB), votre section ou groupe est le plus souvent **automatiquement renseigné** d'après vos rôles de responsable actifs et n'a pas besoin d'être choisi manuellement. Les branches officielles de la fédération sont également synchronisées directement.
+  </TabItem>
+  <TabItem label="Via lien d'invitation ou de section">
+    Si vous arrivez via un **lien d'invitation** (ou une invitation par e-mail), vous êtes directement rattaché à la section ou à l'association invitante – sans passer par la liste de sélection. Si vous accédez à l'adresse directe d'une section (`<nom>.…`), celle-ci est déjà présélectionnée pour vous lors de la configuration.
+  </TabItem>
+  <TabItem label="Connexion sans mot de passe">
+    Si la section a activé la connexion sans mot de passe, vous pouvez vous connecter sur sa page avec votre surnom et votre date de naissance, et vous êtes directement rattaché à cette section.
+  </TabItem>
+</Tabs>
+
+## Modifier plus tard
+
+<Path steps={['Compte', 'Profil & paramètres', 'Aperçu', 'Section & branches']} />
+
+Cliquez sur <Btn>Modifier</Btn>. Pour les associations, la carte s'appelle « Association & groupes », pour la Jubla « Groupe & branches ».
+
+## Pourquoi est-ce utile ?
+
+- Les événements avec accès **Interne** n'autorisent que les membres de l'organisation concernée.
+- Les événements avec **filtre de groupe** ne sont accessibles qu'à certaines équipes (par ex. uniquement l'équipe de responsables ou la première équipe).
+- Les événements **réservés aux responsables** requièrent la fonction **Responsable** dans au moins un groupe.
+- Si le portail d'une organisation est [visible uniquement pour les membres](/fr/abteilung/einstellungen/), les bénévoles ne voient les événements que s'ils sont rattachés à cette organisation.

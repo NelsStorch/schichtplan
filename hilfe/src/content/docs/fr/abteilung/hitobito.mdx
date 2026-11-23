@@ -1,0 +1,56 @@
+---
+title: Bases de données de fédération (Hitobito) & associations
+description: Comment Cevi.DB, PBS MiData, Jubla-DB et la gestion d'association s'articulent dans le plan de créneaux.
+audience: [abteilung, ok]
+sidebar:
+  label: BD fédérale & associations
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Pour les mouvements de jeunesse, le plan de créneaux est directement connecté aux bases de données officielles de fédération (Hitobito). Les associations indépendantes gèrent leurs membres et rôles de direction de manière autonome directement dans le plan de créneaux.
+
+<Tabs>
+  <TabItem label="Pour les fédérations (Cevi.DB, MiData, Jubla-DB)">
+    Les plateformes **Cevi.DB** (`db.cevi.ch`), **PBS MiData** (`db.scout.ch`) et **Jubla-Datenbank** (`db.jubla.ch`) reposent sur le logiciel libre suisse éprouvé **Hitobito**.
+
+    ### Ce que le plan de créneaux reprend
+
+    | Issu de la base de données de fédération | Dans le plan de créneaux |
+    | --- | --- |
+    | Nom de fédération (nom Cevi, totem scout, surnom) | Nom affiché sur le plan de créneaux |
+    | Prénom et nom | Identification officielle de la personne |
+    | Date de naissance | Contrôle automatique de l'âge pour les créneaux (non modifiable par l'utilisateur) |
+    | Adresse e-mail | Notifications du système et confirmations de créneau |
+    | Structure de groupe (groupe local, section, Schar) | Section principale de rattachement |
+    | Rôles dans les branches et groupes | Attribution aux [branches](/fr/abteilung/stufen/) comme responsable ou membre |
+    | Rôle de direction de section ou de groupe | Droits automatiques de direction et d'administration |
+
+    Pour connaître précisément les groupes et rôles pris en compte, y compris pour les régions et cantons, consultez [Groupes & rôles](/fr/abteilung/gruppen-und-rollen/).
+
+    :::note[Le plan de créneaux est en lecture seule]
+    Le plan de créneaux consulte exclusivement les données de la base de données de votre fédération. Il ne modifie et n'écrase jamais de données dans votre base de données de fédération.
+    :::
+
+    ### Quand les données sont-elles mises à jour ?
+
+    La synchronisation des données a lieu automatiquement à **chaque connexion**. Si des informations changent dans la base de données de fédération (par ex. nomination à la direction de section ou changement de branche), elles deviennent effectives dès la prochaine connexion de la personne concernée sur le plan de créneaux.
+
+    :::tip[Rôle fraîchement attribué ?]
+    Si une personne vient tout juste d'être nommée dans la base de données de la fédération, il lui suffit de **se déconnecter et de se reconnecter** sur le plan de créneaux. Les autorisations sont intégrées au jeton de connexion et sont actualisées immédiatement.
+    :::
+  </TabItem>
+
+  <TabItem label="Pour les associations (Gestion autonome)">
+    Les associations indépendantes, clubs sportifs, sociétés de musique et comités d'organisation n'ont **pas besoin de base de données externe** :
+
+    - **E-mail & mot de passe :** membres et responsables s'inscrivent facilement avec leur adresse e-mail et un mot de passe.
+    - **Droits & rôles :** le comité attribue les droits de planification et d'administration en toute flexibilité sous [Personnes & droits](/fr/abteilung/rechte/).
+    - **Groupes & équipes :** sous [Branches & groupes](/fr/abteilung/stufen/), vous pouvez créer des groupes propres à votre association (par ex. équipe active, comité, vétérans).
+    - **Liens d'accès :** pour les bénévoles qui n'ont pas besoin d'un compte fixe au sein de l'association, le CO génère simplement des [liens d'accès](/fr/ok/zugangs-links/) directs.
+  </TabItem>
+</Tabs>
+
+## Protection des données et sobriété
+
+Pour des motifs de protection de la vie privée, le plan de créneaux ne récupère **jamais** les adresses postales privées ni les données de base sensibles. Si le CO a besoin d'un numéro d'urgence ou d'une taille de t-shirt pour un événement, ces éléments sont demandés sous forme de [question complémentaire spécifique](/fr/ok/fragen/).

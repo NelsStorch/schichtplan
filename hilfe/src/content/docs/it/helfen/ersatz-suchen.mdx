@@ -1,0 +1,54 @@
+---
+title: Cercare un sostituto e subentrare nei turni
+description: Non puoi partecipare? Offri il tuo turno, qualcun altro subentrerà con un solo clic.
+audience: [helfer]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+import ShiftSwapFlow from '../../../../components/ShiftSwapFlow.astro';
+
+Se non puoi svolgere un turno, non devi per forza cancellarti. Con la funzione integrata **Cerca sostituto** puoi offrire il tuo turno per uno scambio o una cessione. Chiunque abbia il permesso di iscriversi all'evento può subentrare nel tuo turno con un semplice clic.
+
+Lo scambio funziona anche se il [blocco delle cancellazioni](/it/helfen/austragen/#buono-a-sapersi) per l'evento è già attivo.
+
+<ShiftSwapFlow />
+
+## Cercare un sostituto
+
+<Path steps={['I miei turni', 'In programma', 'Cerca sostituto']} />
+
+<Steps>
+1. Tocca su **I miei turni** e cerca il turno sotto **In programma**. Oppure apri il turno direttamente nell'evento.
+2. Tocca <Btn>Cerca sostituto</Btn>.
+3. Se lo desideri, scrivi un breve motivo, ad es. «Quel giorno sono in vacanza».
+4. Conferma con <Btn>Cerca sostituto</Btn>.
+</Steps>
+
+Il motivo è visibile a tutti coloro che vedono i nomi nel piano dei turni. Non inserire informazioni personali sensibili, come dettagli su malattie.
+
+## Cosa succede dopo
+
+- **Rimani iscritto** finché qualcuno non subentra. Fino ad allora il turno rimane di tua responsabilità.
+- Nel piano turni compare l'indicazione **Cercasi sostituto**, con il tuo nome e il motivo.
+- **Non appena qualcuno subentra**, vieni cancellato automaticamente e ricevi un'e-mail. Per questo il tuo account deve avere un indirizzo e-mail confermato.
+- Se non si trova nessuno, rimani iscritto. In tal caso avvisa per tempo il CO.
+- Hai di nuovo tempo? Tocca <Btn variant="secondary">Termina ricerca sostituto</Btn> (o <Btn variant="secondary">Ritira</Btn> nell'evento).
+- **Passaparola:** Apri il turno nell'evento e tocca <Btn variant="secondary">Condividi ricerca sostituto</Btn>. In WhatsApp e altre app comparirà un'anteprima «Cercasi sostituto» con turno e orario, senza il tuo nome.
+
+## Subentrare in un turno
+
+<Steps>
+1. Nell'evento i turni con ricerca di sostituto si trovano in alto sotto **Ancora cercati** e sono contrassegnati da **Cercasi sostituto**. Con il filtro **Cercasi sostituto** visualizzi solo questi.
+2. Apri il turno e tocca <Btn>Subentra</Btn> accanto alla persona.
+3. Conferma. Se mancano ancora dati o risposte alle domande del turno, il piano turni le chiederà ora.
+</Steps>
+
+Subentri esattamente in quella mansione. Valgono le stesse regole dell'iscrizione: accesso all'evento, [età minima](/it/helfen/mindestalter/) e nessuna sovrapposizione con i tuoi altri turni. Il subentro è possibile anche se le iscrizioni all'evento sono già state chiuse.
+
+## Buono a sapersi
+
+- La ricerca e il subentro funzionano solo se il CO li ha abilitati per l'evento (impostazione predefinita: attivo) e solo entro la scadenza fissata: fino all'inizio del turno o alcune ore prima.
+- Anche il CO può avviare la ricerca di un sostituto per tuo conto, ad esempio dopo una telefonata.
+- Il CO vede nella panoramica chi cerca un sostituto e nel registro delle attività chi ha rilevato ciascun turno.

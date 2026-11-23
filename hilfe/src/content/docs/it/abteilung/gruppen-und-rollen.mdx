@@ -1,0 +1,90 @@
+---
+title: Gruppi e ruoli dalla banca dati dell'associazione
+description: Quali gruppi il piano dei turni riconosce come sezione e quali ruoli contano come direzione, responsabili di branca o partecipanti – per Cevi, Scout e Jubla.
+audience: [abteilung]
+sidebar:
+  label: Gruppi & Ruoli
+---
+
+import { Tabs, TabItem, LinkCard } from '@astrojs/starlight/components';
+
+Durante il login con la banca dati della federazione (Cevi.DB, PBS MiData, banca dati Jubla), il piano dei turni legge i tuoi ruoli e i gruppi a cui appartengono. Da questi dati determina:
+
+- a quale **sezione** appartieni (o gruppo, regione, associazione cantonale),
+- se ne sei **responsabile / direzione** e hai il diritto di creare e gestire il piano dei turni,
+- in quali **branche** sei responsabile o partecipante.
+
+Un ruolo appartiene sempre al **livello di sezione immediatamente superiore**. Chi è nei lupetti di una sezione scout appartiene a quella sezione, non alla regione superiore.
+
+:::note[Anche regioni e associazioni cantonali]
+Non solo le sezioni e i gruppi locali, ma anche **regioni e associazioni cantonali** possono creare un proprio piano dei turni, ad esempio per un evento regionale. Viene creato dalla loro direzione, esattamente come per una sezione locale (vedi [Creare un'organizzazione](/it/abteilung/anlegen/)).
+
+Se dirigi più livelli, ad esempio la tua sezione e la regione, al momento della creazione potrai scegliere per quale livello operare. Viene proposta per prima la sezione locale. Se crei il piano dei turni della regione, la tua sezione rimarrà la tua sezione principale.
+
+Anche il **livello nazionale** (associazione mantello Cevi, federazioni Scout e Jubla) può creare un piano dei turni per eventi nazionali. I **gruppi di progetto** per eventi cantonali o nazionali pianificano tramite il CO dell'evento o con singoli permessi assegnati dalla direzione del livello corrispondente.
+:::
+
+<Tabs syncKey="verband">
+  <TabItem label="Cevi">
+    **Struttura:** Associazione mantello → Organizzazione affiliata (ad es. Cevi Region Zürich) → Sezione regionale → Gruppo locale (Ortsgruppe) → Jungschar → Branca (Stufe)
+
+    | Livello con piano dei turni proprio | Chi è considerato direzione? |
+    | --- | --- |
+    | Gruppo locale / Jungschar | Responsabile di sezione (Abteilungsleiter\*in) |
+    | Sezione regionale (Sektion) | Amministratore della sezione |
+    | Organizzazione affiliata | Direttore/trice (segretariato), Presidenza (comitato) |
+    | Associazione mantello | Direttore/trice (segretariato), Presidenza (comitato) |
+
+    Se un gruppo locale comprende più unità Jungschar, ciascuna unità Jungschar riceve il proprio piano dei turni.
+
+    **Branche:** gruppi di tipo «Stufe». I capi branca e capi gruppo sono direzione, i partecipanti sono partecipanti.
+  </TabItem>
+
+  <TabItem label="Scout">
+    **Struttura:** Federazione → Associazione cantonale → Regione → Sezione (Abteilung) → Castori, Lupetti, Esploratori, Pionieri, Rover, PTA
+
+    | Livello con piano dei turni proprio | Chi è considerato direzione? |
+    | --- | --- |
+    | Sezione | Direzione di sezione, Vice-direzione, Segretariato |
+    | Regione | Direzione regionale, Segretariato |
+    | Associazione cantonale | Direzione cantonale, Segretariato |
+    | Federazione | Collaboratore/trice del segretariato, Segretariato |
+
+    **Unità:** Castori, Lupetti, Esploratori, Pionieri, Rover e PTA. Capi unità e co-responsabili sono direzione. Membri delle unità sono partecipanti.
+  </TabItem>
+
+  <TabItem label="Jubla">
+    **Struttura:** Federazione → Cantone → Regione → Gruppo (Schar) → Gruppi di bambini
+
+    | Livello con piano dei turni proprio | Chi è considerato direzione? |
+    | --- | --- |
+    | Gruppo (Schar) | Direzione del gruppo (Scharleitung) |
+    | Regione | Responsabile nel gruppo «Regionalleitung» |
+    | Cantone | Responsabile nel gruppo «Kantonsleitung» o segretariato cantonale |
+    | Federazione | Membro o presidenza della direzione federale |
+
+    **Gruppi:** gruppi di bambini del gruppo locale. Gli animatori sono direzione, i ragazzi sono partecipanti.
+  </TabItem>
+</Tabs>
+
+## Quando hanno effetto le modifiche
+
+L'assegnazione viene ricalcolata a **ogni login**. Se nella banca dati della federazione è stato assegnato o revocato un nuovo ruolo, è sufficiente che la persona si disconnetta e acceda nuovamente.
+
+Se una persona ha ruoli in **più sezioni o gruppi**, una di queste diventa la sezione principale (il gruppo principale nella banca dati della federazione). Nelle altre la persona viene inclusa automaticamente in via aggiuntiva, anche se queste accettano solo su invito. Senza un ruolo specifico in esse, ci si può unire a un'altra sezione solo tramite il link diretto o un invito.
+
+Se il ruolo in tale sezione decade, termina anche l'appartenenza a quest'ultima. Se la persona vi aveva già aderito autonomamente in precedenza, l'adesione rimane; decade solo la conferma automatica da parte della banca dati. Una conferma via invito o da parte della direzione rimane valida.
+
+Un account è collegato a esattamente una sola banca dati federale. Se una persona appartiene ad esempio sia a Cevi sia a Jubla con lo stesso indirizzo e-mail, il login avverrà tramite la banca dati associata per prima. Sul piano dei turni dell'altra federazione si accederà con la medesima e-mail e password, ma i ruoli di quest'ultima non saranno sincronizzati. Chi ne ha bisogno può utilizzare un indirizzo e-mail differente nell'altra banca dati per avere un account separato.
+
+Chi perde il proprio ruolo direttivo perde anche la direzione nel piano dei turni, a condizione che la sezione abbia almeno un altro responsabile registrato. I diritti assegnati manualmente all'interno del piano dei turni (vedi [Persone e diritti](/it/abteilung/rechte/)) restano invariati.
+
+## Manca il vostro ruolo o gruppo?
+
+Ogni federazione è organizzata in modo peculiare. Se presso di voi un ruolo direttivo non viene riconosciuto o un gruppo viene associato in modo errato, vi preghiamo di segnalarlo su GitHub indicando associazione, livello e l'esatta denominazione del ruolo nella banca dati.
+
+<LinkCard
+  title="Segnala modifiche a gruppi o ruoli"
+  description="Modello su GitHub: indicare associazione, gruppo e ruolo."
+  href="https://github.com/NelsStorch/schichtplan_v2/issues/new?template=rollen.yml"
+/>

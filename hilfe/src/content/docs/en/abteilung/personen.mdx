@@ -1,0 +1,44 @@
+---
+title: Members & people
+description: Who belongs to the department, and who has which permissions? Edit members and assign permissions here.
+audience: [abteilung]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Department', 'Members']} />
+
+The **Members** tab is visible to anyone with the "View members" permission (department leadership always has access). The list shows everyone who has your department set as their home department, is a department leader, or holds permissions. The current **Department leaders** are displayed at the top.
+
+Selecting **Show guests** also includes people who signed up via your subdomain but belong to a different department or have none set. This allows you, for example, to grant permissions to someone from a neighboring department.
+
+## Invite members & assign permissions directly
+
+At the top of the **Members** tab (visible with the permission "Manage members and permissions" or "Edit department"), you will find the section **Invite members & invite link**:
+
+- **Copy link**: Copies the secret invitation link for group chats or emails. Anyone joining through it is immediately admitted as a confirmed member. Click <Btn variant="ghost">Regenerate</Btn> to invalidate previously issued invitation links.
+- **Invite by email**: Enter an email address and optionally select a permission preset right away (e.g. **With permission: Create events** or **Event coordination**). Once the invited person clicks the link in the email, they join the department and automatically receive the chosen permissions – even if they are creating a brand new account in the process.
+
+## List view and "Who can do what"
+
+- **List**: Shows each person's status (Department leadership, preset, "Custom permissions", Member, Guest), whether the department was imported from Cevi.DB, and assigned units, e.g. "Hiskia (Leader)".
+- **Who can do what**: A matrix table showing everyone with permissions, with checkboxes for each permission.
+
+## Editing a person
+
+Tap <Btn variant="ghost">Edit</Btn>. You will only see this button for individuals you are authorized to edit (see [Who can grant permissions?](/en/abteilung/rechte/#who-can-grant-permissions)).
+
+**Permissions in the department**: Select a preset template or check individual permissions. To learn what each permission allows, see [Permissions in the department](/en/abteilung/rechte/).
+
+**Units**: For each unit, select None, Participant, or Leader. Units imported from Cevi.DB are locked.
+
+Save changes by clicking <Btn variant="primary">Save</Btn>. The change is recorded in the [Audit log](/en/abteilung/rechte/#audit-log).
+
+## Limitations
+
+- The **Department leadership** is imported from Cevi.DB and cannot be changed here. If someone is listed as department leader in Cevi.DB but not yet in the shift planner, their next Cevi.DB sign-in will synchronize it.
+- Users with only a nickname profile (without Cevi.DB or email/password) cannot receive permissions until they have an account with Cevi.DB or email and password.
+- <Btn variant="ghost">Remove from department</Btn> is only available for people who joined manually. Their permissions in the department will be revoked, and on their next login they will be prompted to select where they belong. For Cevi.DB users, department affiliation is derived directly from their roles.
+- <Btn variant="ghost">Confirm</Btn> is only visible to department leaders for users with a Cevi.DB account from your local organization who chose the department manually (e.g. board members without a role in a youth group). Once confirmed, they also count for "Department internal, Cevi.DB" events. The list shows who confirmed the person and when, and this is also logged. Under "Edit", confirmation can be revoked. It expires automatically if the person changes department or no longer has a role in your local organization.
+- Anyone who only needs to plan a specific event does not need department-wide permissions. Simply add them to the [event's OC](/en/ok/rollen/).

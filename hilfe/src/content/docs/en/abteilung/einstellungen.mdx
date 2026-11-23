@@ -1,0 +1,63 @@
+---
+title: Department settings
+description: Name, logo, contact person, accent color, and who sees the homepage. Applies to all events in the department.
+audience: [abteilung]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Department home', 'Department', 'General']} />
+
+The button <Btn>Department</Btn> is visible to department leaders and anyone with one of the permissions "Edit department", "Manage units", or "View members". The dialog only shows the sections you have permission to access: **General**, [Units](/en/abteilung/stufen/), [Members](/en/abteilung/personen/), and [Audit log](/en/abteilung/rechte/#audit-log).
+
+## General
+
+| Field | Purpose |
+| --- | --- |
+| Department name | Displayed prominently on the homepage and top left |
+| Department logo | Coat of arms or logo. If left blank, the association or default shift planner logo is shown |
+| Contact person | Who can help with questions. Selectable from department leaders and anyone with "Manage members and permissions". The name is shown in the "members only" notice; email is visible only to logged-in users |
+| Homepage for members only | Controls who can see the event list, see below |
+| Allow passwordless login | Whether helpers can sign in without a password (using only nickname and date of birth) on this page |
+| Join method for email accounts | How new people with email accounts can join your organization, see below |
+| Invite members & invite link | Secret invite link to copy, plus email invitations (also with direct permission presets) |
+| Department color | Accent color for buttons and highlights |
+
+The subdomain cannot be changed.
+
+## Joining, invitations & passwordless login
+
+Under **Join method for email accounts**, you control who can join your department or club:
+
+- **Via the link of this page (default)**: The organization does not appear in the general public dropdown list. Anyone opening your direct URL (`<subdomain>.…`) can join.
+- **By invitation only**: Joining is only possible via your secret **invite link** or an **email invitation**.
+- **Open**: The organization also appears publicly for everyone in the general dropdown list during login.
+
+**Departments and troops (Cevi, Pfadi, Jubla):** Anyone who holds a role in your group according to the association database (Cevi.DB, MiData, Jubla-DB) automatically belongs to your department regardless of this setting, either as their home department or as an additional one. This takes effect on their next login and is considered confirmed. If the role in the database is removed, membership ends on the next login. It cannot be left manually, only modified in the association database.
+
+**Clubs** do not have an association database: There, only the link, invitations, and the selection list matter.
+
+Via **Invite members & invite link** (also accessible directly in the [Members](/en/abteilung/personen/) tab), you can copy an invitation link or invite people by email, optionally providing them with an immediate permission template such as **Create events**.
+
+With **Allow passwordless login**, you determine whether quick access using nickname and date of birth is active on your portal. Before disabling it, the system will warn you if any existing profiles are set up exclusively without passwords.
+
+## Department color
+
+Choose one of eight preset colors or click **+** to enter a custom color. The preview is live: you immediately see the color throughout the entire window. The shift planner automatically calculates contrast so that text remains legible on any color in both light and dark mode.
+
+Click <Btn variant="primary">Save</Btn> to apply the color. Clicking <Btn variant="ghost">Cancel</Btn> reverts the change.
+
+## Homepage for members only
+
+For new departments, this switch is **turned on** by default. When enabled:
+
+- Outsiders only see that the department exists, but not the list of events.
+- **Public** events remain accessible to everyone via their direct link.
+- **Internal** events can only be opened by outsiders with an [Access link](/en/ok/zugangs-links/).
+
+A **member** is defined as someone who has set this department as their home department, is a department leader, holds permissions in the department, is on the OC of an event, or is a platform admin. Guests (signed in via the subdomain, but with a different home department) do not count.
+
+:::note[Why enabled?]
+Many departments do not want public visitors to see when camps and weekend trips take place. Disable this switch if your events are public anyway and the homepage is meant to serve as a general public overview.
+:::

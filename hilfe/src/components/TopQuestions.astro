@@ -5,6 +5,8 @@ import MessagesSquare from '@lucide/astro/icons/messages-square';
 
 const locale = Astro.locals.starlightRoute.locale;
 const isFr = locale === 'fr';
+const isIt = locale === 'it';
+const isEn = locale === 'en';
 
 const questions = isFr
   ? [
@@ -32,6 +34,62 @@ const questions = isFr
         q: 'Puis-je réutiliser un événement de l’année passée ?',
         a: 'Oui. Enregistrez l’événement comme modèle pour recréer tous les créneaux en un clic l’année suivante.',
         href: '/fr/ok/vorlagen/',
+      },
+    ]
+  : isIt
+  ? [
+      {
+        q: 'Serve un account per iscriversi?',
+        a: 'Sì, ma funziona anche senza password: sulla pagina del tuo gruppo bastano soprannome e data di nascita.',
+        href: '/it/start/anmelden/',
+      },
+      {
+        q: 'C’è scritto «Non abilitato per te». Cosa fare?',
+        a: 'L’evento è riservato a membri interni o a gruppi specifici. Verifica i tuoi accessi o chiedi un link al comitato.',
+        href: '/it/helfen/nicht-freigeschaltet/',
+      },
+      {
+        q: 'Come posso cancellarmi?',
+        a: 'In «I miei turni», tocca «Cancellati» sul turno. Il posto torna subito disponibile.',
+        href: '/it/helfen/austragen/',
+      },
+      {
+        q: 'Come invito persone esterne?',
+        a: 'Nel cruscotto del comitato, sotto «Accesso e dati», crea un link personale o di gruppo da condividere.',
+        href: '/it/ok/zugangs-links/',
+      },
+      {
+        q: 'Posso riutilizzare un evento dell’anno scorso?',
+        a: 'Sì. Salva l’evento come modello per ricreare tutti i turni in un clic l’anno successivo.',
+        href: '/it/ok/vorlagen/',
+      },
+    ]
+  : isEn
+  ? [
+      {
+        q: 'Do I need an account to sign up?',
+        a: 'Yes, but passwordless works too: on your group’s page, nickname and date of birth are enough.',
+        href: '/en/start/anmelden/',
+      },
+      {
+        q: 'It says “Not unlocked for you”. What now?',
+        a: 'The event is restricted to internal members or specific groups. Check your permissions or ask organizers for an access link.',
+        href: '/en/helfen/nicht-freigeschaltet/',
+      },
+      {
+        q: 'How do I cancel my sign-up?',
+        a: 'Under “My Shifts”, click “Cancel sign-up”. The slot becomes available again immediately.',
+        href: '/en/helfen/austragen/',
+      },
+      {
+        q: 'How do I invite external helpers?',
+        a: 'In the organizer dashboard under “Access & info”, create a personal or group link to share.',
+        href: '/en/ok/zugangs-links/',
+      },
+      {
+        q: 'Can I reuse an event from last year?',
+        a: 'Yes. Save the event as a template to recreate all shifts with one click next year.',
+        href: '/en/ok/vorlagen/',
       },
     ]
   : [
@@ -62,10 +120,37 @@ const questions = isFr
       },
     ];
 
-const heading = isFr ? 'Questions fréquentes' : 'Häufig gefragt';
-const sub = isFr ? 'Des réponses en une phrase. Un clic vous mène au guide complet.' : 'Die Antworten in einem Satz. Ein Klick führt zur ganzen Anleitung.';
-const allLinkText = isFr ? 'Toutes les questions' : 'Alle Fragen';
-const allLinkHref = isFr ? '/fr/wissen/faq/' : '/wissen/faq/';
+const heading = isFr
+  ? 'Questions fréquentes'
+  : isIt
+  ? 'Domande frequenti'
+  : isEn
+  ? 'Frequently Asked Questions'
+  : 'Häufig gefragt';
+
+const sub = isFr
+  ? 'Des réponses en une phrase. Un clic vous mène au guide complet.'
+  : isIt
+  ? 'Risposte in una frase. Un clic ti porta alla guida completa.'
+  : isEn
+  ? 'Answers in one sentence. Click to view the full guide.'
+  : 'Die Antworten in einem Satz. Ein Klick führt zur ganzen Anleitung.';
+
+const allLinkText = isFr
+  ? 'Toutes les questions'
+  : isIt
+  ? 'Tutte le domande'
+  : isEn
+  ? 'All questions'
+  : 'Alle Fragen';
+
+const allLinkHref = isFr
+  ? '/fr/wissen/faq/'
+  : isIt
+  ? '/it/wissen/faq/'
+  : isEn
+  ? '/en/wissen/faq/'
+  : '/wissen/faq/';
 ---
 
 <section class="tq not-content" aria-labelledby="tq-title">

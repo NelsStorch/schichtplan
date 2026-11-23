@@ -1,0 +1,121 @@
+---
+title: Account e profilo
+description: Finestra dell'account e pagina del profilo, notifiche push per dispositivo, scaricare i dati ed eliminare l'account.
+audience: [helfer]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+## La finestra dell'account
+
+Tocca in basso a destra su **Account** nel piano turni della tua sezione (su computer in alto a destra sul tuo nome). La finestra è volutamente compatta: mostra il tuo nome, la tua sezione e il tuo ruolo, ad esempio «Volontario» o «Direzione di sezione», e contiene solo quanto riguarda questo indirizzo:
+
+- **Tema dei colori**: chiaro, scuro o come il tuo dispositivo
+- **Push su questo dispositivo** (vedi [sotto](#le-notifiche-push-valgono-per-dispositivo))
+- <Btn>I miei turni</Btn> con le tue ore di volontariato
+- <Btn>Profilo & impostazioni</Btn>, apre la pagina del profilo sulla pagina iniziale. In alto a sinistra **Torna a …** riporta al tuo piano turni. Nell'app installata la pagina del profilo si apre nel browser.
+- <Btn>Installa app</Btn>, se il tuo browser lo supporta
+- <Btn variant="ghost">Guida</Btn> e <Btn variant="ghost">Disconnetti</Btn>
+
+Tutto il resto, come dati personali, notifiche, password, **Scarica i miei dati** ed **Elimina account**, si trova nella pagina del profilo.
+
+## La pagina del profilo
+
+<Path steps={['cevi-schichtplan.ch/profil']} />
+
+La pagina del profilo è disponibile solo sul portale principale. `<sezione>.cevi-schichtplan.ch/profil` reindirizza lì. Ha quattro schede:
+
+- **Panoramica**: i tuoi prossimi turni con abbonamento al calendario, le tue ore di volontariato, la tua sezione e gruppi e cosa manca ancora nel profilo
+- **Dati personali**: nome, numero di cellulare, data di nascita ed e-mail
+- **Notifiche**: e-mail e notifiche push
+- **Sicurezza & dati**: password, autenticazione a due fattori, scarica i miei dati ed elimina account
+
+Nella scheda **Dati personali** modifichi **nome, cognome, numero di cellulare e data di nascita**. Il piano dei turni utilizza questi dati quando un evento li [richiede](/it/helfen/angaben-und-fragen/).
+
+Per gli account Cevi.DB la data di nascita proviene da Cevi.DB e non può essere modificata qui. Il nome viene aggiornato a ogni accesso da Cevi.DB, quindi è consigliabile modificarlo direttamente lì. Il numero di cellulare si gestisce solo qui. Il piano turni non memorizza alcun indirizzo di domicilio.
+
+Se accedi con nome Cevi, la data di nascita fa parte del tuo login. Se la modifichi qui, da quel momento sarà valida la nuova data.
+
+### Confermare l'e-mail
+
+Se accanto alla tua e-mail compare **Non confermata**, tocca **Richiedi link di conferma** e apri il link ricevuto per posta. Senza e-mail confermata non puoi accedere con e-mail e password.
+
+Se non hai ancora registrato un'e-mail, puoi aggiungerla nella scheda **Dati personali**.
+
+### Password & login di riserva (fallback)
+
+Nella scheda **Sicurezza & dati** gestisci la tua password personale:
+
+- **Account con password:** puoi modificare la tua password attuale in qualsiasi momento (inserisci la password attuale, scegli la nuova).
+- **Account con Cevi.DB / MiData / Jubla-DB:** puoi impostare una **password di riserva (fallback)**. In questo modo potrai accedere con il tuo indirizzo e-mail e la password nel caso in cui il database associativo sia temporaneamente irraggiungibile. I tuoi turni e i diritti di gestione rimarranno pienamente conservati.
+
+### Autenticazione a due fattori (2FA)
+
+Con l'autenticazione a due fattori, al login il piano turni richiede anche un codice a 6 cifre generato da un'**app authenticator** sul tuo smartphone. Funziona qualsiasi app conforme allo standard aperto TOTP, come Google Authenticator, Microsoft Authenticator, Aegis, 2FAS, 1Password o Bitwarden. Questa opzione è disponibile per gli account con password o login associativo, non per i profili solo con nome Cevi.
+
+Come configurarla:
+
+1. Nella scheda **Sicurezza & dati**, alla voce **Autenticazione a due fattori**, tocca <Btn variant="secondary">Configura</Btn>. Se hai una password, inseriscila per conferma.
+2. Nell'app authenticator aggiungi un nuovo account e scansiona il codice QR (o digita la chiave).
+3. Inserisci il codice generato dall'app e tocca <Btn variant="primary">Attiva</Btn>.
+4. Conserva i **10 codici di ripristino** in un luogo sicuro, ad esempio nel gestore delle password o stampati. Verranno mostrati solo questa volta.
+
+**Quando viene richiesto il codice?**
+
+- **Accesso con password** (anche password di riserva): sempre.
+- **Accesso con Cevi.DB / MiData / Jubla-DB**: per impostazione predefinita no, solo se attivi l'opzione **Chiedi il codice anche per l'accesso tramite …**. Il database associativo ha una propria autenticazione a due fattori. Se è già attiva lì, non serve attivarla anche qui.
+
+Disattivare la 2FA, modificare l'opzione o generare nuovi codici di ripristino richiede un codice temporaneo attuale. Chiunque utilizzi momentaneamente il tuo dispositivo non potrà quindi disattivarla facilmente.
+
+:::caution[Smartphone smarrito?]
+Accedi con uno dei tuoi codici di ripristino (nella schermata del codice seleziona **Usa codice di ripristino**). Ogni codice può essere usato una sola volta. Genera poi nuovi codici nel profilo. Se hai perso anche i codici, rivolgiti all'[indirizzo di contatto](/it/wissen/kontakt/). Dopo una verifica, l'autenticazione a due fattori potrà essere reimpostata.
+:::
+
+### Notifiche & promemoria
+
+Nella scheda **Notifiche** della pagina del profilo imposti come e quando desideri ricevere promemoria. Ogni modifica viene salvata all'istante.
+
+- **Push su questo dispositivo**: attiva le notifiche push per il browser in uso (anche per i profili con nome Cevi senza e-mail). Con **Invia test** verifichi il funzionamento.
+- **Dispositivi con push**: tutti i dispositivi su cui le notifiche push sono attive, ad esempio «iPhone · App» o «Windows · Chrome». Con **Rimuovi** elimini un dispositivo, ad esempio un vecchio telefono o un'iscrizione duplicata su iPhone (Safari e app).
+- **Cosa via e-mail, cosa via push**: una tabella con le colonne E-mail e Push per promemoria del turno, buoni pasto aperti, «Sostituto trovato» e comunicazioni del CO. Le e-mail richiedono un indirizzo confermato.
+- **Quando ricordare?**: con quanto anticipo rispetto all'inizio del turno deve arrivare il promemoria (ad es. 1 settimana, 2 giorni, 1 giorno o 2 ore prima, anche più opzioni insieme). I promemoria via e-mail contengono un evento calendario (`.ics`).
+
+### Le notifiche push valgono per dispositivo
+
+Attivi le notifiche push una volta per ogni dispositivo e browser, sia dalla **finestra dell'account** nel piano turni di una sezione, sia dalla pagina del profilo. Dopodiché riceverai le notifiche da tutte le sezioni ed eventi, e l'opzione risulterà ovunque su **Attivo**. Puoi disattivarle allo stesso modo ovunque. Su cellulare o altri computer le notifiche push vanno attivate separatamente.
+
+Finché su un dispositivo non sono attive le notifiche push, un piccolo puntino sul pulsante **Account** lo segnala. Scompare dopo la prima apertura della finestra dell'account.
+
+Se il browser rinnova autonomamente la sottoscrizione push, il piano turni la aggiorna in automatico. Non occorre riattivarla.
+
+Come mittente, il tuo dispositivo mostrerà l'indirizzo su cui hai attivato il push. Toccando una notifica si aprirà comunque l'evento corrispondente, anche se appartiene a un'altra sezione.
+
+:::note[iPhone e iPad]
+Su iPhone e iPad le notifiche push funzionano solo nell'app aggiunta alla schermata Home. Nella pagina del profilo nel browser mobile non c'è quindi il pulsante push, ma un link al piano turni della tua sezione. Aggiungilo tramite **Condividi → Aggiungi alla schermata Home** e attiva le notifiche push nell'app all'interno della **finestra dell'account**.
+:::
+
+## Eliminare l'account
+
+L'eliminazione cancella il tuo account insieme a tutte le iscrizioni ai turni e ai ruoli di sezione e del comitato. Verrai immediatamente disconnesso. Questa operazione non può essere annullata. Per motivi di sicurezza il pulsante diventa attivo solo dopo alcuni secondi.
+
+- Gli account con **Cevi.DB** o **password** si eliminano autonomamente, nella pagina del profilo nella scheda **Sicurezza & dati**.
+- I profili registrati solo con **nome Cevi** non possono eliminarsi autonomamente. Sono pensati come profili volontari temporanei. Nella stessa scheda puoi selezionare **Richiedi eliminazione**: l'account verrà eliminato entro 30 giorni.
+
+Sotto **Scarica i miei dati** (scheda **Sicurezza & dati**) puoi scaricare prima tutti i dati memorizzati dal piano turni in un file JSON.
+
+:::caution[Cancellarsi prima dai turni è più corretto]
+L'eliminazione ti rimuove da tutti i turni futuri. Avvisa il CO se eri iscritto a turni imminenti.
+:::
+
+## Se non usi l'account per molto tempo
+
+Per non conservare i dati più a lungo del necessario, gli account non utilizzati per due anni vengono eliminati:
+
+1. Dopo **24 mesi senza accesso** ricevi un'e-mail con la data di eliminazione prevista.
+2. Se effettui un accesso nei **30 giorni** successivi, l'account viene mantenuto e i due anni ripartono da zero.
+3. Altrimenti l'account viene eliminato allo scadere dei 30 giorni.
+
+Verranno eliminati il tuo profilo, i tuoi dati di contatto e le tue risposte alle domande del CO. Negli eventi passati il tuo turno rimarrà registrato come **«Persona eliminata»** senza nome, per preservare la correttezza dei piani e delle statistiche.
+
+Gli account privi di indirizzo e-mail, ad esempio i profili solo con nome Cevi, vengono eliminati senza preavviso, non potendoti contattare. L'unico amministratore di una sezione e gli amministratori di piattaforma sono esclusi da questa procedura.

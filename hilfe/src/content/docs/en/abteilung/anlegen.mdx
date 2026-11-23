@@ -1,0 +1,88 @@
+---
+title: Create an organization or club
+description: Set up the shift planner for your department, group, or club. It takes only a minute.
+audience: [abteilung]
+numbered: true
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import FaqItem from '../../../../components/FaqItem.astro';
+
+Whether you are a youth organization or a local sports club: Every organization gets its own permanent web address (subdomain) on the shift planner, for example `illnau.cevi-schichtplan.ch` or `tournament.vereins-schichtplan.ch`.
+
+<Tabs>
+  <TabItem label="For Cevi / Scout / Jubla (Association)">
+    ## Who is allowed to create the shift planner?
+
+    In youth associations, the shift planner is created by the **official leadership according to the association database**:
+    - **Cevi:** Role "Abteilungsleiter*in" (Department Leader) in Cevi.DB
+    - **Pfadi / Scouts:** Role "Abteilungsleitung" (Group Leader) in PBS MiData
+    - **Jubla:** Role "Scharleitung" (Troop Leader) in the Jubla database
+
+    **Regions, cantonal associations, and national boards** (for Cevi: sections, member organizations, and the umbrella organization) can also create their own shift planner through their leadership. You can see which roles qualify under [Groups & roles](/en/abteilung/gruppen-und-rollen/), and how to plan with them under [Region, canton & national](/en/abteilung/ebenen/).
+
+    This ensures that exactly one official shift planner exists per group.
+
+    ## How to create one for association departments
+
+    <Steps>
+    1. Open your association's main website (e.g. `cevi-schichtplan.ch` or `pfadi-schichtplan.ch`) and tap <Btn variant="primary">Create department</Btn>.
+    2. Sign in with your association account (Cevi.DB, MiData, or Jubla-DB).
+    3. If your department does not have a shift planner yet, the system recognizes your leadership role and offers to create it.
+    4. **Name**: Proposed automatically from the association database (e.g. "Cevi Weiningen" or "Pfadi St. Georg").
+    5. **Subdomain**: The short web address (e.g. `weiningen` for `weiningen.cevi-schichtplan.ch`). 3 to 30 characters. **Cannot be changed later.**
+    6. Check the box for the **Terms of Service**. You agree to them on behalf of your department, including the data processing terms. Without checking the box, the department cannot be created.
+    7. Click <Btn variant="primary">Create department</Btn>. You will immediately be redirected to your new shift planner.
+    </Steps>
+
+    ### What happens next
+    - You automatically become the **main responsible leader** in the shift planner.
+    - The department is linked directly to your official association group.
+    - Other leaders in your group automatically receive leadership permissions upon logging in.
+  </TabItem>
+
+  <TabItem label="For clubs (Email & password)">
+    ## Who is allowed to create a club?
+
+    For independent clubs, sports teams, and festival committees, **any board or organizing committee (OC) member** can set up a new club in the shift planner. The creator automatically becomes the main administrator and can subsequently grant permissions to other people in the club.
+
+    ## How to set up a club
+
+    <Steps>
+    1. Open `vereins-schichtplan.ch` and tap <Btn variant="primary">Create club</Btn>.
+    2. Sign in with your email account or create a free new club account.
+    3. **Club name**: Enter the official name of your club (e.g. "FC Musterstadt" or "Turnverein Wald").
+    4. **Subdomain**: Choose your personal web address (e.g. `fcmusterstadt` for `fcmusterstadt.vereins-schichtplan.ch`).
+    5. Check the box for the **Terms of Service**. You agree to them on behalf of your club, including the data processing terms. Without checking the box, the club cannot be created.
+    6. Click <Btn variant="primary">Create club</Btn>. Your club portal is immediately ready for use.
+    </Steps>
+
+    ### What to do next
+    - In [Settings](/en/abteilung/einstellungen/), upload the club logo and set your brand colors.
+    - Create [groups or teams](/en/abteilung/stufen/) (e.g. Active Team, Board, Juniors).
+    - Grant leadership permissions to additional board members under [Members & permissions](/en/abteilung/rechte/).
+    - [Create your first event](/en/ok/anlass-erstellen/).
+  </TabItem>
+</Tabs>
+
+## Next steps
+
+1. Customize [name, logo, and primary color](/en/abteilung/einstellungen/).
+2. Create [units or groups](/en/abteilung/stufen/).
+3. [Assign permissions](/en/abteilung/rechte/): Who on the leadership team plans which events?
+4. [Create your first event](/en/ok/anlass-erstellen/).
+
+## Frequently asked questions
+
+<FaqItem q="«A shift planner already exists for your organization»">
+Someone on your team has already created the organization. Contact your main leadership to obtain administrator or planning permissions for your portal.
+</FaqItem>
+
+<FaqItem q="«Only the department leadership can create a new department» (Association)">
+Your official department or troop leadership role has not yet been registered in the association database. Please contact your association database administrator to update your role.
+</FaqItem>
+
+<FaqItem q="Can the subdomain be changed later?">
+For technical reasons, the subdomain (e.g. <code>muster.vereins-schichtplan.ch</code>) cannot be renamed once created, as it is anchored on flyers and links. Therefore, choose a concise, recognizable name.
+</FaqItem>

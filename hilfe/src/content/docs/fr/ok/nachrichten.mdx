@@ -1,0 +1,44 @@
+---
+title: Messages aux bénévoles
+description: Envoyer par e-mail le point de rendez-vous, des changements ou un appel aux bénévoles pour les créneaux vacants.
+audience: [ok]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+Avec un message, vous pouvez contacter l'ensemble des inscrits, les personnes de créneaux spécifiques ou le CO, sans avoir à connaître leurs adresses e-mail.
+
+<Path steps={['Événement', 'Espace CO', 'Messages']} />
+
+<Steps>
+1. Choisissez **À qui s'adresse le message ?**
+   - **Tous les inscrits** : toute personne ayant au moins un créneau (responsables de créneau/du jour inclus)
+   - **Sous le quota** (ou **Encore sans créneau** s'il n'y a pas de quota) : toutes les personnes du vivier de bénévoles sans créneau ou n'ayant pas atteint leur quota (hors personnes déclarées indisponibles)
+   - **Créneaux spécifiques** : cochez les créneaux concernés (leurs responsables inclus)
+   - **Personnes sélectionnées** : cochez d'abord les personnes sous **Bénévoles**, puis cliquez sur <Btn variant="primary">Message à la sélection</Btn>
+   - **Le CO** : tous les membres du comité d'organisation de cet événement
+
+2. En dessous s'affiche le nombre de destinataires concernés et ceux ne disposant pas d'adresse e-mail confirmée.
+
+3. Rédigez l'**Objet** et le **Message**. Si vous insérez `{name}` dans le texte (p. ex. `Bonjour {name}`), le prénom ou nom de la personne sera automatiquement inséré lors de l'envoi. Un lien vers le plan de créneaux est ajouté automatiquement.
+
+4. Cliquez sur <Btn variant="primary">Envoyer</Btn> et confirmez.
+</Steps>
+
+Chaque personne reçoit son propre e-mail individuel : personne ne voit les adresses des autres. Les réponses vous parviennent directement sur votre propre adresse e-mail.
+
+:::tip[Créneaux décalés ?]
+Si vous avez décalé plusieurs créneaux d'un coup sous **Créneaux**, cliquez sur <Btn>Message</Btn> dans la barre d'action inférieure. Les créneaux concernés seront déjà présélectionnés.
+:::
+
+## Qui ne reçoit rien ?
+
+Seuls les comptes dotés d'une adresse e-mail **confirmée** reçoivent les messages : comptes Cevi.DB et comptes créés avec e-mail et mot de passe. Les personnes connectées uniquement avec un nom Cevi ou inscrites en tant qu'invités par le CO ne reçoivent rien. Appelez-les ou écrivez-leur directement.
+
+## Historique et limites
+
+Sur la droite (sur mobile, en bas) sous **Envoyés**, l'historique liste tous les messages de l'événement avec l'heure d'envoi, l'expéditeur et le nombre de destinataires. Les messages longs peuvent être développés avec **Lire en entier**, et le bouton **Utiliser comme modèle** recopie l'objet et le texte dans le formulaire d'envoi. Si un message n'a pas pu être remis, la mention « non distribué » s'affiche.
+
+Chaque événement est limité à un maximum de 10 messages par heure, avec un plafond de 1000 destinataires par message.

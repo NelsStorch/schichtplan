@@ -1,0 +1,90 @@
+---
+title: Command Palette & Quick Search
+description: Navigate lightning-fast with ⌘K or Ctrl+K, find shifts, assign helpers, and perform actions.
+audience: [helfer, ok, abteilung]
+sidebar:
+  label: Command Palette (⌘K)
+---
+
+import Btn from '../../../../components/Btn.astro';
+
+The **Command Palette** is the universal control center in the shift planner. It enables you to navigate the entire portal without a mouse: jump between events, search shifts, assign volunteers, and tweak settings in seconds.
+
+:::tip[Keyboard shortcut]
+Press <kbd>⌘K</kbd> (Mac) or <kbd>Ctrl</kbd>+<kbd>K</kbd> (Windows/Linux) at any time to open the Command Palette.
+On smartphones, tap the search icon <Btn>Search...</Btn> in the top navigation bar.
+:::
+
+---
+
+## Keyboard navigation
+
+The Command Palette is built entirely for keyboard speed:
+
+| Key | Action |
+| --- | --- |
+| <kbd>⌘K</kbd> / <kbd>Ctrl</kbd>+<kbd>K</kbd> | Open or close the Command Palette |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | Navigate search results |
+| <kbd>↵ Enter</kbd> | Execute selected command or open entry |
+| <kbd>⇥ Tab</kbd> | Open **sub-actions** for the item (e.g. Copy link, Call, Assign) |
+| <kbd>Esc</kbd> | Exit sub-actions or close palette |
+| <kbd>⌫ Backspace</kbd> | Clear an active filter prefix when the search field is empty |
+
+---
+
+## Instant prefix filters
+
+Typing a specific character at the start of your search immediately restricts the palette to that category:
+
+| Prefix | Domain | Example | Action |
+| --- | --- | --- | --- |
+| `@` | **People & contacts** | `@robin` or `@leader` | Searches helpers, scout/Cevi names, groups, and roles in your department. |
+| `#` or `>` | **Events** | `#chilbi` or `>camp` | Filters exclusively for events in your department. |
+| `:` or `!` | **Shifts & tasks** | `:grill` or `!bar` | Finds shifts, tasks, and open slots in the current event. |
+| `?` | **Help & shortcuts** | `?` | Displays a reference list of all keyboard shortcuts and commands. |
+
+Typing without a prefix searches across all categories simultaneously.
+
+---
+
+## Context-aware actions
+
+The Command Palette knows where you are. When viewing an event, relevant actions appear right at the top:
+
+### For all volunteers
+- **Switch to volunteer view**: Open the event shift schedule.
+- **Copy link**: Copy the direct event URL to your clipboard.
+- **Find open shifts**: Highlight tasks that still need helpers.
+
+### For the OC & leadership
+- **Switch to OC dashboard**: Toggle between the public view and management area.
+- **Gap finder (Open shifts)**: Lists unfilled shifts with missing volunteer counts.
+- **Create new shift**: Opens the shift creation form directly.
+- **Assign helpers**: Launches the quick assignment dialog.
+- **Attendance & check-in**: Jumps straight to the check-in list on event day.
+- **Print shift schedule**: Opens the print-ready view for rosters and postings.
+
+---
+
+## Sub-actions & inspector preview
+
+Each entry in the Command Palette offers more than a simple click:
+
+1. **Detail preview (Inspector)**: On wider screens, a side panel displays contextual details:
+   - For **Shifts**: Exact times, fill progress bar, and list of assigned helpers.
+   - For **People**: Phone number, email address, group membership, and current shift assignments.
+   - For **Events**: Date, status, and planning completion progress.
+2. **Sub-actions (<kbd>Tab</kbd>)**:
+   - Press <kbd>Tab</kbd> on any result (or click the arrow icon on the right) to access dedicated sub-actions.
+   - Example for a person: Dial their phone number directly (`tel:`), draft an email, or mark attendance.
+   - Example for a shift: Jump directly to editing or allocate helpers.
+
+---
+
+## Global actions & customization
+
+Through the Command Palette, you can also manage global settings and navigation:
+
+- **Theme**: Type `light`, `dark`, or `system` to toggle the app's appearance.
+- **Quick navigation**: Switch instantly to *My Shifts*, your *Profile*, *Department settings*, or *Association sync*.
+- **Recent history**: Recently used commands and visited events appear at the top when opening the palette, allowing you to resume work in two keystrokes.

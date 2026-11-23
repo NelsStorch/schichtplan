@@ -1,0 +1,66 @@
+---
+title: Gérer l'accès
+description: Qui peut s'inscrire et quelles informations doivent être obligatoirement fournies ?
+audience: [ok, abteilung]
+numbered: true
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+import AccessTypes from '../../../../components/AccessTypes.astro';
+import AccessGuide from '../../../../components/AccessGuide.astro';
+
+Vous définissez les règles d'accès lors de la [création](/fr/ok/anlass-erstellen/) de l'événement et pouvez les modifier à tout moment :
+
+<Path steps={['Événement', 'Paramètres']} />
+
+Un récapitulatif figure dans l'espace CO sous **Accès & Réponses** : « Inscription autorisée pour : … » avec les champs obligatoires et le nombre de questions configurées.
+
+:::note[Règles fondamentales toujours valables]
+- L'inscription nécessite dans tous les cas un compte utilisateur. Un nom Cevi sans mot de passe suffit.
+- Le CO et la direction de section peuvent affecter des personnes manuellement en tout temps, y compris des personnes sans compte.
+- Toute personne utilisant un [lien d'accès](/fr/ok/zugangs-links/) valide peut s'inscrire, même si elle ne remplit pas les conditions générales.
+:::
+
+<AccessGuide />
+
+## Qui peut s'inscrire ?
+
+Dans les paramètres, choisissez l'un des six modes d'accès :
+
+<AccessTypes />
+
+Les variantes **Cevi.DB** se basent exclusivement sur la section et les branches issues de Cevi.DB. S'être attribué manuellement une section ne suffit pas, à moins que la direction de section n'ait [validé](/fr/abteilung/personen/) le profil. Si votre section n'est pas encore connectée à Cevi.DB, un avertissement s'affiche : dans ce cas, personne ne remplira les conditions d'accès sauf via un lien personnel.
+
+### Ouvrir l'accès à d'autres sections
+
+En choisissant **Plusieurs sections**, la liste de toutes les sections apparaît. La vôtre est toujours sélectionnée d'office, cochez les sections partenaires souhaitées. C'est idéal pour les événements régionaux ou si une section voisine vient prêter main-forte.
+
+Les membres des sections partenaires autorisées peuvent s'inscrire en autonomie. Dans le vivier de bénévoles, dans les messages et lors des affectations manuelles, ils n'apparaissent toutefois qu'à partir du moment où ils se sont inscrits ou ont utilisé un lien d'accès. Pensez donc à transmettre le lien de l'événement à la section partenaire.
+
+## Restreindre à certaines branches
+
+Pour tous les modes d'accès excepté **Public** et **Cevi.DB, toutes les sections**, vous pouvez restreindre l'accès à certaines branches/groupes d'âge. Sans sélection, toutes les branches ont accès. Si vous sélectionnez des branches pour une section, seuls les membres de ces branches pourront s'inscrire. Pour les sections partenaires, la règle s'applique par section.
+
+Si des branches manquent dans la liste, la direction de section peut les ajouter sous [Branches](/fr/abteilung/stufen/).
+
+## Réservé aux responsables (Leitende)
+
+En activant le filtre **Responsables uniquement**, seules les personnes ayant un rôle d'animation ou de direction ont accès :
+
+- sans Cevi.DB : fonction de responsable dans une branche, déclarée lors de la connexion
+- avec Cevi.DB : responsable de branche ou direction de section selon les données Cevi.DB
+
+Combiné à un filtre de branches, l'accès est réservé aux responsables des branches sélectionnées.
+
+## Informations obligatoires
+
+Indiquez ce qui est requis pour chaque bénévole : **Numéro de portable**, **E-mail**, **Date de naissance**, **Prénom et nom**. Le plan de créneaux n'enregistre pas d'adresse postale dans les profils ; si vous en avez besoin, posez la [question « Adresse »](/fr/ok/fragen/). Si un champ obligatoire manque dans le profil d'un utilisateur, il lui sera demandé lors de sa première inscription. Pour les comptes Cevi.DB, la majorité des informations est renseignée automatiquement.
+
+:::tip[Limites d'âge ? Exigez la date de naissance]
+Sans date de naissance, le système ne peut pas vérifier les limites d'âge. Si votre événement comporte des créneaux réservés aux plus de 16 ou 18 ans, cochez obligatoirement le champ **Date de naissance**.
+:::
+
+## Questions personnalisées
+
+Pour collecter des informations complémentaires telles que la taille de t-shirt, les allergies ou un contact d'urgence, configurez-les sous [Questions](/fr/ok/fragen/). Chaque question peut bénéficier d'un délai d'effacement automatique.

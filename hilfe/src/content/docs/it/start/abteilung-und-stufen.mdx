@@ -1,0 +1,46 @@
+---
+title: Indicare organizzazione, sezione e gruppi
+description: Alcuni eventi sono riservati a una specifica organizzazione o a determinati gruppi. Per consentire al piano turni di verificarlo, indichi a quale gruppo appartieni.
+audience: [helfer]
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+Dopo il primo accesso compare in alto un avviso giallo: **«A quale organizzazione appartieni?»**. Rimane visibile finché non effettui una scelta. Anche «Nessuna organizzazione» è una risposta valida.
+
+## Scegliere organizzazione & gruppi
+
+<Steps>
+1. Tocca su <Btn>Indica organizzazione</Btn>. Arriverai alla pagina di selezione.
+2. Scegli la tua sezione, il tuo gruppo o la tua associazione dall'elenco. In caso di molte voci, usa il campo di ricerca.
+3. Se non appartieni a un'unità fissa, ad esempio come ospite o volontario occasionale, seleziona **Non appartengo a nessuna organizzazione**.
+4. Se sono configurati gruppi o branche (ad es. gruppo animatori, attivi, allievi), seleziona la tua funzione per ciascun gruppo (**No**, **Partecipante / Membro** o **Responsabile**).
+5. Tocca <Btn variant="primary">Salva e continua</Btn>. L'impostazione ha effetto immediato.
+</Steps>
+
+<Tabs>
+  <TabItem label="Per Cevi / Scout / Jubla (Federazione)">
+    Se hai effettuato l'accesso con il database associativo (Cevi.DB, MiData o Jubla-DB), la tua sezione o gruppo è solitamente già **impostata automaticamente** in base ai tuoi ruoli attivi e non deve essere selezionata a mano. Anche le branche ufficiali vengono sincronizzate direttamente.
+  </TabItem>
+  <TabItem label="Tramite link di invito o della sezione">
+    Se arrivi tramite un **link di invito** (o un invito via e-mail), verrai inserito direttamente nella sezione o associazione invitante – senza elenco di selezione. Se arrivi tramite l'indirizzo diretto di una sezione (`<nome>.…`), questa è già preselezionata per te.
+  </TabItem>
+  <TabItem label="Login senza password">
+    Se la sezione ha attivato l'accesso senza password, puoi accedere sulla sua pagina con soprannome e data di nascita e verrai assegnato direttamente a tale sezione.
+  </TabItem>
+</Tabs>
+
+## Modificare in seguito
+
+<Path steps={['Account', 'Profilo & impostazioni', 'Panoramica', 'Sezione & gruppi']} />
+
+Tocca lì su <Btn>Modifica</Btn>. Nelle associazioni la scheda si chiama «Associazione & gruppi», nella Jubla «Gruppo & branche».
+
+## A cosa serve
+
+- Gli eventi con accesso **Interno** ammettono solo persone della rispettiva organizzazione.
+- Gli eventi con **filtro di gruppo** ammettono solo squadre specifiche (ad es. solo il gruppo responsabili o la prima squadra).
+- Gli eventi **solo per responsabili** richiedono in almeno un gruppo la funzione **Responsabile**.
+- Se la pagina del portale di un'organizzazione è [visibile solo ai membri](/it/abteilung/einstellungen/), i volontari vedono gli eventi solo se sono assegnati a tale organizzazione.

@@ -1,0 +1,90 @@
+---
+title: Groupes et rôles de la base de données de fédération
+description: Quels groupes le plan de créneaux reconnaît comme section et quels rôles comptent comme direction, responsable de branche ou participant – pour Cevi, Scouts et Jubla.
+audience: [abteilung]
+sidebar:
+  label: Groupes & rôles
+---
+
+import { Tabs, TabItem, LinkCard } from '@astrojs/starlight/components';
+
+Lors de la connexion avec la base de données de fédération (Cevi.DB, PBS MiData, Jubla-DB), le plan de créneaux lit vos rôles ainsi que les groupes auxquels ils sont rattachés. Il en déduit :
+
+- à quelle **section** vous appartenez (ou groupe, région, association cantonale),
+- si vous y exercez une fonction de **direction** et avez le droit de créer et gérer le plan de créneaux,
+- dans quelles **branches** vous êtes responsable ou participant·e.
+
+Un rôle est toujours rattaché au **niveau de section immédiatement supérieur**. Une personne dans la meute de louveteaux d'un groupe scout appartient à ce groupe, et non à la région située au-dessus.
+
+:::note[Également pour les régions et associations cantonales]
+Les sections locales ne sont pas les seules concernées : les **régions et associations cantonales** peuvent aussi créer leur propre plan de créneaux, par exemple pour un rassemblement régional. Il est créé par leur direction, selon le même principe qu'une section (voir [Créer une organisation](/fr/abteilung/anlegen/)).
+
+Si vous dirigez plusieurs échelons (par exemple votre section et la région), vous choisissez lors de la création pour quel échelon vous intervenez. La section est proposée en premier. Si vous créez le plan de créneaux de la région, votre section locale reste votre section de rattachement principal.
+
+L'**échelon national** (association faîtière du Cevi, fédération du MSdS ou de la Jubla) peut également créer un plan de créneaux pour des manifestations nationales. Les **groupes de projet** pour des manifestations cantonales ou nationales s'organisent via le CO de l'événement ou grâce à des droits spécifiques accordés par la direction de l'échelon.
+:::
+
+<Tabs syncKey="verband">
+  <TabItem label="Cevi">
+    **Structure :** Association faîtière → Organisation membre (par ex. Cevi Région Zurich) → Section → Groupe local → Jungschar → Branche
+
+    | Échelon avec plan de créneaux propre | Qui fait office de direction ? |
+    | --- | --- |
+    | Groupe local ou Jungschar | Responsable de section (Abteilungsleiter\*in) |
+    | Section | Administrateur\*trice de la section |
+    | Organisation membre | Directeur\*trice général·e (secrétariat), Présidence (comité) |
+    | Association faîtière | Directeur\*trice général·e (secrétariat), Présidence (comité) |
+
+    Si un groupe local comprend plusieurs Jungschars, chaque Jungschar dispose de son propre plan de créneaux.
+
+    **Branches :** groupes de type « Branche ». Les responsables de branche et de groupe ont le statut de Direction, les participant·e·s sont considéré·e·s comme Participant·e·s.
+  </TabItem>
+
+  <TabItem label="Scouts">
+    **Structure :** Fédération → Association cantonale → Région → Groupe (section) → Castors, Louveteaux, Éclais, Picos, Routiers, PTA
+
+    | Échelon avec plan de créneaux propre | Qui fait office de direction ? |
+    | --- | --- |
+    | Groupe (section) | Direction de groupe, Adjoint·e de groupe, Secrétariat |
+    | Région | Direction régionale, Secrétariat |
+    | Association cantonale | Direction cantonale, Secrétariat |
+    | Fédération | Collaborateur\*trice du secrétariat, Secrétariat |
+
+    **Unités :** Castors, Louveteaux, Éclais, Picos, Routiers et PTA. Les responsables d'unité et co-responsables ont le statut de Direction. Les membres de ces unités sont considéré·e·s comme Participant·e·s, y compris les sizainiers et chefs de patrouille.
+  </TabItem>
+
+  <TabItem label="Jubla">
+    **Structure :** Fédération → Canton → Région → Groupe (Schar) → Groupes d'enfants
+
+    | Échelon avec plan de créneaux propre | Qui fait office de direction ? |
+    | --- | --- |
+    | Groupe (Schar) | Direction de groupe (Scharleitung) |
+    | Région | Direction dans le groupe « Direction régionale » |
+    | Canton | Direction dans le groupe « Direction cantonale » ou « Secrétariat cantonal » |
+    | Fédération | Membre ou présidence de la direction fédérale |
+
+    **Groupes :** groupes d'enfants de l'entité. Les animateurs et animatrices ont le statut de Direction, les enfants sont considéré·e·s comme Participant·e·s.
+  </TabItem>
+</Tabs>
+
+## Quand les modifications prennent-elles effet ?
+
+L'affectation est recalculée à **chaque connexion**. Si un rôle a été attribué ou retiré dans la base de données de fédération, il suffit que la personne se déconnecte puis se reconnecte.
+
+Si une personne possède des rôles dans **plusieurs sections ou groupes**, l'une d'entre elles devient sa section principale (le groupe principal dans la base de données). Dans les autres, elle est automatiquement ajoutée, même si celles-ci n'acceptent que sur invitation. Sans rôle préalable sur place, on ne peut rejoindre une autre section que via son lien direct ou une invitation.
+
+Si le rôle dans une telle section prend fin, l'appartenance correspondante s'arrête également. Si la personne s'était déjà inscrite elle-même auparavant, elle reste membre ; seule la confirmation officielle issue de la base de données disparaît. Une confirmation accordée par invitation ou par la direction reste valable.
+
+Un compte est associé à une seule base de données de fédération. Si une personne est active au Cevi et à la Jubla avec la même adresse e-mail, la connexion ne fonctionne qu'avec la base de données à laquelle le compte a été lié en premier. Sur le plan de créneaux de l'autre fédération, la connexion s'effectue avec le même e-mail et le mot de passe, mais les rôles correspondants ne seront pas synchronisés. Pour en bénéficier, il convient d'indiquer une adresse e-mail distincte dans l'autre base de données afin de disposer d'un compte dédié.
+
+Une personne qui n'a plus de rôle de direction perd son statut de direction dans le plan de créneaux, à condition que la section compte au moins une autre direction. Les droits que vous avez attribués manuellement dans le plan de créneaux (voir [Personnes & droits](/fr/abteilung/rechte/)) ne sont pas impactés.
+
+## Votre rôle ou votre groupe est-il manquant ?
+
+Chaque organisation présente des spécificités. Si un rôle chez vous devrait conférer le statut de direction mais n'apparaît pas ici, ou si un groupe est mal attribué, signalez-le-nous sur GitHub en indiquant la fédération, l'échelon et la désignation exacte du rôle dans la base de données.
+
+<LinkCard
+  title="Signaler une adaptation pour groupes ou rôles"
+  description="Modèle sur GitHub : indiquer la fédération, le groupe et le rôle."
+  href="https://github.com/NelsStorch/schichtplan_v2/issues/new?template=rollen.yml"
+/>

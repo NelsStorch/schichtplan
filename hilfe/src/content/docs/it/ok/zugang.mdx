@@ -1,0 +1,66 @@
+---
+title: Regolare l'accesso
+description: Chi può iscriversi e quali dati devono essere obbligatoriamente forniti?
+audience: [ok, abteilung]
+numbered: true
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+import AccessTypes from '../../../../components/AccessTypes.astro';
+import AccessGuide from '../../../../components/AccessGuide.astro';
+
+Puoi stabilire i criteri di accesso durante la [creazione dell'evento](/it/ok/anlass-erstellen/) e modificarli in qualsiasi momento successivo:
+
+<Path steps={['Evento', 'Impostazioni']} />
+
+Un riassunto sintetico è visibile nell'area CO sotto **Accesso & Risposte**: «Possono iscriversi: …» con l'indicazione di tutti i campi obbligatori e del numero di domande personalizzate.
+
+:::note[Regole sempre valide]
+- Per iscriversi è sempre necessario effettuare il login. È sufficiente un profilo con solo nome scout/Cevi senza password.
+- Il CO e la direzione di sezione possono sempre assegnare manualmente chiunque, anche persone prive di account.
+- Chi ha riscattato un [link di accesso](/it/ok/zugangs-links/) valido può sempre iscriversi, anche se non soddisfa i requisiti ordinari.
+:::
+
+<AccessGuide />
+
+## Chi può iscriversi?
+
+Nelle impostazioni scegli una delle sei tipologie di accesso:
+
+<AccessTypes />
+
+Le varianti basate su **Cevi.DB / Federazione** tengono conto solo della sezione e delle branche risultanti dalla banca dati ufficiale. Chi si è assegnato autonomamente a una sezione non soddisfa questo requisito, a meno che la direzione non abbia [confermato](/it/abteilung/personen/) il profilo. Se la tua sezione non è ancora collegata alla banca dati, il modulo mostrerà un avviso: in tal caso nessuno potrebbe iscriversi, se non tramite link d'accesso personale.
+
+### Abilitare altre sezioni
+
+Con l'opzione **Più sezioni** compare l'elenco di tutte le sezioni. La tua sezione è sempre inclusa, e puoi spuntare le sezioni supplementari desiderate. È ideale per eventi di zona o feste in cui collaborano gruppi limitrofi.
+
+I volontari delle sezioni abilitate potranno iscriversi autonomamente. Nel bacino volontari, nei destinatari dei messaggi e nei menu di assegnazione compariranno tuttavia solo dopo aver effettuato almeno un'iscrizione o aver riscattato un link. Invia quindi alla sezione partner il link dell'evento.
+
+## Riservare a specifiche branche
+
+In tutte le modalità d'accesso eccetto **Pubblico** e **Banca dati, tutte le sezioni**, puoi selezionare specifiche branche. Non selezionare nulla significa consentire l'accesso a tutte le branche. Se selezioni una branca per una sezione, solo i membri di quella branca potranno accedere. Nelle sezioni multiple abilitate, la restrizione si applica per singola sezione.
+
+Se mancano determinate branche, la direzione di sezione può inserirle in [Branche](/it/abteilung/stufen/).
+
+## Solo animatori e responsabili
+
+Attivando l'opzione **Solo animatori/capi**, possono iscriversi unicamente le persone che ricoprono un ruolo direttivo:
+
+- Senza banca dati: ruolo di animatore/trice in una branca, dichiarato al momento del login
+- Con banca dati: responsabile di branca o direzione di sezione certificata dalla banca dati
+
+In combinazione con un filtro di branca, è valido il ruolo direttivo in una qualsiasi delle branche ammesse.
+
+## Dati obbligatori richiesti
+
+Scegli quali dati richiedere obbligatoriamente a tutti: **Cellulare**, **E-mail**, **Data di nascita**, **Nome e cognome**. L'indirizzo di domicilio non viene registrato nel profilo utente; se ne avete bisogno, attivate la [domanda «Indirizzo»](/it/ok/fragen/). Chi non ha ancora compilato questi campi nel proprio profilo riceverà la richiesta al momento della prima iscrizione. Per gli account collegati a banche dati associative, la maggior parte dei dati viene precompilata automaticamente.
+
+:::tip[Limiti di età? Richiedi la data di nascita]
+Senza data di nascita il piano dei turni non può verificare i limiti di età. Se l'evento prevede turni da 16 o 18 anni, rendi obbligatorio il campo **Data di nascita**.
+:::
+
+## Domande personalizzate
+
+Se per l'evento avete bisogno di indicazioni supplementari (taglia t-shirt, allergie, contatto per le emergenze), potete impostarle sotto [Domande](/it/ok/fragen/). Ciascuna domanda può avere una propria scadenza di cancellazione automatica.

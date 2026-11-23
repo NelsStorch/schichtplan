@@ -1,0 +1,90 @@
+---
+title: Menu comandi & ricerca rapida (Command Palette)
+description: Con ⌘K o Ctrl+K navighi fulmineamente nel piano turni, trovi i turni, assegni i volontari ed esegui azioni.
+audience: [helfer, ok, abteilung]
+sidebar:
+  label: Menu comandi (⌘K)
+---
+
+import Btn from '../../../../components/Btn.astro';
+
+Il **menu comandi** (o *Command Palette*) è la centrale di controllo universale nel piano turni. Ti consente di gestire l'intero portale senza mouse, passare da un evento all'altro, cercare turni, assegnare volontari e modificare impostazioni all'istante.
+
+:::tip[Scorciatoia da tastiera]
+Premi in qualsiasi momento <kbd>⌘K</kbd> (Mac) o <kbd>Ctrl</kbd>+<kbd>K</kbd> (Windows/Linux) per aprire il menu comandi.
+Su smartphone trovi l'icona della lente di ingrandimento nell'intestazione <Btn>Cerca...</Btn>.
+:::
+
+---
+
+## Navigazione da tastiera
+
+Il menu comandi è interamente progettato per lavorare velocemente da tastiera:
+
+| Tasto | Funzione |
+| --- | --- |
+| <kbd>⌘K</kbd> / <kbd>Ctrl</kbd>+<kbd>K</kbd> | Apri o chiudi il menu comandi |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | Naviga nell'elenco dei risultati |
+| <kbd>↵ Invio</kbd> | Esegui immediatamente il comando o l'elemento selezionato |
+| <kbd>⇥ Tab</kbd> | Apri le **sotto-azioni** per la voce corrente (ad es. copia link, chiama, assegna) |
+| <kbd>Esc</kbd> | Esci dalle sotto-azioni o chiudi il menu |
+| <kbd>⌫ Backspace</kbd> | Rimuovi il prefisso di filtro impostato se il campo è vuoto |
+
+---
+
+## Filtri immediati con prefissi
+
+Digitando un carattere specifico all'inizio, il menu filtra all'istante per quella categoria:
+
+| Prefisso | Ambito | Esempio | Cosa succede |
+| --- | --- | --- | --- |
+| `@` | **Persone & contatti** | `@falk` o `@responsabili` | Cerca tra volontari, nomi Cevi, gruppi e ruoli della tua sezione. |
+| `#` o `>` | **Eventi** | `#festa` o `>campo` | Mostra esclusivamente gli eventi della tua sezione. |
+| `:` o `!` | **Turni & compiti** | `:griglia` o `!cassa` | Trova turni, mansioni e posti liberi nell'evento corrente. |
+| `?` | **Guida & scorciatoie** | `?` | Mostra una panoramica di tutte le scorciatoie e dei comandi di menu. |
+
+Se scrivi senza prefisso, il menu cerca in tutte le categorie contemporaneamente.
+
+---
+
+## Azioni contestuali
+
+Il menu comandi riconosce la pagina in cui ti trovi. Quando sei all'interno di un evento, in cima compaiono automaticamente azioni pertinenti:
+
+### Per tutti i volontari
+- **Passa alla vista volontari**: apre la panoramica dei turni dell'evento.
+- **Copia link**: copia negli appunti il link diretto all'evento.
+- **Trova turni liberi**: mostra subito quali mansioni necessitano ancora di supporto.
+
+### Per il CO & la direzione
+- **Passa all'area CO**: passa dalla vista pubblica alla centrale di pianificazione.
+- **Rileva lacune (turni aperti)**: elenca tutti i turni non coperti con il numero di volontari mancanti.
+- **Crea nuovo turno**: apre direttamente il modulo di creazione.
+- **Assegna volontari**: apre la finestra di assegnazione rapida.
+- **Presenza & check-in**: passa all'elenco del check-in il giorno dell'evento.
+- **Stampa piano turni**: apre l'anteprima di stampa per elenchi turni e affissioni.
+
+---
+
+## Sotto-azioni & anteprima dettagliata (Inspector)
+
+Ogni voce nel menu comandi offre spesso più di un semplice clic:
+
+1. **Anteprima dettagliata**: su schermi più grandi vedi subito a destra informazioni aggiuntive:
+   - Nei **turni**: orario esatto, barra di avanzamento dell'occupazione e chi è già iscritto.
+   - Nelle **persone**: numero di telefono, indirizzo e-mail, gruppo di appartenenza e i turni della persona.
+   - Negli **eventi**: data, stato e avanzamento della pianificazione.
+2. **Sotto-azioni (<kbd>Tab</kbd>)**:
+   - Premi il tasto <kbd>Tab</kbd> su una voce (o tocca la freccia a destra) per richiamare sotto-azioni specifiche.
+   - Esempio con una persona: componi direttamente il numero di telefono (`tel:`), scrivi un'e-mail o registra la presenza.
+   - Esempio con un turno: passa direttamente alla modifica o assegna volontari.
+
+---
+
+## Azioni generali & aspetto
+
+Tramite il menu comandi puoi controllare anche le impostazioni globali e la navigazione:
+
+- **Tema colore**: digita `chiaro`, `scuro` o `sistema` per adattare l'aspetto dell'app.
+- **Salto rapido**: passa a *I miei turni*, al tuo *Profilo*, alle *Impostazioni della sezione* o alla *Sincronizzazione Cevi.DB*.
+- **Cronologia (Recenti)**: gli ultimi comandi eseguiti e gli eventi aperti compaiono subito in alto all'apertura, permettendoti di tornare a lavorare con due soli tasti.

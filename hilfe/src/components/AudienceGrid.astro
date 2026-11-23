@@ -7,6 +7,8 @@ import ArrowRight from '@lucide/astro/icons/arrow-right';
 
 const locale = Astro.locals.starlightRoute.locale;
 const isFr = locale === 'fr';
+const isIt = locale === 'it';
+const isEn = locale === 'en';
 
 const groups = isFr
   ? [
@@ -53,6 +55,102 @@ const groups = isFr
           { label: 'Groupes, branches & base de données', href: '/fr/abteilung/stufen/' },
           { label: 'Membres et rôles', href: '/fr/abteilung/personen/' },
           { label: 'Accueil réservé aux membres', href: '/fr/abteilung/einstellungen/' },
+        ],
+      },
+    ]
+  : isIt
+  ? [
+      {
+        key: 'helfer',
+        icon: HandHeart,
+        kicker: 'Do una mano',
+        title: 'Volontari',
+        text: 'Genitori, animatori, ex-membri: trova un turno, iscriviti, riempi il calendario.',
+        start: '/it/helfen/eintragen/',
+        moreLabel: 'Tutte le guide per Volontari',
+        links: [
+          { label: 'Iscriversi a un turno', href: '/it/helfen/eintragen/' },
+          { label: 'Cancellarsi dal turno', href: '/it/helfen/austragen/' },
+          { label: 'Perché non posso iscrivermi?', href: '/it/helfen/nicht-freigeschaltet/' },
+          { label: 'I miei turni nel calendario', href: '/it/helfen/meine-schichten/' },
+        ],
+      },
+      {
+        key: 'ok',
+        icon: ClipboardList,
+        kicker: 'Organizzo un evento',
+        title: 'Comitato organizzatore',
+        text: 'Festa, campo, anniversario: creare turni, gestire accessi, assegnare i volontari.',
+        start: '/it/ok/rollen/',
+        moreLabel: 'Tutte le guide per il Comitato',
+        links: [
+          { label: 'Creare un evento', href: '/it/ok/anlass-erstellen/' },
+          { label: 'Pianificare turni e compiti', href: '/it/ok/schichten-planen/' },
+          { label: 'Chi può iscriversi?', href: '/it/ok/zugang/' },
+          { label: 'Volontari e fabbisogno', href: '/it/ok/helfer-pool/' },
+        ],
+      },
+      {
+        key: 'abteilung',
+        icon: Tent,
+        kicker: 'Dirigo l’organizzazione',
+        title: 'Direzione & Amministrazione',
+        text: 'Configurare il piano turni per sezione o gruppo, gestire membri e ruoli.',
+        start: '/it/abteilung/anlegen/',
+        moreLabel: 'Tutte le guide per la Direzione',
+        links: [
+          { label: 'Creare una sezione o associazione', href: '/it/abteilung/anlegen/' },
+          { label: 'Gruppi, branche e database', href: '/it/abteilung/stufen/' },
+          { label: 'Membri e ruoli', href: '/it/abteilung/personen/' },
+          { label: 'Home page per soli membri', href: '/it/abteilung/einstellungen/' },
+        ],
+      },
+    ]
+  : isEn
+  ? [
+      {
+        key: 'helfer',
+        icon: HandHeart,
+        kicker: 'I want to help',
+        title: 'Helpers & Volunteers',
+        text: 'Parents, leaders, alumni: find a shift, sign up, fill your calendar.',
+        start: '/en/helfen/eintragen/',
+        moreLabel: 'All guides for Helpers',
+        links: [
+          { label: 'Sign up for a shift', href: '/en/helfen/eintragen/' },
+          { label: 'Cancel shift sign-up', href: '/en/helfen/austragen/' },
+          { label: 'Why can’t I sign up?', href: '/en/helfen/nicht-freigeschaltet/' },
+          { label: 'My shifts in calendar', href: '/en/helfen/meine-schichten/' },
+        ],
+      },
+      {
+        key: 'ok',
+        icon: ClipboardList,
+        kicker: 'I plan an event',
+        title: 'Organizers',
+        text: 'Festival, camp, anniversary: create shifts, manage access, assign volunteers.',
+        start: '/en/ok/rollen/',
+        moreLabel: 'All guides for Organizers',
+        links: [
+          { label: 'Create an event', href: '/en/ok/anlass-erstellen/' },
+          { label: 'Plan shifts and tasks', href: '/en/ok/schichten-planen/' },
+          { label: 'Who can sign up?', href: '/en/ok/zugang/' },
+          { label: 'Volunteer pool & quotas', href: '/en/ok/helfer-pool/' },
+        ],
+      },
+      {
+        key: 'abteilung',
+        icon: Tent,
+        kicker: 'I lead the organization',
+        title: 'Leadership & Admin',
+        text: 'Set up shift planner for department or group, manage members and roles.',
+        start: '/en/abteilung/anlegen/',
+        moreLabel: 'All guides for Leadership',
+        links: [
+          { label: 'Create department or club', href: '/en/abteilung/anlegen/' },
+          { label: 'Units, groups & database', href: '/en/abteilung/stufen/' },
+          { label: 'Members and roles', href: '/en/abteilung/personen/' },
+          { label: 'Members-only home page', href: '/en/abteilung/einstellungen/' },
         ],
       },
     ]
@@ -104,10 +202,14 @@ const groups = isFr
       },
     ];
 
-const eyebrow = isFr ? 'Démarrage' : 'Einstieg';
-const heading = isFr ? 'Qui êtes-vous ?' : 'Wer bist du?';
+const eyebrow = isFr ? 'Démarrage' : isIt ? 'Iniziare' : isEn ? 'Get Started' : 'Einstieg';
+const heading = isFr ? 'Qui êtes-vous ?' : isIt ? 'Chi sei?' : isEn ? 'Who are you?' : 'Wer bist du?';
 const sub = isFr
   ? 'Choisissez votre rôle. Vous pouvez naviguer à tout moment via la recherche ou la barre latérale.'
+  : isIt
+  ? 'Scegli il tuo ruolo. Puoi navigare in qualsiasi momento tramite la ricerca o la barra laterale.'
+  : isEn
+  ? 'Choose your role. You can jump to any guide via search or the sidebar at any time.'
   : 'Wähle deine Rolle. Du kannst jederzeit über die Suche oder die Seitenleiste springen.';
 ---
 

@@ -1,0 +1,88 @@
+---
+title: Come funziona il piano dei turni
+description: Un solo account per tutte le sezioni, ogni organizzazione al proprio indirizzo web. Ecco come è organizzato tutto.
+audience: [helfer, ok, abteilung]
+sidebar:
+  label: Panoramica
+---
+
+import { LinkCard, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Il piano dei turni sostituisce fogli Excel confusi, messaggi di gruppo e sondaggi Doodle per campi, feste, sagre e tornei. I volontari vedono a colpo d'occhio dove manca ancora qualcuno e si iscrivono autonomamente. Il comitato organizzatore (CO) segue in tempo reale quali turni sono coperti.
+
+## I quattro indirizzi della tua associazione
+
+Il piano turni è disponibile per Cevi, scout, Jubla e associazioni indipendenti su domini dedicati:
+
+<Tabs>
+  <TabItem label="Per Cevi">
+    | Indirizzo | Utilizzo |
+    | --- | --- |
+    | `cevi-schichtplan.ch` | Pagina iniziale, cerca sezione, il tuo [profilo](/it/helfen/konto/) |
+    | `login.cevi-schichtplan.ch` | Login centrale per tutte le sezioni Cevi |
+    | `la-tua-sezione.cevi-schichtplan.ch` | Il piano turni della tua sezione con tutti gli eventi |
+    | `hilfe.cevi-schichtplan.ch/it/` | Questa guida |
+  </TabItem>
+  <TabItem label="Per gli scout">
+    | Indirizzo | Utilizzo |
+    | --- | --- |
+    | `pfadi-schichtplan.ch` | Pagina iniziale, cerca gruppo, il tuo [profilo](/it/helfen/konto/) |
+    | `login.pfadi-schichtplan.ch` | Login centrale per tutti i gruppi scout |
+    | `il-tuo-gruppo.pfadi-schichtplan.ch` | Il piano turni del tuo gruppo con tutti gli eventi |
+    | `hilfe.pfadi-schichtplan.ch/it/` | Questa guida |
+  </TabItem>
+  <TabItem label="Per Jubla">
+    | Indirizzo | Utilizzo |
+    | --- | --- |
+    | `jubla-schichtplan.ch` | Pagina iniziale, cerca gruppo, il tuo [profilo](/it/helfen/konto/) |
+    | `login.jubla-schichtplan.ch` | Login centrale per tutti i gruppi Jubla |
+    | `il-tuo-gruppo.jubla-schichtplan.ch` | Il piano turni del tuo gruppo con tutti gli eventi |
+    | `hilfe.jubla-schichtplan.ch/it/` | Questa guida |
+  </TabItem>
+  <TabItem label="Per le associazioni">
+    | Indirizzo | Utilizzo |
+    | --- | --- |
+    | `vereins-schichtplan.ch` | Pagina iniziale, cerca associazione, il tuo [profilo](/it/helfen/konto/) |
+    | `login.vereins-schichtplan.ch` | Login centrale con e-mail e password |
+    | `la-tua-associazione.vereins-schichtplan.ch` | Il piano turni della tua associazione con tutti gli eventi |
+    | `hilfe.vereins-schichtplan.ch/it/` | Questa guida |
+  </TabItem>
+</Tabs>
+
+Ogni unità possiede un proprio indirizzo web permanente, ad esempio `illnau.cevi-schichtplan.ch` o `torneo.vereins-schichtplan.ch`. Questo indirizzo rimane invariato ed è perfetto per volantini, locandine e inviti ai volontari.
+
+:::tip[Basta accedere una sola volta]
+Accedi una volta e sei automaticamente autenticato su tutte le unità della tua organizzazione. Se dai una mano a una sezione amica o a un'altra associazione, non serve un secondo account.
+:::
+
+## Come si collegano gli elementi
+
+- **L'organizzazione:**
+  - Nel **Cevi** e negli **Scout**, ogni **sezione** o gruppo ha il proprio piano dei turni, gestito dalla **direzione di sezione**.
+  - Nella **Jubla**, ogni **gruppo locale** ha il suo piano dei turni, gestito dalla **direzione del gruppo**.
+  - Nelle **associazioni**, ogni **associazione** (o comitato organizzatore) ha il proprio piano, gestito dal **comitato direttivo**.
+- Un'organizzazione può creare quanti **eventi** desidera, ad esempio «Festa campestre 2026», «Campo estivo» o «Torneo sociale».
+- Un evento ha **turni**, ad esempio «Sabato dalle 17:00 alle 20:00».
+- Un turno ha uno o più **compiti / mansioni** con posti dedicati, ad esempio Griglia 2, Bar 2, Cassa 1.
+- Il **CO** (comitato organizzatore) pianifica i turni di un evento. La direzione amministra l'organizzazione nel suo complesso.
+
+Maggiori termini sono spiegati nel [glossario](/it/wissen/glossar/).
+
+## Su smartphone
+
+Il piano dei turni è ottimizzato fin dall'inizio per smartphone. In basso c'è una barra di navigazione fissa con **Eventi**, **I miei turni** e **Account**. Su computer le stesse voci si trovano in alto nell'intestazione.
+
+Puoi aggiungere la pagina della tua organizzazione alla schermata iniziale del telefono (nel browser mobile seleziona «Aggiungi alla schermata Home»). Si aprirà come un'app nativa, senza dover installare nulla dall'App Store.
+
+## Su computer e tastiera
+
+Su laptop o PC, nella barra di navigazione in alto c'è un campo di ricerca rapida. Con la scorciatoia da tastiera <kbd>⌘K</kbd> (Mac) o <kbd>Ctrl</kbd>+<kbd>K</kbd> (Windows) apri il [menu comandi (Command Palette)](/it/wissen/befehlsmenue/) per passare da un evento all'altro senza mouse, cercare turni o assegnare volontari.
+
+## Da dove iniziare?
+
+<CardGrid>
+  <LinkCard title="Accesso" description="Login associativo (Cevi.DB / MiData / Jubla-DB), soprannome o e-mail: cosa fa per te?" href="/it/start/anmelden/" />
+  <LinkCard title="Iscriversi a un turno" description="Trova un turno, scegli la mansione e sei iscritto." href="/it/helfen/eintragen/" />
+  <LinkCard title="Pianificare un evento" description="Per il CO: da un evento vuoto a un piano turni completo." href="/it/ok/anlass-erstellen/" />
+  <LinkCard title="Configurare l'organizzazione" description="Crea una nuova sezione o associazione e inizia." href="/it/abteilung/anlegen/" />
+</CardGrid>

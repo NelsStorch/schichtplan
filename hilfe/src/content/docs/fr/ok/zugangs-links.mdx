@@ -1,0 +1,52 @@
+---
+title: Envoyer des liens d'accès
+description: 'Pour les personnes qui ne remplissent pas les conditions : un lien individuel pour une personne ou un lien de groupe pour le chat des parents.'
+audience: [ok]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+Votre événement est réservé aux membres de la section, mais la marraine de Falk souhaite aider au grill ? Ou le groupe WhatsApp des parents d'une branche veut donner un coup de main ? Les liens d'accès sont faits pour cela.
+
+<Path steps={['Événement', 'Espace CO', 'Accès & Réponses', "Liens d'accès"]} />
+
+Sur la page de l'événement, le bouton <Btn>Liens</Btn> à côté du CO vous y mène également directement.
+
+## Deux types de liens
+
+| Type | Portée | Idéal pour |
+| --- | --- | --- |
+| **Individuel** | Uniquement pour le premier compte qui clique sur le lien | une personne précise, par ex. « Maman de Falk » |
+| **Groupe** | Pour toute personne disposant du lien | un chat de groupe, par ex. « Parents branche Écureuils » |
+
+## Créer un lien
+
+<Steps>
+1. Cliquez sur <Btn variant="primary">Créer un lien</Btn>.
+2. **Pour qui ?** Un libellé visible uniquement par le CO, par exemple « Maman de Falk ».
+3. Choisissez **Individuel** ou **Groupe**.
+4. Optionnel : **Valable jusqu'au**, date après laquelle le lien cesse de fonctionner.
+5. Cliquez sur <Btn variant="primary">Créer et copier</Btn>. Le lien est copié dans votre presse-papiers. Collez-le dans votre messagerie ou par e-mail.
+</Steps>
+
+Vous pourrez le recopier ultérieurement avec le bouton <Btn>Partager</Btn>. Sur smartphone, cela ouvre le menu de partage natif.
+
+## Ce que voit le destinataire
+
+La personne clique sur le lien, se connecte (un simple nom Cevi suffit) et découvre le message **Vous avez obtenu l'accès via un lien d'accès**. Elle peut dès lors s'inscrire aux créneaux, même sur une section dont la page d'accueil est réservée aux membres.
+
+## Suivi et suppression
+
+Dans la liste, chaque lien indique qui l'a activé, sa date limite de validité et la mention **Expiré** le cas échéant. Dans les [statistiques](/fr/ok/auswertung/), les personnes ayant utilisé un lien portent l'étiquette **via lien**.
+
+Si vous supprimez un lien, tous ceux qui l'ont utilisé perdent leur droit d'accès privilégié. Leurs inscriptions déjà effectuées sont en revanche conservées.
+
+:::caution[Un lien de groupe est comme une clé sous le paillasson]
+Toute personne ayant accès au lien de groupe peut entrer, y compris si le lien est transféré à des tiers. Fixez une date d'expiration et supprimez le lien une fois l'événement passé.
+:::
+
+:::note[Fermé reste fermé]
+Un lien lève uniquement les restrictions d'accès de profil. Si les inscriptions à l'événement sont fermées, personne ne peut s'inscrire, même avec un lien d'accès valide.
+:::

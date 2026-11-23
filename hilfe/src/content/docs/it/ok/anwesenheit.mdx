@@ -1,0 +1,62 @@
+---
+title: Lista delle presenze e check-in con codice QR
+description: Registrare chi era presente al turno, manualmente o tramite codice QR all'ingresso. Con CSV e lista per la stampa.
+audience: [ok]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+import QrCheckinMock from '../../../../components/QrCheckinMock.astro';
+
+<Path steps={['Evento', 'Area CO', 'Presenze']} />
+
+Con la lista delle presenze puoi documentare per ciascun turno chi era effettivamente presente sul posto. È utilissima per la cena di ringraziamento, per i conteggi e per verificare rapidamente eventuali assenze dell'ultimo minuto.
+
+## Attivazione
+
+La lista è disattivata come impostazione predefinita per ogni evento. Sotto **Impostazioni** → **Presenze** puoi scegliere tra:
+
+- **Nessuna lista delle presenze**: la scheda rimane vuota.
+- **Spunta solo il CO**: il CO registra le presenze manualmente.
+- **Spunta CO e auto-check-in tramite codice QR**: i volontari possono registrarsi anche in autonomia tramite scansione QR.
+
+La configurazione può essere modificata dalla direzione di sezione e dal responsabile del CO. La registrazione delle presenze è consentita a tutti i membri del CO e a chi possiede il diritto «Registrare presenze».
+
+## Registrare le presenze
+
+Nella scheda **Presenze** viene visualizzato ogni turno con tutti gli iscritti. Per ciascuna persona sono disponibili tre pulsanti:
+
+- <Btn>Presente</Btn>: sul posto
+- <Btn>Scusato</Btn>: assenza giustificata, ha comunicato l'impedimento
+- <Btn>Assente</Btn>: non si è presentato/a
+
+Se tocchi nuovamente il pulsante attivo, lo stato della persona torna a **aperto**. Se all'inizio del turno sono tutti arrivati, puoi toccare <Btn>Tutti gli aperti come Presente</Btn> in alto nella scheda del turno per confermare in un clic tutte le persone ancora in sospeso. Sotto il nome compare chi ha effettuato la registrazione e a che ora. I turni attualmente in corso sono contrassegnati dalla dicitura «in corso».
+
+In alto l'elenco riepiloga quante persone sono presenti, scusate, assenti e quante posizioni risultano ancora aperte. Puoi filtrare per giorno, stato o cercare per nome.
+
+## Auto-check-in tramite codice QR
+
+Se il check-in QR è abilitato, la scheda mostra un codice QR con i colori e il logo della vostra sezione.
+
+1. Tocca <Btn>Locandina A4 (PDF)</Btn>, stampala e appendila all'ingresso o alla postazione dei volontari.
+2. I volontari scansionano il codice con il proprio smartphone ed effettuano il login (se non sono già autenticati).
+3. Il piano dei turni conferma automaticamente tutti i turni della persona attualmente in corso: **da 30 minuti prima dell'inizio fino al termine del turno**.
+
+<QrCheckinMock />
+
+Chi arriva troppo in anticipo vedrà l'orario di inizio del proprio prossimo turno. Chi non risulta iscritto non verrà registrato e riceverà l'indicazione di rivolgersi al CO. I volontari spontanei possono essere prima inseriti nel turno e poi confermati nella presenza.
+
+Nell'elenco, queste registrazioni sono contrassegnate con «tramite QR» e l'orario esatto. Puoi comunque modificarle manualmente in qualsiasi momento.
+
+:::caution[Il link è come una chiave]
+Il codice QR contiene un token segreto. Chi possiede il link diretto potrebbe registrarsi anche da casa propria. Non inviarlo nelle chat di gruppo. Se il link dovesse circolare, tocca <Btn>Rigenera codice</Btn>: il vecchio codice e le locandine stampate in precedenza cesseranno di funzionare e dovrai stampare la nuova locandina.
+:::
+
+## Esportazione CSV e lista cartacea
+
+- <Btn>CSV</Btn> scarica l'elenco completo (giorno, ora, turno, mansione, nome, presenza, operatore), perfetto per l'apertura in Excel.
+- <Btn>Stampa</Btn> genera una tabella suddivisa per turno con caselle da spuntare su carta, ottima se sul posto non c'è copertura di rete o mancano dispositivi mobili.
+
+## Nel registro delle attività
+
+Ogni aggiornamento viene annotato nel **Protocollo** con l'indicazione «Presenza: …», con data, ora e nome dell'operatore. I check-in tramite codice QR sono riportati con la dicitura «(tramite codice QR)».

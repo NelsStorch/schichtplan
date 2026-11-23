@@ -1,0 +1,56 @@
+---
+title: Banche dati associative (Hitobito) & associazioni
+description: Come Cevi.DB, PBS MiData, Jubla-DB e la gestione autonoma interagiscono nel piano dei turni.
+audience: [abteilung, ok]
+sidebar:
+  label: Banche dati & Associazioni
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Per le federazioni giovanili, il piano dei turni è collegato direttamente alle banche dati ufficiali delle federazioni (Hitobito). Le associazioni indipendenti gestiscono i propri membri e ruoli direttivi in modo autonomo direttamente nel piano dei turni.
+
+<Tabs>
+  <TabItem label="Per federazioni (Cevi.DB, MiData, Jubla-DB)">
+    Le piattaforme **Cevi.DB** (`db.cevi.ch`), **PBS MiData** (`db.scout.ch`) e **Banca dati Jubla** (`db.jubla.ch`) si basano sul collaudato software open-source per associazioni **Hitobito**.
+
+    ### Cosa importa il piano dei turni
+
+    | Dalla banca dati della federazione | Nel piano dei turni |
+    | --- | --- |
+    | Nome scout / nome Cevi / nome animatore | Nome visualizzato sul piano dei turni |
+    | Nome e cognome | Identificazione ufficiale della persona |
+    | Data di nascita | Verifica automatica dell'età per i turni (non modificabile dall'utente) |
+    | Indirizzo e-mail | Notifiche di sistema e conferme dei turni |
+    | Struttura dei gruppi (gruppo locale, sezione) | Sezione principale fissa |
+    | Ruoli in branche e gruppi | Assegnazione alle [branche](/it/abteilung/stufen/) come animatore/trice o membro |
+    | Ruolo direttivo di sezione o gruppo | Diritti automatici di direzione e amministrazione |
+
+    Quali gruppi e ruoli siano considerati validi, anche per regioni e associazioni cantonali, è descritto in [Gruppi e ruoli](/it/abteilung/gruppen-und-rollen/).
+
+    :::note[Il piano dei turni legge soltanto]
+    Il piano dei turni effettua unicamente la lettura dei dati dalla banca dati della federazione. Non modifica né sovrascrive mai i dati presenti nella banca dati della vostra associazione.
+    :::
+
+    ### Quando vengono aggiornati i dati
+
+    La sincronizzazione dei dati avviene automaticamente a **ogni login**. Se cambiano le informazioni nella banca dati della federazione (ad es. nomina a responsabile di sezione o cambio di branca), queste diventano effettive al successivo accesso dell'utente al piano dei turni.
+
+    :::tip[Ruolo appena assegnato?]
+    Se qualcuno è appena stato nominato nella banca dati della federazione, è sufficiente che la persona effettui il **logout e un nuovo login** nel piano dei turni. Le autorizzazioni sono registrate nel token di sessione e verranno aggiornate all'istante.
+    :::
+  </TabItem>
+
+  <TabItem label="Per associazioni (Gestione autonoma)">
+    Associazioni indipendenti, società musicali, club sportivi e comitati di festa **non necessitano di una banca dati esterna**:
+
+    - **E-mail & password:** membri e responsabili si registrano facilmente con il proprio indirizzo e-mail e una password.
+    - **Diritti & ruoli:** il comitato assegna i permessi di pianificazione e amministrazione in modo flessibile in [Persone e diritti](/it/abteilung/rechte/).
+    - **Gruppi & squadre:** in [Branche e gruppi](/it/abteilung/stufen/) è possibile creare i gruppi dell'associazione (ad es. Prima squadra, Comitato, Veterani).
+    - **Link di accesso:** per i volontari che non necessitano di un account stabile dell'associazione, il CO crea semplicemente [link di accesso](/it/ok/zugangs-links/) diretti.
+  </TabItem>
+</Tabs>
+
+## Protezione dei dati e minimizzazione
+
+Per motivi di tutela della privacy, il piano dei turni non importa **mai** indirizzi di domicilio privati o dati personali sensibili. Se il CO necessita ad esempio di un numero per le emergenze o della taglia della maglietta per un evento, questi dettagli vengono raccolti come [domande aggiuntive nell'evento](/it/ok/fragen/).

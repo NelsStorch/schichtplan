@@ -1,0 +1,62 @@
+---
+title: Attendance list and QR check-in
+description: Track who attended their shift, either manually or via QR code check-in at the entrance. Includes CSV export and printable sheets.
+audience: [ok]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+import QrCheckinMock from '../../../../components/QrCheckinMock.astro';
+
+<Path steps={['Event', 'OC Area', 'Attendance']} />
+
+With the attendance list, you record who was actually present for each shift. This helps when organizing thank-you dinners, accounting for catering vouchers, and tracking short-notice absences.
+
+## Enabling attendance tracking
+
+The attendance list is disabled by default for each event. Under **Settings** → **Attendance**, you can choose:
+
+- **No attendance tracking**: The tab remains inactive.
+- **OC checks off manually**: The OC marks everyone by hand.
+- **OC manual check-off and QR code self-check-in**: Volunteers can additionally check in themselves via QR code.
+
+Department leaders and OC Leads can configure this setting. Anyone on the OC or holding the "Track attendance" permission can check off helpers.
+
+## Checking off helpers
+
+The **Attendance** tab lists each shift with all registered helpers. Three buttons are available per person:
+
+- <Btn>Present</Btn>: Attended
+- <Btn>Excused</Btn>: Excused / called in sick
+- <Btn>Absent</Btn>: No-show
+
+Tapping the active button again resets the status back to **pending**. When all helpers are present at shift start, click <Btn>Mark all pending as Present</Btn> at the top of the shift card to check off everyone at once. Below each name, the system indicates who recorded the attendance and when. Ongoing shifts are highlighted with "in progress".
+
+At the top, counters display how many volunteers are present, excused, absent, or pending. You can filter by day or status, or search by name.
+
+## Self-check-in via QR code
+
+When QR check-in is enabled, the tab provides a QR code branded with your department's colors and logo.
+
+1. Tap <Btn>A4 Poster (PDF)</Btn>, print it out, and hang it at the entrance or volunteer desk.
+2. Volunteers scan the code with their smartphone and log in if they are not already signed in.
+3. The shift planner automatically checks off all of the volunteer's shifts that are currently running: **from 30 minutes before start time until shift end**.
+
+<QrCheckinMock />
+
+Anyone scanning too early will see when their next shift begins. Anyone not registered for a shift will not be checked in and is prompted to see the OC. You can add walk-in volunteers manually to a shift first and then check them off.
+
+In the list, such records are marked with "via QR code" and a timestamp. You can override them manually at any time.
+
+:::caution[The link is a secret key]
+The QR code contains a secure token. Anyone with the URL can check in remotely from home. Do not share the link in public group chats. If the link was leaked, tap <Btn>Regenerate code</Btn>: the old code and all printed posters will immediately be invalidated, and you can print a new poster.
+:::
+
+## CSV and printable list
+
+- <Btn>CSV</Btn> downloads the full attendance list (day, time, shift, task, name, attendance status, recorded by) for analysis in Excel.
+- <Btn>Print</Btn> opens a printable paper table per shift with checkboxes for manual tracking on site if digital devices are unavailable.
+
+## In the audit log
+
+Every attendance change is recorded in the **Audit log** as "Attendance: …", noting the timestamp and who made the change. Self-check-ins via QR code are labeled with "(via QR code)".

@@ -1,0 +1,54 @@
+---
+title: Export & Print
+description: Download shift schedules and rosters as Excel spreadsheets or print them to hang up on site.
+audience: [ok]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Event', 'OC Area', 'Export & Print']} />
+
+| Format | Content |
+| --- | --- |
+| **Print shift schedule or PDF** | <Btn>Print or PDF</Btn> opens layout selection options (see below). |
+| **Shift schedule as table** | One row per shift and task with slots, occupancy, and volunteer names. |
+| **Assignments per person** | Who helps when and where, sorted by name. Includes email and phone for guests. |
+| **Volunteers with targets** | All individuals under **Volunteers** with unit, shift count, quota, and excused status. |
+| **Volunteer hours & stats** | Completed hours, event vs. setup/teardown breakdown, and CSV for vouchers. See [Volunteer hours](/en/ok/auswertung/#volunteer-hours--shift-statistics). |
+| **Attendance list** | Located under [Attendance](/en/ok/anwesenheit/). |
+
+## Print shift schedule or export PDF
+
+The shift schedule PDF is generated with the event logo (or department / default logo) in your department's color scheme. First choose the layout:
+
+| Layout | Purpose |
+| --- | --- |
+| **Overview** | All shifts per day in a compact format: time, shift name, task, occupancy (e.g. 3/4), and names. Open slots are highlighted in orange. |
+| **Poster / sign-up sheet** | Large print, each slot on its own line. Open slots are rendered as dashed lines for manual handwritten signups on site. |
+| **Per person** | All volunteers alphabetically with their assigned shifts. Ideal for distribution or checking assignments during the event. |
+
+You can then customize:
+
+- **Days**: Print selected days only.
+- **Landscape**: Offers more width when many names appear in a single row.
+- **Each day on a new page**
+- **Show details**: Category (with color stripe), task description, age limit, and shift leads.
+- **Open slots only**: Prints only tasks that still have unfilled vacancies.
+
+Then:
+
+- <Btn>Print</Btn> directly triggers your browser's print dialog.
+- <Btn>Download PDF</Btn> saves the document locally, ready to share with the committee or send to a print shop.
+
+Each page displays an updated timestamp (date and time) and page number at the bottom, so you can immediately see if a posted paper schedule is still current.
+
+:::tip[On mobile or tablet]
+On mobile devices, <Btn>Print</Btn> opens the PDF. You can then print or share it using your device's native share menu.
+:::
+
+Spreadsheet exports are provided as CSV files and open smoothly in Excel, Numbers, or Google Sheets with proper character encoding.
+
+:::caution[Personal data]
+These documents contain names and contact details. Share them only within the OC, do not upload them to publicly accessible folders, and delete them after the event is over.
+:::

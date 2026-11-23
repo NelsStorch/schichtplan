@@ -11,6 +11,8 @@ import Clock from '@lucide/astro/icons/clock';
 
 const locale = Astro.locals.starlightRoute.locale;
 const isFr = locale === 'fr';
+const isIt = locale === 'it';
+const isEn = locale === 'en';
 
 const steps = isFr
   ? [
@@ -40,6 +42,68 @@ const steps = isFr
         icon: CircleCheck,
         title: 'Désinscription auto',
         desc: 'Vous êtes immédiatement désinscrit et averti par e-mail.',
+        tone: 'success',
+      },
+    ]
+  : isIt
+  ? [
+      {
+        step: '1',
+        icon: CalendarX,
+        title: 'Proponi sostituto',
+        desc: 'In «I miei turni», scegli «Cerca sostituto» sul turno.',
+        tone: 'ember',
+      },
+      {
+        step: '2',
+        icon: Clock,
+        title: 'Segnato in giallo',
+        desc: 'Il turno è visibile pubblicamente come «Cercasi sostituto». Rimani iscritto!',
+        tone: 'ember',
+      },
+      {
+        step: '3',
+        icon: UserCheck,
+        title: 'Un’altra persona rileva',
+        desc: 'Chi ha tempo apre il turno e tocca «Rileva».',
+        tone: 'accent',
+      },
+      {
+        step: '4',
+        icon: CircleCheck,
+        title: 'Disiscrizione automatica',
+        desc: 'Vieni disiscritto immediatamente e ricevi una notifica e-mail.',
+        tone: 'success',
+      },
+    ]
+  : isEn
+  ? [
+      {
+        step: '1',
+        icon: CalendarX,
+        title: 'Offer replacement',
+        desc: 'Under “My Shifts”, select “Find replacement” on your shift.',
+        tone: 'ember',
+      },
+      {
+        step: '2',
+        icon: Clock,
+        title: 'Marked in yellow',
+        desc: 'Shift is visible as “Replacement needed”. You stay signed up!',
+        tone: 'ember',
+      },
+      {
+        step: '3',
+        icon: UserCheck,
+        title: 'Someone takes over',
+        desc: 'Anyone available opens the shift and clicks “Take over”.',
+        tone: 'accent',
+      },
+      {
+        step: '4',
+        icon: CircleCheck,
+        title: 'Automatic sign-off',
+        desc: 'You are immediately signed off and notified via email.',
         tone: 'success',
       },
     ]
@@ -74,8 +138,21 @@ const steps = isFr
       },
     ];
 
-const kicker = isFr ? 'Déroulement' : 'Ablauf';
-const heading = isFr ? 'Comment fonctionne la bourse aux créneaux' : 'Wie die Schicht-Tauschbörse funktioniert';
+const kicker = isFr
+  ? 'Déroulement'
+  : isIt
+  ? 'Procedura'
+  : isEn
+  ? 'Process'
+  : 'Ablauf';
+
+const heading = isFr
+  ? 'Comment fonctionne la bourse aux créneaux'
+  : isIt
+  ? 'Come funziona lo scambio turni'
+  : isEn
+  ? 'How shift swapping works'
+  : 'Wie die Schicht-Tauschbörse funktioniert';
 ---
 
 <div class="ssf not-content">

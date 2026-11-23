@@ -1,0 +1,44 @@
+---
+title: Modèles pour l'année prochaine
+description: Enregistrer un événement abouti comme modèle et reporter tous ses créneaux sur de nouvelles dates l'an prochain.
+audience: [ok, abteilung]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+
+La fête de village se répète d'année en année. Plutôt que de ressaisir cinquante créneaux à la main, enregistrez votre événement comme modèle.
+
+## Enregistrer comme modèle
+
+<Steps>
+1. Dans l'espace CO sous **Modèles**, cliquez sur <Btn variant="primary">Enregistrer cet événement comme modèle</Btn>.
+2. **Nom du modèle**, suggéré par défaut : « Fête de village 2026 (modèle) ».
+3. **Description / Remarques pour les années futures** : Qu'est-ce qui a bien fonctionné, quels points sont à améliorer ? Le prochain CO pourra lire ces précieux retours.
+4. Cliquez sur <Btn variant="primary">Créer le modèle</Btn>.
+</Steps>
+
+## Contenu inclus dans le modèle
+
+| Ce qui est conservé | Ce qui n'est pas repris |
+| --- | --- |
+| Tous les créneaux avec titres, consignes, montage/démontage | Les inscriptions de bénévoles |
+| Jour relatif au début (Jour 1, Jour 2…) et horaires | L'équipe du CO (la personne qui crée l'événement devient responsable CO) |
+| Tous les postes avec places et limites d'âge | Bannière et logo |
+| Règles d'accès, filtre responsables seuls, champs obligatoires, quotas | Les liens d'accès |
+| Questions personnalisées, sections et branches partenaires autorisées | |
+
+## Créer un événement depuis un modèle
+
+Deux méthodes s'offrent à vous :
+
+- Dans l'espace CO sous **Modèles**, cliquez sur <Btn>Créer un nouvel événement à partir de ce modèle</Btn> en face du modèle concerné.
+- Ou lors de la création d'un [nouvel événement](/fr/ok/anlass-erstellen/), sélectionnez en haut l'option **Créer à partir d'un modèle**.
+
+Il vous suffit ensuite de définir le titre, l'adresse web (slug) et la nouvelle **date** (premier jour). Le plan de créneaux génère l'ensemble des créneaux en respectant les mêmes écarts par rapport au jour de départ (Jour 1, Jour 2…) et aux mêmes heures. Si la fête commence cette fois un autre jour de la semaine, les créneaux se décalent automatiquement en conséquence. Vous complétez ensuite l'équipe organisatrice avec <Btn>Nommer un membre du CO</Btn>.
+
+La création à partir d'un modèle est accessible, comme pour tout nouvel événement, à la direction de section et aux personnes ayant le droit « Créer des événements ». La sauvegarde d'un modèle est permise à tout membre du CO et aux titulaires du droit « Gérer les modèles ». Créer un événement depuis un modèle ne vous ajoute pas d'office au CO.
+
+## Gérer les modèles
+
+La page **Modèles** recense tous les modèles de la section avec leur nombre de créneaux, leurs règles d'accès et un aperçu des premiers créneaux. Vous pouvez supprimer un modèle obsolète avec l'icône de corbeille. Les événements existants déjà créés ne sont pas affectés.

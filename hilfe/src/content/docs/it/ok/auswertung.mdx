@@ -1,0 +1,64 @@
+---
+title: Dati, statistiche e CSV
+description: Dati di contatto, ore di volontariato svolte e risposte di tutti gli iscritti per analisi ed esportazione in Excel.
+audience: [ok]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Evento', 'Area CO', 'Accesso & Risposte', 'Dati dei volontari']} />
+
+In basso nella sezione **Accesso & Risposte** trovi la tabella con tutte le persone che si sono iscritte:
+
+- **Persona**: nome Cevi/scout, nome e cognome, sezione principale, «tramite link» se l'utente è arrivato tramite un link di accesso
+- **Contatto**: numero di cellulare (tocca per comporre direttamente il numero), e-mail, data di nascita
+- **Turni**: quanti turni sono stati assegnati
+- Una colonna per ciascuna [domanda personalizzata](/it/ok/fragen/), con l'indicazione della data di eliminazione programmata delle risposte. Per le domande poste «a ogni iscrizione», la risposta compare per ciascun turno.
+
+Questa tabella è visibile unicamente al CO e alla direzione di sezione. Tramite il **campo di ricerca** puoi trovare istantaneamente singole persone, recapiti o risposte specifiche. Per le domande con risposta Sì/No o a scelta multipla, sopra la tabella compaiono automaticamente **schede statistiche con i totali per risposta** (un tocco su una risposta filtra la tabella di conseguenza).
+
+## Ore di volontariato & statistiche d'impiego
+
+Per i conteggi successivi alla manifestazione (ad es. buoni pasto, riconoscimenti per i volontari o la relazione annuale della sezione), il piano dei turni fornisce un'elaborazione automatica delle ore prestate.
+
+Apri la finestra di dialogo tramite <Btn>Ore volontari</Btn> (disponibile in **Volontari** o sotto **Esporta & Stampa**):
+
+- **Metriche essenziali a colpo d'occhio**:
+  - **Ore totali**: tutte le ore prestate da tutti i volontari, suddivise tra ore della manifestazione e ore di montaggio/smontaggio.
+  - **Volontari attivi**: numero di persone con turni assegnati e media delle ore per persona.
+  - **Turni**: numero complessivo di turni coperti.
+- **Filtri & opzioni**:
+  - **Includi montaggio e smontaggio**: per conteggiare solo i turni della festa vera e propria oppure includere i lavori preparatori.
+  - **Valuta solo presenze confermate**: se utilizzate la [lista presenze](/it/ok/anwesenheit/), verranno conteggiate solo le persone effettivamente presenti sul posto.
+- **Ricerca**: filtra rapidamente per persona, branca o sezione.
+- **Esporta CSV**: genera un file pulito e compatibile con Excel con colonne per nome, branca, turni, minuti svolti e ore totali.
+
+:::tip[Distribuire buoni pasto]
+Sulla base del totale delle ore esportate potete distribuire con precisione i buoni per la cucina o i pasti del personale nel CO (ad es. «1 buono ogni 2 ore di servizio prestate»).
+:::
+
+## Scaricare in formato CSV
+
+Tocca <Btn>CSV</Btn>. Il file verrà nominato ad esempio `festa-2026-volontari.csv` ed è apribile direttamente con Excel, Numbers o Google Fogli. I caratteri accentati sono correttamente codificati e le colonne sono separate da punto e virgola.
+
+Colonne presenti: Nome visualizzato, Nome, Cognome, E-mail, Cellulare, Data di nascita, Sezione, Turni e tutte le domande personalizzate (l'indirizzo postale figura qui se richiesto tra le domande).
+
+:::caution[Dati personali]
+Il file CSV contiene recapiti privati. Non salvarlo in cartelle pubbliche e cancellalo al termine dell'evento. Per le normali esigenze organizzative è generalmente sufficiente consultare l'area CO. Ulteriori elenchi sono disponibili in [Esporta & Stampa](/it/ok/export/).
+:::
+
+## Chi è dove?
+
+Per sapere «Chi è al bar sabato sera?», la scheda **Turni** è più comoda: lì i nomi compaiono direttamente per ciascuna mansione. Per verificare «Cosa fa Marco durante la festa?», consulta la scheda **Volontari** oppure l'elenco riepilogativo per persona in [Esporta & Stampa](/it/ok/export/).
+
+## Registro delle attività
+
+Sotto **Protocollo** nell'area CO trovi la cronologia completa e ininterrotta di tutte le iscrizioni e cancellazioni:
+
+- **Chi**: nome della persona, turno e mansione
+- **Quando**: marcatura temporale esatta (data e ora)
+- **Azione**: iscrizione (verde) o disiscrizione (rosso)
+- **Responsabile**: eseguita autonomamente dal volontario oppure da quale membro del CO
+
+Tramite i pulsanti filtro e la casella di ricerca puoi filtrare comodamente le voci per iscrizioni, cancellazioni o nominativi.

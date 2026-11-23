@@ -1,0 +1,64 @@
+---
+title: Données, statistiques et CSV
+description: Coordonnées, heures effectuées par les bénévoles et réponses de tous les inscrits pour l'analyse et Excel.
+audience: [ok]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Événement', 'Espace CO', 'Accès & Réponses', 'Coordonnées des bénévoles']} />
+
+En bas sous **Accès & Réponses** se trouve un tableau récapitulant toutes les personnes inscrites :
+
+- **Personne** : nom Cevi, prénom et nom, section d'origine, « via lien » si la personne est venue par un lien d'accès
+- **Contact** : numéro de portable (cliquez pour appeler), e-mail, date de naissance
+- **Créneaux** : nombre de créneaux
+- une colonne par [question personnalisée](/fr/ok/fragen/), avec l'indication de la date de suppression des réponses. Pour les questions posées « à chaque inscription », la réponse figure par créneau.
+
+Ce tableau n'est visible que par le CO et la direction de section. Le **champ de recherche** vous permet de trouver instantanément une personne, un contact ou une réponse. Pour les questions oui/non et à choix multiples, des **cartes de synthèse avec les totaux par réponse** s'affichent automatiquement au-dessus du tableau (cliquer sur une réponse filtre le tableau).
+
+## Heures de bénévolat & statistiques d'engagement
+
+Pour le décompte après la fête (p. ex. bons de repas, bons bénévoles ou rapport annuel de section), le plan de créneaux propose une évaluation automatique des heures.
+
+Ouvrez le dialogue via <Btn>Heures de bénévolat</Btn> (accessible sous **Bénévoles** ou sous **Export & Impression**) :
+
+- **Chiffres clés en un coup d'œil** :
+  - **Heures totales** : l'ensemble des heures effectuées par tous les bénévoles, ventilées entre heures d'événement et heures de montage/démontage.
+  - **Bénévoles actifs** : nombre de personnes ayant participé ainsi que la moyenne d'heures par personne.
+  - **Engagements** : nombre total de créneaux occupés.
+- **Filtres & options** :
+  - **Inclure le montage et démontage** : comptabiliser uniquement les heures d'ouverture de la fête ou inclure les temps de préparation.
+  - **Ne compter que les présences confirmées** : si vous utilisez la [liste d'émargement](/fr/ok/anwesenheit/), seules les personnes réellement présentes sur place sont prises en compte.
+- **Recherche** : filtrez rapidement par personne, groupe d'âge/branche ou section.
+- **Exporter en CSV** : télécharge un fichier compatible Excel avec les colonnes nom, groupe/branche, créneaux, minutes effectuées et heures totales.
+
+:::tip[Distribuer les bons bénévoles]
+Grâce aux heures exportées, vous pouvez facilement distribuer des bons de restauration ou de repas au sein du CO (par ex. « 1 bon par tranche de 2 heures d'engagement »).
+:::
+
+## Télécharger au format CSV
+
+Cliquez sur <Btn>CSV</Btn>. Le fichier s'intitule par exemple `fete-2026-benevoles.csv` et s'ouvre directement dans Excel, Numbers ou Google Sheets. Les accents sont préservés et les colonnes sont séparées par des points-virgules.
+
+Colonnes : nom, prénom, nom de famille, e-mail, portable, date de naissance, section, créneaux et toutes les questions personnalisées (l'adresse y figure si vous l'avez demandée).
+
+:::caution[Données personnelles]
+Le fichier CSV contient des coordonnées personnelles. Ne le placez pas dans un dossier public et supprimez-le après l'événement. Pour la planification courante, l'espace CO suffit amplement. Vous trouverez d'autres listes sous [Export & Impression](/fr/ok/export/).
+:::
+
+## Qui est où ?
+
+Pour répondre à la question « Qui est au bar samedi ? », l'onglet **Créneaux** est plus adapté. Les noms y figurent directement à côté de chaque tâche. Pour savoir « Qu'est-ce que fait Falk en tout ? », consultez **Bénévoles** ou l'affectation par personne sous [Export & Impression](/fr/ok/export/).
+
+## Historique d'activité
+
+Sous **Historique** dans l'espace CO, vous retrouvez le suivi complet de toutes les inscriptions et désinscriptions :
+
+- **Qui** : nom de la personne, créneau et poste
+- **Quand** : horodatage précis (date et heure)
+- **Action** : inscription (vert) ou désinscription (rouge)
+- **Auteur** : autonome par le bénévole ou par quel membre du CO
+
+Les boutons de filtre et le champ de recherche vous permettent de filtrer les entrées par inscriptions, désinscriptions ou par nom.

@@ -1,0 +1,54 @@
+---
+title: Esportazione & Stampa
+description: Scaricare il piano dei turni e le assegnazioni come tabella Excel o stamparli da appendere.
+audience: [ok]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Evento', 'Area CO', 'Esporta & Stampa']} />
+
+| Cosa | Contenuto |
+| --- | --- |
+| **Stampa piano dei turni o PDF** | <Btn>Stampa o PDF</Btn> apre la finestra di selezione (vedi sotto). |
+| **Piano dei turni come tabella** | Una riga per ciascun turno e mansione con posti disponibili, occupazione e nominativi |
+| **Assegnazione per persona** | Chi aiuta dove e quando, ordinato alfabeticamente per nome. Con e-mail e telefono per gli ospiti |
+| **Volontari con obiettivo turni** | Tutte le persone in **Volontari** con branca, numero di turni svolti, obiettivo e disdette |
+| **Ore volontari & statistiche** | Ore di lavoro prestate, suddivisione evento vs montaggio/smontaggio e CSV per i buoni pasto. Vedi [Ore volontari](/it/ok/auswertung/#ore-di-volontariato--statistiche-di-impiego) |
+| **Lista delle presenze** | Consultabile in [Presenze](/it/ok/anwesenheit/) |
+
+## Stampare il piano dei turni o esportarlo in PDF
+
+Il piano dei turni viene generato in formato PDF con il logo dell'evento (altrimenti della sezione, o della federazione) e con il colore guida della sezione. Scegli innanzitutto il formato:
+
+| Tipo | Scopo |
+| --- | --- |
+| **Panoramica** | Tutti i turni per ciascun giorno, compatto: orario, turno, mansione, occupazione (ad es. 3/4) e nominativi. I posti ancora liberi sono evidenziati in arancione. |
+| **Da appendere** | Caratteri grandi, ciascun posto su una riga dedicata. I posti vacanti presentano righe tratteggiate per potersi iscrivere a penna sul posto. |
+| **Per persona** | Tutti gli iscritti ordinati per nome con il riepilogo dei rispettivi turni. Ideale per la distribuzione o per rapide verifiche sul campo. |
+
+Successivamente puoi configurare le seguenti opzioni:
+
+- **Giorni**: stampa solo i giorni selezionati.
+- **Formato orizzontale (Landscape)**: più spazio quando molti nomi devono comparire sulla stessa riga.
+- **Ogni giorno su una nuova pagina**
+- **Mostra dettagli**: categoria (con barra colorata), descrizione, limite di età e responsabili.
+- **Solo posti liberi**: stampa unicamente le mansioni per le quali mancano ancora volontari.
+
+Quindi:
+
+- <Btn>Stampa</Btn> apre direttamente la finestra di dialogo di stampa del sistema.
+- <Btn>Scarica PDF</Btn> salva il documento, perfetto per l'inoltro ai colleghi del CO o per la stampa in copisteria.
+
+Ogni pagina riporta in calce data, ora di generazione e numero di pagina, così da riconoscere subito se una copia cartacea affissa sia ancora aggiornata.
+
+:::tip[Su smartphone o tablet]
+Sui dispositivi mobili <Btn>Stampa</Btn> apre il file PDF direttamente, permettendoti di condividerlo o inviarlo alla stampante tramite l'icona di sistema.
+:::
+
+Le tabelle dati sono fornite in formato CSV e si aprono perfettamente con Excel, Apple Numbers o Fogli Google, con il pieno supporto di lettere accentate e caratteri speciali.
+
+:::caution[Dati personali]
+Questi elenchi contengono nomi e talvolta recapiti personali riservati. Condividili unicamente all'interno del CO, non archiviarli in cartelle condivise aperte al pubblico ed eliminali dopo la conclusione dell'evento.
+:::

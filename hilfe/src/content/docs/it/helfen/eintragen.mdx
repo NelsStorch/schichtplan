@@ -1,0 +1,71 @@
+---
+title: Iscriversi a un turno
+description: Trovare un turno adatto, iscriversi e vedere nel piano chi altro aiuta.
+audience: [helfer]
+numbered: true
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import ShiftRowMock from '../../../../components/ShiftRowMock.astro';
+
+L'iscrizione è rapida. Ti serve la pagina dell'evento (il link ti è stato inviato dal comitato organizzatore o lo trovi sulla pagina iniziale della tua sezione).
+
+## Cosa vedi
+
+In alto vedi il banner con titolo, data e per chi è l'evento. A destra (su smartphone sotto) è indicato quanti **posti liberi** ci sono.
+
+Sotto trovi **Ancora cercati**: i prossimi turni con posti liberi. Spesso trovi già qui ciò che cerchi. Se c'è scritto **presto**, il turno inizia tra meno di due giorni.
+
+Seguono tutti i turni, ordinati per giorno. Ecco come appare un turno nell'elenco:
+
+<ShiftRowMock />
+
+:::note[Dopo mezzanotte]
+I turni che iniziano prima delle 04:00 contano per il giorno precedente (il CO può modificare questo orario per ciascun evento). Il turno al bar dall'01:00 alle 03:00 figura quindi sotto sabato, non sotto domenica.
+:::
+
+### Elenco o griglia
+
+In alto nella barra passi da **Elenco** a **Griglia**. La griglia assomiglia a un piano turni in Excel: le righe sono le mansioni, le colonne le fasce orarie, il colore indica l'occupazione. Ottima per eventi grandi. Toccando una cella si apre il turno. Il piano dei turni ricorda la tua scelta.
+
+### Filtri
+
+Nella stessa barra trovi diversi filtri:
+
+- **Tutti i giorni** o un giorno singolo
+- **Solo con posti liberi**
+- **Montaggio & Smontaggio**, se sono presenti tali turni
+- Una mansione specifica, ad esempio solo «Griglia»
+
+Se nessun turno corrisponde, tocca <Btn>Reimposta filtri</Btn>.
+
+## Iscriversi
+
+<Steps>
+1. Tocca <Btn>Iscriviti</Btn> o il simbolo «+» accanto a un turno.
+2. Se il turno ha solo una mansione aperta, sei subito iscritto. Se ne ha diverse, il turno si apre e scegli la mansione con <Btn variant="primary">Iscriviti a questa mansione</Btn>.
+3. Se il CO richiede ulteriori informazioni, ad esempio il tuo numero di cellulare o la taglia della maglietta, il piano turni le chiederà ora. Maggiori dettagli sotto [Dati e domande](/it/helfen/angaben-und-fragen/).
+4. In basso compare **Sei iscritto!** con turno e orario. Nell'intestazione dell'evento comparirà «Sei iscritto 1×».
+</Steps>
+
+Non hai effettuato l'accesso? Allora il pulsante sarà <Btn variant="primary">Accedi & iscriviti</Btn>. Dopo il login tornerai all'evento.
+
+:::tip[Passaggio di consegne & turni consecutivi]
+Puoi iscriverti senza problemi a due turni consecutivi. Se i turni si sovrappongono di pochi minuti (ad es. 10–15 minuti per il passaggio di consegne o istruzioni), il piano turni lo consente automaticamente. Il sistema blocca l'iscrizione solo in caso di sovrapposizioni temporali maggiori.
+:::
+
+:::tip[Vedere un turno in dettaglio]
+Tocca in qualsiasi punto del turno. Vedrai tutte le mansioni, chi è già iscritto, le note del CO e l'età minima.
+:::
+
+:::tip[Condividere un turno]
+Nella finestra del turno tocca in basso su <Btn>Condividi</Btn>. Su smartphone si apre il menu di condivisione, su computer viene copiato un breve testo con il link. WhatsApp e altre app mostrano un'anteprima con turno, orario e posti liberi. Eccezione: se la tua sezione mostra i propri eventi solo ai membri, per gli eventi interni viene mostrato solo il logo della sezione.
+:::
+
+## Cosa non è possibile
+
+- **Due mansioni nello stesso turno.** Per ogni turno puoi partecipare una sola volta. Per le altre mansioni comparirà «Sei già assegnato a un'altra mansione».
+- **Turni o mansioni al completo.** Se c'è scritto «Completo», cerca un altro orario o chiedi al CO.
+- **Turni passati.** Sono disattivati in grigio e non hanno più pulsanti.
+- **Eventi non destinati a te.** In tal caso in alto compare un avviso con la motivazione. Cosa puoi fare è descritto sotto [Non posso iscrivermi](/it/helfen/nicht-freigeschaltet/).

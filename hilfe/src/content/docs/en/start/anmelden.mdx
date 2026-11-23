@@ -1,0 +1,117 @@
+---
+title: Log in
+description: Convenient login options for every organization. Fastest with association accounts, email for clubs, and completely passwordless for one-time helpers.
+audience: [helfer, ok, abteilung]
+---
+
+import { Tabs, TabItem, Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+
+To view a public shift plan, you usually don't need an account. To **sign up** for a shift, you log in once. For helpers, first name or nickname with date of birth is often all it takes – completely without a password.
+
+Login always takes place on your organization's central login domain (`login.cevi-schichtplan.ch`, `login.pfadi-schichtplan.ch`, `login.jubla-schichtplan.ch` or `login.vereins-schichtplan.ch`), no matter which department or group you belong to.
+
+## Which method fits me?
+
+| You are … | Choose |
+| --- | --- |
+| Leader or member in **Cevi**, **Scouts** or **Jubla** | **Association login** (Cevi.DB, PBS MiData or Jubla-DB) |
+| Member, board or helper in a **club or association** | **With email and password** |
+| Parent, alumni, friend, occasional volunteer | **With nickname / first name** (via your organization's link) |
+| On the organizing committee or board of a club | **With email and password** |
+
+## How to log in
+
+<Tabs>
+  <TabItem label="For Cevi / Scouts / Jubla (Association Login)">
+    Leaders and members of youth movements use their familiar association account (Hitobito). Name, roles and groups are automatically recognized:
+
+    - **Cevi:** Login via `db.cevi.ch`
+    - **Scouts:** Login via `db.scout.ch` (PBS MiData)
+    - **Jubla:** Login via `db.jubla.ch` (Jubla-Datenbank)
+
+    <Steps>
+    1. On the login page, click your association's button (e.g. <Btn variant="primary">Log in with Cevi.DB</Btn> or <Btn variant="primary">Log in with PBS MiData</Btn>).
+    2. You are redirected to your official association database. Log in with your standard credentials.
+    3. The database asks if the shift planner may read your basic details (name, email, roles). Confirm this.
+    4. You are automatically returned to the shift planner and logged in immediately.
+    </Steps>
+
+    :::note[Already have an email/password account?]
+    If your association profile uses the same email address as an account created earlier, the shift planner will ask for your **password** during first association login. Afterward, both login methods are permanently linked: your shifts and leadership rights remain intact.
+    :::
+
+    :::tip[Emergency access during Hitobito outage]
+    If the association database is temporarily unavailable for maintenance, you can still log in:
+    - Preemptively set up a **fallback password** under [Profile](/en/helfen/konto/).
+    - If you haven't set a password yet, click **Forgot password?** on the login page and enter your account email. You will receive a reset link to set your emergency password right away.
+    :::
+
+    The shift planner imports your association nickname (scout name, leader name), first and last name, birth date, department and units from the database. Residential addresses are never imported for privacy reasons.
+  </TabItem>
+
+  <TabItem label="For Clubs & Associations (Email & Password)">
+    For sports clubs, village festivals and independent associations, registration and login are handled directly with email address and password:
+
+    <Steps>
+    1. Open your club's page or `login.vereins-schichtplan.ch`.
+    2. Click <Btn>With email and password</Btn>.
+    3. No account yet? Click **Create account** and enter your first name, last name, email address and desired password (at least 8 characters).
+    4. You receive a confirmation email. Click the activation link inside.
+    5. Log in with your email and password to sign up for shifts or manage your club.
+    </Steps>
+
+    :::tip[Already have an account from Cevi, Scouts or Jubla?]
+    If you already have an account via **Cevi.DB**, **PBS MiData** or **Jubla-DB**, you do not need a new account: click **Forgot password?**, enter your existing email and set a password. You can then use this password to log in directly to your club.
+    :::
+
+    ### Forgot password or reset
+
+    If you forgot your password, reset it at any time:
+
+    <Steps>
+    1. Click **Forgot password?** below the password field.
+    2. Enter your email address and click <Btn>Send link</Btn>.
+    3. Open the email link (valid for 2 hours) and choose a new password.
+    4. Log in with your new password.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Without Password (With Nickname / First Name)">
+    For casual volunteers, cake bakers, parents or guests, **passwordless login** is the easiest option. It is available when you enter **via your organization's link** (e.g. `tournament.vereins-schichtplan.ch` or `illnau.cevi-schichtplan.ch`):
+
+    <Steps>
+    1. On the login page, click <Btn>With nickname</Btn> (or scout name / leader name).
+    2. Enter your **nickname** or **first name**.
+    3. Enter your **date of birth**. Together with your name, it forms your personal key – without any password.
+    4. Click <Btn variant="primary">Continue</Btn>. If the system knows you, you are logged in right away.
+    5. If visiting for the first time, verify your details and click <Btn variant="primary">Create profile and continue</Btn>.
+    </Steps>
+
+    :::caution[No password protection]
+    A passwordless profile is designed for spontaneous helpers: anyone who knows your name and date of birth could see your shifts. For roles on the organizing committee or board, create a password-protected account instead.
+    :::
+
+    :::tip[Identical names in the organization?]
+    The birth date clearly distinguishes people who share the same first name.
+    :::
+  </TabItem>
+</Tabs>
+
+## Where do I go after login?
+
+If you came from a specific event or organization, the shift planner sends you right back after logging in. If you accessed the login page directly, you will land on your organization's homepage.
+
+On first login, the system asks [which organization you belong to](/en/start/abteilung-und-stufen/). With association login, this is already filled in automatically.
+
+## Logging out
+
+On your smartphone, tap **Account** at the bottom right (on desktop, your name in the top right) and select <Btn variant="ghost">Log out</Btn>. You are securely logged out everywhere.
+
+## Frequently asked questions & troubleshooting
+
+- **“Association login is currently unavailable”**: A brief disruption of the external database has occurred. Please try again shortly.
+- **“Wrong email or password”**: Check capitalization or use **Forgot password?**.
+- **“Please verify your email address first”**: Check your inbox and spam folder for the confirmation link.
+- **“With nickname” is missing**: Passwordless login is only available on your organization's specific subdomain (e.g. `illnau.cevi-schichtplan.ch`), not on the central login portal.
+- **“Too many attempts”**: After repeated failed attempts, login is locked for a few minutes to protect your account.

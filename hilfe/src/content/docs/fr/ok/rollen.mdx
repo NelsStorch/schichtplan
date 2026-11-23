@@ -1,0 +1,55 @@
+---
+title: Rôles et droits
+description: 'Qui peut faire quoi ? Deux niveaux : la section dans son ensemble et le CO d’un événement particulier.'
+audience: [ok, abteilung]
+---
+
+import Btn from '../../../../components/Btn.astro';
+
+Le plan de créneaux distingue deux niveaux distincts. Les **droits au sein de la section** s'appliquent à tous les événements d'une section. Le **CO** ne concerne qu'un événement particulier. Cela permet à un bénévole d'organiser la fête de village sans avoir pour autant accès à la gestion globale de la section.
+
+## Au niveau de la section
+
+| Rôle / Statut | Autorisations |
+| --- | --- |
+| Direction de section | Accès complet à la section. Synchronisé depuis Cevi.DB |
+| Personnes avec droits | Selon les permissions accordées, par exemple « Créer des événements » ou accès complet « Administration » |
+| Membre | Inscription aux créneaux. La gestion d'un événement passe par le CO |
+
+Tous les droits et modèles sont détaillés sous [Droits dans la section](/fr/abteilung/rechte/), et leur attribution s'effectue sous [Membres & Personnes](/fr/abteilung/personen/).
+
+## Rôles au sein du CO d'un événement
+
+| Rôle | Autorisations |
+| --- | --- |
+| Responsable CO (OK-Leitung) | Paramètres et design de l'événement, règles d'accès, nomination et révocation des membres du CO, ainsi que tous les droits de membre du CO |
+| Membre du CO (OK-Mitglied) | Création, modification, duplication et suppression de créneaux, affectation et désinscription des bénévoles, consultation des liens d'accès et des réponses |
+
+Chaque rôle du CO peut être associé à un **ressort**, par exemple « Logistique & Technique », « Caisse » ou « Grill ». Le nom du ressort s'affiche à côté du responsable sur la page de l'événement pour orienter les bénévoles.
+
+La création d'un événement ne vous inscrit **pas automatiquement** au CO. Vous définissez la composition du CO lors de la création, en vous ajoutant vous-même via <Btn>M'ajouter comme responsable du CO</Btn>.
+
+## Ajouter une personne au CO
+
+1. Ouvrez l'événement et cliquez sur <Btn>Nommer un membre du CO</Btn> sous « CO » (dans l'espace CO : **Paramètres** → **Équipe du CO**).
+2. Saisissez le **nom Cevi ou l'adresse e-mail** de la personne. Elle doit posséder un compte lié à Cevi.DB ou avec e-mail et mot de passe. Si plusieurs personnes portent le même nom, utilisez l'adresse e-mail.
+3. Choisissez **Responsable CO** ou **Membre du CO**, et éventuellement un ressort.
+4. Cliquez sur <Btn variant="primary">Ajouter au CO</Btn>.
+
+Dans l'espace CO sous **Paramètres** → **Équipe du CO**, vous pouvez adapter le rôle (**Responsable CO** / **Membre du CO**) et le ressort à tout moment via l'icône d'édition. Pour retirer une personne, cliquez sur la petite croix à côté de son nom. La personne perd uniquement ses droits d'organisation ; ses inscriptions personnelles à des créneaux restent intactes.
+
+:::caution[Profil avec nom Cevi seul non éligible]
+Une personne connectée uniquement avec un nom Cevi et une date de naissance ne peut pas intégrer le CO ni recevoir de droits d'administration dans la section. Les dates de naissance étant souvent connues de tiers, ce niveau de sécurité est insuffisant. La personne doit préalablement se connecter une fois via Cevi.DB ou créer un compte avec e-mail et mot de passe.
+:::
+
+:::tip[Dès la création]
+Lors de la création d'un nouvel événement, vous pouvez renseigner directement les membres du CO, y compris à partir de la liste des membres de la section.
+:::
+
+## Administrateurs de la plateforme
+
+Les administrateurs de la plateforme exploitent le service du plan de créneaux. Ils disposent des mêmes prérogatives que la direction de section dans chaque section et peuvent voir tous les profils dans le portail d'administration. Pour toute question technique liée à l'exploitation, consultez l'adresse de [contact](/fr/wissen/kontakt/).
+
+## Qui a accès à l'espace CO ?
+
+L'espace CO (<Btn>Espace CO</Btn> en haut de l'événement) est accessible aux responsables du CO, aux membres du CO, à la direction de section et aux utilisateurs détenant le droit « Voir tous les événements ». Les autres utilisateurs voient un message « Accès non autorisé ». Au sein de l'espace CO, seules les sections pour lesquelles vous disposez de droits s'affichent : les **Paramètres**, par exemple, ne sont visibles que par la direction du CO, la direction de section et les détenteurs du droit « Modifier les événements ». Structure détaillée : [L'espace CO](/fr/ok/ok-bereich/).

@@ -1,0 +1,44 @@
+---
+title: Personnes
+description: Qui appartient à la section, qui dispose de quels droits ? Ici, vous gérez les membres et attribuez les droits.
+audience: [abteilung]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Section', 'Personnes']} />
+
+L'onglet **Personnes** est visible par toute personne disposant du droit « Voir les personnes » (la direction de section y a toujours accès). La liste présente tous les membres ayant votre section comme section principale, ceux qui ont le rôle de direction ou qui possèdent des droits. En tête de liste figure la **direction de section**.
+
+Avec **Afficher les invités**, apparaissent également les personnes connectées via votre sous-domaine mais rattachées à une autre section ou à aucune. Cela vous permet par exemple d'accorder des droits à une personne d'une section voisine.
+
+## Inviter des personnes et attribuer directement des droits
+
+En haut de l'onglet **Personnes** (visible avec le droit « Gérer les personnes et les droits » ou « Modifier la section »), vous trouvez l'espace **Inviter des personnes & lien d'invitation** :
+
+- **Copier le lien** : copie le lien d'invitation confidentiel pour vos groupes de discussion ou e-mails. Toute personne qui rejoint par ce biais est immédiatement intégrée comme membre confirmé. Avec <Btn variant="ghost">Régénérer</Btn>, vous invalidez les anciens liens d'invitation.
+- **Inviter par e-mail** : saisissez l'adresse e-mail et choisissez si souhaité directement un modèle de droits (par ex. **Avec droit : Créer des événements** ou **Coordination des événements**). Dès que la personne clique sur le lien reçu par e-mail, elle est intégrée et reçoit automatiquement les droits choisis – y compris si elle crée son compte à cette occasion.
+
+## Liste et tableau « Qui a le droit de faire quoi »
+
+- **Liste** : pour chaque personne figure sa désignation (direction de section, modèle de droits, « Droits personnalisés », membre, invité), si l'appartenance provient de Cevi.DB, ainsi que ses branches, par exemple « Éclais (Responsable) ».
+- **Qui a le droit de faire quoi** : un tableau récapitulatif listant toutes les personnes détenant des droits, avec une coche pour chaque droit accordé.
+
+## Modifier une personne
+
+Cliquez sur <Btn variant="ghost">Modifier</Btn>. Ce bouton n'apparaît que pour les personnes que vous êtes autorisé à modifier (voir [Qui peut attribuer des droits ?](/fr/abteilung/rechte/#qui-peut-attribuer-des-droits-)).
+
+**Droits dans la section** : choisissez un modèle ou cochez des droits individuels. La signification de chaque droit est détaillée sous [Droits dans la section](/fr/abteilung/rechte/).
+
+**Branches** : pour chaque branche, sélectionnez Non, Participant·e ou Responsable. Les branches issues de la Cevi.DB sont verrouillées.
+
+Enregistrez avec <Btn variant="primary">Enregistrer</Btn>. La modification est ensuite consignée dans le [journal d'activité](/fr/abteilung/rechte/#protocole-dactivite).
+
+## Limites et règles
+
+- La **direction de section** découle de la Cevi.DB et ne peut pas être modifiée ici. Si une personne est enregistrée comme responsable de section dans la Cevi.DB mais ne l'est pas encore sur le plan de créneaux, sa prochaine connexion avec Cevi.DB mettra la situation à jour.
+- Les personnes ayant un profil avec prénom/surnom uniquement (sans Cevi.DB ni mot de passe) ne peuvent pas recevoir de droits tant qu'elles n'ont pas de compte avec Cevi.DB ou avec e-mail et mot de passe.
+- L'action <Btn variant="ghost">Retirer de la section</Btn> n'existe que pour les personnes qui se sont rattachées d'elles-mêmes. Leurs droits dans la section sont alors révoqués et, lors de leur prochaine connexion, le système leur demandera à nouveau à quelle organisation elles appartiennent. Pour les comptes Cevi.DB, la section dépend de leurs rôles officiels.
+- L'action <Btn variant="ghost">Confirmer</Btn> n'est visible que pour la direction de section, et uniquement pour les personnes ayant un compte Cevi.DB de votre groupe local ayant choisi la section manuellement (par exemple des membres du comité sans rôle dans une branche). Une fois confirmées, elles sont également prises en compte pour les événements « Interne à la section, Cevi.DB ». La liste indique qui a confirmé la personne et à quelle date, et le journal en garde la trace. Sous « Modifier », la confirmation peut être annulée. Elle disparaît d'elle-même si la personne change de section ou n'a plus de rôle dans votre groupe local.
+- Une personne chargée d'organiser un événement spécifique n'a pas besoin de droits à l'échelle de la section. Intégrez-la simplement au [CO de l'événement](/fr/ok/rollen/).

@@ -1,0 +1,89 @@
+---
+title: Create an event
+description: Set title, dates, OC, and access rules. Afterwards, you plan the shifts.
+audience: [ok, abteilung]
+numbered: true
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+
+New events can be created by the **department leadership** and users with the **Create events** permission. If you are only on the organizing committee (OC) of an existing event, ask them to create the new event for you.
+
+## Open the form
+
+On your department's homepage, click <Btn variant="primary">New event</Btn> in the top right. If no events exist yet, click <Btn variant="primary">Create event</Btn> in the center.
+
+## Event details
+
+<Steps>
+1. **Create from template** (optional): If you saved a [template](/en/ok/vorlagen/) previously, select it here. All shifts, tasks, and age rules will be copied over.
+
+2. **Title**, for example "Annual Fair 2026".
+
+3. **Web address (slug)**: The final part of the event link, for example `fair-2026`. Automatically suggested from the title. Lowercase letters, numbers, and hyphens only; must be unique per department. **Tip:** We recommend adding the year (e.g. `fair-2026`) so the name remains available for next year.
+
+4. **Date**: The first day of the event. You don't need to specify an end date: As soon as shifts exist, the event automatically spans from the first to the last shift (including setup and teardown).
+
+5. **Description**: What should volunteers know? Meeting point, dress code, catering. Displayed prominently in the event banner.
+
+6. **Organizing Committee (OC)**: You are already added as OC Lead. Add additional people from the member list or via association nickname / email, with their role and department/area.
+
+7. **Responsibilities & shifts**:
+   - **Shift coordinator** (optional): Main point of contact for helpers when a shift is fully staffed.
+   - **Supervisors for shifts / days**: Determines whether responsibilities are assigned per shift (e.g. Teardown Lead) or as daily supervisors for whole days.
+   - **Day transition time**: The hour at which shifts count towards the next day (e.g. `04:00` for evening fairs, so late-night shifts up to 04:00 AM belong to the preceding day).
+   - **Supervisor contact information**: Choose which contact details helpers may see for shift coordinators, daily supervisors, and shift leads: mobile number and email, mobile only, email only, or no contact details (name only).
+   - **Target: shifts per person** (optional): Minimum number of shifts per person, e.g. 2 for each leader. The OC can then see under [Volunteers](/en/ok/helfer-pool/) who has fulfilled their quota.
+   - **Lockout period for withdrawal** (optional): Number of days before event start after which volunteers can no longer unregister themselves (e.g. `2` = starting 2 days before the event; `0` = up to start time; empty = no lockout). The OC can still remove helpers at any time.
+   - **Seek replacement** (default: on): Volunteers can offer their shift for swap, allowing others to take it over with a single click, even after the withdrawal deadline. You choose how long this is allowed: up to shift start or 1, 2, 6, 12, or 24 hours prior. Learn more under [Find a replacement](/en/helfen/ersatz-suchen/).
+   - **Shift overlap for handovers**: Choose how many minutes two consecutive shifts are allowed to overlap (0, 10, 15, 20, or 30 minutes; recommended: 15 minutes). This allows volunteers to sign up for back-to-back shifts that briefly overlap for a handover or briefing.
+   - **Registration opening time** (optional): Date and time (in Swiss time) when volunteer self-registration opens (empty = immediately open). Shifts remain visible beforehand in preview mode; when under 24 hours remain, a live countdown timer is displayed (showing seconds under 10 minutes, milliseconds under 1 minute). As soon as time expires, the page reloads automatically so volunteers can sign up immediately. The OC can manually assign people at any time beforehand.
+   - **Attendance tracking** (optional): disabled, OC-only manual check-off, or additional self-check-in via QR code. Learn more under [Attendance list and QR check-in](/en/ok/anwesenheit/).
+
+8. **Who is allowed to sign up?** and additional access rules. See [Regulate access](/en/ok/zugang/).
+
+9. **Banner and logo**: See [Design](/en/ok/design/).
+
+10. Tap <Btn variant="primary">Create event</Btn>.
+</Steps>
+
+## What next?
+
+The event is immediately visible, but still empty. Tap <Btn variant="primary">Create shift</Btn> and plan your first shift. For details, see [Planning shifts](/en/ok/schichten-planen/).
+
+Once shifts are planned, copy the URL from your browser's address bar and share it in your group chat. For individuals who do not meet the standard access rules, you can generate [Access links](/en/ok/zugangs-links/).
+
+:::tip[Plan first, share later]
+Volunteers can sign up as soon as the first shift exists. If you want to plan without interference, toggle **Registration open for volunteers** off in the settings and only enable it when you are ready to launch.
+:::
+
+## Changing details later
+
+You can edit all settings later in the OC area under **Settings** (or on the event page under "OC" via <Btn>Settings</Btn>). Forms save automatically in the background and dialogs are protected against accidental closure:
+
+- **Title, description, access rules, quota, banner, and logo** can be adjusted at any time.
+- **Event timeframe**: Calculated from the first and last shift and updates automatically with shift changes. See [Reschedule event](#reschedule-event).
+- **Web address (slug)** can also be changed. However, because this invalidates all previously shared links (e.g. in WhatsApp or emails), you must confirm the change after a 10-second safety countdown.
+
+## Reschedule event
+
+If the event takes place on different dates, you can move it as a whole:
+
+1. In the OC area, open **Settings**. Under **Basic info**, you will see the timeframe.
+2. Tap <Btn>Reschedule</Btn> and select the new starting day.
+3. The shift planner displays a warning showing by how many days all shifts will shift and what the new timeframe will look like. Confirm by clicking <Btn variant="primary">Reschedule</Btn>.
+
+All shifts move by the exact same number of days while keeping their original hours (even across daylight saving time transitions). Daily supervisors and any set **Registration opening time** move accordingly. Existing volunteer signups remain intact, but helpers will not receive an automated notification: inform them afterwards via [Messages](/en/ok/nachrichten/). Both department leaders and OC Leads can reschedule events.
+
+## Delete an event
+
+Only **department leaders** can delete an event. The OC Lead cannot delete it, but they can toggle **Registration open for volunteers** off in Settings.
+
+1. In the OC area, open **Settings** and scroll to the very bottom.
+2. Tap <Btn variant="danger">Delete event</Btn>.
+3. To confirm, type the **Web address (slug)** of the event, e.g. `fair-2026`, and confirm with <Btn variant="danger">Permanently delete</Btn>.
+
+:::caution[Cannot be undone]
+Deleting an event permanently removes all shifts, helper signups, the OC, custom questions and answers, access links, the audit log, and sent messages. Volunteers will not receive an automatic notification. If you want to notify them, send an email under [Messages](/en/ok/nachrichten/) beforehand.
+:::

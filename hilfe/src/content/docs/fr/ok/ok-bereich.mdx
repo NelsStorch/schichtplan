@@ -1,0 +1,67 @@
+---
+title: L'espace CO
+description: Où trouver chaque outil lors de la planification d'un événement et que vous indique la vue d'ensemble.
+audience: [ok]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+C'est dans l'espace CO que vous préparez et gérez un événement. Vous l'ouvrez en cliquant sur <Btn>Espace CO</Btn> en haut de la page de l'événement. Il est accessible aux membres du CO de l'événement, à la direction de section et aux personnes ayant le droit de « Voir tous les événements » dans la section. Certaines sections comme les messages ou les paramètres ne sont visibles qu'avec les autorisations adéquates.
+
+<Path steps={['Événement', 'Espace CO']} />
+
+## Structure
+
+Le menu de navigation se trouve à gauche (sur mobile, en haut sous **Menu** → <Btn>Changer</Btn>). Les sections suivent le cycle de vie d'un événement :
+
+| Groupe | Section | Utilité |
+| --- | --- | --- |
+| | **Vue d'ensemble** | Points à traiter, taux de remplissage par jour, dernières activités |
+| Planifier | **Créneaux** | Créer des créneaux, affecter des bénévoles, modifier plusieurs créneaux à la fois. [Planifier les créneaux](/fr/ok/schichten-planen/) |
+| | **Catalogue de postes** | Tâches récurrentes de la section. [Catalogue de postes](/fr/ok/arbeiten-katalog/) |
+| | **Modèles** | Enregistrer l'événement pour la prochaine édition. [Modèles](/fr/ok/vorlagen/) |
+| Bénévoles | **Bénévoles** | Liste des personnes, quotas, indisponibilités. [Bénévoles et quotas](/fr/ok/helfer-pool/) |
+| | **Questions** | Adresse, allergies et questions sur mesure, avec durée de rétention. [Questions](/fr/ok/fragen/) |
+| | **Accès & Réponses** | Liens d'accès et réponses à vos questions. [Liens d'accès](/fr/ok/zugangs-links/) |
+| | **Messages** | Envoi d'e-mails aux bénévoles. [Messages](/fr/ok/nachrichten/) |
+| Pendant l'événement | **Émargement** | Pointer les présences, check-in QR. [Émargement](/fr/ok/anwesenheit/) |
+| | **Export & Impression** | Tableaux pour Excel et fiches à afficher. [Export & Impression](/fr/ok/export/) |
+| Administration | **Paramètres** | Configuration globale de l'événement et équipe du CO |
+| | **Historique** | Journal des inscriptions et désinscriptions avec horodatage. [Données et statistiques](/fr/ok/auswertung/) |
+
+:::note[Membres du CO]
+La section **Paramètres** est réservée à la direction du CO et à la direction de section. Les membres du CO peuvent planifier des créneaux, affecter des bénévoles et envoyer des messages. Voir [Rôles et droits](/fr/ok/rollen/).
+:::
+
+:::tip[Palette de commandes & raccourci clavier]
+Dans l'espace CO, vous pouvez ouvrir directement la [palette de commandes](/fr/wissen/befehlsmenue/) avec <kbd>⌘K</kbd> / <kbd>Ctrl</kbd>+<kbd>K</kbd>. Elle vous permet de créer rapidement de nouveaux créneaux, d'affecter des bénévoles ou d'utiliser le détecteur de créneaux vacants sans naviguer dans les menus.
+:::
+
+## La vue d'ensemble
+
+En haut s'affichent le type d'accès, l'état d'ouverture des inscriptions (ou la date prévue), la liste d'émargement et le quota. En dessous figurent la jauge circulaire de remplissage et les chiffres clés.
+
+Sous **À traiter**, le plan de créneaux regroupe les points d'attention restants, par exemple :
+
+- aucun créneau créé pour l'instant
+- postes avec « au moins 1 personne majeure » sans participant ayant l'âge requis
+- journées sans responsable du jour désigné (si vous planifiez par jour)
+- places vacantes (alerte affichée une semaine avant l'événement)
+- personnes n'ayant pas atteint leur quota
+- inscriptions fermées
+- peu avant l'événement : préparer la liste d'émargement et le code QR
+- après l'événement : enregistrer comme modèle
+
+Chaque point d'attention vous renvoie directement à la page correspondante d'un simple clic. Sous **Remplissage par jour**, cliquer sur une journée affiche les créneaux de cette date.
+
+### Faire connaître l'événement
+
+- <Btn variant="secondary">Copier le lien</Btn> copie le lien direct de l'événement. Sur WhatsApp et autres messageries, un aperçu s'affiche automatiquement avec la bannière, la date et le nombre de places vacantes.
+- <Btn variant="secondary">Image pour story</Btn> télécharge une image au format vertical avec code QR, parfaite pour une story Instagram ou un statut WhatsApp. Comme les liens ne sont pas cliquables dans les stories, le code QR permet d'accéder directement à l'événement. L'image reflétant l'état des places libres en temps réel, téléchargez-la juste avant de publier.
+
+## Paramètres
+
+Sous **Paramètres**, l'ensemble des options est regroupé sur une seule page. La barre de navigation rapide reste visible lors du défilement sur ordinateur et indique votre position : **Équipe du CO**, **Données de base**, **Inscriptions & Délais**, **Accès & Informations**, **Responsabilités**, **Émargement** et **Design**. Les trois dernières sections sont repliées par défaut et résument leurs paramètres clés sur une ligne.
+
+Les modifications apportées au formulaire s'enregistrent automatiquement après un court instant ; la barre en bas de page indique l'état d'enregistrement. Cliquez sur <Btn>Annuler</Btn> pour revenir à l'état initial lors de l'ouverture de la page. Seule la modification d'adresse (slug) nécessite de cliquer sur <Btn variant="primary">Enregistrer</Btn> et de confirmer. La composition de l'équipe du CO prend effet immédiatement.

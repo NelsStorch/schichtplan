@@ -1,0 +1,46 @@
+---
+title: Bénévoles et quotas
+description: Toutes les personnes qui aident ou pourraient aider, qui a atteint son quota et qui est indisponible.
+audience: [ok]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+Sous **Bénévoles**, chaque personne n'apparaît qu'une seule fois : les personnes déjà inscrites, celles disponibles pour aider et celles déclarées indisponibles. Associé au **quota**, vous repérez immédiatement qui solliciter.
+
+<Path steps={['Événement', 'Espace CO', 'Bénévoles']} />
+
+## Qui figure dans la liste ?
+
+- toutes les personnes ayant au moins un créneau, y compris les invités inscrits par le CO
+- pour les événements réservés à la section ou à certaines branches : toutes les personnes autorisées à s'inscrire
+- pour les événements publics : en plus, l'ensemble des membres de votre section
+
+Les membres d'autres sections partenaires n'apparaissent qu'une fois inscrits ou après avoir utilisé un lien d'accès. Vous ne voyez pas la liste des membres d'une autre section : l'autorisation d'accès relève de votre seule section.
+
+## Le quota (Soll)
+
+Le quota correspond au **nombre minimal de créneaux par personne**, par exemple 2. Vous le fixez sous **Paramètres** → **Inscriptions & Délais**. Si le champ reste vide, aucun quota n'est appliqué.
+
+Ce quota sert de repère pour le CO. Les bénévoles ne le voient pas et ne sont pas bloqués s'ils font plus ou moins.
+
+## Chiffres et filtres
+
+En haut s'affichent les compteurs : **Personnes**, **Avec créneau**, **Sous le quota** (ou **Sans créneau** s'il n'y a pas de quota) et **Indisponibles**. Les filtres situés en dessous permettent de cibler un groupe précis, complétés par la recherche, le filtre de branche et, pour les événements multi-sections, le filtre de section.
+
+Cliquer sur une personne déroule ses créneaux. De là, vous pouvez l'affecter directement à un créneau libre avec <Btn>Affecter à un créneau</Btn>, basculer vers le créneau dans le planning en cliquant dessus, la retirer d'un créneau via la croix ou la désinscrire de tout l'événement avec <Btn variant="danger">Désinscrire de tous les créneaux</Btn>.
+
+## Déclarer quelqu'un indisponible
+
+Si une personne est en vacances, à l'armée ou blessée, cliquez sur <Btn variant="ghost">Ne peut pas aider (déclarer indisponible)</Btn> sur sa fiche et indiquez éventuellement un motif. La personne n'est plus comptabilisée dans les personnes sous le quota. Ses créneaux éventuels restent en place.
+
+Vous pouvez annuler cela à tout moment avec <Btn>Lever l'indisponibilité</Btn>.
+
+## Envoyer un message à plusieurs personnes
+
+Cochez les personnes sur la gauche et cliquez sur <Btn variant="primary">Message à la sélection</Btn>. Voir [Messages](/fr/ok/nachrichten/).
+
+:::tip[Qui doit encore s'inscrire ?]
+Filtrez sur **Sous le quota**, cochez tout le monde et rédigez votre message. Vous ciblez ainsi exactement les bonnes personnes sans déranger les autres.
+:::

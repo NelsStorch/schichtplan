@@ -1,0 +1,59 @@
+---
+title: Assign and remove volunteers
+description: As part of the OC, you can assign helpers directly, including guests without accounts, and remove them when necessary.
+audience: [ok]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+
+## Assigning someone
+
+In the OC area under **Shifts**, each task features an <Btn>Assign</Btn> button. On the public event page, open any shift modal and tap <Btn>Assign person</Btn>.
+
+<Steps>
+1. If the shift contains multiple tasks, choose the **task** at the top (with current occupancy). The task where you clicked <Btn>Assign</Btn> is preselected, otherwise the first one with open slots.
+2. Select **Person with account** and search for them in the list (see below).
+3. Or select **Guest / custom name** and enter their name or nickname, with optional email and phone number. This is ideal for helpers without accounts, such as a neighbor who agreed over the phone.
+4. Tap <Btn variant="primary">Assign</Btn>.
+</Steps>
+
+### The member list
+
+The list reflects individuals found under **Volunteers**. For each person, you see their department, units, age at shift start, and on the right, **how many shifts** they are already assigned to for this event. If a quota exists, it shows e.g. "1/2" (green = target reached).
+
+- **Search** by real name, nickname, or unit.
+- **Sort**: Default is "Fewest shifts first" to help distribute work evenly. Also available: most shifts, name, age.
+- **Filter** by department (for multi-department events) and unit. Multiple units can be selected simultaneously.
+- **Minimum age**: If the shift or task requires a minimum age for all participants, underage helpers are hidden. Disabling the filter shows them with a "too young" label, but they cannot be selected. Individuals without a registered birthdate appear with "age unknown".
+- **Show excused members**: People marked as unavailable for the event are hidden by default.
+- **Show home department without access**: Members of your department who do not satisfy the specific access rules for this event. Members of other departments only appear if they have access.
+
+Helpful badges in the list: "already in this shift" (cannot be selected) and "simultaneously: …" if the person is already scheduled during that time slot.
+
+If a task requires "at least 1 of age in shift", a note is displayed. For account holders, the system validates age rules just like during self-registration. For guests without birthdates, you are responsible for verifying eligibility.
+
+:::tip[OC assignment always works]
+As an OC member, you can assign volunteers even when registration is closed or if the person does not satisfy standard access rules. Mandatory questions and consent checkboxes are bypassed.
+:::
+
+## Removing volunteers
+
+- **From a single shift**: Click the small cross next to the person's name under **Shifts**, under **Volunteers**, or in the shift details dialog.
+- **From the entire event**: Under **Volunteers**, tap the person's name, then click <Btn variant="danger">Remove from all shifts</Btn>.
+
+Helpers do not receive an automatic cancellation email. Inform them personally, for instance via [Messages](/en/ok/nachrichten/).
+
+## Finding a replacement for someone
+
+If someone calls to cancel, you don't necessarily have to remove them right away. Open the shift in the event view and tap the swap arrows icon next to their name. The helper remains assigned until someone else takes over the slot. Tapping the same icon cancels the swap request.
+
+You can see all active swap requests on the OC overview dashboard. Successfully swapped shifts are logged in the [Audit log](/en/ok/auswertung/#activity-log) as "Swapped". To see how this looks from the volunteer perspective, see [Find a replacement](/en/helfen/ersatz-suchen/).
+
+## Overview of all helpers
+
+Under **Volunteers**, every individual is listed once. Tapping a person displays all their assigned shifts, along with email and phone details for guests. See [Volunteers and shift targets](/en/ok/helfer-pool/).
+
+## "Excused" is different from removal
+
+Under **Volunteers**, **Cannot help (excuse)** means the person is exempted from taking shifts at this event (e.g. due to vacation). This does not remove them from any shifts they are currently assigned to.

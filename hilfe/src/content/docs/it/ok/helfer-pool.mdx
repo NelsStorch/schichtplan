@@ -1,0 +1,46 @@
+---
+title: Volontari e obiettivo turni
+description: Tutti coloro che aiutano o potrebbero aiutare all'evento, chi ha raggiunto l'obiettivo prefissato e chi si è scusato.
+audience: [ok]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+Sotto **Volontari** ogni persona compare una sola volta: chi è già iscritto, chi potrebbe ancora dare una mano e chi ha segnalato la propria assenza. In combinazione con l'**Obiettivo turni**, puoi individuare a colpo d'occhio chi devi ancora sollecitare.
+
+<Path steps={['Evento', 'Area CO', 'Volontari']} />
+
+## Chi compare nell'elenco?
+
+- Tutti coloro che hanno almeno un turno assegnato, compresi gli ospiti inseriti manualmente dal CO
+- Negli eventi riservati alla sezione o a specifiche branche: tutti i membri che hanno il permesso di iscriversi
+- Negli eventi aperti: anche tutti i membri della tua sezione locale
+
+Le persone appartenenti ad altre sezioni abilitate compariranno solo dopo essersi effettivamente iscritte o dopo aver riscattato un link di accesso. L'elenco completo dei membri di un'altra sezione non è visibile per motivi di privacy: l'abilitazione della sezione apre semplicemente l'accesso ai loro membri.
+
+## L'obiettivo turni
+
+L'obiettivo è il **numero minimo di turni raccomandato per persona**, ad esempio 2 per ogni animatore/trice. Puoi impostarlo in **Impostazioni** → **Iscrizioni & Scadenze**. Se lasciato vuoto, non vi è alcun obiettivo.
+
+L'obiettivo è un indicatore a supporto del CO: i volontari non lo vedono e non vengono bloccati se non lo raggiungono.
+
+## Cifre e filtri
+
+In alto sono riepilogati i contatori per **Persone**, **Con turni**, **Sotto l'obiettivo** (se l'obiettivo non è impostato: **Senza turni**) e **Disdette**. Tramite i filtri sottostanti puoi isolare ciascun gruppo, oltre a filtrare per testo di ricerca, branca e, negli eventi con più sezioni, per sezione di provenienza.
+
+Toccando una persona si espandono tutti i suoi turni. Da qui puoi assegnarla direttamente a un posto vacante con <Btn>Assegna a un turno</Btn>, visualizzare il turno nel piano con un clic, oppure rimuoverla da un turno con la crocetta (o dall'intero evento con <Btn variant="danger">Cancella da tutti i turni</Btn>).
+
+## Segnalare l'assenza di qualcuno («Disdetta»)
+
+Se una persona è in vacanza, in servizio militare o infortunata, tocca <Btn variant="ghost">Non può aiutare (disdetta)</Btn> sul suo profilo e indica facoltativamente il motivo. La persona non verrà più conteggiata tra quelle sotto l'obiettivo turni, mentre eventuali iscrizioni già presenti rimarranno invariate.
+
+Con <Btn>Annulla disdetta</Btn> puoi ripristinare il suo stato normale in qualsiasi momento.
+
+## Messaggi a più persone contemporaneamente
+
+Spunta le caselle accanto alle persone desiderate e tocca <Btn variant="primary">Messaggio alla selezione</Btn>. Vedi [Messaggi ai volontari](/it/ok/nachrichten/).
+
+:::tip[Chi manca ancora all'appello?]
+Imposta il filtro su **Sotto l'obiettivo**, seleziona tutti i contatti rimasti e scrivi un messaggio: raggiungerai in un istante esattamente le persone giuste senza disturbare chi ha già fatto la propria parte.
+:::

@@ -1,0 +1,86 @@
+---
+title: Permissions in the department
+description: Available permissions, role templates, and who is allowed to grant permissions.
+audience: [abteilung]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Department home', 'Department', 'Members', 'Edit']} />
+
+Anyone in the department who needs more privileges than simply signing up for shifts receives specific **permissions**. You can check them individually or select a **preset template** that applies a bundle of matching permissions. These permissions apply to the entire department and all of its events.
+
+Anyone who only co-organizes a specific event does not need department permissions. Simply add them to the [event's OC](/en/ok/rollen/).
+
+## Department leadership
+
+The **Department leadership** always holds all permissions. This status comes from Cevi.DB: anyone registered there as a department leader automatically becomes a department leader of their department upon logging in with Cevi.DB. If the role is removed in Cevi.DB, the shift planner removes it on the next login, unless they are the last remaining department leader.
+
+Within the department interface itself, department leadership can neither be granted nor revoked. If a department without a Cevi.DB link requires a department leader, the [Platform admins](/en/wissen/kontakt/) can configure it.
+
+## The permissions
+
+**Department-level**
+
+| Permission | Allows |
+| --- | --- |
+| Edit department | Name, logo, color, contact person, and "Homepage for members only" |
+| Manage units | Create, rename, link to Cevi.DB, and delete units |
+| View members | See the list of members along with their units and permissions |
+| Manage members and permissions | Assign units to individuals, remove members, grant permissions (see below), view the audit log |
+| Manage templates | Save events as templates and delete templates |
+
+**Event-level** (applies across all events of the department)
+
+| Permission | Allows |
+| --- | --- |
+| View all events | Access all drafts and the OC area of all events, including helper contact details |
+| Create events | Create new events, including from templates |
+| Edit events | Modify settings of any event just like an OC Lead, reschedule events |
+| Plan shifts | Manage shifts, tasks, and shift supervisors |
+| Assign helpers | Add and remove helpers, process cancellations, manage access links |
+| Send messages | Send emails to helpers |
+| Track attendance | Access attendance list and QR code for check-in |
+| Export data | Export lists, shift schedule PDFs, and volunteer hours |
+| Appoint OC | Appoint and remove OC Leads and OC Members |
+| Delete events | Permanently delete events along with all shifts and registrations |
+
+Every event permission requires **View all events**; "Manage members and permissions" requires "View members". The shift planner automatically activates these dependencies.
+
+:::note[Creating an event does not automatically add you to the OC]
+With "Create events", you create an event and can view it afterwards. Event settings are managed by the OC. If you wish to lead the event yourself, click <Btn>Add me as OC Lead</Btn> when creating it.
+:::
+
+## Permission presets
+
+| Preset | Permissions |
+| --- | --- |
+| Administration | All permissions. Almost identical to department leadership, but with restricted delegation rights |
+| Event coordination | Create events, and plan shifts, assign helpers, message, track attendance, export, and manage templates across all events. Formerly known as the "Planning" role |
+| Edit events | Edit all existing events like an OC Lead, including appointing OC members, but cannot create new events |
+| Create events | Only create new events |
+
+If no preset fits, check the permissions individually. The user's role will then be listed as "Custom permissions".
+
+## Who can grant permissions?
+
+- **Department leaders** can grant and revoke any permission.
+- Users with **Manage members and permissions** can only grant permissions they hold themselves, and overall **fewer** permissions than they possess. They cannot modify users who have equal or more permissions, department leaders, or themselves.
+- Users with only a nickname profile (without Cevi.DB or email/password) cannot receive permissions.
+
+This ensures, for example, that an administrator can grant "Create events" to someone without being able to promote them to a second full administrator.
+
+## How people are labeled
+
+| Label | Meaning |
+| --- | --- |
+| Department leadership | All permissions, derived from Cevi.DB |
+| Name of a preset | Has exactly the permissions of that template |
+| Custom permissions | Has a custom selection of permissions not matching any preset |
+| Member | Home department is your department, no special permissions |
+| Guest | Signed up via your subdomain, but belongs to another or no home department |
+
+## Audit log
+
+Under <Btn>Audit log</Btn>, you can see who granted or revoked permissions, when someone became or ceased to be a department leader (including automatic updates via Cevi.DB), and who changed units. The audit log is visible to department leadership and anyone with "Manage members and permissions".

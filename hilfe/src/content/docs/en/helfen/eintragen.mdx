@@ -1,0 +1,71 @@
+---
+title: Signing Up for a Shift
+description: Find a suitable shift, sign up, and see who else is volunteering.
+audience: [helfer]
+numbered: true
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import ShiftRowMock from '../../../../components/ShiftRowMock.astro';
+
+Signing up is quick and easy. All you need is the event link (shared by the OC or found on your department’s home page).
+
+## What you see
+
+At the top, you will find the header banner with event title, date, and target audience. To the right (or below on mobile), the number of **available slots** is displayed.
+
+Directly below is **Still looking for**: upcoming shifts with vacant spots. You will often find what you need right here. If a shift is labeled **soon**, it starts in less than two days.
+
+Next is the complete list of shifts, grouped by day. Here is what a shift looks like in the list:
+
+<ShiftRowMock />
+
+:::note[After midnight]
+Shifts beginning before 04:00 AM count toward the previous day (the OC can adjust this cut-off time per event). For instance, a bar shift from 01:00 to 03:00 appears under Saturday, not Sunday.
+:::
+
+### List or grid view
+
+In the toolbar, you can toggle between **List** and **Grid**. The grid resembles an Excel schedule: rows show tasks, columns show time slots, and colors indicate filling rates. This is especially handy for large events. Tapping any cell opens the shift details. The shift planner remembers your display preference.
+
+### Filtering shifts
+
+The same bar includes practical filters:
+
+- **All days** or a specific day
+- **Available slots only**
+- **Setup & teardown**, if such shifts exist
+- A specific **task**, for example only “Grill”
+
+To clear all selections, tap <Btn>Reset filters</Btn>.
+
+## Signing up
+
+<Steps>
+1. Tap <Btn>Sign up</Btn> or the plus icon on your desired shift.
+2. If the shift has only one open task, you are signed up immediately. If there are multiple tasks, the shift details drawer opens and you pick your role by tapping <Btn variant="primary">Sign up for this task</Btn>.
+3. If the OC requires additional details (such as your mobile number or T-shirt size), a short prompt will ask for them now. Read more under [Information and questions](/en/helfen/angaben-und-fragen/).
+4. A confirmation appears: **You are signed up!** with the shift title and time. In the event header, you will now see “You are signed up 1×”.
+</Steps>
+
+Not logged in yet? The button will show <Btn variant="primary">Log in & sign up</Btn>. After authenticating, you will be redirected back to the event automatically.
+
+:::tip[Shift handovers & consecutive shifts]
+You can easily sign up for two consecutive shifts. If they overlap slightly (e.g. 10–15 minutes for handover or briefing), the shift planner allows this automatically. The system only blocks substantial scheduling conflicts.
+:::
+
+:::tip[View shift details]
+Tap anywhere on a shift to view all tasks, enrolled helpers, OC instructions, and minimum age requirements.
+:::
+
+:::tip[Share a shift]
+In the shift modal, tap <Btn>Share</Btn> at the bottom. On mobile, the native share menu opens; on desktop, a short invitation snippet with link is copied to your clipboard. Apps like WhatsApp display a preview showing shift title, time, and open slots. Note: If your department restricts event visibility to members, internal events display the department logo only.
+:::
+
+## What is not allowed
+
+- **Two tasks in the same shift.** You can only hold one role per shift. Other tasks will indicate “You are already assigned to another task”.
+- **Full shifts or tasks.** If labeled “Fully booked”, choose another time or reach out to the OC.
+- **Past shifts.** Past shifts appear grayed out without sign-up buttons.
+- **Restricted events.** If an event is not open to you, a banner will explain why. Find out what you can do under [Why can’t I sign up?](/en/helfen/nicht-freigeschaltet/).

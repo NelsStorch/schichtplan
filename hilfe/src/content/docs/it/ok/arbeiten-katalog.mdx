@@ -1,0 +1,36 @@
+---
+title: Il catalogo delle mansioni
+description: Registrare una sola volta le mansioni tipiche della sezione e inserirle in ogni turno con un clic.
+audience: [ok]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+Bar, griglia, cassa, montaggio tende: molte mansioni si ripresentano in ogni evento. Nel catalogo le definisci una volta sola con descrizione e limite di età. Durante la pianificazione potrai poi aggiungerle a qualsiasi turno con un semplice tocco.
+
+Il catalogo è valido per l'**intera sezione**, non solo per un singolo evento.
+
+<Path steps={['Evento', 'Area CO', 'Catalogo mansioni']} />
+
+## Creare una mansione
+
+<Steps>
+1. Tocca <Btn variant="primary">Crea nuova mansione</Btn>.
+2. **Titolo della mansione**: ad esempio «Bar».
+3. **Descrizione / Compiti**: cosa bisogna fare? La descrizione è visibile ai volontari all'interno del turno.
+4. **Età minima**: Nessuna, da 14, da 16 o da 18 anni. Se è indicata un'età, scegli se è richiesta per **Tutti** oppure per **Almeno 1 nel turno**.
+5. Tocca <Btn variant="primary">Crea mansione</Btn>.
+</Steps>
+
+## Lavorare con il catalogo
+
+Ciascuna scheda mostra la regola sull'età e quante volte la mansione ricorre nell'evento attuale. Un tocco su **Mostra in X turni** apre il piano dei turni filtrato per quella mansione. Con **+ Turno** puoi aprire direttamente la creazione di un nuovo turno.
+
+- **Modifica**: aggiorna la definizione nel catalogo. I turni che già contengono la mansione mantengono la loro configurazione attuale.
+- **Elimina**: rimuove la mansione dal catalogo (purché non sia utilizzata in alcun turno dell'evento corrente).
+
+:::tip[Un ottimo punto di partenza]
+Crea subito le cinque mansioni più comuni specificando i limiti di età. In questo modo potrai impostare la vostra festa in quindici minuti, con la certezza che nessuno dimenticherà la regola dei 16 anni per il bar.
+:::

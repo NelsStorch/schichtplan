@@ -1,0 +1,59 @@
+---
+title: My Shifts and Calendar
+description: All your shifts across all departments on one page, with automatic Webcal live subscription and .ics export.
+audience: [helfer]
+---
+
+import Btn from '../../../../components/Btn.astro';
+
+In the bottom navigation bar (or in the header on desktop), tap **My Shifts**. There you will find all your assignments across all departments in one place.
+
+## What you see there
+
+- **Up next**: Your next upcoming shift is highlighted prominently at the top with “today”, “tomorrow”, or “in 5 days”, along with a compact **Shift briefing**.
+- **Shift briefing (offline-ready)**: On your next shift (and by tapping *“Shift briefing”* on any other shift), you will see:
+  - **Shift leader or day coordinator** and **event contact** with one-tap buttons for **Phone call** or **Email** (if shared by the OC).
+  - **Your team**: Who else is on shift with you and how many spots are filled.
+  - **Notes & meeting point**: Key instructions at a glance – accessible even in flight mode or without cell coverage.
+- **Breaks & consecutive shifts**: If you have multiple shifts on the same day, the timeline (and event page) automatically calculates your **break duration** (`☕ Break between`), **direct back-to-back shifts** (`⚡ Consecutive shift`), or short **handovers**.
+- **Upcoming**: All upcoming shifts organized in a chronological timeline by date.
+- **Leadership & responsibility**: If you are assigned as shift coordinator or daily supervisor, a badge with a direct link to the planning view will be shown.
+- **Completed**: Past shifts, displayed in muted tones.
+
+Tapping the event title takes you straight to the full schedule.
+
+On your department's home page, the **Your next shift** widget shows a quick summary of the same info.
+
+## Live calendar subscription (automatic sync)
+
+With live calendar subscription, your shifts sync automatically to your smartphone or desktop calendar without needing manual entries.
+
+The widget at the top adapts automatically to your device:
+
+- **Google Calendar (recommended for Android, PC & Web)**:
+  - <Btn>Subscribe in Google Calendar</Btn>: Opens Google Calendar directly with your personalized subscription. Simply confirm with *“Add”* – done in one click!
+  - Alternative manual setup: Click *“Copy link”* in the modal, open Google Calendar in your browser, click **+** next to *“Other calendars”* ➜ *“From URL”*, and paste the link.
+- **Apple Calendar (iPhone, iPad, Mac)**:
+  - <Btn>Subscribe in Apple Calendar</Btn>: Launches the native Calendar app on your iPhone or Mac. Confirm the system prompt with *“Subscribe”*.
+- **Microsoft Outlook & 365**:
+  - Supports both 1-click subscription for Outlook Web and Webcal integration for Outlook desktop.
+- **“Where is your calendar?” modal**:
+  - Click <Btn variant="ghost">Where is your calendar?</Btn> to view all options, copy the URL for other calendar clients (e.g. Thunderbird), or regenerate your private feed URL.
+- **Automatic updates**: When you register for a new shift, when timings change, or when you cancel, your calendar app updates the appointments automatically in the background.
+- **Resetting your calendar link**: To revoke access from an old device, click *“Reset subscription link”* inside the dialog to generate a new secret URL. Existing subscriptions must then be updated.
+
+## One-time calendar export (snapshot)
+
+If you prefer static, immutable entries instead of a recurring feed:
+
+- <Btn>Google Calendar</Btn> on a shift: Opens Google Calendar directly with prefilled shift details to save.
+- <Btn variant="ghost">.ics</Btn> on a shift: Downloads a standalone calendar file (`.ics`) for that single shift.
+- <Btn variant="ghost">Export all as .ics</Btn> under “Upcoming” (or in the calendar modal): Downloads all your upcoming shifts in a single `.ics` file.
+
+:::note[Manual downloads do not update automatically]
+Standalone `.ics` files and single-shift buttons create a point-in-time snapshot. Rescheduled shifts or cancellations will not update automatically. Use the live calendar subscription for automatic synchronization.
+:::
+
+## Also on the main portal
+
+On `cevi-schichtplan.ch/profil` under the **Overview** tab, the **Your next shifts** section highlights upcoming assignments. The **Subscribe to calendar** button provides the same 1-click options for Google Calendar and Apple/Outlook.

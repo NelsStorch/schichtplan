@@ -1,0 +1,54 @@
+---
+title: Export & Impression
+description: Télécharger le plan de créneaux et les affectations sous forme de liste Excel ou les imprimer pour les afficher.
+audience: [ok]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Événement', 'Espace CO', 'Export & Impression']} />
+
+| Quoi | Contenu |
+| --- | --- |
+| **Imprimer le plan ou générer un PDF** | <Btn>Imprimer ou PDF</Btn> ouvre les options (voir ci-dessous). |
+| **Plan de créneaux sous forme de tableau** | Une ligne par créneau et par poste avec les places, l'occupation et les noms |
+| **Affectations par personne** | Qui aide quand et où, trié par nom. Avec e-mail et téléphone pour les invités |
+| **Bénévoles avec quota** | Toutes les personnes sous **Bénévoles** avec branche, nombre de créneaux, quota et indisponibilités |
+| **Heures de bénévolat & statistiques** | Heures effectuées, événement vs montage/démontage et CSV pour les bons. Voir [Heures de bénévolat](/fr/ok/auswertung/#heures-de-benevolat--statistiques-dengagement) |
+| **Liste d'émargement** | Disponible sous [Émargement](/fr/ok/anwesenheit/) |
+
+## Imprimer le plan ou générer un PDF
+
+Le plan de créneaux est généré au format PDF avec le logo de l'événement (à défaut celui de la section, sinon le logo Cevi) et aux couleurs de la section. Choisissez d'abord le format :
+
+| Format | Utilisation |
+| --- | --- |
+| **Vue d'ensemble** | Tous les créneaux par jour, format compact : heure, créneau, poste, occupation (p. ex. 3/4) et noms. Les places libres apparaissent en orange. |
+| **Affichage mural** | Grande police, chaque place sur une ligne distincte. Les places vacantes sont des lignes pointillées où l'on peut s'inscrire à la main. |
+| **Par personne** | Tous les inscrits triés par nom avec la liste de leurs créneaux. Idéal pour distribution ou consultation sur place. |
+
+Vous pouvez ensuite configurer les paramètres :
+
+- **Jours** : n'imprimer que les jours sélectionnés.
+- **Format paysage** : plus d'espace quand plusieurs noms figurent sur une même ligne.
+- **Chaque jour sur une nouvelle page**
+- **Afficher les détails** : catégorie (avec bandeau de couleur), description, limite d'âge et responsables.
+- **Places libres uniquement** : n'imprime que les postes où il manque encore du monde.
+
+Puis :
+
+- <Btn>Imprimer</Btn> ouvre directement la boîte de dialogue d'impression.
+- <Btn>Télécharger le PDF</Btn> enregistre le fichier, idéal pour l'envoyer au CO ou l'imprimer dans un centre de reprographie.
+
+Chaque page affiche en bas la date et l'heure de génération ainsi que la numérotation des pages. Cela vous permet de vérifier facilement si un affichage papier est toujours à jour.
+
+:::tip[Sur smartphone ou tablette]
+Le bouton <Btn>Imprimer</Btn> y ouvre directement le PDF. Imprimez-le via l'icône de partage ou d'impression de votre appareil.
+:::
+
+Les tableaux sont exportés au format CSV et s'ouvrent directement dans Excel ou Numbers, avec prise en charge des caractères accentués.
+
+:::caution[Données personnelles]
+Ces listes contiennent des noms et parfois des coordonnées. Ne les partagez qu'au sein du CO, ne les stockez pas dans un dossier public et supprimez-les après l'événement.
+:::

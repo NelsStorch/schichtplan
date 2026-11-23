@@ -1,0 +1,63 @@
+---
+title: Configurare la sezione
+description: Nome, logo, persona di contatto, colore e chi può vedere la pagina iniziale. Vale per tutti gli eventi della sezione.
+audience: [abteilung]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Pagina iniziale della sezione', 'Sezione', 'Generale']} />
+
+Il pulsante <Btn>Sezione</Btn> è visibile per la direzione di sezione e per chi possiede uno dei diritti «Modificare sezione», «Gestire branche» o «Visualizzare persone». Nella finestra compariranno solo le aree per cui possiedi i relativi permessi: **Generale**, [Branche](/it/abteilung/stufen/), [Persone](/it/abteilung/personen/) e [Protocollo](/it/abteilung/rechte/#protocollo).
+
+## Generale
+
+| Campo | Utilizzo |
+| --- | --- |
+| Nome della sezione | Compare in grande sulla pagina iniziale e in alto a sinistra |
+| Logo della sezione | Stemma o logo. Se vuoto, viene mostrato il logo della federazione o del piano dei turni |
+| Persona di contatto | Chi risponde in caso di domande. Selezionabili sono la direzione e chi ha «Gestire persone e diritti». Il nome compare nell'avviso «solo per i membri», l'e-mail è visibile solo agli utenti autenticati |
+| Pagina iniziale solo per i membri | Chi può visualizzare l'elenco degli eventi, vedi sotto |
+| Consenti accesso senza password | Se i volontari possono accedere senza password (solo con soprannome e data di nascita) su questa pagina |
+| Adesione per account e-mail | Come le nuove persone con account e-mail possono unirsi alla vostra organizzazione, vedi sotto |
+| Invita persone & link di invito | Link di invito segreto da copiare e invito via e-mail (anche con modello di diritti preimpostato) |
+| Colore della sezione | Colore di risalto per pulsanti ed evidenziazioni |
+
+Il sottodominio non può essere modificato.
+
+## Adesione, inviti e accesso senza password
+
+In **Adesione per account e-mail** puoi stabilire chi può associarsi alla vostra sezione o associazione:
+
+- **Tramite il link di questa pagina (predefinito)**: l'organizzazione non compare nell'elenco generale di selezione. Chi apre il vostro indirizzo diretto (`<sottodominio>.…`) può aderire.
+- **Solo su invito**: l'adesione è possibile esclusivamente tramite il vostro **link di invito** segreto o tramite **invito via e-mail**.
+- **Aperta**: l'organizzazione compare inoltre per tutti nell'elenco generale di selezione al momento del login.
+
+**Sezioni e gruppi giovanili (Cevi, Scout, Jubla):** chi ha un ruolo registrato nella banca dati della federazione (Cevi.DB, MiData, banca dati Jubla) appartiene automaticamente alla sezione indipendentemente da questa impostazione, come sezione principale o aggiuntiva. Ciò si applica al login successivo ed è considerato confermato. Se il ruolo decade nella banca dati, l'appartenenza cessa al login successivo. Non è possibile abbandonarla manualmente, può essere modificata solo nella banca dati.
+
+**Le associazioni** non hanno una banca dati federale: lì contano solo il link diretto, gli inviti e l'elenco di selezione.
+
+Tramite **Invita persone & link di invito** (disponibile anche nella scheda [Persone](/it/abteilung/personen/)) puoi copiare un link di invito o invitare persone via e-mail, assegnando loro direttamente e facoltativamente un modello di diritti come **Creare eventi**.
+
+Con **Consenti accesso senza password** stabilisci se l'accesso rapido con soprannome e data di nascita è attivo sul vostro portale. Prima della disattivazione, il sistema segnalerà se vi siano profili configurati unicamente senza password.
+
+## Colore della sezione
+
+Scegli uno degli otto colori proposti oppure definiscine uno personalizzato con il pulsante **+**. L'anteprima è istantanea e permette di visualizzare il colore nell'intera finestra. Il piano dei turni regola automaticamente i contrasti per garantire una leggibilità ottimale del testo sia in modalità chiara sia in modalità scura.
+
+Solo premendo <Btn variant="primary">Salva</Btn> viene applicato il colore. Con <Btn variant="ghost">Annulla</Btn> si ripristina la selezione precedente.
+
+## Pagina iniziale solo per i membri
+
+Nelle nuove sezioni questa opzione è **attiva**. In questo caso:
+
+- Gli utenti esterni vedono solo che la sezione esiste, ma non l'elenco degli eventi.
+- Gli eventi **pubblici** rimangono accessibili a tutti tramite il loro link diretto.
+- Gli eventi **interni** possono essere aperti da esterni solo tramite un [link di accesso](/it/ok/zugangs-links/).
+
+È considerato **membro** chi ha la sezione come sezione principale, chi fa parte della direzione di sezione o possiede diritti nella sezione, chi è nel CO di un evento o chi è amministratore della piattaforma. Gli ospiti (registrati tramite il sottodominio ma con un'altra sezione principale) non sono considerati membri.
+
+:::note[Perché attivo?]
+Molte sezioni non desiderano che chiunque possa vedere quando si svolgono campi o weekend in capanna. Disattiva questa opzione se i vostri eventi sono comunque aperti al pubblico e la pagina iniziale deve servire da panoramica generale.
+:::

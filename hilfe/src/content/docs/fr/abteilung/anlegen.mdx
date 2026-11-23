@@ -1,0 +1,88 @@
+---
+title: Créer une organisation ou une association
+description: Créer le plan de créneaux pour votre section, votre groupe ou votre association. Cela ne prend qu'une minute.
+audience: [abteilung]
+numbered: true
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import FaqItem from '../../../../components/FaqItem.astro';
+
+Qu'il s'agisse d'un mouvement de jeunesse ou d'un club de sport local : chaque organisation dispose sur le plan de créneaux de sa propre adresse web fixe (sous-domaine), par exemple `illnau.cevi-schichtplan.ch` ou `tournoi.vereins-schichtplan.ch`.
+
+<Tabs>
+  <TabItem label="Pour Cevi / Scouts / Jubla (Fédération)">
+    ## Qui peut créer le plan de créneaux ?
+
+    Dans les mouvements de jeunesse, le plan de créneaux est créé par la **direction officielle selon la base de données de la fédération** :
+    - **Cevi :** rôle « Responsable de section » (Abteilungsleiter\*in) dans la Cevi.DB
+    - **Scouts :** rôle « Responsable de groupe » (Abteilungsleitung) dans la MiData du MSdS
+    - **Jubla :** rôle « Direction de groupe » (Scharleitung) dans la base de données Jubla
+
+    Les **régions, associations cantonales et la fédération nationale** (pour le Cevi : unions régionales, associations membres et association faîtière) peuvent également créer leur propre plan de créneaux par le biais de leur direction. Pour connaître précisément les rôles pris en compte, consultez [Groupes & rôles](/fr/abteilung/gruppen-und-rollen/), et pour savoir comment planifier à ces échelons, consultez [Région, canton & fédération](/fr/abteilung/ebenen/).
+
+    Cela garantit qu'il n'existe exactement qu'un seul plan de créneaux officiel par entité.
+
+    ## Marche à suivre pour les sections de fédération
+
+    <Steps>
+    1. Ouvrez la page principale de votre fédération (par ex. `cevi-schichtplan.ch` ou `pfadi-schichtplan.ch`) et cliquez sur <Btn variant="primary">Créer une section</Btn>.
+    2. Connectez-vous avec votre compte de fédération (Cevi.DB, MiData ou Jubla-DB).
+    3. Si votre section ne possède pas encore de plan de créneaux, le système reconnaît votre rôle de responsable et vous propose sa création.
+    4. **Nom** : il est automatiquement suggéré à partir de la base de données de la fédération (par ex. « Cevi Weiningen » ou « Scouts St-Georges »).
+    5. **Sous-domaine** : la courte adresse web (par ex. `weiningen` pour `weiningen.cevi-schichtplan.ch`). Entre 3 et 30 caractères. **Ne pourra plus être modifiée ultérieurement.**
+    6. Cochez la case des **conditions d'utilisation**. Vous les acceptez au nom de votre section, y compris les dispositions relatives au traitement des données. Sans cette case cochée, la section ne peut pas être créée.
+    7. Cliquez sur <Btn variant="primary">Créer la section</Btn>. Vous êtes immédiatement redirigé vers votre nouveau plan de créneaux.
+    </Steps>
+
+    ### Ce qui se passe alors
+    - Vous devenez automatiquement la **direction principale responsable** dans le plan de créneaux.
+    - La section est directement associée à votre groupe officiel dans la fédération.
+    - Les autres responsables de votre groupe reçoivent également de manière automatique des droits de direction lors de leur connexion.
+  </TabItem>
+
+  <TabItem label="Pour les associations (E-mail & mot de passe)">
+    ## Qui peut créer une association ?
+
+    Pour les associations indépendantes, clubs et comités d'organisation, **tout membre du comité ou du CO** peut créer une nouvelle association sur le plan de créneaux. La personne qui crée l'entité devient automatiquement administratrice principale et peut ensuite attribuer des droits aux autres membres au sein de l'association.
+
+    ## Marche à suivre pour les associations
+
+    <Steps>
+    1. Ouvrez `vereins-schichtplan.ch` et cliquez sur <Btn variant="primary">Créer une association</Btn>.
+    2. Connectez-vous avec votre compte e-mail ou créez gratuitement un nouveau compte d'association.
+    3. **Nom de l'association** : saisissez le nom officiel de votre association (par ex. « FC Exemple » ou « Société de gymnastique »).
+    4. **Sous-domaine** : choisissez votre adresse web personnalisée (par ex. `fcexemple` pour `fcexemple.vereins-schichtplan.ch`).
+    5. Cochez la case des **conditions d'utilisation**. Vous les acceptez au nom de votre association, y compris les dispositions relatives au traitement des données. Sans cette case cochée, l'association ne peut pas être créée.
+    6. Cliquez sur <Btn variant="primary">Créer l'association</Btn>. Votre portail d'association est immédiatement prêt à l'emploi.
+    </Steps>
+
+    ### Ce qu'il convient de faire ensuite
+    - Dans la section [Paramètres](/fr/abteilung/einstellungen/), téléverser le logo et définir les couleurs de l'association.
+    - Créer les [groupes ou équipes](/fr/abteilung/stufen/) (par ex. équipe active, comité, juniors).
+    - Attribuer des droits de direction à d'autres membres du comité sous [Personnes & droits](/fr/abteilung/rechte/).
+    - Créer le premier [événement](/fr/ok/anlass-erstellen/).
+  </TabItem>
+</Tabs>
+
+## Les étapes suivantes
+
+1. Personnaliser le [nom, le logo et la couleur principale](/fr/abteilung/einstellungen/).
+2. Définir les [branches ou groupes](/fr/abteilung/stufen/).
+3. [Attribuer les droits](/fr/abteilung/rechte/) : qui au sein de l'équipe planifie quels événements ?
+4. Créer le premier [événement](/fr/ok/anlass-erstellen/).
+
+## Questions fréquentes
+
+<FaqItem q="« Un plan de créneaux existe déjà pour ton organisation »">
+Un membre de votre équipe a déjà créé l'organisation. Adressez-vous à votre direction principale pour obtenir des droits d'administration ou de planification pour votre portail.
+</FaqItem>
+
+<FaqItem q="« Seule la direction de section peut créer une nouvelle section » (Fédération)">
+Dans la base de données de la fédération, aucun rôle officiel de direction de section ou de groupe ne vous est encore attribué. Veuillez contacter le service administratif de votre fédération pour mettre à jour votre rôle.
+</FaqItem>
+
+<FaqItem q="Le sous-domaine peut-il être modifié plus tard ?">
+Pour des raisons techniques, le sous-domaine (par ex. <code>exemple.vereins-schichtplan.ch</code>) ne peut plus être renommé après sa création, car il est imprimé sur des affiches et ancré dans des liens. Choisissez donc un nom concis et clair.
+</FaqItem>

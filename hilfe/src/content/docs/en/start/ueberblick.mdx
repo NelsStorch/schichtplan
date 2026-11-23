@@ -1,0 +1,88 @@
+---
+title: How the Shift Planner Works
+description: One account for all units, each organization on its own address. Here you can see what is where.
+audience: [helfer, ok, abteilung]
+sidebar:
+  label: Overview
+---
+
+import { LinkCard, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
+
+The shift planner replaces messy Excel spreadsheets, chat messages, and Doodle polls for camps, festivals, village fairs (Chilbis), and tournaments. Volunteers see at a glance where help is needed and sign up directly. The organizing committee (OC) sees in real time which shifts are filled.
+
+## The four web addresses of your organization
+
+The shift planner is available on dedicated domains for Cevi, scouts (Pfadi), Jubla, and independent clubs:
+
+<Tabs>
+  <TabItem label="For Cevi">
+    | Address | Purpose |
+    | --- | --- |
+    | `cevi-schichtplan.ch` | Home page, search department, your [profile](/en/helfen/konto/) |
+    | `login.cevi-schichtplan.ch` | Central login for all Cevi departments |
+    | `your-department.cevi-schichtplan.ch` | Shift planner of your department with all events |
+    | `hilfe.cevi-schichtplan.ch` | This Help Center |
+  </TabItem>
+  <TabItem label="For Scouts (Pfadi)">
+    | Address | Purpose |
+    | --- | --- |
+    | `pfadi-schichtplan.ch` | Home page, search department, your [profile](/en/helfen/konto/) |
+    | `login.pfadi-schichtplan.ch` | Central login for all scout departments |
+    | `your-department.pfadi-schichtplan.ch` | Shift planner of your department with all events |
+    | `hilfe.pfadi-schichtplan.ch` | This Help Center |
+  </TabItem>
+  <TabItem label="For Jubla">
+    | Address | Purpose |
+    | --- | --- |
+    | `jubla-schichtplan.ch` | Home page, search unit, your [profile](/en/helfen/konto/) |
+    | `login.jubla-schichtplan.ch` | Central login for all Jubla units |
+    | `your-unit.jubla-schichtplan.ch` | Shift planner of your unit with all events |
+    | `hilfe.jubla-schichtplan.ch` | This Help Center |
+  </TabItem>
+  <TabItem label="For Clubs & Associations">
+    | Address | Purpose |
+    | --- | --- |
+    | `vereins-schichtplan.ch` | Home page, search club, your [profile](/en/helfen/konto/) |
+    | `login.vereins-schichtplan.ch` | Central login with email & password |
+    | `your-club.vereins-schichtplan.ch` | Shift planner of your club with all events |
+    | `hilfe.vereins-schichtplan.ch` | This Help Center |
+  </TabItem>
+</Tabs>
+
+Each unit has its own permanent web address, for example `illnau.cevi-schichtplan.ch` or `turnier.vereins-schichtplan.ch`. This address remains permanently valid and fits perfectly on flyers or in helper invitations.
+
+:::tip[One login is enough]
+You log in once and are signed in across all units of your organization. If you help out at a neighboring department or another club, you do not need a second account.
+:::
+
+## How everything connects
+
+- **The organization:**
+  - In **Cevi** and **Pfadi**, each **department (Abteilung)** has its own shift planner, managed by the **department leadership (AL)**.
+  - In **Jubla**, each **unit (Schar)** has its shift planner, managed by the **unit leadership (SL)**.
+  - For **clubs and associations**, each **club** (or committee) has its shift planner, managed by the **club leadership or board**.
+- An organization hosts any number of **events**, such as “Chilbi 2026”, “Summer Camp”, or “Club Tournament”.
+- An event has **shifts**, for example “Saturday 17:00 to 20:00”.
+- A shift contains one or more **tasks (roles)** with specific helper slots, for example Grill (2 slots), Bar (2 slots), Cashier (1 slot).
+- The **organizing committee (OC)** plans the shifts of an event. The leadership manages the entire organization.
+
+More terms are explained in the [Glossary](/en/wissen/glossar/).
+
+## On smartphones
+
+The shift planner is designed mobile-first from the ground up. At the bottom, a fixed navigation bar provides quick access to **Events**, **My Shifts**, and **Account**. On desktop computers, these same links appear in the top header.
+
+You can add your organization’s page to your home screen (select “Add to Home Screen” in your smartphone browser). It will then launch like a native app, without needing an app store download.
+
+## On computers & keyboard shortcuts
+
+On a laptop or PC, a quick search bar is located in the top navigation. Pressing the keyboard shortcut <kbd>⌘K</kbd> (Mac) or <kbd>Ctrl</kbd>+<kbd>K</kbd> (Windows) opens the [Command Palette](/en/wissen/befehlsmenue/) to jump between events, search shifts, or assign helpers without touching the mouse.
+
+## Where to start?
+
+<CardGrid>
+  <LinkCard title="Logging in" description="Association login (Cevi.DB / MiData / Jubla-DB), nickname, or email: which one suits you?" href="/en/start/anmelden/" />
+  <LinkCard title="Sign up for a shift" description="Find a shift, choose your task, and you are signed up." href="/en/helfen/eintragen/" />
+  <LinkCard title="Plan an event" description="For the OC: from an empty event to a complete volunteer schedule." href="/en/ok/anlass-erstellen/" />
+  <LinkCard title="Set up an organization" description="Create a new department, unit, or club and get started." href="/en/abteilung/anlegen/" />
+</CardGrid>

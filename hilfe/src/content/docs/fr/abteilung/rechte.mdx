@@ -1,0 +1,86 @@
+---
+title: Droits dans la section
+description: Les différents droits disponibles, les modèles associés et qui peut attribuer quels droits.
+audience: [abteilung]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Page d\'accueil de la section', 'Section', 'Personnes', 'Modifier']} />
+
+Toute personne qui dispose d'autorisations supérieures à la simple inscription aux créneaux se voit attribuer des **droits**. Vous pouvez les cocher un à un ou sélectionner un **modèle de rôle** qui active d'un coup l'ensemble des droits correspondants. Ces droits s'appliquent à toute la section, c'est-à-dire à tous ses événements.
+
+Une personne qui ne participe à l'organisation que d'un événement précis n'a pas besoin de droits au niveau de la section : ajoutez-la au [CO de l'événement](/fr/ok/rollen/).
+
+## Direction de section
+
+La **direction de section** dispose toujours de tous les droits. Elle provient de la Cevi.DB : toute personne qui y est responsable de section devient automatiquement direction de sa section lors de sa connexion avec Cevi.DB. Si le rôle disparaît dans la Cevi.DB, le plan de créneaux le retire lors de la connexion suivante, sauf s'il s'agit de la dernière direction restante de la section.
+
+Au sein de la section elle-même, la fonction de direction ne peut être ni attribuée ni révoquée manuellement. Si une section sans lien Cevi.DB a besoin d'une direction, les [administrateurs de la plateforme](/fr/wissen/kontakt/) peuvent la configurer.
+
+## Les droits
+
+**Section**
+
+| Droit | Autorise à |
+| --- | --- |
+| Modifier la section | Nom, logo, couleur, personne de contact et « Page d'accueil réservée aux membres » |
+| Gérer les branches | Créer, renommer, lier avec Cevi.DB et supprimer des branches |
+| Voir les personnes | Consulter la liste des personnes avec leurs branches et leurs droits |
+| Gérer les personnes et les droits | Définir les branches des personnes, retirer des membres, attribuer des droits (voir ci-dessous), consulter le journal |
+| Gérer les modèles | Enregistrer des événements comme modèles et supprimer des modèles |
+
+**Événements** (valable pour tous les événements de la section)
+
+| Droit | Autorise à |
+| --- | --- |
+| Voir tous les événements | Voir également les brouillons et l'espace CO de tous les événements, avec les coordonnées des bénévoles |
+| Créer des événements | Créer de nouveaux événements, y compris à partir de modèles |
+| Modifier les événements | Modifier les paramètres de tous les événements comme le responsable du CO, déplacer des événements |
+| Planifier les créneaux | Gérer les créneaux, les postes et les responsables du jour |
+| Affecter les bénévoles | Inscrire et désinscrire des bénévoles, gérer les désistements et les liens d'accès |
+| Envoyer des messages | Envoyer des e-mails aux bénévoles |
+| Enregistrer les présences | Gérer la liste des présences et le code QR de check-in |
+| Exporter | Télécharger les listes, le PDF du plan de créneaux et le relevé des heures |
+| Nommer le CO | Nommer et retirer les responsables et membres du CO |
+| Supprimer des événements | Supprimer définitivement des événements avec tous leurs créneaux et inscriptions |
+
+Chaque droit relatif aux événements requiert le droit **Voir tous les événements**, et « Gérer les personnes et les droits » requiert « Voir les personnes ». Le plan de créneaux les active automatiquement en parallèle.
+
+:::note[Créer un événement n'inscrit pas automatiquement au CO]
+Avec « Créer des événements », vous créez une manifestation et pouvez la voir ensuite. Les réglages sont gérés par le CO. Si vous souhaitez être vous-même responsable du CO, cliquez lors de la création sur <Btn>M'inscrire comme responsable du CO</Btn>.
+:::
+
+## Les modèles de rôles
+
+| Modèle | Droits inclus |
+| --- | --- |
+| Administration | Tous les droits. Quasiment identique à la direction de section, mais avec une attribution des droits limitée |
+| Coordination des événements | Créer des événements et, sur tous les événements, planifier, affecter, envoyer des messages, gérer les présences, exporter et gérer les modèles. L'ancien rôle « Planification » |
+| Modifier les événements | Modifier tous les événements existants comme le responsable du CO, y compris nommer le CO, mais sans pouvoir en créer de nouveaux |
+| Créer des événements | Uniquement créer de nouveaux événements |
+
+Si aucun modèle ne convient, cochez les droits individuellement. La personne reçoit alors le statut « Droits personnalisés ».
+
+## Qui peut attribuer des droits ?
+
+- La **direction de section** peut attribuer et révoquer l'ensemble des droits.
+- Toute personne détenant **Gérer les personnes et les droits** ne peut transmettre que des droits dont elle dispose elle-même, et au total **strictement moins** de droits qu'elle n'en possède. Elle ne peut pas modifier les personnes ayant autant ou plus de droits qu'elle, ni la direction de section, ni son propre compte.
+- Les personnes avec un profil avec surnom uniquement (sans Cevi.DB ni mot de passe) ne peuvent recevoir aucun droit.
+
+Ainsi, une personne administratrice peut par exemple accorder le droit « Créer des événements », mais ne peut nommer personne à un rôle administrateur équivalent.
+
+## Comment sont désignées les personnes ?
+
+| Désignation | Signification |
+| --- | --- |
+| Direction de section | Tous les droits, issue de Cevi.DB |
+| Nom d'un modèle | Possède exactement les droits de ce modèle |
+| Droits personnalisés | Possède des droits qui ne correspondent à aucun modèle prédéfini |
+| Membre | Section d'origine rattachée à votre section, sans droits particuliers |
+| Invité | Connecté via votre sous-domaine, mais rattaché à une autre section ou sans section principale |
+
+## Protocole d'activité
+
+Sous <Btn>Journal</Btn>, vous pouvez consulter qui a accordé ou retiré des droits, à qui et à quel moment, quand une personne est devenue direction de section ou a cessé de l'être (y compris de façon automatique via Cevi.DB), et qui a modifié les branches. Ce journal est consultable par la direction de section et par les personnes ayant le droit « Gérer les personnes et les droits ».

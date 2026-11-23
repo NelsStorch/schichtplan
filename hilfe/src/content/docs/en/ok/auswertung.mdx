@@ -1,0 +1,64 @@
+---
+title: Details, statistics, and CSV
+description: Contact info, completed volunteer hours, and answers from all registered helpers for evaluation and Excel export.
+audience: [ok]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Event', 'OC Area', 'Access & Answers', 'Volunteer Details']} />
+
+At the bottom of **Access & Answers**, a table lists everyone who has signed up:
+
+- **Person**: Association nickname, first and last name, home department, "via link" if they joined using an access link
+- **Contact**: Mobile number (tap to call), email address, date of birth
+- **Shifts**: Total count of assigned shifts
+- One column per [custom question](/en/ok/fragen/), including an indicator of when answers will be deleted. For questions set to "ask on every signup", the response is displayed per shift.
+
+This table is accessible exclusively to the OC and department leadership. Use the **search field** to instantly find specific individuals, contact info, or answers. For yes/no and multiple-choice questions, **summary cards with totals per answer** are automatically displayed above the table (clicking an answer filters the table accordingly).
+
+## Volunteer hours & shift statistics
+
+For post-event reporting (e.g. food vouchers, helper tokens, or the annual department report), the shift planner provides an automated hours summary.
+
+Open the dialog via <Btn>Volunteer hours</Btn> (found under **Volunteers** or under **Export & Print**):
+
+- **Key metrics at a glance**:
+  - **Total hours**: Total hours worked across all helpers, broken down by core event hours and setup/teardown hours.
+  - **Active volunteers**: Number of individuals with shifts, along with the average hours per helper.
+  - **Assignments**: Total number of filled shifts.
+- **Filters & options**:
+  - **Include setup and teardown**: Choose whether to count only core festival times or include preparation shifts.
+  - **Count confirmed attendance only**: If using the [attendance list](/en/ok/anwesenheit/), count only individuals whose presence on site was confirmed.
+- **Search**: Quickly filter by name, unit, or department.
+- **Export CSV**: Downloads a clean, Excel-compatible file with columns for name, unit, shifts, minutes worked, and total hours.
+
+:::tip[Distributing helper vouchers]
+Using the exported hours, the OC can easily distribute catering vouchers or drink tickets (e.g. "1 voucher per 2 hours of volunteering").
+:::
+
+## Download as CSV
+
+Tap <Btn>CSV</Btn>. The file (e.g. `fair-2026-helpers.csv`) opens directly in Excel, Numbers, or Google Sheets with proper encoding and semicolon-separated columns.
+
+Columns include: Name, First name, Last name, Email, Mobile, Date of birth, Department, Shifts, and all custom questions (addresses are included if requested).
+
+:::caution[Personal data]
+The CSV file contains personal contact details. Do not store it in public folders and delete it after the event concludes. For everyday planning, the OC area is usually sufficient. Additional lists are available under [Export & Print](/en/ok/export/).
+:::
+
+## Who is where?
+
+To answer "Who is staffing the bar on Saturday?", view **Shifts**. Helper names are listed directly under each task. To see "What shifts is Falk assigned to?", view **Volunteers** or check the individual assignments under [Export & Print](/en/ok/export/).
+
+## Activity log
+
+Under **Audit log** in the OC area, you can track the complete history of all signups and withdrawals:
+
+- **Who**: Name of the volunteer, shift, and task
+- **When**: Exact timestamp (date and time)
+- **Action**: Signup (green) or withdrawal (red)
+- **Initiator**: Performed directly by the helper or by which OC member
+
+Using the filter buttons and search field, you can easily filter records by signups, cancellations, or names.

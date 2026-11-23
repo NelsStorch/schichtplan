@@ -1,0 +1,89 @@
+---
+title: Créer un événement
+description: Définir le titre, les dates, le CO et l'accès. Ensuite viennent les créneaux.
+audience: [ok, abteilung]
+numbered: true
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+
+Les nouveaux événements sont créés par la **direction de section** et les personnes disposant du droit **Créer des événements**. Si vous faites uniquement partie du CO d'un événement existant, demandez-leur de créer l'événement.
+
+## Ouvrir le formulaire
+
+Sur la page d'accueil de votre section, en haut à droite, cliquez sur <Btn variant="primary">Nouvel événement</Btn>. S'il n'y a encore aucun événement, le bouton <Btn variant="primary">Créer un événement</Btn> s'affiche au centre.
+
+## Les informations
+
+<Steps>
+1. **Créer à partir d'un modèle** (optionnel) : Si vous avez enregistré un [modèle](/fr/ok/vorlagen/) l'année passée, sélectionnez-le ici. Tous les créneaux, postes et limites d'âge sont repris.
+
+2. **Titre**, par exemple « Fête de village 2026 ».
+
+3. **Adresse (Slug)** : la dernière partie du lien, par exemple `fete-2026`. Suggérée à partir du titre. Uniquement des lettres minuscules, chiffres et tirets, unique par section. **Astuce :** Ajoutez de préférence l'année (p. ex. `fete-2026`) pour que l'adresse soit de nouveau libre l'année prochaine.
+
+4. **Date** : le premier jour de l'événement. Vous n'indiquez pas de date de fin : dès qu'il y a des créneaux, l'événement s'étend automatiquement du premier au dernier créneau (montage et démontage inclus).
+
+5. **Description** : Que doivent savoir les bénévoles ? Point de rendez-vous, tenue, repas. Affichée en haut dans la bannière.
+
+6. **Comité d'organisation (CO)** : Vous êtes déjà inscrit en tant que responsable du CO. Ajoutez d'autres personnes de la liste des membres, par nom Cevi ou par e-mail, avec leur rôle et ressort.
+
+7. **Responsabilités & créneaux** :
+   - **Responsable du plan de créneaux** (optionnel) : Personne de contact pour les bénévoles lorsqu'un créneau est complet.
+   - **Responsables de créneaux / de jours** : Détermine si les responsabilités sont attribuées par créneau (p. ex. responsable du démontage) ou en tant que responsables du jour pour des journées entières.
+   - **Heure de changement de jour** : Heure à partir de laquelle les créneaux sont rattachés au jour suivant (p. ex. `04:00` pour une fête de village ou un événement en soirée, afin que les créneaux nocturnes jusqu'à 4h du matin appartiennent à la veille).
+   - **Coordonnées des responsables** : Choisissez quelles coordonnées des responsables du plan, du jour et des créneaux les bénévoles peuvent voir : numéro de portable et e-mail, uniquement portable, uniquement e-mail ou aucune coordonnée (nom seul).
+   - **Objectif : créneaux par personne** (optionnel) : Nombre minimal de créneaux par personne, par exemple 2 pour chaque responsable. Le CO voit ensuite sous [Bénévoles](/fr/ok/helfer-pool/) qui a atteint son quota.
+   - **Délai de verrouillage des désinscriptions** (optionnel) : Nombre de jours avant le début de l'événement à partir duquel les bénévoles ne peuvent plus se désinscrire eux-mêmes (p. ex. `2` = dès 2 jours avant l'événement ; `0` = jusqu'au début ; vide = aucun blocage). Le CO peut toujours désinscrire des personnes manuellement à tout moment.
+   - **Chercher un remplaçant** (activé par défaut) : Les bénévoles peuvent proposer leur créneau à l'échange, et d'autres personnes peuvent le reprendre en un clic, même après le délai de désinscription. Vous choisissez jusqu'à quand cela est possible : jusqu'au début du créneau ou 1, 2, 6, 12 ou 24 heures avant. En savoir plus sous [Chercher un remplaçant](/fr/helfen/ersatz-suchen/).
+   - **Chevauchement de créneaux pour passation** : Définissez le chevauchement autorisé entre deux créneaux (0, 10, 15, 20 ou 30 minutes ; recommandé : 15 minutes). Cela permet aux bénévoles de s'inscrire à deux créneaux consécutifs qui se chevauchent brièvement pour une passation ou une instruction.
+   - **Ouverture des inscriptions** (optionnel) : Date et heure (heure suisse) à partir desquelles les bénévoles peuvent s'inscrire eux-mêmes (vide = ouvert immédiatement). Les créneaux sont visibles à l'avance en aperçu ; à moins de 24 heures, un compte à rebours en direct s'affiche (avec les secondes à moins de 10 minutes, avec les millisecondes à moins d'une minute). Dès que le délai expire, la page s'actualise automatiquement pour permettre l'inscription directe. Le CO peut toujours attribuer des créneaux manuellement à l'avance.
+   - **Liste d'émargement** (optionnel) : désactivée, pointage manuel par le CO uniquement, ou en plus auto-check-in par code QR. En savoir plus sous [Liste d'émargement et check-in QR](/fr/ok/anwesenheit/).
+
+8. **Qui peut s'inscrire ?** et autres règles d'accès. Voir tous les détails sous [Gérer l'accès](/fr/ok/zugang/).
+
+9. **Bannière et logo** : voir [Design](/fr/ok/design/).
+
+10. Cliquez sur <Btn variant="primary">Créer l'événement</Btn>.
+</Steps>
+
+## Et ensuite ?
+
+L'événement est immédiatement visible, mais encore vide. Cliquez sur <Btn variant="primary">Créer un créneau</Btn> et planifiez le premier créneau. La marche à suivre est décrite sous [Planifier les créneaux](/fr/ok/schichten-planen/).
+
+Une fois les créneaux prêts, copiez le lien dans la barre d'adresse et partagez-le dans le chat de groupe. Pour les personnes qui ne remplissent pas les conditions d'accès, il existe des [liens d'accès](/fr/ok/zugangs-links/).
+
+:::tip[Planifier d'abord, partager ensuite]
+Les bénévoles peuvent s'inscrire dès que le premier créneau est créé. Si vous souhaitez planifier tranquillement, désactivez dans les paramètres **Inscriptions ouvertes aux bénévoles** et ne l'activez qu'au moment du lancement.
+:::
+
+## Modifier ultérieurement
+
+Toutes les données peuvent être modifiées plus tard dans l'espace CO sous **Paramètres** (ou sur la page de l'événement sous « CO » via <Btn>Paramètres</Btn>). Les formulaires s'enregistrent automatiquement en arrière-plan et les dialogues sont protégés contre toute fermeture accidentelle :
+
+- **Titre, description, accès, quota, bannière et logo** peuvent être modifiés directement à tout moment.
+- **Période** : calculée à partir du premier et du dernier créneau, elle s'adapte automatiquement avec les créneaux. Voir [Déplacer l'événement](#deplacer-levenement).
+- **Adresse (Slug)** peut également être modifiée. Cependant, comme tous les liens partagés jusqu'ici (p. ex. sur WhatsApp ou par e-mail) deviennent invalides, vous devez confirmer la modification après un compte à rebours de sécurité de 10 secondes.
+
+## Déplacer l'événement
+
+Si l'événement a lieu à une autre date, vous pouvez le déplacer en bloc :
+
+1. Dans l'espace CO, ouvrez **Paramètres**. La période figure sous **Données de base**.
+2. Cliquez sur <Btn>Déplacer</Btn> et choisissez le nouveau premier jour.
+3. Le plan de créneaux vous affiche un avertissement indiquant de combien de jours tous les créneaux sont décalés et à quoi ressemble la nouvelle période. Confirmez avec <Btn variant="primary">Déplacer</Btn>.
+
+Tous les créneaux sont décalés du même nombre de jours, les horaires restent identiques (même lors du passage à l'heure d'été/d'hiver). Les responsables du jour et une éventuelle **ouverture différée des inscriptions** sont également décalés. Les inscriptions existantes restent valables, mais les bénévoles ne reçoivent pas de notification automatique : écrivez-leur ensuite via [Messages](/fr/ok/nachrichten/). Seules la direction de section et la direction du CO peuvent déplacer un événement.
+
+## Supprimer l'événement
+
+Seule la **direction de section** peut supprimer un événement. La direction du CO ne le peut pas, mais elle peut désactiver **Inscriptions ouvertes aux bénévoles** dans les paramètres.
+
+1. Dans l'espace CO, ouvrez **Paramètres** et faites défiler tout en bas.
+2. Cliquez sur <Btn variant="danger">Supprimer l'événement</Btn>.
+3. Pour confirmer, saisissez l'**adresse (slug)** de l'événement, par exemple `fete-2026`, et confirmez avec <Btn variant="danger">Supprimer définitivement</Btn>.
+
+:::caution[Action irréversible]
+La suppression de l'événement efface l'ensemble des créneaux, des inscriptions, du CO, des questions et réponses, des liens d'accès, de l'historique et des messages envoyés. Les bénévoles ne reçoivent aucune notification. Si vous souhaitez les avertir, écrivez-leur au préalable sous [Messages](/fr/ok/nachrichten/).
+:::

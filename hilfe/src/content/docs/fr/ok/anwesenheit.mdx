@@ -1,0 +1,62 @@
+---
+title: Liste d'émargement et check-in QR
+description: Pointer la présence aux créneaux, manuellement ou par code QR à l'entrée. Avec export CSV et liste imprimable.
+audience: [ok]
+---
+
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+import QrCheckinMock from '../../../../components/QrCheckinMock.astro';
+
+<Path steps={['Événement', 'Espace CO', 'Émargement']} />
+
+Avec la liste d'émargement, vous enregistrez pour chaque créneau qui était réellement présent. C'est idéal pour le repas de remerciement, les décomptes d'heures et pour identifier les absences de dernière minute.
+
+## Activer
+
+La liste est désactivée par défaut pour chaque événement. Sous **Paramètres** → **Émargement**, choisissez :
+
+- **Aucune liste d'émargement** : l'onglet reste vide.
+- **Seul le CO coche les présences** : le CO pointe tout le monde à la main.
+- **Le CO coche et auto-check-in par code QR** : les bénévoles peuvent en plus s'enregistrer eux-mêmes.
+
+Ce réglage est réservé à la direction de section et à la direction du CO. Le pointage est accessible à tous les membres du CO et aux personnes disposant du droit « Saisir les présences ».
+
+## Pointer les présences
+
+Dans l'onglet **Émargement**, chaque créneau est listé avec l'ensemble des personnes inscrites. Trois boutons sont disponibles par personne :
+
+- <Btn>Présent</Btn> : présent(e)
+- <Btn>Excusé</Btn> : excusé(e), a prévenu de son absence
+- <Btn>Absent</Btn> : ne s'est pas présenté(e)
+
+Si vous cliquez à nouveau sur le bouton actif, le statut repasse à **en attente**. Si tout le monde est là au début du créneau, cliquez sur <Btn>Marquer tous les restants comme Présents</Btn> en haut de la carte du créneau pour pointer d'un coup toutes les personnes encore en attente. Sous chaque nom s'affichent l'auteur et l'heure de la saisie. Les créneaux en cours portent la mention « en cours ».
+
+En haut, des compteurs indiquent le nombre de personnes présentes, excusées, absentes et encore en attente. Vous pouvez filtrer par jour, par statut ou rechercher par nom.
+
+## Auto-check-in par code QR
+
+Lorsque le check-in par code QR est activé, l'onglet affiche un code QR personnalisé aux couleurs et avec le logo de votre section.
+
+1. Cliquez sur <Btn>Affiche A4 (PDF)</Btn>, imprimez-la et affichez-la à l'entrée ou au stand.
+2. Les bénévoles scannent le code avec leur smartphone et se connectent s'ils ne le sont pas déjà.
+3. Le plan de créneaux valide automatiquement tous les créneaux en cours de la personne : **de 30 minutes avant le début jusqu'à la fin du créneau**.
+
+<QrCheckinMock />
+
+Les personnes arrivées trop tôt voient à quelle heure commence leur prochain créneau. Celles qui ne sont pas inscrites ne sont pas validées et sont invitées à s'adresser au CO. Pour les bénévoles spontanés, inscrivez-les d'abord au créneau avant de valider leur présence.
+
+Ces entrées apparaissent dans la liste avec la mention « par code QR » et l'horodatage. Vous pouvez les modifier manuellement à tout moment.
+
+:::caution[Le lien fait office de clé]
+Le code QR contient un code secret. Toute personne disposant du lien peut également s'enregistrer depuis chez elle. Ne le diffusez donc pas dans des chats. S'il a malgré tout fuité, cliquez sur <Btn>Renouveler le code</Btn> : l'ancien code et toutes les affiches imprimées deviennent immédiatement caducs, et vous réimprimez la nouvelle affiche.
+:::
+
+## CSV et liste imprimable
+
+- <Btn>CSV</Btn> télécharge l'intégralité de la liste (jour, heure, créneau, poste, nom, présence, saisi par), prête à ouvrir dans Excel.
+- <Btn>Imprimer</Btn> génère un tableau par créneau avec des cases à cocher sur papier, au cas où aucun smartphone n'est sous la main sur place.
+
+## Dans l'historique
+
+Chaque modification est enregistrée dans l'**Historique** sous la forme « Émargement : … », avec l'heure et l'auteur de la modification. Les pointages par code QR y figurent avec la mention « (par code QR) ».

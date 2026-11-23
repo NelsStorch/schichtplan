@@ -1,0 +1,42 @@
+---
+title: Gérer les branches
+description: Les branches permettent de créer des événements réservés à l'équipe de responsables ou à des groupes spécifiques. Avec Cevi.DB, elles sont synchronisées automatiquement.
+audience: [abteilung]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+
+<Path steps={['Section', 'Branches']} />
+
+Les branches correspondent aux sous-groupes de votre section, par exemple Lutins, Louveteaux, Éclais ou Équipe de responsables. Les bénévoles indiquent lors de la connexion dans quelle branche ils sont **Participant·e** ou **Responsable**. Les événements peuvent ensuite être [réservés à certaines branches](/fr/ok/zugang/).
+
+## Automatiquement depuis la Cevi.DB
+
+Dès que des personnes se connectent avec Cevi.DB, leurs groupes de branches sont automatiquement reconnus et ajoutés de manière permanente à la liste. Vous n'avez plus besoin de les confirmer ou de les insérer manuellement. L'identifiant Cevi.DB est directement associé et les personnes sont assignées à leurs branches respectives.
+
+## Manuellement
+
+<Steps>
+1. Saisissez le nom en bas, par exemple « Éclais ».
+2. Indiquez facultativement l'**ID Cevi.DB** du groupe de branche (voir ci-dessous).
+3. Cliquez sur <Btn variant="primary">Ajouter</Btn>.
+</Steps>
+
+**Renommer** : cliquer sur le nom, modifier le texte, cliquer en dehors. **Supprimer** : icône de corbeille. Les personnes perdent alors le rattachement à cette branche, et les événements filtrés sur cette branche perdent ce filtre.
+
+## Trouver l'ID Cevi.DB
+
+Ouvrez la branche dans `db.cevi.ch`. Le nombre figurant dans l'adresse après `groups/` correspond à l'ID (par ex. `db.cevi.ch/groups/1234` → `1234`).
+
+Lorsqu'une branche est liée, son ID apparaît sous la forme d'un petit badge à côté. Les personnes avec Cevi.DB reçoivent alors cette branche automatiquement à chaque connexion :
+
+- Les rôles tels que **Responsable de groupe** ou **Responsable de branche** deviennent **Responsable**
+- Le rôle **Participant·e** reste **Participant·e**
+
+Ces associations portent la mention « issu de Cevi.DB » et ne peuvent pas être modifiées dans le plan de créneaux. Toute modification effectuée dans la Cevi.DB prend effet dès la prochaine connexion de la personne concernée.
+
+:::tip[Faut-il créer l'équipe de responsables comme branche distincte ?]
+Pour créer des événements réservés aux responsables, vous n'avez pas besoin de créer une branche spécifique. L'option **Réservé aux responsables** sur l'événement inclut automatiquement toutes les personnes ayant un rôle de responsable dans n'importe quelle branche.
+:::

@@ -1,0 +1,157 @@
+---
+title: Foire aux questions (FAQ)
+description: Réponses concises aux questions fréquemment posées.
+audience: [helfer, ok, abteilung]
+---
+
+import FaqItem from '../../../../components/FaqItem.astro';
+
+## Pour les bénévoles
+
+<FaqItem q="Ai-je besoin d'un compte pour m'inscrire ?">
+Oui, mais cela fonctionne aussi sans mot de passe : sur la page de votre section, un prénom ou surnom et votre date de naissance suffisent. [Connexion](/fr/start/anmelden/)
+</FaqItem>
+
+<FaqItem q="Dois-je me reconnecter pour chaque section ?">
+Non. Une fois connecté, votre session est valable pour toutes les sections sur `cevi-schichtplan.ch`.
+</FaqItem>
+
+<FaqItem q="Où se trouve l'option « Avec surnom / prénom » ?">
+Sur `login.cevi-schichtplan.ch`, seules la connexion Cevi.DB et l'authentification par e-mail sont proposées. L'accès rapide par prénom/surnom se trouve sur la page dédiée de votre propre section. [Connexion](/fr/start/anmelden/)
+</FaqItem>
+
+<FaqItem q="Une autre personne porte le même prénom ou surnom que moi dans ma section.">
+Si deux personnes ont le même surnom ou prénom, le plan de créneaux les distingue automatiquement dans l'événement : la branche est d'abord ajoutée entre parenthèses (par ex. « Falk (Éclais) »). Lors d'événements regroupant plusieurs sections, le nom de la section est ajouté (« Falk (Wetzikon) ») ou les deux (« Falk (Éclais, Wetzikon) »). Si cela ne suffit pas, le plan ajoute le prénom officiel (« Max v/o Falk ») et, si nécessaire, le nom (« Max Muster v/o Falk »). Ainsi, la désignation sur le plan reste toujours sans équivoque.
+</FaqItem>
+
+<FaqItem q="J'ai oublié mon mot de passe.">
+Sur la page de connexion, cliquez sur « Mot de passe oublié ? » et saisissez votre adresse e-mail. Vous recevrez un lien pour définir un nouveau mot de passe.
+</FaqItem>
+
+<FaqItem q="J'étais connecté avec un prénom/surnom et j'utilise désormais Cevi.DB. Que deviennent mes créneaux ?">
+Connectez-vous avec Cevi.DB. Si le surnom et la date de naissance correspondent, le plan de créneaux fusionne automatiquement les deux profils. Vos créneaux sont intégralement conservés.
+</FaqItem>
+
+<FaqItem q="Lors de la connexion avec Cevi.DB, un mot de passe m'est demandé.">
+Vous possédez déjà un compte enregistré avec cette même adresse e-mail et un mot de passe. Saisissez ce mot de passe : dès lors, les deux méthodes d'authentification seront liées au même compte.
+</FaqItem>
+
+<FaqItem q="La base de données de fédération (Cevi.DB, MiData, Jubla-DB) est inaccessible. Que faire ?">
+Si vous avez déjà configuré un mot de passe de secours dans votre [profil](/fr/helfen/konto/), connectez-vous simplement avec votre adresse e-mail et ce mot de passe. Si ce n'est pas encore fait : sur la page de connexion, cliquez sur « Mot de passe oublié ? », entrez l'adresse e-mail liée à votre fédération et créez directement un mot de passe d'urgence via le lien reçu. Vos créneaux et droits de responsable restent pleinement conservés.
+</FaqItem>
+
+<FaqItem q="Quelle application utiliser pour l'authentification à deux facteurs ?">
+Toute application d'authentification compatible avec le standard ouvert TOTP, par exemple Google Authenticator, Microsoft Authenticator, Aegis, 2FAS, 1Password ou Bitwarden. Vous pouvez la configurer sur votre page de profil. [Authentification à deux facteurs](/fr/helfen/konto/#authentification-a-deux-facteurs)
+</FaqItem>
+
+<FaqItem q="J'ai perdu mon téléphone avec l'application d'authentification.">
+Connectez-vous avec l'un de vos codes de récupération, puis générez de nouveaux codes dans votre profil. Si vous n'avez plus accès à vos codes, adressez-vous à l'[adresse de contact](/fr/wissen/kontakt/) afin que l'authentification à deux facteurs soit réinitialisée après vérification.
+</FaqItem>
+
+<FaqItem q="Puis-je supprimer mon compte ?">
+Oui, sur la page de profil dans l'onglet **Sécurité & données**. Vos créneaux sont libérés et vos informations personnelles effacées. Les profils avec surnom seul ne peuvent pas se supprimer directement : ils déposent une demande via **Demander la suppression** et sont supprimés dans un délai de 30 jours. [Supprimer le compte](/fr/helfen/konto/#supprimer-le-compte)
+</FaqItem>
+
+<FaqItem q="Puis-je télécharger les données enregistrées à mon sujet ?">
+Oui. Sur la page de profil dans l'onglet **Sécurité & données**, cliquez sur **Télécharger mes données** pour récupérer au format JSON l'ensemble des données personnelles enregistrées par le plan de créneaux sur votre compte. [Supprimer le compte](/fr/helfen/konto/#supprimer-le-compte)
+</FaqItem>
+
+<FaqItem q="J'ai reçu un e-mail indiquant que mon compte va être supprimé. Pourquoi ?">
+Vous ne vous êtes pas connecté depuis plus de deux ans. Le plan de créneaux supprime ces comptes afin de ne pas conserver de données au-delà du nécessaire. Connectez-vous une fois dans les 30 jours suivant l'e-mail pour conserver votre compte. Sinon, vous n'avez rien à faire. [Si vous n'utilisez pas votre compte pendant longtemps](/fr/helfen/konto/#si-vous-nutilisez-pas-votre-compte-pendant-longtemps)
+</FaqItem>
+
+<FaqItem q="Que deviennent mes anciens créneaux si mon compte est supprimé ?">
+Ils restent consignés dans les événements passés sous la mention anonyme « Personne supprimée », sans votre nom. Votre profil, vos coordonnées et vos réponses aux questions sont définitivement effacés.
+</FaqItem>
+
+<FaqItem q="Puis-je m'inscrire à deux postes sur le même créneau horaire ?">
+Non. Vous ne pouvez occuper qu'un seul poste par créneau.
+</FaqItem>
+
+<FaqItem q="Puis-je m'inscrire à deux créneaux qui se chevauchent légèrement ?">
+Oui ! Si le CO a configuré un temps de passation (par ex. 15 minutes), vous pouvez vous inscrire à deux créneaux consécutifs qui se chevauchent brièvement pour la transmission des consignes. Le système ne bloque que les réels conflits d'horaires. [S'inscrire à un créneau](/fr/helfen/eintragen/)
+</FaqItem>
+
+<FaqItem q="Je suis malade ou j'ai un empêchement. Que dois-je faire ?">
+Désinscrivez-vous sous **Mes créneaux** le plus tôt possible afin que votre place soit libérée pour d'autres bénévoles. En cas de désistement de dernière minute le jour même de la fête, avertissez impérativement le CO ou votre responsable de créneau par téléphone ou messagerie. [Se désinscrire](/fr/helfen/austragen/)
+</FaqItem>
+
+<FaqItem q="La mention « Non débloqué pour toi » s'affiche. Que faire ?">
+L'événement est réservé à une section spécifique, à une branche ou aux membres Cevi.DB. Vérifiez votre rattachement de section ou demandez un lien d'accès au CO. [Non débloqué](/fr/helfen/nicht-freigeschaltet/)
+</FaqItem>
+
+<FaqItem q="Je souhaite effectuer le même créneau avec un·e ami·e.">
+Assurez-vous qu'il reste au moins deux places libres sur le poste concerné, et inscrivez-vous tous les deux.
+</FaqItem>
+
+<FaqItem q="Vais-je recevoir un rappel avant mon créneau ?">
+Le CO peut envoyer des messages à l'ensemble des personnes inscrites. Pour ne rien manquer, ajoutez en un clic vos créneaux à votre Google Agenda ou téléchargez le fichier `.ics`. [Mes créneaux](/fr/helfen/meine-schichten/)
+</FaqItem>
+
+<FaqItem q="Je suis considéré·e comme trop jeune pour le bar alors que j'ai déjà 16 ans.">
+Vérifiez votre date de naissance dans votre [profil](/fr/helfen/konto/). Pour les comptes Cevi.DB, elle provient de la Cevi.DB. L'âge pris en compte est celui au jour du créneau. [Âge minimum](/fr/helfen/mindestalter/)
+</FaqItem>
+
+## Pour le CO
+
+<FaqItem q="Comment créer des créneaux par tranches régulières de 2 heures (série de créneaux) ?">
+Dans l'espace CO, sous **Créneaux**, cliquez sur **Créer une série**. Choisissez la période, la durée du créneau (par ex. 2 heures) et les postes. Le plan de créneaux génère tous les créneaux en un clic. [Planifier les créneaux](/fr/ok/schichten-planen/#creer-des-series-de-creneaux-planification-en-grille)
+</FaqItem>
+
+<FaqItem q="Où voir le décompte d'heures effectuées par chaque bénévole (par ex. pour les bons repas) ?">
+Sous **Bénévoles** ou **Exportation & Impression**, cliquez sur **Heures de bénévolat**. Vous y visualisez toutes les heures accomplies et pouvez télécharger une liste CSV, par exemple pour distribuer des bons de repas. [Évaluation](/fr/ok/auswertung/#heures-de-benevolat--statistiques-dengagement)
+</FaqItem>
+
+<FaqItem q="Existe-t-il des raccourcis clavier ou une recherche rapide pour les créneaux et les bénévoles ?">
+Oui ! Appuyez partout sur <kbd>⌘K</kbd> (Mac) ou <kbd>Ctrl</kbd>+<kbd>K</kbd> (Windows) pour ouvrir le menu de commandes (Command Palette). Vous pourrez rechercher sans souris des créneaux, des manifestations ou des personnes, affecter des bénévoles et identifier les manques dans le planning. [Menu de commandes & recherche rapide](/fr/wissen/befehlsmenue/)
+</FaqItem>
+
+<FaqItem q="Comment inviter des personnes qui n'appartiennent pas à la section ?">
+À l'aide d'un lien d'accès créé dans l'espace CO sous « Accès & réponses ». Personnel pour un individu, de groupe pour un canal de discussion. [Liens d'accès](/fr/ok/zugangs-links/)
+</FaqItem>
+
+<FaqItem q="Puis-je inscrire quelqu'un qui n'a pas de compte ?">
+Oui, en choisissant **Invité / nom libre** lors de l'affectation, avec en option son e-mail et son téléphone. [Affecter](/fr/ok/einteilen/)
+</FaqItem>
+
+<FaqItem q="Comment créer trois créneaux identiques consécutifs ?">
+Dans l'espace CO sous **Créneaux**, cliquez sur **Dupliquer** au niveau du créneau. La copie débute à la fin du précédent. Dupliquez deux fois et le tour est joué. Pour des séries complètes, utilisez **Créer une série**. [Planifier les créneaux](/fr/ok/schichten-planen/)
+</FaqItem>
+
+<FaqItem q="Puis-je réutiliser la fête de l'an dernier ?">
+Oui, avec **Enregistrer comme modèle**, puis l'année suivante avec **Créer à partir d'un modèle**. [Modèles](/fr/ok/vorlagen/)
+</FaqItem>
+
+<FaqItem q="Je souhaite préparer le planning calmement avant d'ouvrir les inscriptions à tout le monde.">
+Sous **Paramètres**, indiquez une date et heure dans **Inscriptions possibles dès le** (avec compte à rebours en direct). Vous pouvez aussi désactiver l'option **Les bénévoles peuvent s'inscrire eux-mêmes** et la réactiver au moment voulu. [Créer un événement](/fr/ok/anlass-erstellen/)
+</FaqItem>
+
+<FaqItem q="Le CO reçoit-il un message lorsqu'une personne se désinscrit ?">
+Non. Dans l'espace CO, le taux de remplissage est toujours à jour en direct, et dans le **Journal d'activité**, chaque désinscription est enregistrée à la minute près. Pour les annulations de dernière minute, invitez vos bénévoles à vous contacter par téléphone. [Évaluation](/fr/ok/auswertung/#journal-dactivite)
+</FaqItem>
+
+<FaqItem q="Je ne parviens pas à ajouter une personne au CO.">
+La personne ne possède vraisemblablement qu'un profil avec prénom/surnom. Pour occuper des rôles, elle doit disposer d'un compte avec Cevi.DB ou avec e-mail et mot de passe. Si plusieurs personnes portent le même nom, saisissez son adresse e-mail plutôt que son surnom. [Rôles et droits](/fr/ok/rollen/)
+</FaqItem>
+
+<FaqItem q="Je ne parviens pas à créer un nouvel événement.">
+Cette action est réservée à la direction de section et aux personnes détenant le droit **Créer des événements**. Demandez à votre direction de section de vous accorder ce droit ou de créer l'événement en vous intégrant au CO. [Rôles et droits](/fr/ok/rollen/)
+</FaqItem>
+
+## Pour la direction de section
+
+<FaqItem q="Comment inscrire notre section sur le plan de créneaux ?">
+La direction de section officielle selon Cevi.DB la crée sur `cevi-schichtplan.ch` avec **Créer une section**. [Créer une section](/fr/abteilung/anlegen/)
+</FaqItem>
+
+<FaqItem q="Puis-je modifier le sous-domaine ?">
+Non, il est immuable. Choisissez-le donc judicieusement lors de la création. Le nom, le logo et la couleur restent modifiables à tout moment.
+</FaqItem>
+
+<FaqItem q="Un membre de la direction de section Cevi.DB n'a aucun droit dans le plan de créneaux.">
+Toute personne désignée comme responsable de section dans la Cevi.DB pour votre entité reçoit automatiquement le rôle de direction de section lors de sa prochaine connexion avec Cevi.DB. En cas de blocage, déconnectez-vous et reconnectez-vous avec Cevi.DB. [BD de fédération (Hitobito)](/fr/abteilung/hitobito/)
+</FaqItem>
+
+<FaqItem q="Les parents ne voient pas nos événements.">
+La page d'accueil est probablement configurée sur « réservé aux membres ». Les manifestations publiques restent accessibles par leur lien direct, et pour les événements internes, vous pouvez générer des liens d'accès. Vous pouvez aussi désactiver ce paramètre. [Paramètres de la section](/fr/abteilung/einstellungen/)
+</FaqItem>

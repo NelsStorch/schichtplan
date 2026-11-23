@@ -1,0 +1,88 @@
+---
+title: Creare un'organizzazione o un'associazione
+description: Creare il piano dei turni per la vostra sezione, il vostro gruppo o la vostra associazione. Richiede solo un minuto.
+audience: [abteilung]
+numbered: true
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import FaqItem from '../../../../components/FaqItem.astro';
+
+Che si tratti di un'associazione giovanile o di un club sportivo locale: ogni organizzazione riceve sul piano dei turni il proprio indirizzo web dedicato (sottodominio), ad esempio `illnau.cevi-schichtplan.ch` o `torneo.vereins-schichtplan.ch`.
+
+<Tabs>
+  <TabItem label="Per Cevi / Scout / Jubla (Federazione)">
+    ## Chi può creare il piano dei turni?
+
+    Nelle associazioni giovanili, il piano dei turni viene creato dalla **direzione ufficiale secondo la banca dati della federazione**:
+    - **Cevi:** ruolo «Responsabile di sezione» (Abteilungsleiter\*in) nella Cevi.DB
+    - **Scout:** ruolo «Responsabile di sezione» (Abteilungsleitung) in PBS MiData
+    - **Jubla:** ruolo «Direzione del gruppo» (Scharleitung) nella banca dati Jubla
+
+    Anche **regioni, associazioni cantonali e la federazione nazionale** (nel Cevi le sezioni regionali, le organizzazioni affiliate e l'associazione mantello) possono creare un proprio piano dei turni tramite la propria direzione. Quali ruoli siano considerati validi è descritto in [Gruppi e ruoli](/it/abteilung/gruppen-und-rollen/); come pianificare a questi livelli in [Regione, Cantone e Federazione](/it/abteilung/ebenen/).
+
+    Questo garantisce che per ciascun gruppo esista esattamente un unico piano dei turni ufficiale.
+
+    ## Procedura per le sezioni affiliate alla federazione
+
+    <Steps>
+    1. Apri la pagina principale della tua associazione (ad es. `cevi-schichtplan.ch` o `pfadi-schichtplan.ch`) e tocca <Btn variant="primary">Crea sezione</Btn>.
+    2. Accedi con il tuo account della federazione (Cevi.DB, MiData o banca dati Jubla).
+    3. Se la tua sezione non ha ancora un piano dei turni, il sistema riconosce il tuo ruolo direttivo e ti propone di crearlo.
+    4. **Nome**: viene proposto automaticamente dalla banca dati della federazione (ad es. «Cevi Weiningen» o «Scout San Giorgio»).
+    5. **Sottodominio**: l'indirizzo web breve (ad es. `weiningen` per `weiningen.cevi-schichtplan.ch`). Da 3 a 30 caratteri. **Non potrà più essere modificato in seguito.**
+    6. Seleziona la casella delle **Condizioni d'uso**. Le accetti a nome della tua sezione, incluse le norme sul trattamento dei dati. Senza spunta non è possibile creare la sezione.
+    7. Fai clic su <Btn variant="primary">Crea sezione</Btn>. Verrai immediatamente reindirizzato al vostro nuovo piano dei turni.
+    </Steps>
+
+    ### Cosa succede in questo passaggio
+    - Diventi automaticamente **Responsabile principale** nel piano dei turni.
+    - La sezione viene collegata direttamente al vostro gruppo ufficiale nella federazione.
+    - Altri animatori e responsabili del gruppo riceveranno automaticamente i diritti direttivi al momento del loro accesso.
+  </TabItem>
+
+  <TabItem label="Per associazioni (E-mail e password)">
+    ## Chi può creare un'associazione?
+
+    Per associazioni indipendenti, club sportivi e comitati di festa, **qualsiasi membro del comitato o del CO** può aprire una nuova associazione nel piano dei turni. La persona che crea l'account diventa automaticamente l'amministratore principale e potrà successivamente assegnare i diritti ad altre persone.
+
+    ## Procedura per le associazioni
+
+    <Steps>
+    1. Apri `vereins-schichtplan.ch` e tocca <Btn variant="primary">Crea associazione</Btn>.
+    2. Accedi con il tuo account e-mail o crea gratuitamente un nuovo account per l'associazione.
+    3. **Nome dell'associazione**: inserisci il nome ufficiale della tua associazione (ad es. «FC Esempio» o «Società di Ginnastica»).
+    4. **Sottodominio**: scegli il vostro indirizzo web personalizzato (ad es. `fcesempio` per `fcesempio.vereins-schichtplan.ch`).
+    5. Seleziona la casella delle **Condizioni d'uso**. Le accetti a nome della tua associazione, incluse le norme sul trattamento dei dati. Senza spunta non è possibile creare l'associazione.
+    6. Fai clic su <Btn variant="primary">Crea associazione</Btn>. Il portale della vostra associazione è subito operativo.
+    </Steps>
+
+    ### Cosa fare dopo
+    - Nella sezione [Impostazioni](/it/abteilung/einstellungen/) carica il logo dell'associazione e imposta i colori sociali.
+    - Crea [gruppi o squadre](/it/abteilung/stufen/) (ad es. Prima squadra, Comitato, Giovani).
+    - Assegna i diritti di gestione ad altri membri del comitato in [Persone e diritti](/it/abteilung/rechte/).
+    - Crea il tuo primo [evento](/it/ok/anlass-erstellen/).
+  </TabItem>
+</Tabs>
+
+## I prossimi passi
+
+1. Personalizzare [nome, logo e colore primario](/it/abteilung/einstellungen/).
+2. Registrare [branche o gruppi](/it/abteilung/stufen/).
+3. [Assegnare i diritti](/it/abteilung/rechte/): chi nel team di responsabili pianifica quali eventi?
+4. Creare il primo [evento](/it/ok/anlass-erstellen/).
+
+## Domande frequenti
+
+<FaqItem q="«Per la tua organizzazione esiste già un piano dei turni»">
+Qualcuno nel vostro team ha già creato l'organizzazione. Contatta il vostro responsabile principale per ottenere i diritti di amministrazione o di pianificazione per il vostro portale.
+</FaqItem>
+
+<FaqItem q="«Una nuova sezione può essere creata solo dalla direzione di sezione» (Federazione)">
+Nella banca dati della federazione non è ancora registrato alcun ruolo ufficiale di responsabile di sezione o di gruppo per il tuo profilo. Rivolgiti agli amministratori della banca dati della tua federazione per aggiornare il tuo ruolo.
+</FaqItem>
+
+<FaqItem q="È possibile modificare il sottodominio in seguito?">
+Per ragioni tecniche, il sottodominio (ad es. <code>esempio.vereins-schichtplan.ch</code>) non può più essere rinominato dopo la creazione, poiché è stampato su volantini e salvato nei collegamenti. Scegli quindi una denominazione breve e chiara.
+</FaqItem>

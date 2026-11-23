@@ -1,0 +1,90 @@
+---
+title: Menu de commandes & recherche rapide (Command Palette)
+description: Avec ⌘K ou Ctrl+K, naviguez instantanément dans le plan de créneaux, trouvez des créneaux, affectez des bénévoles et exécutez des actions.
+audience: [helfer, ok, abteilung]
+sidebar:
+  label: Menu de commandes (⌘K)
+---
+
+import Btn from '../../../../components/Btn.astro';
+
+Le **menu de commandes** (ou *Command Palette*) est le centre de contrôle universel du Cevi Schichtplan. Il vous permet d'utiliser l'intégralité du portail sans la souris, de passer d'un événement à l'autre, de rechercher des créneaux, d'affecter des bénévoles et de modifier des paramètres en une fraction de seconde.
+
+:::tip[Raccourci clavier]
+Appuyez à tout moment sur <kbd>⌘K</kbd> (Mac) ou <kbd>Ctrl</kbd>+<kbd>K</kbd> (Windows/Linux) pour ouvrir le menu de commandes.
+Sur smartphone, l'icône de loupe <Btn>Rechercher...</Btn> est disponible dans la barre d'en-tête.
+:::
+
+---
+
+## Navigation au clavier
+
+Le menu de commandes est conçu pour une efficacité maximale au clavier :
+
+| Touche | Fonction |
+| --- | --- |
+| <kbd>⌘K</kbd> / <kbd>Ctrl</kbd>+<kbd>K</kbd> | Ouvrir ou fermer le menu de commandes |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | Parcourir la liste des résultats |
+| <kbd>↵ Entrée</kbd> | Exécuter immédiatement la commande ou l'élément sélectionné |
+| <kbd>⇥ Tab</kbd> | Ouvrir les **actions secondaires** de l'élément actif (par ex. copier le lien, appeler, affecter) |
+| <kbd>Échap</kbd> | Quitter les sous-actions ou fermer le menu |
+| <kbd>⌫ Retour arrière</kbd> | Retirer le préfixe de filtre lorsque le champ texte est vide |
+
+---
+
+## Filtres instantanés par préfixes
+
+En tapant un caractère spécifique au début de votre saisie, le menu filtre directement dans cette catégorie :
+
+| Préfixe | Domaine | Exemple | Ce qui se passe |
+| --- | --- | --- | --- |
+| `@` | **Personnes & contacts** | `@falk` ou `@responsable` | Recherche parmi les bénévoles, noms Cevi, branches et rôles de votre section. |
+| `#` ou `>` | **Événements** | `#fete` ou `>camp` | Affiche exclusivement les événements de votre section. |
+| `:` ou `!` | **Créneaux & tâches** | `:grill` ou `!caisse` | Trouve les créneaux, postes et places libres dans l'événement actuel. |
+| `?` | **Aide & raccourcis** | `?` | Affiche une vue d'ensemble de tous les raccourcis clavier et commandes du menu. |
+
+Si vous écrivez sans préfixe, le menu effectue une recherche simultanée dans tous les domaines.
+
+---
+
+## Actions contextuelles
+
+Le menu de commandes s'adapte à l'endroit où vous vous trouvez. Lorsque vous consultez un événement, des actions contextuelles apparaissent automatiquement tout en haut :
+
+### Pour tous les bénévoles
+- **Passer à la vue bénévole** : ouvrir la grille des créneaux de l'événement.
+- **Copier le lien** : placer le lien direct de l'événement dans le presse-papiers.
+- **Trouver des créneaux libres** : afficher immédiatement les postes qui recherchent des renforts.
+
+### Pour le CO & la direction
+- **Passer à l'espace CO** : basculer entre la vue publique et le centre d'organisation.
+- **Détecteur de créneaux vides** : liste tous les créneaux non pourvus avec le nombre de bénévoles manquants.
+- **Créer un nouveau créneau** : ouvre directement le formulaire de création.
+- **Affecter des bénévoles** : ouvre la fenêtre d'affectation rapide.
+- **Présence & check-in** : ouvre la liste de pointage le jour de l'événement.
+- **Imprimer le plan de créneaux** : ouvre la vue d'impression pour les listes de créneaux et affichages papier.
+
+---
+
+## Actions secondaires & prévisualisation détaillée (Inspector)
+
+Chaque élément du menu de commandes offre souvent bien plus qu'un simple clic :
+
+1. **Aperçu détaillé** : sur grand écran, vous visualisez immédiatement des informations complémentaires à droite :
+   - Pour les **créneaux** : horaires exacts, barre de progression du remplissage et personnes déjà inscrites.
+   - Pour les **personnes** : numéro de téléphone, adresse e-mail, branches d'appartenance et créneaux attribués.
+   - Pour les **événements** : date, statut et état d'avancement de la planification.
+2. **Actions secondaires (<kbd>Tab</kbd>)** :
+   - Appuyez sur la touche <kbd>Tab</kbd> sur un élément (ou cliquez sur la flèche à droite) pour afficher les sous-actions spécifiques.
+   - Exemple pour une personne : composer directement son numéro de téléphone (`tel:`), lui écrire un e-mail ou valider sa présence.
+   - Exemple pour un créneau : passer directement à l'édition ou affecter des bénévoles.
+
+---
+
+## Actions générales & apparence
+
+Le menu de commandes permet également de piloter les réglages généraux et la navigation :
+
+- **Thème visuel** : tapez `clair`, `sombre` ou `système` pour changer l'apparence de l'application.
+- **Accès rapide** : accédez à *Mes créneaux*, à votre *Profil*, aux *Paramètres de la section* ou à la *Synchronisation Cevi.DB*.
+- **Historique (Récents)** : les commandes et événements récemment consultés s'affichent en tête de liste à l'ouverture, vous permettant d'y revenir en deux touches.
