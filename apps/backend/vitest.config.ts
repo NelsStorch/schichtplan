@@ -8,7 +8,6 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.test.ts', 'test/**/*.test.ts'],
     fileParallelism: false,
-    isolate: false,
     testTimeout: 20_000,
     hookTimeout: 30_000,
     // Wie der Server-Container (UTC): Zeitfehler fallen so auch auf einem Rechner in Schweizer Zeit auf
