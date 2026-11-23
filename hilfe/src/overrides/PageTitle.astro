@@ -2,10 +2,10 @@
 // Titel mit Kapitel-Zeile (Gruppe aus der Seitenleiste), Lesezeit, Zielgruppe und Lead-Text.
 import Clock from '@lucide/astro/icons/clock-3';
 import Users from '@lucide/astro/icons/users-round';
-import { AUDIENCES, readingMinutes } from '../lib/audience';
+import { getAudienceLabel, readingMinutes } from '../lib/audience';
 
 const PAGE_TITLE_ID = '_top';
-const { entry, sidebar } = Astro.locals.starlightRoute;
+const { entry, sidebar, locale } = Astro.locals.starlightRoute;
 const { title, description, audience = [] } = entry.data;
 
 type Entry = (typeof sidebar)[number];
@@ -13,6 +13,16 @@ const hasCurrent = (e: Entry): boolean =>
   e.type === 'link' ? e.isCurrent : e.entries.some((child) => hasCurrent(child as Entry));
 const group = sidebar.find((e) => e.type === 'group' && hasCurrent(e));
 const minutes = readingMinutes(entry.body);
+
+const readTimeLabel = locale === 'fr'
+  ? `${minutes} min de lecture`
+  : locale === 'it'
+    ? `${minutes} min di lettura`
+    : locale === 'en'
+      ? `${minutes} min read`
+      : `${minutes} Min. Lesezeit`;
+
+const forLabel = locale === 'fr' ? 'Pour' : locale === 'it' ? 'Per' : locale === 'en' ? 'For' : 'Für';
 ---
 
 <header class="pt">
@@ -21,7 +31,7 @@ const minutes = readingMinutes(entry.body);
     <span class="pt-dot" aria-hidden="true"></span>
     <span class="pt-time">
       <Clock size={13} strokeWidth={2} aria-hidden="true" />
-      {minutes} Min. Lesezeit
+      {readTimeLabel}
     </span>
   </div>
 
@@ -31,17 +41,20 @@ const minutes = readingMinutes(entry.body);
 
   {
     audience.length > 0 && (
-      <ul class="pt-audience" aria-label="Für wen">
+      <ul class="pt-audience" aria-label={forLabel}>
         <li class="pt-audience-label">
-          <Users size={14} strokeWidth={2} aria-hidden="true" /> Für
+          <Users size={14} strokeWidth={2} aria-hidden="true" /> {forLabel}
         </li>
-        {audience.map((key) => (
-          <li>
-            <a href={AUDIENCES[key].href} class={`pt-chip pt-chip--${key}`}>
-              {AUDIENCES[key].label}
-            </a>
-          </li>
-        ))}
+        {audience.map((key) => {
+          const item = getAudienceLabel(key, locale);
+          return (
+            <li>
+              <a href={item.href} class={`pt-chip pt-chip--${key}`}>
+                {item.label}
+              </a>
+            </li>
+          );
+        })}
       </ul>
     )
   }

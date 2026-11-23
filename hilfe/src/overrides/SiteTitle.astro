@@ -1,14 +1,17 @@
 ---
 // Cevi-Logo + Wortmarke «Hilfe» mit kleinem Zusatz, statt nur Text
-const { siteTitleHref } = Astro.locals.starlightRoute;
+const { siteTitleHref, locale } = Astro.locals.starlightRoute;
+
+const helpTitle = locale === 'fr' ? 'Aide' : locale === 'it' ? 'Guida' : locale === 'en' ? 'Help' : 'Hilfe';
+const ariaLabel = locale === 'fr' ? 'Aide Schichtplan, page d’accueil' : locale === 'it' ? 'Guida Schichtplan, pagina iniziale' : locale === 'en' ? 'Shift Planner Help, Home' : 'Cevi Schichtplan Hilfe, Startseite';
 ---
 
-<a href={siteTitleHref} class="st" aria-label="Cevi Schichtplan Hilfe, Startseite" data-org-title-link>
+<a href={siteTitleHref} class="st" aria-label={ariaLabel} data-org-title-link>
   <span class="st-logo" aria-hidden="true">
     <img src="/cevi-logo.svg" alt="" width="30" height="30" data-org-logo />
   </span>
   <span class="st-text" translate="no">
-    <span class="st-name">Hilfe</span>
+    <span class="st-name">{helpTitle}</span>
     <span class="st-sub" data-org-sub>Cevi Schichtplan</span>
   </span>
 </a>

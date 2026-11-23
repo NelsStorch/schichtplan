@@ -1,0 +1,88 @@
+---
+title: Comment fonctionne le plan de créneaux
+description: Un seul compte pour toutes les unités, chaque organisation sur sa propre adresse web. Voici comment tout s'organise.
+audience: [helfer, ok, abteilung]
+sidebar:
+  label: Aperçu
+---
+
+import { LinkCard, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Le plan de créneaux remplace les tableaux Excel illisibles, les messages de groupe et les sondages Doodle pour les camps, fêtes, kermesses et tournois. Les bénévoles voient en un coup d'œil où il manque du monde et s'inscrivent directement. Le comité d'organisation (CO) suit en temps réel l'occupation de chaque poste.
+
+## Les quatre adresses de votre organisation
+
+Le plan de créneaux est disponible pour le Cevi, les scouts, la Jubla et les associations sur leurs propres domaines :
+
+<Tabs>
+  <TabItem label="Pour Cevi">
+    | Adresse | Utilisation |
+    | --- | --- |
+    | `cevi-schichtplan.ch` | Accueil, recherche de section, votre [profil](/fr/helfen/konto/) |
+    | `login.cevi-schichtplan.ch` | Connexion centrale pour toutes les sections Cevi |
+    | `votre-section.cevi-schichtplan.ch` | Le plan de votre section avec tous ses événements |
+    | `hilfe.cevi-schichtplan.ch/fr/` | Ce centre d'aide |
+  </TabItem>
+  <TabItem label="Pour les scouts">
+    | Adresse | Utilisation |
+    | --- | --- |
+    | `pfadi-schichtplan.ch` | Accueil, recherche de groupe, votre [profil](/fr/helfen/konto/) |
+    | `login.pfadi-schichtplan.ch` | Connexion centrale pour tous les groupes scouts |
+    | `votre-groupe.pfadi-schichtplan.ch` | Le plan de votre groupe avec tous ses événements |
+    | `hilfe.pfadi-schichtplan.ch/fr/` | Ce centre d'aide |
+  </TabItem>
+  <TabItem label="Pour Jubla">
+    | Adresse | Utilisation |
+    | --- | --- |
+    | `jubla-schichtplan.ch` | Accueil, recherche de section, votre [profil](/fr/helfen/konto/) |
+    | `login.jubla-schichtplan.ch` | Connexion centrale pour toutes les sections Jubla |
+    | `votre-section.jubla-schichtplan.ch` | Le plan de votre section avec tous ses événements |
+    | `hilfe.jubla-schichtplan.ch/fr/` | Ce centre d'aide |
+  </TabItem>
+  <TabItem label="Pour les associations">
+    | Adresse | Utilisation |
+    | --- | --- |
+    | `vereins-schichtplan.ch` | Accueil, recherche d'association, votre [profil](/fr/helfen/konto/) |
+    | `login.vereins-schichtplan.ch` | Connexion centrale par e-mail et mot de passe |
+    | `votre-association.vereins-schichtplan.ch` | Le plan de votre association avec tous ses événements |
+    | `hilfe.vereins-schichtplan.ch/fr/` | Ce centre d'aide |
+  </TabItem>
+</Tabs>
+
+Chaque unité possède sa propre adresse permanente, par exemple `geneve.cevi-schichtplan.ch` ou `tournoi.vereins-schichtplan.ch`. Cette adresse reste fixe et convient parfaitement aux dépliants, affiches et invitations aux bénévoles.
+
+:::tip[Une seule connexion suffit]
+Vous vous connectez une fois et vous êtes automatiquement authentifié sur toutes les unités de votre organisation. Si vous donnez un coup de main à un groupe ami ou une autre association, aucun deuxième compte n'est nécessaire.
+:::
+
+## Comment les éléments s'articulent
+
+- **L'organisation :**
+  - Au **Cevi** et chez les **Scouts**, chaque **section** a son propre plan de créneaux, géré par la **direction de section**.
+  - À la **Jubla**, chaque **section** a son plan, géré par la **direction de section**.
+  - Pour les **Associations**, chaque **association** ou comité dispose de son plan, géré par le **comité ou le bureau**.
+- Une organisation peut créer autant d'**événements** qu'elle le souhaite, par exemple « Fête d'été 2026 », « Camp sous tente » ou « Tournoi annuel ».
+- Un événement est composé de **créneaux horaires**, par exemple « Samedi 17h00 à 20h00 ».
+- Un créneau comporte un ou plusieurs **postes** avec des places dédiées, par exemple Grill 2, Bar 2, Caisse 1.
+- Le **CO** (comité d'organisation) planifie les créneaux d'un événement. La direction administre l'organisation dans son ensemble.
+
+Pour en savoir plus, consultez le [glossaire](/fr/wissen/glossar/).
+
+## Sur smartphone
+
+Le plan de créneaux a été conçu dès l'origine pour les smartphones. Une barre de navigation pratique en bas permet d'accéder aux **Événements**, à **Mes créneaux** et au **Compte**. Sur ordinateur, ces rubriques se trouvent dans la barre du haut.
+
+Vous pouvez ajouter la page de votre organisation à l'écran d'accueil de votre téléphone (« Ajouter à l'écran d'accueil » dans votre navigateur mobile). L'application s'ouvre alors en plein écran comme une application native, sans passer par l'App Store.
+
+## Sur ordinateur et au clavier
+
+Sur ordinateur, un champ de recherche rapide se trouve dans la barre de navigation. Le raccourci clavier <kbd>⌘K</kbd> (Mac) ou <kbd>Ctrl</kbd>+<kbd>K</kbd> (Windows) ouvre le [menu de commandes (palette de commandes)](/fr/wissen/befehlsmenue/) pour basculer sans souris entre événements, créneaux et bénévoles.
+
+## Par où commencer ?
+
+<CardGrid>
+  <LinkCard title="Se connecter" description="Connexion d'association (Cevi.DB / MiData / Jubla-DB), surnom ou e-mail : que choisir ?" href="/fr/start/anmelden/" />
+  <LinkCard title="S'inscrire à un créneau" description="Trouver un créneau, choisir son poste et valider son inscription." href="/fr/helfen/eintragen/" />
+  <LinkCard title="Planifier un événement" description="Pour le CO : passer d'un événement vide à un plan de bénévoles complet." href="/fr/ok/anlass-erstellen/" />
+  <LinkCard title="Configurer l'organisation" description="Créer une nouvelle section, groupe ou association et démarrer." href="/fr/abteilung/anlegen/" />
+</CardGrid>

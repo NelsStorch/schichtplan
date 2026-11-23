@@ -5,57 +5,117 @@ import ClipboardList from '@lucide/astro/icons/clipboard-list';
 import Tent from '@lucide/astro/icons/tent';
 import ArrowRight from '@lucide/astro/icons/arrow-right';
 
-const groups = [
-  {
-    key: 'helfer',
-    icon: HandHeart,
-    kicker: 'Ich helfe mit',
-    title: 'Helfer*innen',
-    text: 'Eltern, Leitende, Ehemalige: Schicht finden, eintragen, Kalender füllen.',
-    start: '/helfen/eintragen/',
-    links: [
-      { label: 'In eine Schicht eintragen', href: '/helfen/eintragen/' },
-      { label: 'Wieder austragen', href: '/helfen/austragen/' },
-      { label: 'Warum kann ich mich nicht eintragen?', href: '/helfen/nicht-freigeschaltet/' },
-      { label: 'Meine Schichten im Kalender', href: '/helfen/meine-schichten/' },
-    ],
-  },
-  {
-    key: 'ok',
-    icon: ClipboardList,
-    kicker: 'Ich plane einen Anlass',
-    title: 'OK',
-    text: 'Chilbi, Lager, Jubiläum: Schichten anlegen, Zugang regeln, Helfer*innen einteilen.',
-    start: '/ok/rollen/',
-    links: [
-      { label: 'Anlass erstellen', href: '/ok/anlass-erstellen/' },
-      { label: 'Schichten und Arbeiten planen', href: '/ok/schichten-planen/' },
-      { label: 'Wer darf sich eintragen?', href: '/ok/zugang/' },
-      { label: 'Helfende und Schicht-Soll', href: '/ok/helfer-pool/' },
-    ],
-  },
-  {
-    key: 'abteilung',
-    icon: Tent,
-    kicker: 'Ich leite die Organisation',
-    title: 'Leitung & Verwaltung',
-    text: 'Schichtplan für Abteilung, Schar oder Verein einrichten, Gruppen pflegen, Rollen verteilen.',
-    start: '/abteilung/anlegen/',
-    links: [
-      { label: 'Abteilung oder Verein anlegen', href: '/abteilung/anlegen/' },
-      { label: 'Stufen, Gruppen & Datenbank', href: '/abteilung/stufen/' },
-      { label: 'Personen und Rollen', href: '/abteilung/personen/' },
-      { label: 'Startseite nur für Mitglieder', href: '/abteilung/einstellungen/' },
-    ],
-  },
-];
+const locale = Astro.locals.starlightRoute.locale;
+const isFr = locale === 'fr';
+
+const groups = isFr
+  ? [
+      {
+        key: 'helfer',
+        icon: HandHeart,
+        kicker: 'Je donne un coup de main',
+        title: 'Bénévoles',
+        text: 'Parents, responsables, anciens : trouver un créneau, s’inscrire, remplir son calendrier.',
+        start: '/fr/helfen/eintragen/',
+        moreLabel: 'Tous les guides pour Bénévoles',
+        links: [
+          { label: 'S’inscrire à un créneau', href: '/fr/helfen/eintragen/' },
+          { label: 'Se désinscrire', href: '/fr/helfen/austragen/' },
+          { label: 'Pourquoi ne puis-je pas m’inscrire ?', href: '/fr/helfen/nicht-freigeschaltet/' },
+          { label: 'Mes créneaux dans le calendrier', href: '/fr/helfen/meine-schichten/' },
+        ],
+      },
+      {
+        key: 'ok',
+        icon: ClipboardList,
+        kicker: 'J’organise un événement',
+        title: 'Comité d’organisation',
+        text: 'Fête, camp, jubilé : créer des créneaux, gérer les accès, répartir les bénévoles.',
+        start: '/fr/ok/rollen/',
+        moreLabel: 'Tous les guides pour le Comité',
+        links: [
+          { label: 'Créer un événement', href: '/fr/ok/anlass-erstellen/' },
+          { label: 'Planifier les créneaux et postes', href: '/fr/ok/schichten-planen/' },
+          { label: 'Qui peut s’inscrire ?', href: '/fr/ok/zugang/' },
+          { label: 'Bénévoles et quotas', href: '/fr/ok/helfer-pool/' },
+        ],
+      },
+      {
+        key: 'abteilung',
+        icon: Tent,
+        kicker: 'Je dirige l’organisation',
+        title: 'Direction & Administration',
+        text: 'Configurer le plan pour votre section, groupe ou association, gérer les membres et rôles.',
+        start: '/fr/abteilung/anlegen/',
+        moreLabel: 'Tous les guides pour la Direction',
+        links: [
+          { label: 'Créer une section ou association', href: '/fr/abteilung/anlegen/' },
+          { label: 'Groupes, branches & base de données', href: '/fr/abteilung/stufen/' },
+          { label: 'Membres et rôles', href: '/fr/abteilung/personen/' },
+          { label: 'Accueil réservé aux membres', href: '/fr/abteilung/einstellungen/' },
+        ],
+      },
+    ]
+  : [
+      {
+        key: 'helfer',
+        icon: HandHeart,
+        kicker: 'Ich helfe mit',
+        title: 'Helfer*innen',
+        text: 'Eltern, Leitende, Ehemalige: Schicht finden, eintragen, Kalender füllen.',
+        start: '/helfen/eintragen/',
+        moreLabel: 'Alle Anleitungen für Helfer*innen',
+        links: [
+          { label: 'In eine Schicht eintragen', href: '/helfen/eintragen/' },
+          { label: 'Wieder austragen', href: '/helfen/austragen/' },
+          { label: 'Warum kann ich mich nicht eintragen?', href: '/helfen/nicht-freigeschaltet/' },
+          { label: 'Meine Schichten im Kalender', href: '/helfen/meine-schichten/' },
+        ],
+      },
+      {
+        key: 'ok',
+        icon: ClipboardList,
+        kicker: 'Ich plane einen Anlass',
+        title: 'OK',
+        text: 'Chilbi, Lager, Jubiläum: Schichten anlegen, Zugang regeln, Helfer*innen einteilen.',
+        start: '/ok/rollen/',
+        moreLabel: 'Alle Anleitungen für OK',
+        links: [
+          { label: 'Anlass erstellen', href: '/ok/anlass-erstellen/' },
+          { label: 'Schichten und Arbeiten planen', href: '/ok/schichten-planen/' },
+          { label: 'Wer darf sich eintragen?', href: '/ok/zugang/' },
+          { label: 'Helfende und Schicht-Soll', href: '/ok/helfer-pool/' },
+        ],
+      },
+      {
+        key: 'abteilung',
+        icon: Tent,
+        kicker: 'Ich leite die Organisation',
+        title: 'Leitung & Verwaltung',
+        text: 'Schichtplan für Abteilung, Schar oder Verein einrichten, Gruppen pflegen, Rollen verteilen.',
+        start: '/abteilung/anlegen/',
+        moreLabel: 'Alle Anleitungen für Leitung & Verwaltung',
+        links: [
+          { label: 'Abteilung oder Verein anlegen', href: '/abteilung/anlegen/' },
+          { label: 'Stufen, Gruppen & Datenbank', href: '/abteilung/stufen/' },
+          { label: 'Personen und Rollen', href: '/abteilung/personen/' },
+          { label: 'Startseite nur für Mitglieder', href: '/abteilung/einstellungen/' },
+        ],
+      },
+    ];
+
+const eyebrow = isFr ? 'Démarrage' : 'Einstieg';
+const heading = isFr ? 'Qui êtes-vous ?' : 'Wer bist du?';
+const sub = isFr
+  ? 'Choisissez votre rôle. Vous pouvez naviguer à tout moment via la recherche ou la barre latérale.'
+  : 'Wähle deine Rolle. Du kannst jederzeit über die Suche oder die Seitenleiste springen.';
 ---
 
 <section class="ag not-content" aria-labelledby="ag-title">
   <div class="ag-head">
-    <p class="ag-eyebrow">Einstieg</p>
-    <h2 id="ag-title">Wer bist du?</h2>
-    <p class="ag-sub">Wähle deine Rolle. Du kannst jederzeit über die Suche oder die Seitenleiste springen.</p>
+    <p class="ag-eyebrow">{eyebrow}</p>
+    <h2 id="ag-title">{heading}</h2>
+    <p class="ag-sub">{sub}</p>
   </div>
 
   <div class="ag-grid">
@@ -88,7 +148,7 @@ const groups = [
             </ol>
             <div class="ag-card-footer">
               <a href={g.start} class="ag-more-link">
-                <span>Alle Anleitungen für {g.title}</span>
+                <span>{g.moreLabel}</span>
                 <ArrowRight size={14} strokeWidth={2.2} aria-hidden="true" />
               </a>
             </div>

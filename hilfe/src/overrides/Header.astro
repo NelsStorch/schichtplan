@@ -2,8 +2,16 @@
 // Schwebende Glas-Pille wie auf cevi-schichtplan.ch: Titel, Suche, Link zur App, Hell/Dunkel.
 import Search from 'virtual:starlight/components/Search';
 import SiteTitle from 'virtual:starlight/components/SiteTitle';
+import LanguageSelect from 'virtual:starlight/components/LanguageSelect';
 import ThemeSelect from 'virtual:starlight/components/ThemeSelect';
 import ArrowUpRight from '@lucide/astro/icons/arrow-up-right';
+
+const locale = Astro.locals.starlightRoute.locale;
+const isFrench = locale === 'fr';
+const isItalian = locale === 'it';
+const isEnglish = locale === 'en';
+
+const appLabel = isFrench ? 'Vers le plan' : isItalian ? 'Al piano turni' : isEnglish ? 'To shift planner' : 'Zum Schichtplan';
 ---
 
 <div class="hx">
@@ -15,9 +23,10 @@ import ArrowUpRight from '@lucide/astro/icons/arrow-up-right';
   </div>
   <div class="hx-right print:hidden">
     <a class="hx-app" href="https://cevi-schichtplan.ch" data-app-link>
-      <span data-app-label>Zum Schichtplan</span>
+      <span data-app-label>{appLabel}</span>
       <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" />
     </a>
+    <LanguageSelect />
     <ThemeSelect />
   </div>
 </div>
@@ -74,10 +83,14 @@ import ArrowUpRight from '@lucide/astro/icons/arrow-up-right';
       });
       const reserved = new Set(['www', 'login', 'dev', 'staging', 'admin', 'api', 'hilfe', 'status', 'app']);
       document.querySelectorAll('[data-app-label]').forEach((span) => {
+        const isFr = window.location.pathname.startsWith('/fr');
+        const isIt = window.location.pathname.startsWith('/it');
+        const isEn = window.location.pathname.startsWith('/en');
+
         if (sub && !reserved.has(sub.toLowerCase())) {
-          span.textContent = `Zurück zu ${sub}`;
+          span.textContent = isFr ? `Retour à ${sub}` : isIt ? `Torna a ${sub}` : isEn ? `Back to ${sub}` : `Zurück zu ${sub}`;
         } else {
-          span.textContent = 'Zurück zum Schichtplan';
+          span.textContent = isFr ? 'Retour au plan' : isIt ? 'Torna al piano' : isEn ? 'Back to planner' : 'Zurück zum Schichtplan';
         }
       });
     }

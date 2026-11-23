@@ -1,0 +1,117 @@
+---
+title: Connexion
+description: Des modes de connexion adaptés à chaque organisation. Très rapide avec le compte d'association, par e-mail pour les associations, et même sans mot de passe pour les bénévoles d'un jour.
+audience: [helfer, ok, abteilung]
+---
+
+import { Tabs, TabItem, Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+
+Pour consulter un plan de créneaux public, aucun compte n'est requis dans la plupart des cas. Pour **s'inscrire**, une simple identification suffit. Pour les bénévoles, le prénom ou surnom et la date de naissance sont souvent suffisants – sans mot de passe.
+
+La connexion s'effectue toujours sur le domaine central de votre organisation (`login.cevi-schichtplan.ch`, `login.pfadi-schichtplan.ch`, `login.jubla-schichtplan.ch` ou `login.vereins-schichtplan.ch`), quelle que soit votre section ou association d'origine.
+
+## Quelle méthode me convient ?
+
+| Vous êtes … | Choisissez |
+| --- | --- |
+| Responsable ou membre au **Cevi**, chez les **Scouts** ou à la **Jubla** | **Connexion d'association** (Cevi.DB, PBS MiData ou Jubla-DB) |
+| Membre, comité ou bénévole régulier d'une **association** | **Par e-mail et mot de passe** |
+| Parent, ancien membre, ami, bénévole occasionnel | **Avec surnom / prénom** (via la page de l'organisation) |
+| Membre du CO ou responsable d'une association | **Par e-mail et mot de passe** |
+
+## Comment se connecter
+
+<Tabs>
+  <TabItem label="Cevi / Scouts / Jubla (Compte d'association)">
+    Les responsables et membres des mouvements de jeunesse utilisent leur compte d'association habituel (Hitobito). Le nom, les rôles et les groupes sont automatiquement reconnus :
+
+    - **Cevi :** Connexion via `db.cevi.ch`
+    - **Scouts :** Connexion via `db.scout.ch` (PBS MiData)
+    - **Jubla :** Connexion via `db.jubla.ch` (Jubla-Datenbank)
+
+    <Steps>
+    1. Sur la page de connexion, cliquez sur le bouton de votre fédération (par ex. <Btn variant="primary">Se connecter avec Cevi.DB</Btn> ou <Btn variant="primary">Se connecter avec PBS MiData</Btn>).
+    2. Vous êtes redirigé vers la base de données officielle de votre organisation. Connectez-vous avec vos identifiants habituels.
+    3. Confirmez que le plan de créneaux peut lire vos informations de base (nom, e-mail, rôles).
+    4. Vous êtes automatiquement redirigé vers le plan de créneaux, immédiatement connecté.
+    </Steps>
+
+    :::note[Déjà un compte par e-mail et mot de passe ?]
+    Si votre profil d'association utilise la même adresse e-mail qu'un compte créé précédemment, le système vous demandera votre **mot de passe** lors de la première connexion d'association. Les deux modes d'accès sont alors fusionnés et vos créneaux et droits sont intégralement conservés.
+    :::
+
+    :::tip[Accès de secours en cas de panne Hitobito]
+    Si la base de données d'association est momentanément inaccessible pour maintenance, vous pouvez toujours vous connecter :
+    - Définissez par précaution un **mot de passe de secours** sous [Profil](/fr/helfen/konto/).
+    - Si vous n'avez pas encore défini de mot de passe, cliquez sur **Mot de passe oublié ?** sur la page de connexion et saisissez l'adresse e-mail de votre compte. Vous recevrez un lien pour créer votre mot de passe immédiatement.
+    :::
+
+    Le plan de créneaux récupère depuis la base de données le nom de scout/cevi/totem, le prénom, le nom, la date de naissance, ainsi que votre section et vos branches. Votre adresse postale n'est pas transmise pour des raisons de protection des données.
+  </TabItem>
+
+  <TabItem label="Pour les associations (E-mail & mot de passe)">
+    Pour les associations sportives, comités de fêtes de village et associations locales, la connexion se fait directement avec une adresse e-mail et un mot de passe :
+
+    <Steps>
+    1. Ouvrez la page de votre association ou `login.vereins-schichtplan.ch`.
+    2. Cliquez sur <Btn>Avec e-mail et mot de passe</Btn>.
+    3. Pas encore de compte ? Cliquez sur **Créer un compte** et renseignez votre prénom, nom, e-mail et un mot de passe d'au moins 8 caractères.
+    4. Vous recevez un e-mail de confirmation. Cliquez sur le lien pour activer votre compte.
+    5. Connectez-vous ensuite pour vous inscrire à des créneaux ou administrer votre association.
+    </Steps>
+
+    :::tip[Déjà un compte Cevi, Scouts ou Jubla ?]
+    Si vous avez déjà un compte via **Cevi.DB**, **PBS MiData** ou **Jubla-DB**, inutile de créer un nouveau compte : cliquez sur **Mot de passe oublié ?**, renseignez la même adresse e-mail et définissez un mot de passe. Vous pourrez alors l'utiliser pour vous connecter à l'association.
+    :::
+
+    ### Mot de passe oublié ou réinitialisation
+
+    Si vous avez oublié votre mot de passe, réinitialisez-le à tout moment :
+
+    <Steps>
+    1. Cliquez sur **Mot de passe oublié ?** sous le champ de saisie.
+    2. Entrez votre adresse e-mail et cliquez sur <Btn>Envoyer le lien</Btn>.
+    3. Ouvrez le lien reçu par e-mail (valable 2 heures) et choisissez un nouveau mot de passe.
+    4. Connectez-vous avec ce nouveau mot de passe.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Sans mot de passe (Avec surnom / prénom)">
+    Pour les bénévoles occasionnels, pâtissiers d'un jour, parents ou invités, la connexion **sans mot de passe** est la solution la plus simple. Elle est accessible lorsque vous arrivez **par le lien de votre organisation** (par ex. `tournoi.vereins-schichtplan.ch` ou `illnau.cevi-schichtplan.ch`) :
+
+    <Steps>
+    1. Sur la page de connexion, cliquez sur <Btn>Avec surnom</Btn> (ou nom Cevi / totem scout / nom de responsable).
+    2. Saisissez votre **surnom** ou votre **prénom**.
+    3. Saisissez votre **date de naissance**. Associée à votre nom, elle constitue votre clé personnelle sans aucun mot de passe.
+    4. Cliquez sur <Btn variant="primary">Continuer</Btn>. Si le système vous connaît déjà, vous êtes connecté instantanément.
+    5. S'il s'agit de votre première visite, vérifiez vos informations et cliquez sur <Btn variant="primary">Créer le profil et continuer</Btn>.
+    </Steps>
+
+    :::caution[Pas de protection par mot de passe]
+    Un profil sans mot de passe est destiné aux coups de main spontanés : toute personne connaissant votre nom et date de naissance peut consulter vos créneaux. Pour les fonctions au sein du CO ou du comité, créez un compte protégé par mot de passe ou via la base de données de l'association.
+    :::
+
+    :::tip[Homonymes dans l'organisation ?]
+    La date de naissance permet de différencier sans ambiguïté les personnes portant le même prénom.
+    :::
+  </TabItem>
+</Tabs>
+
+## Où arrive-t-on après la connexion ?
+
+Si vous venez d'un événement précis, le système vous y ramène directement une fois connecté. Si vous ouvrez la page de connexion directement, vous arrivez sur la page d'accueil de votre organisation.
+
+Lors de la première connexion, le système vous demande [à quelle organisation vous appartenez](/fr/start/abteilung-und-stufen/). Avec un compte d'association, cette information est déjà préremplie.
+
+## Se déconnecter
+
+Sur smartphone, appuyez en bas à droite sur **Compte** (sur ordinateur, en haut à droite sur votre nom) et choisissez <Btn variant="ghost">Déconnexion</Btn>. Vous serez déconnecté en toute sécurité.
+
+## Questions fréquentes et dépannage
+
+- **« La connexion d'association est momentanément indisponible »** : Il s'agit généralement d'une brève interruption de la base de données externe. Veuillez réessayer dans quelques instants.
+- **« E-mail ou mot de passe incorrect »** : Vérifiez les majuscules et minuscules ou utilisez **Mot de passe oublié ?**.
+- **« Veuillez confirmer votre adresse e-mail »** : Vérifiez votre boîte de réception et le dossier des courriers indésirables.
+- **Le bouton « Avec surnom » n'apparaît pas** : La connexion sans mot de passe n'existe que sur le sous-domaine spécifique de votre organisation (ex. `illnau.cevi-schichtplan.ch`), pas sur le portail de connexion global.
+- **« Trop de tentatives »** : Après plusieurs saisies incorrectes, l'accès est temporairement bloqué pendant quelques minutes pour protéger le compte.

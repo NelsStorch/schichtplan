@@ -1,0 +1,13 @@
+{
+  "search.label": "Search",
+  "pagefind.clear_search": "Clear",
+  "pagefind.load_more": "Load more results",
+  "pagefind.search_label": "Search help",
+  "pagefind.filters_label": "Filters",
+  "pagefind.zero_results": "No results found for [SEARCH_TERM]. Try another keyword, e.g. \"shift\" or \"access\".",
+  "pagefind.many_results": "[COUNT] results for [SEARCH_TERM]",
+  "pagefind.one_result": "1 result for [SEARCH_TERM]",
+  "pagefind.alt_search": "No results found for [SEARCH_TERM]. Results for [DIFFERENT_TERM]:",
+  "pagefind.search_suggestion": "No results found for [SEARCH_TERM]. Did you mean:",
+  "pagefind.searching": "Searching for [SEARCH_TERM] …"
+}

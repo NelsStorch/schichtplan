@@ -1,0 +1,56 @@
+---
+title: Mes créneaux et calendrier
+description: Tous vos engagements dans toutes les sections sur une seule page, avec abonnement calendrier en direct (Webcal) et export .ics.
+audience: [helfer]
+---
+
+import Btn from '../../../../components/Btn.astro';
+
+Dans la barre du bas sur mobile (ou du haut sur ordinateur), vous trouverez **Mes créneaux**. Cette page regroupe tous vos engagements, y compris vos créneaux auprès d'autres sections ou associations.
+
+## Ce que vous y trouvez
+
+- **Prochain créneau** : votre prochain créneau mis en valeur tout en haut avec l'indication « aujourd'hui », « demain » ou « dans 5 jours », ainsi qu'un **briefing d'engagement** compact.
+- **Briefing d'engagement (disponible aussi hors ligne)** : pour votre prochain créneau (et pour chaque créneau en cliquant sur *« Briefing d'engagement »*), vous voyez immédiatement :
+  - Le **responsable de créneau ou de journée** et le **contact de l'événement** avec des boutons directs pour **Appeler** ou envoyer un **E-mail**.
+  - **Votre équipe** : qui travaille avec vous sur ce créneau et combien de postes sont pourvus.
+  - **Infos & lieu de rendez-vous** : toutes les consignes essentielles en un coup d'œil – même en mode avion ou sans réseau.
+- **Indicateur de pauses et enchaînements** : si vous avez plusieurs créneaux le même jour, la chronologie affiche automatiquement votre **temps de pause** (`☕ Pause entre deux`), un **enchaînement direct** (`⚡ Enchaînement direct`) ou une courte **passation de relais**.
+- **À venir** : tous vos prochains créneaux sous forme de frise chronologique classée par jour.
+- **Responsabilité & direction** : si vous êtes désigné responsable de créneau ou de journée, un badge vous donne un accès direct à la planification.
+- **Terminé** : vos créneaux passés, légèrement estompés.
+
+Un clic sur le nom de l'événement vous ramène directement à son plan complet.
+
+## Abonnement calendrier en direct (Synchronisation automatique)
+
+Grâce à l'abonnement calendrier en direct, vos créneaux restent toujours à jour dans votre calendrier habituel sans devoir les saisir à la main.
+
+La carte en haut de la page s'adapte automatiquement à votre appareil :
+
+- **Google Calendar (Idéal sur Android, PC & Web)** :
+  - <Btn>S'abonner dans Google Calendar</Btn> : Ouvre directement Google Calendar avec votre lien personnel. Cliquez sur *« Ajouter »* pour valider en un clic.
+  - Ou manuellement : copiez le lien dans la boîte de dialogue, ouvrez Google Calendar, cliquez sur **+** à côté de *« Autres agendas »* ➜ *« À partir de l'URL »* et collez le lien.
+- **Apple Calendar (iPhone, iPad, Mac)** :
+  - <Btn>S'abonner dans Apple Calendar</Btn> : Ouvre l'application Calendrier native d'Apple. Validez avec *« S'abonner »*.
+- **Microsoft Outlook & 365** :
+  - Compatible avec l'abonnement en un clic pour Outlook Web ainsi qu'avec l'intégration Webcal dans Outlook Desktop.
+- **Boîte de dialogue « Où est votre calendrier ? »** :
+  - Cliquez sur <Btn variant="ghost">Où est votre calendrier ?</Btn> pour voir toutes les options détaillées, copier l'URL pour d'autres logiciels (comme Thunderbird) ou réinitialiser le lien d'abonnement.
+- **Mise à jour automatique** : dès que vous vous inscrivez à un nouveau créneau, qu'un horaire change ou que vous vous désinscrivez, votre calendrier se met à jour en arrière-plan.
+
+## Exportation ponctuelle (.ics)
+
+Si vous préférez ne pas avoir d'abonnement synchronisé mais simplement ajouter des rendez-vous fixes à votre calendrier :
+
+- <Btn>Google Calendar</Btn> sur un créneau : ouvre Google Calendar prérempli pour enregistrer l'entrée.
+- <Btn variant="ghost">.ics</Btn> sur un créneau : télécharge un fichier calendrier unique (`.ics`) pour ce créneau.
+- <Btn variant="ghost">Tout exporter en .ics</Btn> sous « À venir » : télécharge tous vos créneaux futurs dans un seul fichier.
+
+:::note[Les fichiers statiques ne se mettent pas à jour]
+Si vous choisissez l'exportation de fichier (`.ics`), il s'agit d'une image fixe. Les modifications ultérieures ne seront pas répercutées automatiquement. Privilégiez l'abonnement en direct pour un suivi automatique.
+:::
+
+## Également sur le portail principal
+
+Sur `cevi-schichtplan.ch/profil`, sous l'onglet **Aperçu**, vous retrouvez vos prochains créneaux ainsi que les options d'abonnement au calendrier en 1 clic.

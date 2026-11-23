@@ -103,6 +103,13 @@
     applyThemeVariables();
     applyFavicon();
 
+    const isFr = window.location.pathname.startsWith('/fr');
+    const isIt = window.location.pathname.startsWith('/it');
+    const isEn = window.location.pathname.startsWith('/en');
+    const privacyPath = isFr ? '/fr/protection-des-donnees' : isIt ? '/it/protezione-dei-dati' : isEn ? '/en/privacy' : '/datenschutz';
+    const termsPath = isFr ? '/fr/conditions-utilisation' : isIt ? '/it/condizioni-di-utilizzo' : isEn ? '/en/terms' : '/nutzungsbedingungen';
+    const imprintPath = isFr ? '/fr/mentions-legales' : isIt ? '/it/colophon' : isEn ? '/en/imprint' : '/impressum';
+
     // Logo & Titel im Header
     document.querySelectorAll('[data-org-logo]').forEach((img) => {
       img.setAttribute('src', org.logo);
@@ -114,7 +121,8 @@
     });
 
     document.querySelectorAll('[data-org-title-link]').forEach((el) => {
-      el.setAttribute('aria-label', `${org.name} Hilfe, Startseite`);
+      const titleLabel = isFr ? `${org.name} Aide, page d’accueil` : isIt ? `${org.name} Guida, pagina iniziale` : isEn ? `${org.name} Help, home` : `${org.name} Hilfe, Startseite`;
+      el.setAttribute('aria-label', titleLabel);
     });
 
     // App-Links & Ruecksprung
@@ -128,7 +136,8 @@
     // Footer-Elemente
     document.querySelectorAll('[data-footer-copyright]').forEach((el) => {
       const year = new Date().getFullYear();
-      el.innerHTML = `&copy; ${year} ${org.name} &middot; ehrenamtlich &amp; Open Source${org.notice ? ' &middot; ' + org.notice : ''}`;
+      const volunteerText = isFr ? 'bénévolat & Open Source' : isIt ? 'volontariato & Open Source' : isEn ? 'volunteer & Open Source' : 'ehrenamtlich & Open Source';
+      el.innerHTML = `&copy; ${year} ${org.name} &middot; ${volunteerText}${org.notice ? ' &middot; ' + org.notice : ''}`;
     });
 
     document.querySelectorAll('[data-footer-app-domain]').forEach((a) => {
@@ -145,15 +154,27 @@
     });
 
     document.querySelectorAll('[data-footer-privacy-domain]').forEach((a) => {
-      a.setAttribute('href', `https://${org.domain}/datenschutz`);
+      a.setAttribute('href', `https://${org.domain}${privacyPath}`);
+      if (isFr) a.textContent = 'Protection des données';
+      else if (isIt) a.textContent = 'Protezione dei dati';
+      else if (isEn) a.textContent = 'Privacy';
+      else a.textContent = 'Datenschutz';
     });
 
     document.querySelectorAll('[data-footer-terms-domain]').forEach((a) => {
-      a.setAttribute('href', `https://${org.domain}/nutzungsbedingungen`);
+      a.setAttribute('href', `https://${org.domain}${termsPath}`);
+      if (isFr) a.textContent = 'Conditions d’utilisation';
+      else if (isIt) a.textContent = 'Condizioni';
+      else if (isEn) a.textContent = 'Terms';
+      else a.textContent = 'Nutzungsbedingungen';
     });
 
     document.querySelectorAll('[data-footer-imprint-domain]').forEach((a) => {
-      a.setAttribute('href', `https://${org.domain}/impressum`);
+      a.setAttribute('href', `https://${org.domain}${imprintPath}`);
+      if (isFr) a.textContent = 'Mentions légales';
+      else if (isIt) a.textContent = 'Colophon';
+      else if (isEn) a.textContent = 'Imprint';
+      else a.textContent = 'Impressum';
     });
 
     // Seitentitel im Tab aktualisieren (falls noetig)

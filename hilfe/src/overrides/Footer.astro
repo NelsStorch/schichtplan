@@ -7,6 +7,41 @@ import ThumbsDown from '@lucide/astro/icons/thumbs-down';
 import UsageStats from '../components/UsageStats.astro';
 
 const isSplash = Astro.locals.starlightRoute.entry.data.template === 'splash';
+const locale = Astro.locals.starlightRoute.locale;
+const isFrench = locale === 'fr';
+const isItalian = locale === 'it';
+const isEnglish = locale === 'en';
+
+const feedbackQuestion = isFrench
+  ? 'Ce guide vous a-t-il été utile ?'
+  : isItalian
+    ? 'Questa guida è stata utile?'
+    : isEnglish
+      ? 'Was this guide helpful?'
+      : 'War diese Anleitung hilfreich?';
+
+const yesLabel = isFrench ? 'Oui' : isItalian ? 'Sì' : isEnglish ? 'Yes' : 'Ja';
+const noLabel = isFrench ? 'Non' : isItalian ? 'No' : isEnglish ? 'No' : 'Nein';
+const doneLabel = isFrench
+  ? 'Merci pour votre retour !'
+  : isItalian
+    ? 'Grazie per il tuo feedback!'
+    : isEnglish
+      ? 'Thank you for your feedback!'
+      : 'Danke für deine Rückmeldung!';
+
+const helpTitle = isFrench
+  ? 'Vous n’avez pas trouvé ce que vous cherchiez ?'
+  : isItalian
+    ? 'Non hai trovato quello che cercavi?'
+    : isEnglish
+      ? 'Didn’t find what you were looking for?'
+      : 'Nicht gefunden, was du suchst?';
+
+const contactHref = isFrench ? '/fr/wissen/kontakt/' : isItalian ? '/it/wissen/kontakt/' : isEnglish ? '/en/wissen/kontakt/' : '/wissen/kontakt/';
+const privacyHref = isFrench ? 'https://cevi-schichtplan.ch/fr/protection-des-donnees' : isItalian ? 'https://cevi-schichtplan.ch/it/protezione-dei-dati' : isEnglish ? 'https://cevi-schichtplan.ch/en/privacy' : 'https://cevi-schichtplan.ch/datenschutz';
+const termsHref = isFrench ? 'https://cevi-schichtplan.ch/fr/conditions-utilisation' : isItalian ? 'https://cevi-schichtplan.ch/it/condizioni-di-utilizzo' : isEnglish ? 'https://cevi-schichtplan.ch/en/terms' : 'https://cevi-schichtplan.ch/nutzungsbedingungen';
+const imprintHref = isFrench ? 'https://cevi-schichtplan.ch/fr/mentions-legales' : isItalian ? 'https://cevi-schichtplan.ch/it/colophon' : isEnglish ? 'https://cevi-schichtplan.ch/en/imprint' : 'https://cevi-schichtplan.ch/impressum';
 ---
 
 <footer class="ft">
@@ -15,19 +50,19 @@ const isSplash = Astro.locals.starlightRoute.entry.data.template === 'splash';
   {
     !isSplash && (
       <div class="ft-feedback not-content print:hidden" data-feedback-wrap>
-        <span class="ft-feedback-label">War diese Anleitung hilfreich?</span>
+        <span class="ft-feedback-label">{feedbackQuestion}</span>
         <div class="ft-feedback-actions" data-feedback-actions>
-          <button type="button" class="ft-feedback-btn" data-feedback-val="yes" aria-label="Ja, diese Anleitung war hilfreich">
+          <button type="button" class="ft-feedback-btn" data-feedback-val="yes" aria-label={yesLabel}>
             <ThumbsUp size={15} strokeWidth={2.2} aria-hidden="true" />
-            <span>Ja</span>
+            <span>{yesLabel}</span>
           </button>
-          <button type="button" class="ft-feedback-btn" data-feedback-val="no" aria-label="Nein, diese Anleitung war nicht hilfreich">
+          <button type="button" class="ft-feedback-btn" data-feedback-val="no" aria-label={noLabel}>
             <ThumbsDown size={15} strokeWidth={2.2} aria-hidden="true" />
-            <span>Nein</span>
+            <span>{noLabel}</span>
           </button>
         </div>
         <p class="ft-feedback-done" data-feedback-done hidden>
-          Danke für deine Rückmeldung!
+          {doneLabel}
         </p>
       </div>
     )
@@ -36,29 +71,39 @@ const isSplash = Astro.locals.starlightRoute.entry.data.template === 'splash';
   <div class="ft-help print:hidden">
     <span class="ft-icon" aria-hidden="true"><LifeBuoy size={20} strokeWidth={1.9} /></span>
     <div class="ft-copy">
-      <p class="ft-title">Nicht gefunden, was du suchst?</p>
+      <p class="ft-title">{helpTitle}</p>
       <p class="ft-text">
-        Frag zuerst das OK deines Anlasses oder die Leitung deiner Abteilung, Schar bzw. deines Vereins. Fehler im Schichtplan selbst meldest du
-        über <a href="/wissen/kontakt/">Kontakt</a>.
+        {isFrench ? (
+          <>
+            Demandez d'abord au CO de votre événement ou à la direction de votre groupe/section. Les erreurs dans le plan de créneaux peuvent être signalées via <a href={contactHref}>Contact</a>.
+          </>
+        ) : isItalian ? (
+          <>
+            Chiedi prima al comitato del tuo evento o alla direzione del tuo gruppo/sezione. Gli errori nel piano possono essere segnalati tramite <a href={contactHref}>Contatto</a>.
+          </>
+        ) : isEnglish ? (
+          <>
+            First ask your event organizers or group leaders. Report bugs in the shift planner via <a href={contactHref}>Contact</a>.
+          </>
+        ) : (
+          <>
+            Frag zuerst das OK deines Anlasses oder die Leitung deiner Abteilung, Schar bzw. deines Vereins. Fehler im Schichtplan selbst meldest du
+            über <a href={contactHref}>Kontakt</a>.
+          </>
+        )}
       </p>
     </div>
   </div>
 
   <div class="ft-bottom">
-    {/*
-      Hinweis: Die cevi-schichtplan.ch-URLs dienen nur als statischer Build-Fallback für Astro.
-      Zur Laufzeit werden alle Links pro Verband dynamisch angepasst:
-      1. Nginx sub_filter (hilfe/nginx.conf): Ersetzt https://*.cevi-schichtplan.ch direkt im HTTP-Stream durch $org_root.
-      2. Client-Branding (branding.js): Setzt data-footer-*-domain im Browser auf https://status.<org.domain> und https://<org.domain>/datenschutz (bzw. /nutzungsbedingungen, /impressum).
-    */}
     <span data-footer-copyright>© {new Date().getFullYear()} Cevi Schichtplan · ehrenamtlich &amp; Open Source</span>
     <nav aria-label="Weitere Seiten des Schichtplans">
       <a href="https://cevi-schichtplan.ch" data-app-link data-footer-app-domain>cevi-schichtplan.ch</a>
       <a href="https://login.cevi-schichtplan.ch" data-footer-login-domain>Login</a>
       <a href="https://status.cevi-schichtplan.ch" data-footer-status-domain>Status</a>
-      <a href="https://cevi-schichtplan.ch/datenschutz" data-footer-privacy-domain>Datenschutz</a>
-      <a href="https://cevi-schichtplan.ch/nutzungsbedingungen" data-footer-terms-domain>Nutzungsbedingungen</a>
-      <a href="https://cevi-schichtplan.ch/impressum" data-footer-imprint-domain>Impressum</a>
+      <a href={privacyHref} data-footer-privacy-domain>{isFrench ? 'Protection des données' : isItalian ? 'Protezione dei dati' : isEnglish ? 'Privacy' : 'Datenschutz'}</a>
+      <a href={termsHref} data-footer-terms-domain>{isFrench ? 'Conditions d’utilisation' : isItalian ? 'Condizioni' : isEnglish ? 'Terms' : 'Nutzungsbedingungen'}</a>
+      <a href={imprintHref} data-footer-imprint-domain>{isFrench ? 'Mentions légales' : isItalian ? 'Colophon' : isEnglish ? 'Imprint' : 'Impressum'}</a>
       <a href="https://github.com/NelsStorch/schichtplan_v2" rel="noopener">GitHub</a>
     </nav>
   </div>

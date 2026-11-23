@@ -22,8 +22,12 @@ export default defineConfig({
       title: 'Cevi Schichtplan Hilfe',
       description: 'Anleitungen für Helfer*innen, OK und Abteilungsleitung: eintragen, Schichten planen, Zugang regeln.',
       defaultLocale: 'root',
-      // «de» statt «de-CH»: nur so findet die Suche (Pagefind) ihre deutschen Texte
-      locales: { root: { label: 'Deutsch', lang: 'de' } },
+      locales: {
+        root: { label: 'Deutsch', lang: 'de' },
+        fr: { label: 'Français', lang: 'fr' },
+        it: { label: 'Italiano', lang: 'it' },
+        en: { label: 'English', lang: 'en' },
+      },
       favicon: '/favicon.ico',
       credits: false,
       lastUpdated: false,
@@ -54,10 +58,20 @@ export default defineConfig({
       sidebar: [
         {
           label: 'Erste Schritte',
+          translations: {
+            fr: 'Premiers pas',
+            it: 'Primi passi',
+            en: 'Getting started',
+          },
           items: ['start/ueberblick', 'start/anmelden', 'start/abteilung-und-stufen'],
         },
         {
           label: 'Mithelfen',
+          translations: {
+            fr: 'Participer',
+            it: 'Partecipare',
+            en: 'Volunteering',
+          },
           items: [
             'helfen/eintragen',
             'helfen/angaben-und-fragen',
@@ -72,10 +86,20 @@ export default defineConfig({
         },
         {
           label: 'Im OK',
+          translations: {
+            fr: 'Dans le comité',
+            it: 'Nel comitato',
+            en: 'Organizing',
+          },
           items: [
             'ok/ok-bereich',
             {
               label: 'Planung & Schichten',
+              translations: {
+                fr: 'Planification & créneaux',
+                it: 'Pianificazione & turni',
+                en: 'Planning & shifts',
+              },
               collapsed: false,
               items: [
                 'ok/anlass-erstellen',
@@ -87,6 +111,11 @@ export default defineConfig({
             },
             {
               label: 'Helfende & Zugang',
+              translations: {
+                fr: 'Bénévoles & accès',
+                it: 'Volontari & accesso',
+                en: 'Volunteers & access',
+              },
               collapsed: false,
               items: [
                 'ok/zugang',
@@ -99,6 +128,11 @@ export default defineConfig({
             },
             {
               label: 'Am Anlass & Auswertung',
+              translations: {
+                fr: 'Pendant la manifestation & bilan',
+                it: "Durante l'evento & statistiche",
+                en: 'Event & evaluation',
+              },
               collapsed: false,
               items: [
                 'ok/anwesenheit',
@@ -111,6 +145,11 @@ export default defineConfig({
         },
         {
           label: 'Organisation & Leitung',
+          translations: {
+            fr: 'Organisation & direction',
+            it: 'Organizzazione & direzione',
+            en: 'Organization & leadership',
+          },
           items: [
             'abteilung/anlegen',
             'abteilung/einstellungen',
@@ -124,6 +163,11 @@ export default defineConfig({
         },
         {
           label: 'Nachschlagen',
+          translations: {
+            fr: 'Référence',
+            it: 'Consultazione',
+            en: 'Reference',
+          },
           items: ['wissen/befehlsmenue', 'wissen/faq', 'wissen/wer-sieht-was', 'wissen/glossar', 'wissen/kontakt'],
         },
       ],

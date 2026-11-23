@@ -4,32 +4,59 @@ import LogIn from '@lucide/astro/icons/log-in';
 import CalendarDays from '@lucide/astro/icons/calendar-days';
 import Ticket from '@lucide/astro/icons/ticket';
 
-const steps = [
-  {
-    icon: LogIn,
-    title: 'Anmelden',
-    text: 'Mit Verbands-Login (Cevi.DB / MiData / Jubla-DB), mit E-Mail oder direkt mit Spitzname und Geburtsdatum.',
-    href: '/start/anmelden/',
-  },
-  {
-    icon: CalendarDays,
-    title: 'Anlass öffnen',
-    text: 'Den Link vom OK antippen oder auf der Seite deiner Abteilung, Schar bzw. deines Vereins auswählen.',
-    href: '/helfen/eintragen/',
-  },
-  {
-    icon: Ticket,
-    title: 'Eintragen',
-    text: 'Schicht mit freiem Platz wählen, «Eintragen» tippen, fertig.',
-    href: '/helfen/meine-schichten/',
-  },
-];
+const locale = Astro.locals.starlightRoute.locale;
+const isFr = locale === 'fr';
+
+const steps = isFr
+  ? [
+      {
+        icon: LogIn,
+        title: 'Connexion',
+        text: 'Avec le compte d’association (Cevi.DB / MiData / Jubla-DB), par e-mail ou avec surnom et date de naissance.',
+        href: '/fr/start/anmelden/',
+      },
+      {
+        icon: CalendarDays,
+        title: 'Ouvrir l’événement',
+        text: 'Cliquer sur le lien du CO ou choisir sur la page de votre groupe, section ou association.',
+        href: '/fr/helfen/eintragen/',
+      },
+      {
+        icon: Ticket,
+        title: 'S’inscrire',
+        text: 'Choisir un créneau libre, cliquer sur « S’inscrire », et c’est prêt.',
+        href: '/fr/helfen/meine-schichten/',
+      },
+    ]
+  : [
+      {
+        icon: LogIn,
+        title: 'Anmelden',
+        text: 'Mit Verbands-Login (Cevi.DB / MiData / Jubla-DB), mit E-Mail oder direkt mit Spitzname und Geburtsdatum.',
+        href: '/start/anmelden/',
+      },
+      {
+        icon: CalendarDays,
+        title: 'Anlass öffnen',
+        text: 'Den Link vom OK antippen oder auf der Seite deiner Abteilung, Schar bzw. deines Vereins auswählen.',
+        href: '/helfen/eintragen/',
+      },
+      {
+        icon: Ticket,
+        title: 'Eintragen',
+        text: 'Schicht mit freiem Platz wählen, «Eintragen» tippen, fertig.',
+        href: '/helfen/meine-schichten/',
+      },
+    ];
+
+const eyebrow = isFr ? 'Première fois ici ?' : 'Zum ersten Mal hier?';
+const heading = isFr ? 'Votre premier créneau en trois étapes' : 'In drei Schritten zur ersten Schicht';
 ---
 
 <section class="qs not-content" aria-labelledby="qs-title">
   <div class="qs-head">
-    <p class="qs-eyebrow">Zum ersten Mal hier?</p>
-    <h2 id="qs-title">In drei Schritten zur ersten Schicht</h2>
+    <p class="qs-eyebrow">{eyebrow}</p>
+    <h2 id="qs-title">{heading}</h2>
   </div>
   <ol class="qs-steps">
     {

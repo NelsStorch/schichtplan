@@ -1,0 +1,54 @@
+---
+title: Chercher un remplaçant et reprendre un créneau
+description: Un imprévu ? Proposez votre créneau, une autre personne peut le reprendre en un clic.
+audience: [helfer]
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import Path from '../../../../components/Path.astro';
+import ShiftSwapFlow from '../../../../components/ShiftSwapFlow.astro';
+
+Si vous ne pouvez pas assurer un créneau, vous n'avez pas nécessairement besoin de vous désinscrire directement. Grâce à la bourse d'échange intégrée **Chercher un remplaçant**, vous pouvez proposer votre créneau à d'autres personnes. Toute personne autorisée à participer à l'événement peut reprendre votre créneau en un clic.
+
+L'échange fonctionne même lorsque le [verrouillage des désinscriptions](/fr/helfen/austragen/#bon-à-savoir) est actif.
+
+<ShiftSwapFlow />
+
+## Chercher un remplaçant
+
+<Path steps={['Mes créneaux', 'À venir', 'Chercher un remplaçant']} />
+
+<Steps>
+1. Rendez-vous dans **Mes créneaux** et repérez le créneau sous **À venir**. Vous pouvez aussi ouvrir le créneau directement dans l'événement.
+2. Cliquez sur <Btn>Chercher un remplaçant</Btn>.
+3. Vous pouvez indiquer un court motif facultatif, par exemple « Absent en vacances ce jour-là ».
+4. Confirmez avec <Btn>Chercher un remplaçant</Btn>.
+</Steps>
+
+Le motif est visible par toutes les personnes pouvant voir les noms sur le plan. N'y inscrivez donc aucune donnée personnelle sensible (par ex. maladie).
+
+## Que se passe-t-il ensuite ?
+
+- **Vous restez inscrit** jusqu'à ce que quelqu'un reprenne votre place. Le créneau reste sous votre responsabilité jusque-là.
+- Dans le plan, le créneau affiche la mention **Remplacement cherché**, avec votre prénom et le motif éventuel.
+- **Dès qu'une personne reprend le créneau**, vous êtes automatiquement désinscrit et averti par e-mail (votre compte doit disposer d'une adresse e-mail vérifiée).
+- Si personne ne reprend le créneau, vous demeurez inscrit. Pensez à avertir le CO à temps.
+- Vos disponibilités ont changé ? Cliquez sur <Btn variant="secondary">Annuler la recherche</Btn> (ou <Btn variant="secondary">Retirer</Btn> dans l'événement).
+- **Passer le mot :** Ouvrez le créneau et cliquez sur <Btn variant="secondary">Partager la recherche</Btn>. Un message avec un lien et un aperçu « Remplacement cherché » sans votre nom peut être partagé sur WhatsApp et les réseaux sociaux.
+
+## Reprendre un créneau
+
+<Steps>
+1. Dans l'événement, les créneaux avec recherche de remplaçant apparaissent en tête sous **Recherché en priorité** avec le badge **Remplacement cherché**. Le filtre dédié permet de n'afficher que ceux-ci.
+2. Ouvrez le créneau et cliquez sur <Btn>Reprendre</Btn> à côté de la personne concernée.
+3. Confirmez votre reprise. Si des informations complémentaires sont requises, le système vous les demandera.
+</Steps>
+
+Vous reprenez exactement ce poste. Les mêmes critères s'appliquent que pour une inscription standard : droit d'accès, [âge minimum](/fr/helfen/mindestalter/) et absence de chevauchement d'horaire avec vos autres créneaux. La reprise est possible même si les inscriptions générales sont fermées.
+
+## Bon à savoir
+
+- La recherche et la reprise de remplaçants ne fonctionnent que si le CO a activé cette option pour l'événement (active par défaut), et jusqu'au délai fixé par le CO.
+- Le CO peut aussi lancer une recherche de remplaçant à votre place, par exemple après un appel téléphonique.
+- Le CO voit dans son tableau de bord les créneaux en recherche de remplaçant et conserve l'historique des échanges dans son journal.

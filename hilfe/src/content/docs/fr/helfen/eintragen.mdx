@@ -1,0 +1,71 @@
+---
+title: S'inscrire à un créneau
+description: Trouver le bon créneau, s'inscrire et voir qui participe également.
+audience: [helfer]
+numbered: true
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Btn from '../../../../components/Btn.astro';
+import ShiftRowMock from '../../../../components/ShiftRowMock.astro';
+
+S'inscrire est très rapide. Vous avez simplement besoin du lien de l'événement (transmis par le CO ou disponible sur la page d'accueil de votre section).
+
+## Ce que vous voyez
+
+En haut se trouve la bannière avec le titre, la date et le public concerné. À droite (ou en dessous sur mobile) figure le nombre de **places disponibles**.
+
+Juste après vient la section **Recherché en priorité** : les prochains créneaux avec des postes libres. Si la mention **bientôt** est affichée, le créneau commence dans moins de deux jours.
+
+Vient ensuite la liste de tous les créneaux, classés par jour. Voici à quoi ressemble un créneau dans la liste :
+
+<ShiftRowMock />
+
+:::note[Après minuit]
+Les créneaux qui débutent avant 04h00 du matin sont rattachés à la journée de la veille (le CO peut ajuster cette heure selon l'événement). Un créneau de bar de 01h00 à 03h00 apparaît donc sous le samedi, et non sous le dimanche.
+:::
+
+### Affichage en liste ou en grille
+
+Dans la barre d'outils, vous pouvez basculer entre **Liste** et **Grille**. La grille ressemble à un tableau Excel : les lignes représentent les postes, les colonnes les tranches horaires, et les couleurs indiquent le taux d'occupation. Très pratique pour les grands événements. Cliquez sur une case pour ouvrir le créneau. Le système mémorise votre préférence d'affichage.
+
+### Filtrer les créneaux
+
+Des filtres sont disponibles dans la même barre :
+
+- **Tous les jours** ou un jour particulier
+- **Places libres uniquement**
+- **Montage & démontage**, si de tels créneaux existent
+- Un **poste** précis, par exemple uniquement « Grill »
+
+Pour tout réinitialiser, cliquez sur <Btn>Réinitialiser les filtres</Btn>.
+
+## S'inscrire
+
+<Steps>
+1. Sur le créneau souhaité, cliquez sur <Btn>S'inscrire</Btn> ou sur le symbole « + ».
+2. Si le créneau ne comporte qu'un seul poste disponible, votre inscription est immédiate. S'il en compte plusieurs, le volet s'ouvre et vous choisissez votre poste en cliquant sur <Btn variant="primary">S'inscrire à ce poste</Btn>.
+3. Si le CO a besoin d'informations complémentaires (numéro de portable, taille de t-shirt, etc.), un formulaire court s'affiche. Consultez [Informations et questions](/fr/helfen/angaben-und-fragen/) pour plus de précisions.
+4. Le message **Vous êtes inscrit !** s'affiche avec le créneau et l'horaire. Dans l'en-tête de l'événement, la mention « Vous êtes inscrit 1× » apparaît.
+</Steps>
+
+Vous n'êtes pas encore connecté ? Le bouton affiche alors <Btn variant="primary">Se connecter & s'inscrire</Btn>. Vous serez automatiquement redirigé vers l'événement après la connexion.
+
+:::tip[Passations et créneaux consécutifs]
+Vous pouvez vous inscrire à deux créneaux consécutifs sans difficulté. Si les créneaux se chevauchent de quelques minutes (10 à 15 minutes pour la passation de relais ou les consignes), le plan l'autorise automatiquement. Le système ne bloque que les chevauchements plus importants.
+:::
+
+:::tip[Voir les détails d'un créneau]
+Cliquez n'importe où sur un créneau pour voir tous les postes, la liste des inscrits, les consignes du CO et l'âge minimum requis.
+:::
+
+:::tip[Partager un créneau]
+Dans la fenêtre du créneau, cliquez sur <Btn>Partager</Btn>. Sur mobile, le menu de partage natif s'ouvre ; sur ordinateur, un texte court avec le lien est copié dans le presse-papiers. WhatsApp et les réseaux sociaux affichent un aperçu clair avec l'horaire et les places disponibles.
+:::
+
+## Ce qui n'est pas possible
+
+- **Deux postes dans le même créneau.** Vous ne pouvez occuper qu'un seul poste par créneau. Pour les autres postes, la mention « Vous êtes déjà inscrit à un autre poste » apparaîtra.
+- **Créneaux ou postes complets.** Lorsque la mention « Complet » s'affiche, choisissez un autre horaire ou contactez le CO.
+- **Créneaux passés.** Ils apparaissent grisés et ne disposent plus de bouton d'inscription.
+- **Événements non autorisés.** Un message en précise la raison. Consultez [Je ne peux pas m'inscrire](/fr/helfen/nicht-freigeschaltet/) pour savoir quoi faire.

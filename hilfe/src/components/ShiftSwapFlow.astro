@@ -9,42 +9,79 @@ import ArrowRight from '@lucide/astro/icons/arrow-right';
 import CircleCheck from '@lucide/astro/icons/circle-check';
 import Clock from '@lucide/astro/icons/clock';
 
-const steps = [
-  {
-    step: '1',
-    icon: CalendarX,
-    title: 'Ersatz anbieten',
-    desc: 'Unter «Meine Schichten» bei der Schicht «Ersatz suchen» wählen.',
-    tone: 'ember',
-  },
-  {
-    step: '2',
-    icon: Clock,
-    title: 'Im Plan gelb markiert',
-    desc: 'Schicht ist öffentlich als «Ersatz gesucht» sichtbar. Du bleibst eingetragen!',
-    tone: 'ember',
-  },
-  {
-    step: '3',
-    icon: UserCheck,
-    title: 'Andere Person übernimmt',
-    desc: 'Wer Zeit hat, öffnet die Schicht und tippt auf «Übernehmen».',
-    tone: 'accent',
-  },
-  {
-    step: '4',
-    icon: CircleCheck,
-    title: 'Automatische Abmeldung',
-    desc: 'Du wirst sofort ausgetragen und per E-Mail benachrichtigt.',
-    tone: 'success',
-  },
-];
+const locale = Astro.locals.starlightRoute.locale;
+const isFr = locale === 'fr';
+
+const steps = isFr
+  ? [
+      {
+        step: '1',
+        icon: CalendarX,
+        title: 'Proposer un remplacement',
+        desc: 'Sous « Mes créneaux », choisir « Chercher un remplaçant » pour le créneau.',
+        tone: 'ember',
+      },
+      {
+        step: '2',
+        icon: Clock,
+        title: 'Marqué en jaune',
+        desc: 'Le créneau est visible comme « Remplacement cherché ». Vous restez inscrit !',
+        tone: 'ember',
+      },
+      {
+        step: '3',
+        icon: UserCheck,
+        title: 'Quelqu’un reprend',
+        desc: 'Une personne disponible ouvre le créneau et clique sur « Reprendre ».',
+        tone: 'accent',
+      },
+      {
+        step: '4',
+        icon: CircleCheck,
+        title: 'Désinscription auto',
+        desc: 'Vous êtes immédiatement désinscrit et averti par e-mail.',
+        tone: 'success',
+      },
+    ]
+  : [
+      {
+        step: '1',
+        icon: CalendarX,
+        title: 'Ersatz anbieten',
+        desc: 'Unter «Meine Schichten» bei der Schicht «Ersatz suchen» wählen.',
+        tone: 'ember',
+      },
+      {
+        step: '2',
+        icon: Clock,
+        title: 'Im Plan gelb markiert',
+        desc: 'Schicht ist öffentlich als «Ersatz gesucht» sichtbar. Du bleibst eingetragen!',
+        tone: 'ember',
+      },
+      {
+        step: '3',
+        icon: UserCheck,
+        title: 'Andere Person übernimmt',
+        desc: 'Wer Zeit hat, öffnet die Schicht und tippt auf «Übernehmen».',
+        tone: 'accent',
+      },
+      {
+        step: '4',
+        icon: CircleCheck,
+        title: 'Automatische Abmeldung',
+        desc: 'Du wirst sofort ausgetragen und per E-Mail benachrichtigt.',
+        tone: 'success',
+      },
+    ];
+
+const kicker = isFr ? 'Déroulement' : 'Ablauf';
+const heading = isFr ? 'Comment fonctionne la bourse aux créneaux' : 'Wie die Schicht-Tauschbörse funktioniert';
 ---
 
 <div class="ssf not-content">
   <div class="ssf-head">
-    <span class="ssf-kicker">Ablauf</span>
-    <h3 class="ssf-title">Wie die Schicht-Tauschbörse funktioniert</h3>
+    <span class="ssf-kicker">{kicker}</span>
+    <h3 class="ssf-title">{heading}</h3>
   </div>
 
   <ol class="ssf-grid">
