@@ -2,6 +2,7 @@
 
 import { useState, useRef, useId, type ChangeEvent, type DragEvent } from 'react';
 import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button, CeviLogo, cn } from '@schichtplan/ui';
 import { api, errorMessage } from '@/lib/api';
 
@@ -20,27 +21,30 @@ export function ImageUpload({
   value,
   onChange,
   label,
-  hint = 'PNG, JPG, WebP oder SVG (max. 6 MB)',
+  hint,
   aspectRatio = 'square',
   showCeviFallback = true,
   disabled = false,
   className,
 }: ImageUploadProps) {
+  const t = useTranslations('web.imageUpload');
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const effectiveHint = hint ?? t('defaultHint');
+
   const handleFile = async (file: File) => {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setError('Bitte wähle eine gültige Bilddatei aus (PNG, JPG, SVG, WebP).');
+      setError(t('invalidFileType'));
       return;
     }
 
     if (file.size > 6 * 1024 * 1024) {
-      setError('Das Bild ist zu gross. Maximal 6 MB erlaubt.');
+      setError(t('fileTooLarge'));
       return;
     }
 
@@ -94,7 +98,7 @@ export function ImageUpload({
       {label && (
         <div className="flex items-center justify-between">
           <label htmlFor={inputId} className="text-[13px] font-semibold text-fg">{label}</label>
-          {hint && <span className="text-xs text-fg-subtle">{hint}</span>}
+          {effectiveHint && <span className="text-xs text-fg-subtle">{effectiveHint}</span>}
         </div>
       )}
 
@@ -113,17 +117,17 @@ export function ImageUpload({
           {aspectRatio === 'square' ? (
             <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-tile border border-line bg-surface-1 p-1 shadow-sm">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={value!} alt="Vorschau" className="size-full object-contain" />
+              <img src={value!} alt={t('previewAlt')} className="size-full object-contain" />
             </div>
           ) : (
             <div className="relative aspect-[16/9] w-36 shrink-0 overflow-hidden rounded-tile border border-line bg-surface-1 shadow-sm">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={value!} alt="Banner-Vorschau" className="size-full object-cover" />
+              <img src={value!} alt={t('bannerPreviewAlt')} className="size-full object-cover" />
             </div>
           )}
 
           <div className="min-w-0 flex-1 space-y-1">
-            <p className="truncate text-xs font-medium text-fg">Bild erfolgreich hochgeladen</p>
+            <p className="truncate text-xs font-medium text-fg">{t('successUploaded')}</p>
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
@@ -134,11 +138,11 @@ export function ImageUpload({
               >
                 {uploading ? (
                   <>
-                    <Loader2 className="size-3.5 animate-spin" /> Wird hochgeladen…
+                    <Loader2 className="size-3.5 animate-spin" /> {t('uploading')}
                   </>
                 ) : (
                   <>
-                    <Upload className="size-3.5" /> Anderes Bild wählen
+                    <Upload className="size-3.5" /> {t('changeImage')}
                   </>
                 )}
               </Button>
@@ -151,7 +155,7 @@ export function ImageUpload({
                 onClick={() => onChange(null)}
                 className="text-danger hover:text-danger-ink"
               >
-                <X className="size-3.5" /> Entfernen
+                <X className="size-3.5" /> {t('removeImage')}
               </Button>
             </div>
           </div>
@@ -180,7 +184,7 @@ export function ImageUpload({
           {uploading ? (
             <div className="flex flex-col items-center gap-2 py-2">
               <Loader2 className="size-6 animate-spin text-accent-ink" />
-              <span className="text-xs font-medium text-fg-muted">Wird hochgeladen…</span>
+              <span className="text-xs font-medium text-fg-muted">{t('uploading')}</span>
             </div>
           ) : (
             <div className="flex items-center gap-3 py-1">
@@ -195,9 +199,9 @@ export function ImageUpload({
               )}
               <div className="text-left">
                 <span className="flex items-center gap-1.5 text-xs font-semibold text-fg group-hover:text-accent-ink">
-                  <Upload className="size-3.5" /> Bild hochladen
+                  <Upload className="size-3.5" /> {t('uploadImage')}
                 </span>
-                <span className="text-[11px] text-fg-subtle">Klicken oder Datei hierher ziehen</span>
+                <span className="text-[11px] text-fg-subtle">{t('dropHint')}</span>
               </div>
             </div>
           )}

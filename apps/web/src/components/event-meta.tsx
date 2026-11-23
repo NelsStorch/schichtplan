@@ -1,6 +1,7 @@
 'use client';
 
 import { Building2, Globe2, Network, ShieldCheck, Users, UsersRound, type LucideIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   EVENT_ACCESS_TYPES,
   getEventAccessTypeConfig,
@@ -48,6 +49,7 @@ export function AccessTypeBadge({
   leadersOnly?: boolean;
   tone?: BadgeTone;
 }) {
+  const t = useTranslations('web.eventMeta');
   const org = useOrganization();
   const info = getEventAccessTypeConfig(type, org);
   const Icon = accessTypeIcon(type);
@@ -57,7 +59,7 @@ export function AccessTypeBadge({
       {leadersOnly && (
         <>
           <span aria-hidden>·</span>
-          <UsersRound /> Leitende
+          <UsersRound /> {t('leaders')}
         </>
       )}
     </Badge>

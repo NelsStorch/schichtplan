@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, type FormEvent, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { AlertCircle, AlertTriangle, CalendarPlus, Check, ChevronDown, Crown, LifeBuoy, Loader2, Palette, Plus, QrCode, Shield, Trash2, Users, UtensilsCrossed, X } from 'lucide-react';
 import {
   ATTENDANCE_MODES,
@@ -183,17 +184,18 @@ export function EventFormDialog({
   initial?: Partial<EventFormValues>;
   eventSlug?: string;
 }) {
+  const t = useTranslations('web.eventForm');
   return (
     <Dialog
       open={open}
       onClose={onClose}
       size="lg"
       icon={mode === 'create' ? <CalendarPlus /> : <Palette />}
-      title={mode === 'create' ? 'Neuer Anlass' : 'Design & Einstellungen'}
+      title={mode === 'create' ? t('createTitle') : t('editTitle')}
       description={
         mode === 'create'
-          ? 'Lege Titel, Daten, Zugang und das OK fest. Schichten fügst du danach hinzu.'
-          : 'Zugang, Pflichtangaben, Banner und Logo dieses Anlasses anpassen.'
+          ? t('createDescription')
+          : t('editDescription')
       }
     >
       <EventForm mode={mode} initial={initial} eventSlug={eventSlug} onCancel={onClose} onSaved={onSaved} />
@@ -287,11 +289,12 @@ function SaveStatus({
   blocked: string | null;
   savedAt: Date | null;
 }) {
+  const t = useTranslations('web.eventForm');
   const row = 'flex min-w-0 items-center gap-1.5 text-sm font-medium';
   if (saving) {
     return (
       <p role="status" className={cn(row, 'text-fg-muted')}>
-        <Loader2 aria-hidden className="size-4 shrink-0 animate-spin text-accent" /> Wird gespeichert …
+        <Loader2 aria-hidden className="size-4 shrink-0 animate-spin text-accent" /> {t('saveStatusSaving')}
       </p>
     );
   }
@@ -312,18 +315,18 @@ function SaveStatus({
   if (dirty) {
     return (
       <p role="status" className={cn(row, 'text-accent-ink')}>
-        <span aria-hidden className="size-2 shrink-0 animate-pulse rounded-full bg-accent" /> Wird gespeichert …
+        <span aria-hidden className="size-2 shrink-0 animate-pulse rounded-full bg-accent" /> {t('saveStatusSaving')}
       </p>
     );
   }
   if (savedAt) {
     return (
       <p role="status" className={cn(row, 'text-success-ink')}>
-        <Check aria-hidden className="size-4 shrink-0 text-success" /> Gespeichert um {fmtTime(savedAt.toISOString())} Uhr
+        <Check aria-hidden className="size-4 shrink-0 text-success" /> {t('saveStatusSavedAt', { time: fmtTime(savedAt.toISOString()) })}
       </p>
     );
   }
-  return <p className={cn(row, 'font-normal text-fg-subtle')}>Änderungen werden automatisch gespeichert</p>;
+  return <p className={cn(row, 'font-normal text-fg-subtle')}>{t('saveStatusAutoNotice')}</p>;
 }
 
 /**
@@ -352,6 +355,7 @@ export function EventForm({
   /** Bearbeiten: Anzeige des Zeitraums (aus den Schichten) mit «Verschieben» */
   dateRange?: ReactNode;
 }) {
+  const t = useTranslations('web.eventForm');
   const toast = useToast();
   const org = useOrganization();
   const { user } = usePortal();
@@ -525,7 +529,7 @@ export function EventForm({
       const found = deptMembers.find((m) => m.userId === selectedMemberUserId);
       if (found) {
         if (organizers.some((o) => o.userId === found.userId)) {
-          toast({ title: 'Bereits im OK', description: `${found.displayName} ist schon eingetragen.` });
+          toast({ title: t('alreadyInOkTitle'), description: t('alreadyInOkDesc', { name: found.displayName }) });
           return;
         }
         setOrganizers((prev) => [
@@ -609,8 +613,8 @@ export function EventForm({
             },
           });
           toast({
-            title: 'Anlass aus Vorlage erstellt',
-            description: `${form.title} inklusive aller Schichten angelegt.`,
+            title: t('templateCreatedTitle'),
+            description: t('templateCreatedDesc', { title: form.title }),
           });
         } else {
           await api('/api/events', {
@@ -631,7 +635,7 @@ export function EventForm({
               })),
             },
           });
-          toast({ title: 'Anlass erstellt', description: `${form.title} ist jetzt sichtbar.` });
+          toast({ title: t('createdTitle'), description: t('createdDesc', { title: form.title }) });
         }
         onSaved(form.slug);
       } else {
@@ -648,7 +652,7 @@ export function EventForm({
         lastSavedSnapshotRef.current = JSON.stringify(form);
         setAutoSaveStatus('saved');
         setLastSavedAt(new Date());
-        toast({ title: 'Einstellungen gespeichert' });
+        toast({ title: t('settingsSavedTitle') });
         onSaved(res.slug || targetSlug);
       }
     } catch (err) {
@@ -686,14 +690,14 @@ export function EventForm({
   const titleMissing = !form.title.trim();
   const slugChanged = form.slug !== initialSlug;
   const autoSaveBlocked = titleMissing
-    ? 'Titel fehlt: Es wird nichts gespeichert'
+    ? t('saveStatusBlockedTitle')
     : slugChanged
-      ? 'Neue Adresse: Speichern und bestätigen'
+      ? t('saveStatusBlockedSlug')
       : null;
   const needsManualSave = isDirty && !titleMissing && (slugChanged || Boolean(error));
 
   const contactName = deptMembers.find((m) => m.userId === form.contactUserId)?.displayName;
-  const bannerName = BANNER_PRESETS.find((p) => p.url === form.bannerUrl)?.name ?? (form.bannerUrl ? 'Eigenes Bild' : 'Keines');
+  const bannerName = BANNER_PRESETS.find((p) => p.url === form.bannerUrl)?.name ?? (form.bannerUrl ? t('customImageText') : t('noBannerText'));
 
   return (
     <form onSubmit={submit} className={layout === 'page' ? 'space-y-6' : 'space-y-7'}>
@@ -704,12 +708,12 @@ export function EventForm({
         </div>
       )}
 
-      <S id="grunddaten" title="Grunddaten" description="Name, Webadresse und Zeitraum des Anlasses.">
+      <S id="grunddaten" title={t('grunddatenTitle')} description={t('grunddatenDesc')}>
         <div className="grid gap-5 sm:grid-cols-2">
           {mode === 'create' && templates.length > 0 && (
             <Field
-              label="Aus Vorlage erstellen (optional)"
-              hint="Übernimmt alle Schichten, Arbeiten und Mindestalter automatisch"
+              label={t('fromTemplateLabel')}
+              hint={t('fromTemplateHint')}
               className="sm:col-span-2"
             >
               <Select
@@ -745,20 +749,20 @@ export function EventForm({
                   }
                 }}
               >
-                <option value="">Keine Vorlage (leerer Anlass)</option>
-                {templates.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.title} ({t.shiftCount} Schichten)
+                <option value="">{t('noTemplateOption')}</option>
+                {templates.map((tpl) => (
+                  <option key={tpl.id} value={tpl.id}>
+                    {t('templateOptionLabel', { title: tpl.title, count: tpl.shiftCount })}
                   </option>
                 ))}
               </Select>
             </Field>
           )}
 
-          <Field label="Titel" required className={cn('sm:col-span-2', layout === 'page' && 'lg:col-span-1')}>
+          <Field label={t('titleLabel')} required className={cn('sm:col-span-2', layout === 'page' && 'lg:col-span-1')}>
             <Input
               value={form.title}
-              placeholder="Chilbi 2026"
+              placeholder={t('titlePlaceholder')}
               autoFocus={mode === 'create'}
               onChange={(e) => {
                 const val = e.target.value;
@@ -775,15 +779,15 @@ export function EventForm({
             label={
               <span className="flex items-center justify-between gap-2 flex-wrap">
                 <span>
-                  Adresse (Slug) <span className="text-accent-ink" aria-hidden>*</span>
+                  {t('slugLabel')} <span className="text-accent-ink" aria-hidden>*</span>
                 </span>
                 {mode === 'edit' && form.slug !== initialSlug ? (
                   <Badge tone="danger" size="sm" className="-my-1 font-normal">
-                    Änderung bricht Links (10s Warnung)
+                    {t('slugBadgeWarning')}
                   </Badge>
                 ) : mode === 'edit' ? (
                   <Badge tone="outline" size="sm" className="-my-1 font-normal text-fg-subtle">
-                    Änderung bricht geteilte Links
+                    {t('slugBadgeBreaks')}
                   </Badge>
                 ) : null}
               </span>
@@ -794,7 +798,7 @@ export function EventForm({
                   <span className="font-mono text-fg-muted">…/events/{form.slug || 'chilbi-2026'}</span>
                   <span className="mx-1.5 text-line-strong">·</span>
                   <span>
-                    Empfehlung: Jahr ergänzen (z.&nbsp;B. <span className="font-mono">chilbi-2026</span>). Slugs sind abteilungsweit einmalig und bestimmen die Webadresse – so habt ihr nächstes Jahr wieder eine saubere Adresse.
+                    {t('slugHintCreate')}
                   </span>
                 </span>
               ) : (
@@ -802,7 +806,7 @@ export function EventForm({
                   <span className="font-mono text-fg-muted">…/events/{form.slug}</span>
                   <span className="mx-1.5 text-line-strong">·</span>
                   <span className={form.slug !== initialSlug ? 'text-danger-ink font-semibold' : 'text-fg-subtle'}>
-                    Achtung: Eine Änderung macht alle bisher geteilten Links (WhatsApp, Einladungen) sowie Lesezeichen ungültig. Beim Speichern wird eine 10-sekündige Sicherheitsbestätigung verlangt.
+                    {t('slugHintEdit')}
                   </span>
                 </span>
               )
@@ -814,7 +818,7 @@ export function EventForm({
               pattern="[a-z0-9\-]+"
               maxLength={50}
               required
-              placeholder="chilbi-2026"
+              placeholder={t('slugPlaceholder')}
               onChange={(e) => {
                 setSlugTouched(true);
                 set('slug', slugify(e.target.value));
@@ -827,10 +831,10 @@ export function EventForm({
             <Field
               label={
                 <span>
-                  Datum <span className="text-accent-ink" aria-hidden>*</span>
+                  {t('dateLabel')} <span className="text-accent-ink" aria-hidden>*</span>
                 </span>
               }
-              hint="Erster Tag des Anlasses. Sobald es Schichten gibt, ergibt sich der Zeitraum aus der ersten und letzten Schicht."
+              hint={t('dateHint')}
               className="sm:col-span-2"
             >
               <Input type="date" value={form.startDate} required onChange={(e) => set('startDate', e.target.value)} />
@@ -838,11 +842,11 @@ export function EventForm({
           ) : (
             dateRange && <div className="sm:col-span-2">{dateRange}</div>
           )}
-          <Field label="Beschreibung" className="sm:col-span-2">
+          <Field label={t('descriptionLabel')} className="sm:col-span-2">
             <Textarea
               rows={3}
               value={form.description}
-              placeholder="Worum geht es? Was sollen die Helfenden wissen?"
+              placeholder={t('descriptionPlaceholder')}
               onChange={(e) => set('description', e.target.value)}
             />
           </Field>
@@ -854,10 +858,10 @@ export function EventForm({
         <fieldset className="rounded-card border border-line bg-surface-2/60 p-4 sm:p-5">
           <div className="mb-3 flex items-center gap-2">
             <Users className="size-4 text-accent-ink" />
-            <legend className="text-[13px] font-semibold text-fg">Organisationskomitee (OK)</legend>
+            <legend className="text-[13px] font-semibold text-fg">{t('okSectionTitle')}</legend>
           </div>
           <p className="mb-4 text-xs text-fg-muted">
-            Wer leitet diesen Anlass und teilt Helfende ein? Weitere Personen kannst du auch später unter «Einstellungen» hinzufügen.
+            {t('okSectionDesc')}
           </p>
 
           {/* Bereits im OK eingetragene Personen */}
@@ -878,7 +882,7 @@ export function EventForm({
                     <div className="min-w-0">
                       <span className="font-semibold text-fg truncate block">{org.displayName}</span>
                       <span className="text-xs text-fg-subtle">
-                        {isLead ? 'OK-Leitung' : 'OK-Mitglied'}
+                        {isLead ? t('roleOkLead') : t('roleOkMember')}
                         {org.roleTitle && ` · ${org.roleTitle}`}
                       </span>
                     </div>
@@ -887,7 +891,7 @@ export function EventForm({
                   <button
                     type="button"
                     onClick={() => removeOrganizer(idx)}
-                    title="Aus OK entfernen"
+                    title={t('removeOrganizerTitle')}
                     className="rounded p-1.5 text-fg-subtle hover:bg-danger/10 hover:text-danger"
                   >
                     <Trash2 className="size-4" />
@@ -896,7 +900,7 @@ export function EventForm({
               );
             })}
             {organizers.length === 0 && (
-              <div className="p-3 text-xs text-fg-subtle text-center">Noch niemand im OK eingetragen.</div>
+              <div className="p-3 text-xs text-fg-subtle text-center">{t('noOrganizersYet')}</div>
             )}
           </div>
           {/* Wer erstellt, kommt nicht automatisch ins OK: hier mit einem Klick, wenn gewünscht */}
@@ -909,21 +913,21 @@ export function EventForm({
               onClick={() =>
                 setOrganizers((prev) => [
                   ...prev,
-                  { userId: user.id, displayName: displayName(user), role: 'OK_LEAD', roleTitle: 'Leitung' },
+                  { userId: user.id, displayName: displayName(user), role: 'OK_LEAD', roleTitle: t('roleOkLead') },
                 ])
               }
             >
-              <Crown /> Mich als OK-Leitung eintragen
+              <Crown /> {t('addSelfAsLead')}
             </Button>
           )}
 
           {/* Weitere Person hinzufügen */}
           <div className="space-y-3 rounded-field border border-line/70 bg-surface-2 p-3 text-xs">
-            <span className="font-semibold text-fg block">Weitere Person zum OK hinzufügen</span>
+            <span className="font-semibold text-fg block">{t('addPersonTitle')}</span>
 
             <div className="grid gap-2 sm:grid-cols-2">
               <div>
-                <label htmlFor="ok-member-select" className="text-[11px] font-medium text-fg-subtle block mb-1">Aus Mitgliedern wählen</label>
+                <label htmlFor="ok-member-select" className="text-[11px] font-medium text-fg-subtle block mb-1">{t('chooseMemberLabel')}</label>
                 <select
                   id="ok-member-select"
                   value={selectedMemberUserId}
@@ -933,7 +937,7 @@ export function EventForm({
                   }}
                   className="w-full rounded-field border border-line bg-surface-1 px-2.5 py-1.5 text-xs text-fg focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                 >
-                  <option value="">-- Mitglied wählen --</option>
+                  <option value="">{t('chooseMemberPlaceholder')}</option>
                   {availableMembers.map((m) => (
                     <option key={m.userId} value={m.userId}>
                       {m.displayName}
@@ -944,12 +948,12 @@ export function EventForm({
 
               <div>
                 <label htmlFor="ok-custom-who" className="text-[11px] font-medium text-fg-subtle block mb-1">
-                  Oder {org.nicknameTerm} / E-Mail
+                  {t('orCustomWhoLabel', { nicknameTerm: org.nicknameTerm })}
                 </label>
                 <input
                   id="ok-custom-who"
                   type="text"
-                  placeholder={org.slug === 'verein' ? 'z.B. Max oder max@beispiel.ch' : 'z.B. Falk oder falk@beispiel.ch'}
+                  placeholder={org.slug === 'verein' ? t('customWhoPlaceholderVerein') : t('customWhoPlaceholderYouth')}
                   value={customWho}
                   onChange={(e) => {
                     setCustomWho(e.target.value);
@@ -962,24 +966,24 @@ export function EventForm({
 
             <div className="grid gap-2 sm:grid-cols-2 items-end">
               <div>
-                <label htmlFor="ok-new-role" className="text-[11px] font-medium text-fg-subtle block mb-1">Rolle im OK</label>
+                <label htmlFor="ok-new-role" className="text-[11px] font-medium text-fg-subtle block mb-1">{t('roleInOkLabel')}</label>
                 <select
                   id="ok-new-role"
                   value={newRole}
                   onChange={(e) => setNewRole(e.target.value as 'OK_LEAD' | 'OK_MEMBER')}
                   className="w-full rounded-field border border-line bg-surface-1 px-2.5 py-1.5 text-xs text-fg focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                 >
-                  <option value="OK_MEMBER">OK-Mitglied (Schichten planen und Helfende einteilen)</option>
-                  <option value="OK_LEAD">OK-Leitung (zusätzlich Einstellungen und OK-Team)</option>
+                  <option value="OK_MEMBER">{t('roleOptionMember')}</option>
+                  <option value="OK_LEAD">{t('roleOptionLead')}</option>
                 </select>
               </div>
 
               <div>
-                <label htmlFor="ok-new-role-title" className="text-[11px] font-medium text-fg-subtle block mb-1">Ressort / Bezeichnung (optional)</label>
+                <label htmlFor="ok-new-role-title" className="text-[11px] font-medium text-fg-subtle block mb-1">{t('roleTitleLabel')}</label>
                 <input
                   id="ok-new-role-title"
                   type="text"
-                  placeholder="z. B. Bau & Technik, Kasse, Grill"
+                  placeholder={t('roleTitlePlaceholder')}
                   value={newRoleTitle}
                   onChange={(e) => setNewRoleTitle(e.target.value)}
                   className="w-full rounded-field border border-line bg-surface-1 px-2.5 py-1.5 text-xs text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
@@ -995,7 +999,7 @@ export function EventForm({
                 disabled={!selectedMemberUserId && !customWho.trim()}
                 onClick={addOrganizer}
               >
-                <Plus className="size-3.5" /> Person hinzufügen
+                <Plus className="size-3.5" /> {t('addPersonBtn')}
               </Button>
             </div>
           </div>
@@ -1005,30 +1009,30 @@ export function EventForm({
 
       <S
         id="eintragen"
-        title="Eintragen & Fristen"
-        description="Ab wann und wie lange sich Helfende selbst eintragen und austragen können."
+        title={t('eintragenTitle')}
+        description={t('eintragenDesc')}
       >
         {mode === 'edit' && (
           <Switch
             checked={form.allowPublicSignup}
             onChange={(v) => set('allowPublicSignup', v)}
-            label="Helfende können sich selbst eintragen"
-            description="Ausgeschaltet teilen nur noch das OK und die Abteilungsleitung Personen ein."
+            label={t('allowPublicSignupLabel')}
+            description={t('allowPublicSignupDesc')}
           />
         )}
         <div className={fieldColumns}>
         <Field
-          label="Eintragen erst ab (optional)"
+          label={t('signupOpensAtLabel')}
           hint={
             <span>
-              Schweizer Zeit. Leer lassen = sofort offen. Mit Live-Countdown bei Restzeit.{' '}
+              {t('signupOpensAtHint')}{' '}
               <a
                 href={helpUrl('/ok/anlass-erstellen/#die-angaben')}
                 target="_blank"
                 rel="noreferrer"
                 className="font-semibold text-accent-ink hover:underline inline-flex items-center gap-0.5"
               >
-                <LifeBuoy className="size-3 inline" /> Hilfe
+                <LifeBuoy className="size-3 inline" /> {t('helpLink')}
               </a>
             </span>
           }
@@ -1041,17 +1045,17 @@ export function EventForm({
         </Field>
 
         <Field
-          label="Austrage-Sperre in Tagen vor Beginn (optional)"
+          label={t('cancelDeadlineDaysLabel')}
           hint={
             <span>
-              Ab so vielen Tagen vor Beginn können sich Helfende nicht mehr selbst austragen, nur noch das OK.{' '}
+              {t('cancelDeadlineDaysHint')}{' '}
               <a
                 href={helpUrl('/ok/anlass-erstellen/#die-angaben')}
                 target="_blank"
                 rel="noreferrer"
                 className="font-semibold text-accent-ink hover:underline inline-flex items-center gap-0.5"
               >
-                <LifeBuoy className="size-3 inline" /> Hilfe
+                <LifeBuoy className="size-3 inline" /> {t('helpLink')}
               </a>
             </span>
           }
@@ -1060,7 +1064,7 @@ export function EventForm({
             type="number"
             min={0}
             max={365}
-            placeholder="z. B. 2 (leer lassen = keine Sperre)"
+            placeholder={t('cancelDeadlineDaysPlaceholder')}
             value={form.cancelDeadlineDays ?? ''}
             onChange={(e) => {
               const val = e.target.value.trim();
@@ -1073,23 +1077,23 @@ export function EventForm({
         <Switch
           checked={form.allowReplacement}
           onChange={(v) => set('allowReplacement', v)}
-          label="Helfende können «Ersatz suchen»"
-          description="Wer nicht kann, bietet die Schicht an und bleibt eingetragen, bis jemand übernimmt. Geht auch nach der Austrage-Sperre."
+          label={t('allowReplacementLabel')}
+          description={t('allowReplacementDesc')}
         />
         <div className={fieldColumns}>
         {form.allowReplacement && (
           <Field
-            label="Ersatz suchen und übernehmen bis"
+            label={t('replacementCutoffLabel')}
             hint={
               <span>
-                Danach hilft nur noch das OK.{' '}
+                {t('replacementCutoffHint')}{' '}
                 <a
                   href={helpUrl('/helfen/ersatz-suchen/')}
                   target="_blank"
                   rel="noreferrer"
                   className="font-semibold text-accent-ink hover:underline inline-flex items-center gap-0.5"
                 >
-                  <LifeBuoy className="size-3 inline" /> Hilfe
+                  <LifeBuoy className="size-3 inline" /> {t('helpLink')}
                 </a>
               </span>
             }
@@ -1100,7 +1104,7 @@ export function EventForm({
             >
               {REPLACEMENT_CUTOFF_HOURS.map((h) => (
                 <option key={h} value={h}>
-                  {h === 0 ? 'Schichtbeginn' : `${h} ${h === 1 ? 'Stunde' : 'Stunden'} vor Schichtbeginn`}
+                  {h === 0 ? t('cutoffShiftStart') : t('cutoffHoursBefore', { hours: h })}
                 </option>
               ))}
             </Select>
@@ -1108,17 +1112,17 @@ export function EventForm({
         )}
 
         <Field
-          label="Schicht-Überlappung für Übergaben"
+          label={t('overlapLabel')}
           hint={
             <span>
-              Erlaubt es Helfenden, sich für zwei aufeinanderfolgende Schichten einzutragen, die sich zur Einweisung/Übergabe kurz überschneiden.{' '}
+              {t('overlapHint')}{' '}
               <a
                 href={helpUrl('/ok/anlass-erstellen/#die-angaben')}
                 target="_blank"
                 rel="noreferrer"
                 className="font-semibold text-accent-ink hover:underline inline-flex items-center gap-0.5"
               >
-                <LifeBuoy className="size-3 inline" /> Hilfe
+                <LifeBuoy className="size-3 inline" /> {t('helpLink')}
               </a>
             </span>
           }
@@ -1127,23 +1131,23 @@ export function EventForm({
             value={form.overlapToleranceMinutes ?? 15}
             onChange={(e) => set('overlapToleranceMinutes', Number(e.target.value))}
           >
-            <option value={0}>0 Minuten (Strikte Trennung, keine Überlappung)</option>
-            <option value={10}>10 Minuten</option>
-            <option value={15}>15 Minuten (Empfohlen für Feste, Chilbi & Lager)</option>
-            <option value={20}>20 Minuten</option>
-            <option value={30}>30 Minuten</option>
+            <option value={0}>{t('overlapMin0')}</option>
+            <option value={10}>{t('overlapMin10')}</option>
+            <option value={15}>{t('overlapMin15')}</option>
+            <option value={20}>{t('overlapMin20')}</option>
+            <option value={30}>{t('overlapMin30')}</option>
           </Select>
         </Field>
 
         <Field
-          label="Soll: Schichten pro Person (optional)"
-          hint="Unter «Helfende» siehst du dann, wer das Soll erfüllt hat. Leer lassen = kein Soll."
+          label={t('minShiftsLabel')}
+          hint={t('minShiftsHint')}
         >
           <Input
             type="number"
             min={1}
             max={50}
-            placeholder="z. B. 2 (leer lassen = kein Soll)"
+            placeholder={t('minShiftsPlaceholder')}
             value={form.minShiftsPerPerson ?? ''}
             onChange={(e) => {
               const val = e.target.value.trim();
@@ -1154,43 +1158,43 @@ export function EventForm({
         </div>
 
         <Field
-          label="Hinweis in der Schicht-Erinnerung (optional)"
-          hint="Wird automatisch in jede Schicht-Erinnerungs-Mail und Browser-Benachrichtigung vor Schichtbeginn eingefügt (z. B. Treffpunkt, Helfer-Check-in oder Kleidung)."
+          label={t('reminderNoteLabel')}
+          hint={t('reminderNoteHint')}
         >
           <Textarea
             rows={3}
             maxLength={1000}
             value={form.reminderNote}
-            placeholder="z. B. Wir treffen uns 10 Minuten vor Schichtbeginn beim Helfer-Check-in hinter dem Festzelt. Denk bitte an wetterfeste Kleidung und dein Cevi-Hemd."
+            placeholder={t('reminderNotePlaceholder')}
             onChange={(e) => set('reminderNote', e.target.value)}
           />
         </Field>
       </S>
 
-      <S id="zugang" title="Zugang & Angaben" description="Wer sich eintragen darf und was ihr von den Helfenden wissen müsst.">
+      <S id="zugang" title={t('zugangTitle')} description={t('zugangDesc')}>
         <EventAccessFields values={form.access} onChange={(access) => set('access', access)} />
       </S>
 
       <S
         id="zustaendigkeiten"
-        title="Zuständigkeiten"
-        description="Wer bei Fragen hilft und wie die Tage eingeteilt sind."
+        title={t('zustaendigkeitenTitle')}
+        description={t('zustaendigkeitenDesc')}
         summary={[
-          contactName ? `Ansprechperson: ${contactName}` : 'Keine Ansprechperson',
-          form.responsibleMode === 'BY_DAY' ? 'Verantwortliche pro Tag' : 'Verantwortliche pro Schicht',
-          `Tageswechsel ${form.dayCutoffTime}`,
+          contactName ? t('summaryContact', { name: contactName }) : t('summaryNoContact'),
+          form.responsibleMode === 'BY_DAY' ? t('summaryResponsibleDay') : t('summaryResponsibleShift'),
+          t('summaryDayCutoff', { time: form.dayCutoffTime }),
         ].join(' · ')}
       >
         <div className={fieldColumns}>
         <Field
-          label="Ansprechperson für Fragen (optional)"
-          hint="Sehen die Helfenden bei vollen Schichten, damit sie sich bei Fragen melden können."
+          label={t('contactUserLabel')}
+          hint={t('contactUserHint')}
         >
           <Select
             value={form.contactUserId || ''}
             onChange={(e) => set('contactUserId', e.target.value || null)}
           >
-            <option value="">-- Keine Person ausgewählt --</option>
+            <option value="">{t('noContactPersonOption')}</option>
             {deptMembers.map((m) => (
               <option key={m.userId} value={m.userId}>
                 {m.displayName}
@@ -1200,21 +1204,21 @@ export function EventForm({
         </Field>
 
         <Field
-          label="Verantwortliche"
-          hint="Pro Schicht festlegen oder eine Tagesleitung für ganze Tage."
+          label={t('responsiblesLabel')}
+          hint={t('responsiblesHint')}
         >
           <Select
             value={form.responsibleMode}
             onChange={(e) => set('responsibleMode', e.target.value as 'BY_SHIFT' | 'BY_DAY')}
           >
-            <option value="BY_SHIFT">Pro Schicht einzeln festlegen</option>
-            <option value="BY_DAY">Pro Tag festlegen (gilt automatisch für alle Schichten des Tages)</option>
+            <option value="BY_SHIFT">{t('respByShift')}</option>
+            <option value="BY_DAY">{t('respByDay')}</option>
           </Select>
         </Field>
 
         <Field
-          label="Tageswechsel-Uhrzeit"
-          hint="Schichten vor dieser Uhrzeit zählen zum Vortag, z. B. 04:00, damit Nachtschichten zum Abend davor gehören."
+          label={t('dayCutoffLabel')}
+          hint={t('dayCutoffHint')}
         >
           <Input
             type="time"
@@ -1224,17 +1228,17 @@ export function EventForm({
         </Field>
 
         <Field
-          label="Sichtbare Kontaktdaten"
-          hint="Was die Helfenden von Ansprechperson, Tagesleitung und Schichtverantwortlichen sehen."
+          label={t('contactVisibilityLabel')}
+          hint={t('contactVisibilityHint')}
         >
           <Select
             value={form.contactVisibility}
             onChange={(e) => set('contactVisibility', e.target.value as EventContactVisibility)}
           >
-            <option value="BOTH">Handynummer und E-Mail anzeigen</option>
-            <option value="PHONE">Nur Handynummer anzeigen</option>
-            <option value="EMAIL">Nur E-Mail anzeigen</option>
-            <option value="NONE">Keine Kontaktdaten anzeigen (nur Name)</option>
+            <option value="BOTH">{t('visBoth')}</option>
+            <option value="PHONE">{t('visPhone')}</option>
+            <option value="EMAIL">{t('visEmail')}</option>
+            <option value="NONE">{t('visNone')}</option>
           </Select>
         </Field>
         </div>
@@ -1242,13 +1246,13 @@ export function EventForm({
 
       <S
         id="anwesenheit"
-        title="Anwesenheit"
-        description="Am Anlass abhaken, wer da war."
+        title={t('anwesenheitTitle')}
+        description={t('anwesenheitDesc')}
         summary={ATTENDANCE_MODES[form.attendanceMode]}
       >
         <Field
-          label="Anwesenheitsliste"
-          hint="Das OK hakt pro Schicht ab, wer da war. Mit QR-Code checken sich die Helfenden zusätzlich selbst ein."
+          label={t('attendanceModeLabel')}
+          hint={t('attendanceModeHint')}
         >
           <Select
             value={form.attendanceMode}
@@ -1266,48 +1270,48 @@ export function EventForm({
           <div className="mt-4 space-y-4 rounded-xl border border-line bg-surface-2/40 p-4">
             <div className="flex items-center gap-2 text-xs font-semibold text-fg">
               <QrCode className="size-4 text-accent-ink" />
-              <span>QR-Code Selbst-Check-in Zeitfenster</span>
+              <span>{t('qrWindowHeader')}</span>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field
-                label="Check-in vor Schichtbeginn"
-                hint="Ab wann vor Beginn sich Helfende einchecken dürfen."
+                label={t('checkinEarlyMinutesLabel')}
+                hint={t('checkinEarlyMinutesHint')}
               >
                 <Select
                   value={String(form.checkinEarlyMinutes)}
                   onChange={(e) => set('checkinEarlyMinutes', Number(e.target.value))}
                 >
-                  <option value="0">Erst ab Schichtbeginn (0 Min.)</option>
-                  <option value="15">15 Minuten vorher</option>
-                  <option value="30">30 Minuten vorher (Standard)</option>
-                  <option value="45">45 Minuten vorher</option>
-                  <option value="60">1 Stunde vorher</option>
-                  <option value="90">1.5 Stunden vorher</option>
-                  <option value="120">2 Stunden vorher</option>
-                  <option value="180">3 Stunden vorher</option>
+                  <option value="0">{t('early0')}</option>
+                  <option value="15">{t('early15')}</option>
+                  <option value="30">{t('early30')}</option>
+                  <option value="45">{t('early45')}</option>
+                  <option value="60">{t('early60')}</option>
+                  <option value="90">{t('early90')}</option>
+                  <option value="120">{t('early120')}</option>
+                  <option value="180">{t('early180')}</option>
                 </Select>
               </Field>
 
               <Field
-                label="Check-in nach Schichtende"
-                hint="Bis wann nach Schichtende man sich noch eintragen kann."
+                label={t('checkinLateMinutesLabel')}
+                hint={t('checkinLateMinutesHint')}
               >
                 <Select
                   value={String(form.checkinLateMinutes)}
                   onChange={(e) => set('checkinLateMinutes', Number(e.target.value))}
                 >
-                  <option value="0">Genau bis Schichtende (0 Min.)</option>
-                  <option value="15">Bis 15 Minuten danach</option>
-                  <option value="30">Bis 30 Minuten danach (Standard)</option>
-                  <option value="45">Bis 45 Minuten danach</option>
-                  <option value="60">Bis 1 Stunde danach</option>
-                  <option value="90">Bis 1.5 Stunden danach</option>
-                  <option value="120">Bis 2 Stunden danach</option>
+                  <option value="0">{t('late0')}</option>
+                  <option value="15">{t('late15')}</option>
+                  <option value="30">{t('late30')}</option>
+                  <option value="45">{t('late45')}</option>
+                  <option value="60">{t('late60')}</option>
+                  <option value="90">{t('late90')}</option>
+                  <option value="120">{t('late120')}</option>
                 </Select>
               </Field>
             </div>
             <p className="text-xs text-fg-subtle">
-              Das ausdruckbare A4-Aushangplakat übernimmt diese Zeiten automatisch in der Hinweisbox für die Helfenden.
+              {t('posterNotice')}
             </p>
           </div>
         )}
@@ -1318,14 +1322,14 @@ export function EventForm({
 
       <S
         id="catering"
-        title="Verpflegung & Helfer-Bons"
-        description="Digitale Gutscheine für Helfende und druckbare A4-Bögen mit QR-Code."
+        title={t('cateringTitle')}
+        description={t('cateringDesc')}
         summary={
           form.cateringTokensEnabled
-            ? `${form.cateringTokenItems.length} Gutschein-Arten · ${
-                form.cateringEarlyHours < 0 ? 'Immer gültig' : `${form.cateringEarlyHours}h Vorlauf`
-              }`
-            : 'Deaktiviert'
+            ? form.cateringEarlyHours < 0
+              ? t('cateringSummaryAlways', { count: form.cateringTokenItems.length })
+              : t('cateringSummaryHours', { count: form.cateringTokenItems.length, hours: form.cateringEarlyHours })
+            : t('cateringSummaryDisabled')
         }
       >
         <div className="space-y-6">
@@ -1334,16 +1338,16 @@ export function EventForm({
             <div>
               <div className="flex items-center gap-2">
                 <UtensilsCrossed className="size-4 text-accent-ink" />
-                <span className="text-[13px] font-semibold text-fg">Verpflegungs- &amp; Getränke-Bons aktivieren</span>
+                <span className="text-[13px] font-semibold text-fg">{t('cateringSwitchLabel')}</span>
               </div>
               <p className="text-xs text-fg-muted mt-0.5">
-                Generiert für Helfende und Schichtleitende digitale Bons (abrufbar über «Meine Schichten», Anlass-Seite und QR-Check-in) und ermöglicht A4-Druckbögen für physische Bons.
+                {t('cateringSwitchDesc')}
               </p>
             </div>
             <Switch
               checked={form.cateringTokensEnabled}
               onChange={(checked) => set('cateringTokensEnabled', checked)}
-              aria-label="Verpflegungs-Tokens aktivieren"
+              aria-label={t('cateringSwitchLabel')}
             />
           </div>
 
@@ -1352,12 +1356,12 @@ export function EventForm({
               {/* 1. DIGITALE BONS EINSTELLUNGEN */}
               <div className="space-y-4 rounded-xl border border-line bg-surface p-4 sm:p-5">
                 <h4 className="font-display text-xs font-bold uppercase tracking-wider text-fg-subtle">
-                  Gutscheine pro Schicht &amp; Gültigkeit
+                  {t('cateringTokensSectionTitle')}
                 </h4>
 
                 <Field
-                  label="Gutscheine pro Schicht"
-                  hint="Diese Gutscheine erhält jede helfende Person pro Schicht (beliebige Bezeichnungen möglich)."
+                  label={t('cateringTokensPerShiftLabel')}
+                  hint={t('cateringTokensPerShiftHint')}
                 >
                   <div className="space-y-2">
                     <div className="flex flex-wrap gap-2">
@@ -1373,8 +1377,8 @@ export function EventForm({
                             type="button"
                             onClick={() => removeCateringItem(idx)}
                             className="hover:text-danger-ink focus-visible:ring-2 focus-visible:ring-accent p-0.5 rounded"
-                            title="Entfernen"
-                            aria-label={`${item} entfernen`}
+                            title={t('cateringRemoveItemAria', { item })}
+                            aria-label={t('cateringRemoveItemAria', { item })}
                           >
                             <X className="size-3" aria-hidden />
                           </button>
@@ -1384,7 +1388,7 @@ export function EventForm({
 
                     <div className="flex gap-2">
                       <Input
-                        placeholder="z. B. 1x Kaffee & Kuchen oder 1x Glacé"
+                        placeholder={t('cateringNewItemPlaceholder')}
                         value={newCateringItem}
                         onChange={(e) => setNewCateringItem(e.target.value)}
                         onKeyDown={(e) => {
@@ -1403,7 +1407,7 @@ export function EventForm({
                         disabled={!newCateringItem.trim()}
                         className="shrink-0 h-8"
                       >
-                        <Plus className="size-3.5 mr-1" /> Hinzufügen
+                        <Plus className="size-3.5 mr-1" /> {t('cateringAddItemBtn')}
                       </Button>
                     </div>
                   </div>
@@ -1411,35 +1415,35 @@ export function EventForm({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                   <Field
-                    label="Gültigkeit &amp; Kulanz-Fenster"
-                    hint="Wann dürfen Helfende ihre Bons einlösen? «Immer gültig» schaltet die Bons sofort ohne Zeitfenster frei."
+                    label={t('cateringEarlyHoursLabel')}
+                    hint={t('cateringEarlyHoursHint')}
                   >
                     <Select
                       value={String(form.cateringEarlyHours)}
                       onChange={(e) => set('cateringEarlyHours', Number(e.target.value))}
                     >
-                      <option value="-1">Immer gültig (sofort einlösbar, ohne Zeitfenster)</option>
-                      <option value="0">Erst ab Schichtbeginn / Check-in (0 Std.)</option>
-                      <option value="1">1 Stunde vor Schichtbeginn</option>
-                      <option value="2">2 Stunden vorher (Standard)</option>
-                      <option value="3">3 Stunden vorher</option>
-                      <option value="4">4 Stunden vorher</option>
-                      <option value="6">6 Stunden vorher</option>
-                      <option value="12">12 Stunden vorher</option>
-                      <option value="24">24 Stunden vorher</option>
+                      <option value="-1">{t('earlyHoursAlways')}</option>
+                      <option value="0">{t('earlyHours0')}</option>
+                      <option value="1">{t('earlyHours1')}</option>
+                      <option value="2">{t('earlyHours2')}</option>
+                      <option value="3">{t('earlyHours3')}</option>
+                      <option value="4">{t('earlyHours4')}</option>
+                      <option value="6">{t('earlyHours6')}</option>
+                      <option value="12">{t('earlyHours12')}</option>
+                      <option value="24">{t('earlyHours24')}</option>
                     </Select>
                   </Field>
 
                   <Field
-                    label="Stand-PIN für Bar &amp; Essensausgabe"
+                    label={t('staffPinLabel')}
                     hint={
                       staffPinTooShort(form.cateringStaffPin)
-                        ? `Der PIN braucht mindestens ${STAFF_PIN_MIN_LENGTH} Zeichen und wird erst dann gespeichert.`
-                        : `Code für Standpersonal ohne Konto (mindestens ${STAFF_PIN_MIN_LENGTH} Zeichen). Ohne PIN können nur angemeldete OK-Mitglieder Papier-Bons entwerten. Bleibt am Stand-Handy gemerkt.`
+                        ? t('staffPinHintShort', { min: STAFF_PIN_MIN_LENGTH })
+                        : t('staffPinHintNormal', { min: STAFF_PIN_MIN_LENGTH })
                     }
                   >
                     <Input
-                      placeholder="z. B. 482193 (optional)"
+                      placeholder={t('staffPinPlaceholder')}
                       maxLength={20}
                       value={form.cateringStaffPin}
                       onChange={(e) => set('cateringStaffPin', e.target.value)}
@@ -1452,8 +1456,8 @@ export function EventForm({
                   <Switch
                     checked={form.cateringRemindersEnabled}
                     onChange={(checked) => set('cateringRemindersEnabled', checked)}
-                    label="Automatische Bon-Erinnerung vor Schicht- und Festende"
-                    description="Erinnert Helfende ca. 30 Min. nach Schichtende sowie 1 Std. vor Festende per Push/E-Mail, falls noch Bons offen sind."
+                    label={t('cateringRemindersSwitchLabel')}
+                    description={t('cateringRemindersSwitchDesc')}
                   />
                 </div>
               </div>
@@ -1463,11 +1467,11 @@ export function EventForm({
                 <div className="flex items-center gap-2">
                   <QrCode className="size-4 text-accent-ink" />
                   <h4 className="font-display text-sm font-bold text-fg">
-                    Physische Bons (A4-Druckbögen &amp; Tranchen)
+                    {t('physicalBonsTitle')}
                   </h4>
                 </div>
                 <p className="text-xs text-fg-muted">
-                  Als Rückfallebene für Helfende ohne Smartphone oder Kinder: Druckt unpersönliche Papier-Gutscheine mit QR-Code zum Zerschneiden. Das Standpersonal scannt den Bon einfach mit der normalen Handykamera.
+                  {t('physicalBonsDesc')}
                 </p>
 
                 {eventSlug ? (
@@ -1478,7 +1482,7 @@ export function EventForm({
                   />
                 ) : (
                   <div className="rounded-lg border border-dashed border-line p-4 text-center text-xs text-fg-muted">
-                    Physische Druck-Tranchen können nach dem ersten Speichern des Anlasses generiert werden.
+                    {t('physicalBonsAfterSaveNotice')}
                   </div>
                 )}
               </div>
@@ -1488,13 +1492,13 @@ export function EventForm({
       </S>
       <S
         id="design"
-        title="Design"
-        description="Banner und Logo auf der Seite des Anlasses."
-        summary={`Banner: ${bannerName} · Logo: ${form.logoUrl ? 'Eigenes Bild' : 'Cevi-Logo'}`}
+        title={t('designTitle')}
+        description={t('designDesc')}
+        summary={t('designSummary', { banner: bannerName, logo: form.logoUrl ? t('customImageText') : t('defaultLogoText') })}
       >
         <fieldset className="space-y-5">
           <div>
-            <legend className="mb-3 text-[13px] font-semibold text-fg">Banner des Anlasses</legend>
+            <legend className="mb-3 text-[13px] font-semibold text-fg">{t('bannerLegend')}</legend>
             <div className={cn('grid grid-cols-2 gap-2.5 sm:grid-cols-3', layout === 'page' && 'xl:grid-cols-6')}>
               {BANNER_PRESETS.map((preset) => {
                 const selected = form.bannerUrl === preset.url;
@@ -1523,8 +1527,8 @@ export function EventForm({
           <div className={fieldColumns}>
           {/* Eigenes Bannerbild hochladen (kein Pfad/URL eingeben) */}
           <ImageUpload
-            label="Oder eigenes Bannerbild hochladen"
-            hint="Breitbild empfohlen (max. 6 MB)"
+            label={t('customBannerUploadLabel')}
+            hint={t('customBannerUploadHint')}
             aspectRatio="banner"
             value={BANNER_PRESETS.some((p) => p.url === form.bannerUrl) ? null : form.bannerUrl}
             onChange={(url) => set('bannerUrl', url ?? BANNER_PRESETS[0].url)}
@@ -1533,8 +1537,8 @@ export function EventForm({
 
           {/* Logo des Anlasses hochladen (kein Pfad/URL eingeben) */}
           <ImageUpload
-            label="Logo des Anlasses"
-            hint="Leer lassen für das Cevi-Logo"
+            label={t('logoUploadLabel')}
+            hint={t('logoUploadHint')}
             aspectRatio="square"
             value={form.logoUrl}
             onChange={(url) => set('logoUrl', url ?? '')}
@@ -1557,13 +1561,13 @@ export function EventForm({
           {(changedSinceOpen || needsManualSave) && (
             <div className="ml-auto flex items-center gap-2">
               {changedSinceOpen && (
-                <Button size="sm" variant="ghost" onClick={undo} title="Alle Felder auf den Stand beim Öffnen der Seite zurücksetzen">
-                  Rückgängig
+                <Button size="sm" variant="ghost" onClick={undo} title={t('undoTooltip')}>
+                  {t('undoAction')}
                 </Button>
               )}
               {needsManualSave && (
                 <Button size="sm" type="submit" loading={saving}>
-                  Speichern
+                  {t('saveAction')}
                 </Button>
               )}
             </div>
@@ -1572,10 +1576,10 @@ export function EventForm({
       ) : (
         <div className="flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:justify-end">
           <Button variant="ghost" onClick={onCancel}>
-            Abbrechen
+            {t('cancelAction')}
           </Button>
           <Button type="submit" loading={saving}>
-            {mode === 'create' ? 'Anlass erstellen' : 'Speichern'}
+            {mode === 'create' ? t('createAction') : t('saveAction')}
           </Button>
         </div>
       )}
@@ -1587,27 +1591,25 @@ export function EventForm({
           onClose={() => setShowSlugWarning(false)}
           size="md"
           icon={<AlertTriangle className="text-danger-ink" />}
-          title="Achtung: Webadresse (Slug) ändern?"
+          title={t('slugWarningTitle')}
         >
           <div className="space-y-4">
             <Callout tone="danger">
               <p className="font-semibold text-danger-ink">
-                Alle versendeten Links werden ungültig!
+                {t('slugWarningCalloutTitle')}
               </p>
               <p className="mt-1.5 text-xs leading-relaxed text-fg-muted">
-                Wenn du die Adresse von <strong className="text-fg font-mono">{initialSlug}</strong> zu{' '}
-                <strong className="text-fg font-mono">{form.slug}</strong> änderst, funktionieren alle bereits versendeten
-                Links (z.&nbsp;B. in WhatsApp-Gruppen, Einladungs-Mails, Flyern) sowie Lesezeichen sofort nicht mehr. Die Helfenden brauchen den neuen Link.
+                {t('slugWarningCalloutDesc', { initialSlug, newSlug: form.slug })}
               </p>
             </Callout>
 
             <div className="rounded-card border border-line bg-surface-2 p-3 text-xs space-y-1.5 font-mono">
               <div className="flex items-center justify-between text-fg-subtle">
-                <span>Alte URL:</span>
+                <span>{t('slugOldUrl')}</span>
                 <span className="line-through text-danger-ink/80">…/events/{initialSlug}</span>
               </div>
               <div className="flex items-center justify-between font-semibold text-fg">
-                <span>Neue URL:</span>
+                <span>{t('slugNewUrl')}</span>
                 <span className="text-accent-ink">…/events/{form.slug}</span>
               </div>
             </div>
@@ -1616,13 +1618,11 @@ export function EventForm({
               <p className="text-xs text-fg-muted">
                 {countdown > 0 ? (
                   <span>
-                    Sicherheits-Countdown: Bestätigung erst in{' '}
-                    <strong className="text-accent-ink text-sm tabular-nums">{countdown} Sekunden</strong>{' '}
-                    möglich…
+                    {t('countdownWaiting', { seconds: countdown })}
                   </span>
                 ) : (
                   <span className="font-medium text-success-ink">
-                    Countdown abgelaufen. Du kannst die Änderung jetzt bestätigen.
+                    {t('countdownDone')}
                   </span>
                 )}
               </p>
@@ -1634,7 +1634,7 @@ export function EventForm({
                 variant="ghost"
                 onClick={() => setShowSlugWarning(false)}
               >
-                Abbrechen
+                {t('cancelAction')}
               </Button>
               <Button
                 type="button"
@@ -1646,7 +1646,7 @@ export function EventForm({
                 }}
                 className={countdown === 0 ? 'bg-danger text-white hover:bg-danger-hover' : ''}
               >
-                {countdown > 0 ? `Bitte warten (${countdown}s)` : 'Trotzdem ändern & speichern'}
+                {countdown > 0 ? t('slugWaitBtn', { seconds: countdown }) : t('slugConfirmBtn')}
               </Button>
             </div>
           </div>

@@ -13,6 +13,7 @@ import {
   Trash2,
   UserPlus,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   toZurichInput,
   zurichInputToIso,
@@ -37,7 +38,7 @@ import {
   useOrganization,
 } from '@schichtplan/ui';
 import { api, errorMessage } from '@/lib/api';
-import { fmtTimeRange, } from '@/lib/format';
+import { fmtTimeRange } from '@/lib/format';
 import type { EventDetails, EventOrganizer } from '@/lib/types';
 
 /** ISO -> Wert für <input type="datetime-local"> in Schweizer Zeit */
@@ -54,19 +55,20 @@ function FormActions({
   label: string;
   isDirty?: boolean;
 }) {
+  const t = useTranslations('web.shiftDialogs.shiftForm');
   return (
     <div className="flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between">
       <div className="text-xs">
         {isDirty ? (
           <span className="flex items-center gap-1.5 font-medium text-accent-ink">
             <span className="size-2 rounded-full bg-accent animate-pulse" />
-            Ungespeicherte Änderungen
+            {t('unsavedChanges')}
           </span>
         ) : null}
       </div>
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button variant="ghost" onClick={onCancel} type="button">
-          Abbrechen
+          {t('cancelBtn')}
         </Button>
         <Button type="submit" loading={saving}>
           {label}
@@ -117,6 +119,7 @@ export function ShiftFormDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const t = useTranslations('web.shiftDialogs.shiftForm');
   const confirm = useConfirm();
   const toast = useToast();
   const isEdit = Boolean(shift);
@@ -136,7 +139,7 @@ export function ShiftFormDialog({
       if (status.isDirty) {
         const err = validationRef.current?.();
         if (err) {
-          toast({ tone: 'error', title: 'Bitte Eingaben korrigieren', description: err });
+          toast({ tone: 'error', title: t('pleaseCorrectInput'), description: err });
           return;
         }
         const ok = await saveRef.current?.();
@@ -157,10 +160,10 @@ export function ShiftFormDialog({
         const err = validationRef.current?.();
         if (err) {
           const ok = await confirm({
-            title: 'Ungültige Änderungen verwerfen?',
-            description: `Die Schicht hat noch Fehler (${err}) und kann so nicht automatisch gespeichert werden. Möchtest du diese Änderungen verwerfen?`,
-            confirmLabel: 'Änderungen verwerfen',
-            cancelLabel: 'Weiter bearbeiten',
+            title: t('discardInvalidTitle'),
+            description: t('discardInvalidDesc', { error: err }),
+            confirmLabel: t('discardInvalidConfirm'),
+            cancelLabel: t('discardInvalidCancel'),
             tone: 'danger',
           });
           if (!ok) return;
@@ -179,10 +182,10 @@ export function ShiftFormDialog({
     // Neuerstellung:
     if (status.isDirty) {
       const ok = await confirm({
-        title: 'Änderungen verwerfen?',
-        description: 'Du hast ungespeicherte Eingaben an dieser Schicht. Möchtest du wirklich abbrechen?',
-        confirmLabel: 'Änderungen verwerfen',
-        cancelLabel: 'Weiter bearbeiten',
+        title: t('discardUnsavedTitle'),
+        description: t('discardUnsavedDesc'),
+        confirmLabel: t('discardUnsavedConfirm'),
+        cancelLabel: t('discardUnsavedCancel'),
         tone: 'danger',
       });
       if (!ok) return;
@@ -195,8 +198,8 @@ export function ShiftFormDialog({
       open={open}
       onClose={handleClose}
       icon={isEdit ? <Clock /> : <Plus />}
-      title={isEdit ? 'Schicht bearbeiten' : 'Neue Schicht'}
-      description={`Für ${event.title}`}
+      title={isEdit ? t('editTitle') : t('newTitle')}
+      description={t('forEvent', { eventTitle: event.title })}
       footer={
         <div className="flex w-full sm:!w-full flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-xs">
@@ -204,7 +207,7 @@ export function ShiftFormDialog({
               status.autoSaveStatus === 'saving' ? (
                 <span className="flex items-center gap-1.5 font-medium text-fg-muted">
                   <Spinner size="xs" className="text-accent" />
-                  Wird gespeichert…
+                  {t('savingStatus')}
                 </span>
               ) : status.isDirty && status.validationError ? (
                 <span className="flex items-center gap-1.5 font-medium text-warning-ink" title={status.validationError}>
@@ -214,25 +217,25 @@ export function ShiftFormDialog({
               ) : status.isDirty ? (
                 <span className="flex items-center gap-1.5 font-medium text-accent-ink">
                   <span className="size-2 rounded-full bg-accent animate-pulse" />
-                  Wird gespeichert…
+                  {t('savingStatus')}
                 </span>
               ) : status.autoSaveStatus === 'saved' || status.hasSavedChanges ? (
                 <span className="flex items-center gap-1.5 font-medium text-success-ink">
                   <Check className="size-3.5 text-success" />
-                  Automatisch gespeichert
+                  {t('autoSavedStatus')}
                 </span>
               ) : status.autoSaveStatus === 'error' ? (
                 <span className="flex items-center gap-1.5 font-medium text-danger-ink">
                   <AlertCircle className="size-3.5 text-danger" />
-                  Fehler beim Speichern
+                  {t('saveErrorStatus')}
                 </span>
               ) : (
-                <span className="text-fg-subtle">Änderungen werden automatisch gespeichert</span>
+                <span className="text-fg-subtle">{t('autoSaveHint')}</span>
               )
             ) : status.isDirty ? (
               <span className="flex items-center gap-1.5 font-medium text-accent-ink">
                 <span className="size-2 rounded-full bg-accent animate-pulse" />
-                Ungespeicherte Eingaben
+                {t('unsavedInputsStatus')}
               </span>
             ) : null}
           </div>
@@ -240,15 +243,15 @@ export function ShiftFormDialog({
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             {isEdit ? (
               <Button type="button" onClick={handleFinish} loading={status.autoSaveStatus === 'saving'}>
-                Fertig
+                {t('finishBtn')}
               </Button>
             ) : (
               <>
                 <Button variant="ghost" type="button" onClick={handleClose}>
-                  Abbrechen
+                  {t('cancelBtn')}
                 </Button>
                 <Button type="submit" form="shift-form" loading={status.autoSaveStatus === 'saving'}>
-                  Schicht anlegen
+                  {t('createShiftBtn')}
                 </Button>
               </>
             )}
@@ -289,6 +292,7 @@ function ShiftForm({
   validationRef?: React.MutableRefObject<(() => string | null) | null>;
   formId?: string;
 }) {
+  const t = useTranslations('web.shiftDialogs.shiftForm');
   const toast = useToast();
   const isEdit = Boolean(shift);
 
@@ -322,19 +326,19 @@ function ShiftForm({
 
   const [tasks, setTasks] = useState<TaskFormItem[]>(() => {
     if (shift?.tasks && shift.tasks.length > 0) {
-      return shift.tasks.map((t) => ({
-        id: t.id,
-        taskDefinitionId: t.taskDefinitionId || null,
-        title: t.title,
-        requiredSlots: t.requiredSlots,
-        minAge: t.minAge || 0,
-        ageRequirementType: t.ageRequirementType || 'ALL',
-        description: t.description || '',
+      return shift.tasks.map((taskItem) => ({
+        id: taskItem.id,
+        taskDefinitionId: taskItem.taskDefinitionId || null,
+        title: taskItem.title,
+        requiredSlots: taskItem.requiredSlots,
+        minAge: taskItem.minAge || 0,
+        ageRequirementType: taskItem.ageRequirementType || 'ALL',
+        description: taskItem.description || '',
       }));
     }
     return [
       {
-        title: shift?.title || 'Helfer*in',
+        title: shift?.title || t('defaultHelperTitle'),
         requiredSlots: shift?.requiredSlots || 2,
         minAge: shift?.minAge || 0,
         ageRequirementType: 'ALL',
@@ -346,14 +350,14 @@ function ShiftForm({
   // Aktualisiere Task 0 wenn Schichttitel sich ändert und nur 1 Task vorhanden ist
   const handleTitleChange = (newTitle: string) => {
     setForm((prev) => ({ ...prev, title: newTitle }));
-    if (!isEdit && tasks.length === 1 && (tasks[0].title === 'Helfer*in' || tasks[0].title === form.title)) {
+    if (!isEdit && tasks.length === 1 && (tasks[0].title === t('defaultHelperTitle') || tasks[0].title === form.title)) {
       setTasks((prev) => [{ ...prev[0], title: newTitle }]);
     }
   };
 
   const addFromCatalog = (catalogItem: TaskDefinitionDto) => {
     // Falls nur 1 Task vorhanden ist und er noch leer/Standard ist, überschreiben
-    if (tasks.length === 1 && (!tasks[0].title.trim() || tasks[0].title === 'Helfer*in')) {
+    if (tasks.length === 1 && (!tasks[0].title.trim() || tasks[0].title === t('defaultHelperTitle'))) {
       setTasks([
         {
           taskDefinitionId: catalogItem.id,
@@ -372,11 +376,11 @@ function ShiftForm({
 
     // Prüfen ob diese Arbeit schon in der Schicht ist -> dann Slots erhöhen
     const existingIdx = tasks.findIndex(
-      (t) => (t.taskDefinitionId && t.taskDefinitionId === catalogItem.id) || t.title.toLowerCase() === catalogItem.title.toLowerCase()
+      (taskItem) => (taskItem.taskDefinitionId && taskItem.taskDefinitionId === catalogItem.id) || taskItem.title.toLowerCase() === catalogItem.title.toLowerCase()
     );
     if (existingIdx >= 0) {
       updateTask(existingIdx, { requiredSlots: tasks[existingIdx].requiredSlots + 1 });
-      toast({ title: `${catalogItem.title}: Plätze auf ${tasks[existingIdx].requiredSlots + 1} erhöht` });
+      toast({ title: t('toastSlotsIncreased', { title: catalogItem.title, slots: tasks[existingIdx].requiredSlots + 1 }) });
       return;
     }
 
@@ -413,10 +417,10 @@ function ShiftForm({
   };
 
   const updateTask = (index: number, patch: Partial<TaskFormItem>) => {
-    setTasks((prev) => prev.map((t, i) => (i === index ? { ...t, ...patch } : t)));
+    setTasks((prev) => prev.map((taskItem, i) => (i === index ? { ...taskItem, ...patch } : taskItem)));
   };
 
-  const totalSlots = tasks.reduce((sum, t) => sum + (t.requiredSlots || 1), 0);
+  const totalSlots = tasks.reduce((sum, taskItem) => sum + (taskItem.requiredSlots || 1), 0);
 
   const [saving, setSaving] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -436,21 +440,21 @@ function ShiftForm({
 
   const getValidationError = (): string | null => {
     const hasTitle = form.title.trim().length > 0;
-    const hasValidTask = tasks.some((t) => t.title.trim().length >= 2);
+    const hasValidTask = tasks.some((taskItem) => taskItem.title.trim().length >= 2);
     if (!hasTitle && !hasValidTask) {
-      return 'Bitte gib einen Schichttitel oder mindestens eine Arbeit an';
+      return t('valTitleOrTask');
     }
     if (hasTitle && form.title.trim().length < 2) {
-      return 'Schichttitel muss mindestens 2 Zeichen haben';
+      return t('valTitleMinLength');
     }
-    if (!form.startTime || !form.endTime) return 'Zeiten unvollständig';
+    if (!form.startTime || !form.endTime) return t('valIncompleteTimes');
     const s = new Date(form.startTime).getTime();
     const e = new Date(form.endTime).getTime();
-    if (isNaN(s) || isNaN(e)) return 'Ungültige Zeitangabe';
-    if (e <= s) return 'Ende muss nach Beginn liegen';
-    for (const t of tasks) {
-      if (t.title.trim().length < 2) return `«${t.title || 'Arbeit'}» braucht mind. 2 Zeichen`;
-      if ((t.requiredSlots || 0) < 1) return `«${t.title}» braucht mind. 1 Platz`;
+    if (isNaN(s) || isNaN(e)) return t('valInvalidTime');
+    if (e <= s) return t('valEndAfterStart');
+    for (const taskItem of tasks) {
+      if (taskItem.title.trim().length < 2) return t('valTaskMinLength', { title: taskItem.title || t('valTaskFallback') });
+      if ((taskItem.requiredSlots || 0) < 1) return t('valTaskMinSlot', { title: taskItem.title });
     }
     return null;
   };
@@ -482,14 +486,14 @@ function ShiftForm({
         minAge: form.minAge || undefined,
         description: form.description.trim() || undefined,
         responsibleUserIds: event.responsibleMode === 'BY_SHIFT' ? responsibleUserIds : undefined,
-        tasks: tasks.map((t) => ({
-          id: t.id,
-          taskDefinitionId: t.taskDefinitionId || undefined,
-          title: t.title.trim(),
-          requiredSlots: t.requiredSlots || 1,
-          minAge: t.minAge || undefined,
-          ageRequirementType: t.ageRequirementType,
-          description: t.description?.trim() || undefined,
+        tasks: tasks.map((taskItem) => ({
+          id: taskItem.id,
+          taskDefinitionId: taskItem.taskDefinitionId || undefined,
+          title: taskItem.title.trim(),
+          requiredSlots: taskItem.requiredSlots || 1,
+          minAge: taskItem.minAge || undefined,
+          ageRequirementType: taskItem.ageRequirementType,
+          description: taskItem.description?.trim() || undefined,
         })),
       };
 
@@ -502,7 +506,7 @@ function ShiftForm({
         setAutoSaveStatus('saved');
         hasSavedChangesRef.current = true;
         if (!silent) {
-          toast({ title: 'Schicht aktualisiert', description: form.title });
+          toast({ title: t('toastShiftUpdated'), description: form.title });
         }
       } else {
         await api('/api/shifts', {
@@ -512,7 +516,7 @@ function ShiftForm({
             eventId: event.id,
           },
         });
-        toast({ title: 'Schicht angelegt', description: form.title });
+        toast({ title: t('toastShiftCreated'), description: form.title });
         onSaved();
       }
 
@@ -522,7 +526,7 @@ function ShiftForm({
       const msg = errorMessage(err);
       setError(msg);
       setAutoSaveStatus('error');
-      toast({ tone: 'error', title: 'Fehler beim Speichern', description: msg });
+      toast({ tone: 'error', title: t('toastSaveError'), description: msg });
       setSaving(false);
       return false;
     }
@@ -575,11 +579,11 @@ function ShiftForm({
     <form id={formId} onSubmit={submit} className="space-y-5">
       {error && <Callout tone="danger">{error}</Callout>}
 
-      <Field label="Schichttitel (optional)" hint="z. B. Stand, Bar oder leer lassen, wenn nur die Arbeiten zählen">
+      <Field label={t('shiftTitleLabel')} hint={t('shiftTitleHint')}>
         <Input
           value={form.title}
           autoFocus
-          placeholder="z. B. Bar & Grill Samstagabend (optional)"
+          placeholder={t('shiftTitlePlaceholder')}
           onChange={(e) => handleTitleChange(e.target.value)}
         />
       </Field>
@@ -595,24 +599,24 @@ function ShiftForm({
           />
           <div className="space-y-0.5">
             <span className="text-sm font-bold text-fg flex items-center gap-1.5">
-              Auf- oder Abbau
+              {t('setupTeardownTitle')}
             </span>
             <p className="text-xs text-fg-muted">
-              Markiert die Schicht als Arbeit vor oder nach dem Anlass. Helfende können danach filtern.
+              {t('setupTeardownDesc')}
             </p>
           </div>
         </label>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Beginn" required>
+        <Field label={t('beginLabel')} required>
           <Input
             type="datetime-local"
             value={form.startTime}
             onChange={(e) => setForm({ ...form, startTime: e.target.value })}
           />
         </Field>
-        <Field label="Ende" required>
+        <Field label={t('endLabel')} required>
           <Input
             type="datetime-local"
             value={form.endTime}
@@ -624,9 +628,9 @@ function ShiftForm({
 
       {/* Mindestalter für die gesamte Schicht */}
       <div className="flex flex-col gap-1.5 rounded-field border border-line bg-surface-2 p-3">
-        <span className="text-[13px] font-semibold text-fg">Mindestalter für die gesamte Schicht</span>
+        <span className="text-[13px] font-semibold text-fg">{t('minAgeShiftTitle')}</span>
         <p className="text-xs text-fg-muted">
-          Gilt für alle in dieser Schicht (z. B. Nachtschicht ab 18).
+          {t('minAgeShiftDesc')}
         </p>
         <div className="mt-2 grid h-10 grid-cols-4 gap-1">
           {[0, 14, 16, 18].map((age) => (
@@ -639,7 +643,7 @@ function ShiftForm({
                 form.minAge === age ? 'bg-surface text-fg shadow-soft' : 'text-fg-muted hover:text-fg'
               )}
             >
-              {age === 0 ? 'Keins' : `ab ${age}`}
+              {age === 0 ? t('noMinAge') : t('minAgeFrom', { age })}
             </button>
           ))}
         </div>
@@ -649,13 +653,13 @@ function ShiftForm({
       <div className="space-y-4 rounded-card border border-line bg-surface p-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h4 className="text-sm font-bold text-fg">Arbeiten in dieser Schicht</h4>
+            <h4 className="text-sm font-bold text-fg">{t('tasksSectionTitle')}</h4>
             <p className="text-xs text-fg-muted">
-              Wähle Arbeiten aus dem Katalog oder trage neue ein ({totalSlots} Plätze total).
+              {t('tasksSectionDesc', { totalSlots })}
             </p>
           </div>
           <Button type="button" size="sm" variant="secondary" onClick={addTask}>
-            <Plus className="size-3.5" /> Neue Arbeit
+            <Plus className="size-3.5" /> {t('newTaskBtn')}
           </Button>
         </div>
 
@@ -663,12 +667,12 @@ function ShiftForm({
         {availableTasks.length > 0 && (
           <div className="rounded-field border border-line/70 bg-surface-2/60 p-3">
             <span className="mb-2 block text-2xs font-bold uppercase tracking-wider text-fg-subtle">
-              Katalog-Arbeiten schnell hinzufügen:
+              {t('catalogFastAdd')}
             </span>
             <div className="flex flex-wrap gap-1.5">
               {availableTasks.map((at) => {
                 const inShift = tasks.some(
-                  (t) => (t.taskDefinitionId && t.taskDefinitionId === at.id) || t.title.toLowerCase() === at.title.toLowerCase()
+                  (taskItem) => (taskItem.taskDefinitionId && taskItem.taskDefinitionId === at.id) || taskItem.title.toLowerCase() === at.title.toLowerCase()
                 );
                 return (
                   <button
@@ -697,7 +701,7 @@ function ShiftForm({
         )}
 
         <div className="space-y-3">
-          {tasks.map((task, idx) => (
+          {tasks.map((taskItem, idx) => (
             /* biome-ignore lint/suspicious/noArrayIndexKey: Lokale Formular-Tasks besitzen keinen zwingenden Server-Schlüssel */
             <div key={idx} className="relative rounded-field border border-line bg-surface-2 p-3.5">
               {tasks.length > 1 && (
@@ -705,40 +709,40 @@ function ShiftForm({
                   type="button"
                   onClick={() => removeTask(idx)}
                   className="absolute right-2 top-2 rounded-full p-1 text-fg-subtle transition hover:bg-danger/10 hover:text-danger-ink"
-                  aria-label="Arbeit entfernen"
+                  aria-label={t('removeTaskAria')}
                 >
                   <Trash2 className="size-4" />
                 </button>
               )}
 
               <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-                <Field label={`Arbeit #${idx + 1}`} required>
+                <Field label={t('taskLabelIndexed', { index: idx + 1 })} required>
                   <Input
-                    value={task.title}
-                    placeholder="z.B. Grill, Bar, Kasse, Aufbau"
+                    value={taskItem.title}
+                    placeholder={t('taskPlaceholder')}
                     onChange={(e) => updateTask(idx, { title: e.target.value })}
                   />
                 </Field>
 
                 <div className="flex flex-col gap-1.5">
-                  <span className="text-[13px] font-semibold text-fg">Plätze</span>
+                  <span className="text-[13px] font-semibold text-fg">{t('slotsLabel')}</span>
                   <div className="flex h-10 items-center justify-between rounded-field border border-line bg-surface px-1">
                     <Button
                       size="icon-sm"
                       variant="ghost"
                       type="button"
-                      aria-label="Weniger"
-                      onClick={() => updateTask(idx, { requiredSlots: Math.max(1, task.requiredSlots - 1) })}
+                      aria-label={t('lessSlotsAria')}
+                      onClick={() => updateTask(idx, { requiredSlots: Math.max(1, taskItem.requiredSlots - 1) })}
                     >
                       <Minus className="size-3.5" />
                     </Button>
-                    <span className="tabular px-2 text-sm font-bold">{task.requiredSlots}</span>
+                    <span className="tabular px-2 text-sm font-bold">{taskItem.requiredSlots}</span>
                     <Button
                       size="icon-sm"
                       variant="ghost"
                       type="button"
-                      aria-label="Mehr"
-                      onClick={() => updateTask(idx, { requiredSlots: Math.min(20, task.requiredSlots + 1) })}
+                      aria-label={t('moreSlotsAria')}
+                      onClick={() => updateTask(idx, { requiredSlots: Math.min(20, taskItem.requiredSlots + 1) })}
                     >
                       <Plus className="size-3.5" />
                     </Button>
@@ -749,7 +753,7 @@ function ShiftForm({
               {/* Altersrichtlinien für diese Arbeit */}
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <div>
-                  <span className="mb-1 block text-xs font-semibold text-fg">Mindestalter für diese Arbeit</span>
+                  <span className="mb-1 block text-xs font-semibold text-fg">{t('minAgeTaskTitle')}</span>
                   <div className="grid h-9 grid-cols-4 gap-1 rounded-field border border-line bg-surface p-0.5">
                     {[0, 14, 16, 18].map((age) => (
                       <button
@@ -758,44 +762,44 @@ function ShiftForm({
                         onClick={() => updateTask(idx, { minAge: age })}
                         className={cn(
                           'rounded-[0.4rem] text-xs font-semibold transition',
-                          task.minAge === age ? 'bg-surface-2 text-fg shadow-soft' : 'text-fg-muted hover:text-fg'
+                          taskItem.minAge === age ? 'bg-surface-2 text-fg shadow-soft' : 'text-fg-muted hover:text-fg'
                         )}
                       >
-                        {age === 0 ? 'Keins' : `ab ${age}`}
+                        {age === 0 ? t('noMinAge') : t('minAgeFrom', { age })}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {task.minAge > 0 && (
+                {taskItem.minAge > 0 && (
                   <div>
-                    <span className="mb-1 block text-xs font-semibold text-fg">Alters-Anforderung</span>
+                    <span className="mb-1 block text-xs font-semibold text-fg">{t('ageRequirementTitle')}</span>
                     <div className="grid h-9 grid-cols-2 gap-1 rounded-field border border-line bg-surface p-0.5">
                       <button
                         type="button"
                         onClick={() => updateTask(idx, { ageRequirementType: 'ALL' })}
                         className={cn(
                           'rounded-[0.4rem] text-xs font-semibold transition',
-                          task.ageRequirementType === 'ALL'
+                          taskItem.ageRequirementType === 'ALL'
                             ? 'bg-accent/15 text-accent-ink font-bold'
                             : 'text-fg-muted hover:text-fg'
                         )}
-                        title="Alle bei dieser Arbeit müssen mindestens so alt sein"
+                        title={t('ageReqAllTooltip')}
                       >
-                        Alle
+                        {t('ageReqAll')}
                       </button>
                       <button
                         type="button"
                         onClick={() => updateTask(idx, { ageRequirementType: 'AT_LEAST_ONE' })}
                         className={cn(
                           'rounded-[0.4rem] text-xs font-semibold transition',
-                          task.ageRequirementType === 'AT_LEAST_ONE'
+                          taskItem.ageRequirementType === 'AT_LEAST_ONE'
                             ? 'bg-accent/15 text-accent-ink font-bold'
                             : 'text-fg-muted hover:text-fg'
                         )}
-                        title="Mindestens 1 Person in der Schicht muss das Alter haben (z.B. Baraufsicht)"
+                        title={t('ageReqAtLeastOneTooltip')}
                       >
-                        Mind. 1 in Schicht
+                        {t('ageReqAtLeastOne')}
                       </button>
                     </div>
                   </div>
@@ -809,9 +813,9 @@ function ShiftForm({
       {event.responsibleMode === 'BY_SHIFT' ? (
         <div className="space-y-3 rounded-card border border-line bg-surface p-4">
           <div>
-            <h4 className="text-sm font-bold text-fg">Schicht-Verantwortliche</h4>
+            <h4 className="text-sm font-bold text-fg">{t('responsiblesTitle')}</h4>
             <p className="text-xs text-fg-muted">
-              Diese Person(en) leiten die Schicht (z. B. Standleitung, Grillleitung) und werden auf den Schichtkarten als Ansprechpersonen aufgeführt.
+              {t('responsiblesDesc')}
             </p>
           </div>
 
@@ -820,7 +824,7 @@ function ShiftForm({
               {responsibleUserIds.map((userId) => {
                 const member = members.find((m) => m.userId === userId);
                 const shiftResp = shift?.responsibles?.find((r) => r.id === userId);
-                const name = member?.displayName || shiftResp?.displayName || 'Verantwortliche Person';
+                const name = member?.displayName || shiftResp?.displayName || t('defaultResponsibleName');
                 return (
                   <Badge key={userId} tone="neutral" size="md" className="flex items-center gap-1.5 py-1">
                     <span>{name}</span>
@@ -828,7 +832,7 @@ function ShiftForm({
                       type="button"
                       onClick={() => setResponsibleUserIds((prev) => prev.filter((id) => id !== userId))}
                       className="ml-1 rounded p-0.5 hover:bg-fg/10 text-fg-muted hover:text-fg"
-                      title="Entfernen"
+                      title={t('removeTooltip')}
                     >
                       <Trash2 className="size-3" />
                     </button>
@@ -848,7 +852,7 @@ function ShiftForm({
                 }
               }}
             >
-              <option value="">+ Person als Schicht-Verantwortliche(n) hinzufügen…</option>
+              <option value="">{t('addResponsiblePlaceholder')}</option>
               {members
                 .filter((m) => !responsibleUserIds.includes(m.userId))
                 .map((m) => (
@@ -861,21 +865,21 @@ function ShiftForm({
         </div>
       ) : (
         <Callout tone="info">
-          <strong>Tages-Verantwortliche aktiv:</strong> Für diesen Anlass werden Verantwortliche pro Tag festgelegt. Alle Schichten an diesem Tag übernehmen automatisch die Tages-Verantwortlichen.
+          <strong>{t('dayRespCalloutTitle')}</strong> {t('dayRespCalloutDesc')}
         </Callout>
       )}
 
-      <Field label="Hinweise / Beschreibung">
+      <Field label={t('notesLabel')}>
         <Textarea
           rows={2}
           value={form.description}
-          placeholder="Bequeme Schuhe, Schürze wird gestellt …"
+          placeholder={t('notesPlaceholder')}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
         />
       </Field>
 
       {!formId && (
-        <FormActions onCancel={onCancel} saving={saving} label={isEdit ? 'Änderungen speichern' : 'Schicht anlegen'} isDirty={isDirty} />
+        <FormActions onCancel={onCancel} saving={saving} label={isEdit ? t('saveChangesBtn') : t('createShiftBtn')} isDirty={isDirty} />
       )}
     </form>
   );
@@ -898,13 +902,14 @@ export function DuplicateShiftDialog({
   onClose: () => void;
   onDuplicated: () => void;
 }) {
+  const t = useTranslations('web.shiftDialogs.duplicate');
   return (
     <Dialog
       open={open && shift !== null}
       onClose={onClose}
       icon={<Copy />}
-      title="Schicht duplizieren"
-      description={shift ? `Kopie von "${shift.title?.trim() || fmtTimeRange(shift.startTime, shift.endTime)}" erstellen` : ''}
+      title={t('title')}
+      description={shift ? t('description', { shiftTitle: shift.title?.trim() || fmtTimeRange(shift.startTime, shift.endTime) }) : ''}
     >
       {shift && <DuplicateShiftForm shift={shift} onCancel={onClose} onDuplicated={onDuplicated} />}
     </Dialog>
@@ -920,8 +925,9 @@ function DuplicateShiftForm({
   onCancel: () => void;
   onDuplicated: () => void;
 }) {
+  const t = useTranslations('web.shiftDialogs.duplicate');
   const toast = useToast();
-  const [title, setTitle] = useState(shift.title?.trim() ? `${shift.title} (Folgeschicht)` : '');
+  const [title, setTitle] = useState(shift.title?.trim() ? `${shift.title} (${t('folgeschicht')})` : '');
   const [startTime, setStartTime] = useState(toLocalInput(shift.endTime)); // Standard: schliesst direkt an vorherige Schicht an!
 
   // Dauer der vorherigen Schicht berechnen
@@ -945,7 +951,7 @@ function DuplicateShiftForm({
           endTime: zurichInputToIso(endTime)!,
         },
       });
-      toast({ title: 'Schicht dupliziert', description: title.trim() || 'Folgeschicht' });
+      toast({ title: t('toastTitle'), description: title.trim() || t('folgeschicht') });
       onDuplicated();
     } catch (err) {
       setError(errorMessage(err));
@@ -957,20 +963,20 @@ function DuplicateShiftForm({
     <form onSubmit={submit} className="space-y-4">
       {error && <Callout tone="danger">{error}</Callout>}
 
-      <Field label="Titel der neuen Schicht (optional)">
+      <Field label={t('titleLabel')}>
         <Input
           value={title}
           autoFocus
-          placeholder="z. B. Stand (Folgeschicht) oder leer lassen"
+          placeholder={t('titlePlaceholder')}
           onChange={(e) => setTitle(e.target.value)}
         />
       </Field>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Beginn" required>
+        <Field label={t('beginLabel')} required>
           <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
         </Field>
-        <Field label="Ende" required>
+        <Field label={t('endLabel')} required>
           <Input
             type="datetime-local"
             value={endTime}
@@ -981,10 +987,10 @@ function DuplicateShiftForm({
       </div>
 
       <p className="text-xs text-fg-muted">
-        Alle Arbeiten ({shift.tasks?.length || 1} Aufgaben) und Plätze werden 1:1 kopiert. Eintragungen werden nicht kopiert.
+        {t('tasksCopiedHint', { count: shift.tasks?.length || 1 })}
       </p>
 
-      <FormActions onCancel={onCancel} saving={saving} label="Duplizieren" />
+      <FormActions onCancel={onCancel} saving={saving} label={t('duplicateBtn')} />
     </form>
   );
 }
@@ -1004,6 +1010,7 @@ export function SaveTemplateDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const t = useTranslations('web.shiftDialogs.template');
   const toast = useToast();
   const [title, setTitle] = useState(`${defaultTitle} (Vorlage)`);
   const [description, setDescription] = useState('');
@@ -1023,8 +1030,8 @@ export function SaveTemplateDialog({
         },
       });
       toast({
-        title: 'Vorlage gespeichert!',
-        description: 'Kann künftig beim Erstellen neuer Events als Blueprint gewählt werden.',
+        title: t('toastTitle'),
+        description: t('toastDesc'),
       });
       onSaved();
     } catch (err) {
@@ -1038,26 +1045,26 @@ export function SaveTemplateDialog({
       open={open}
       onClose={onClose}
       icon={<Copy />}
-      title="Als Vorlage speichern"
-      description="Speichert die gesamte Schicht- und Arbeitsstruktur relativ ab, um sie nächstes Jahr auf neue Daten anzuwenden."
+      title={t('title')}
+      description={t('description')}
     >
       <form onSubmit={submit} className="space-y-4">
         {error && <Callout tone="danger">{error}</Callout>}
 
-        <Field label="Name der Vorlage" required>
+        <Field label={t('nameLabel')} required>
           <Input value={title} autoFocus onChange={(e) => setTitle(e.target.value)} />
         </Field>
 
-        <Field label="Beschreibung / Notizen für kommende Jahre">
+        <Field label={t('notesLabel')}>
           <Textarea
             rows={3}
             value={description}
-            placeholder="z.B. Standard 3-Tage-Chilbi mit Bar, Grill und Springer..."
+            placeholder={t('notesPlaceholder')}
             onChange={(e) => setDescription(e.target.value)}
           />
         </Field>
 
-        <FormActions onCancel={onClose} saving={saving} label="Vorlage anlegen" />
+        <FormActions onCancel={onClose} saving={saving} label={t('saveBtn')} />
       </form>
     </Dialog>
   );
@@ -1078,13 +1085,14 @@ export function OrganizerDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const t = useTranslations('web.shiftDialogs.organizer');
   return (
     <Dialog
       open={open}
       onClose={onClose}
       icon={<UserPlus />}
-      title={organizer ? `${organizer.userCeviName || organizer.displayName} im OK bearbeiten` : 'Ins OK aufnehmen'}
-      description="OK-Mitglieder planen Schichten und teilen Helfende ein, ohne Abteilungsleitung zu sein."
+      title={organizer ? t('editTitle', { name: organizer.userCeviName || organizer.displayName }) : t('newTitle')}
+      description={t('description')}
     >
       <OrganizerForm
         key={organizer?.id ?? 'new'}
@@ -1108,6 +1116,7 @@ function OrganizerForm({
   onCancel: () => void;
   onSaved: () => void;
 }) {
+  const t = useTranslations('web.shiftDialogs.organizer');
   const toast = useToast();
   const org = useOrganization();
   const isVerein = org.slug === 'verein';
@@ -1140,7 +1149,7 @@ function OrganizerForm({
           roleTitle: form.roleTitle.trim(),
         },
       });
-      toast({ title: organizer ? `${who} aktualisiert` : `${who} ist jetzt im OK` });
+      toast({ title: organizer ? t('toastUpdated', { who }) : t('toastAdded', { who }) });
       onSaved();
     } catch (err) {
       setError(errorMessage(err));
@@ -1149,15 +1158,15 @@ function OrganizerForm({
   };
 
   const roles = [
-    { value: 'OK_LEAD' as const, label: 'OK-Leitung', text: 'Design, Einstellungen und OK verwalten', icon: Crown },
-    { value: 'OK_MEMBER' as const, label: 'OK-Mitglied', text: 'Schichten planen und Helfende einteilen', icon: Shield },
+    { value: 'OK_LEAD' as const, label: t('roleLeadLabel'), text: t('roleLeadText'), icon: Crown },
+    { value: 'OK_MEMBER' as const, label: t('roleMemberLabel'), text: t('roleMemberText'), icon: Shield },
   ];
 
   return (
     <form onSubmit={submit} className="space-y-5">
       {error && <Callout tone="danger">{error}</Callout>}
       {organizer ? (
-        <Field label="Person">
+        <Field label={t('personLabel')}>
           <Input value={form.who} disabled />
         </Field>
       ) : (
@@ -1166,8 +1175,8 @@ function OrganizerForm({
           required
           hint={
             isVerein
-              ? `Die Person braucht ein Konto mit E-Mail und Passwort. Bei gleichen ${org.nicknameTerm}n die E-Mail angeben.`
-              : `Die Person braucht ein Konto mit ${org.authProviderShort} oder mit E-Mail und Passwort. Bei gleichen ${org.nicknameTerm}n die E-Mail angeben.`
+              ? t('accountRequiredVerein', { nicknameTerm: org.nicknameTerm })
+              : t('accountRequiredOrg', { provider: org.authProviderShort, nicknameTerm: org.nicknameTerm })
           }
         >
           <Input
@@ -1179,7 +1188,7 @@ function OrganizerForm({
         </Field>
       )}
       <fieldset>
-        <legend className="mb-3 text-[13px] font-semibold text-fg">Rolle</legend>
+        <legend className="mb-3 text-[13px] font-semibold text-fg">{t('roleLegend')}</legend>
         <div className="grid gap-2.5 sm:grid-cols-2">
           {roles.map((r) => {
             const Icon = r.icon;
@@ -1209,14 +1218,14 @@ function OrganizerForm({
           })}
         </div>
       </fieldset>
-      <Field label="Ressort / Funktion">
+      <Field label={t('functionLabel')}>
         <Input
           value={form.roleTitle}
-          placeholder="Bau & Grill"
+          placeholder={t('functionPlaceholder')}
           onChange={(e) => setForm({ ...form, roleTitle: e.target.value })}
         />
       </Field>
-      <FormActions onCancel={onCancel} saving={saving} label={organizer ? 'Speichern' : 'Ins OK aufnehmen'} />
+      <FormActions onCancel={onCancel} saving={saving} label={organizer ? t('saveBtn') : t('addBtn')} />
     </form>
   );
 }
@@ -1238,6 +1247,7 @@ export function DayResponsiblesDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const t = useTranslations('web.shiftDialogs.dayResponsibles');
   const toast = useToast();
   const [members, setMembers] = useState<DeptMemberItem[]>([]);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
@@ -1264,8 +1274,8 @@ export function DayResponsiblesDialog({
         json: { userIds: selectedUserIds },
       });
       toast({
-        title: 'Tages-Verantwortliche gespeichert',
-        description: `Für ${dayLabel} hinterlegt.`,
+        title: t('toastTitle'),
+        description: t('toastDesc', { dayLabel }),
       });
       onSaved();
       onClose();
@@ -1280,14 +1290,14 @@ export function DayResponsiblesDialog({
       open={open}
       onClose={onClose}
       icon={<Shield />}
-      title="Tages-Verantwortliche"
-      description={`Verantwortliche Personen für ${dayLabel}`}
+      title={t('title')}
+      description={t('description', { dayLabel })}
     >
       <form onSubmit={submit} className="space-y-4">
         {error && <Callout tone="danger">{error}</Callout>}
 
         <p className="text-xs text-fg-muted">
-          Die gewählten Personen gelten als Hauptansprechpersonen für alle Schichten an diesem Tag und werden im Schichtplan und bei den Schichten aufgeführt.
+          {t('hint')}
         </p>
 
         {selectedUserIds.length > 0 && (
@@ -1295,7 +1305,7 @@ export function DayResponsiblesDialog({
             {selectedUserIds.map((userId) => {
               const member = members.find((m) => m.userId === userId);
               const existingResp = event.dayResponsibles?.[dayDate]?.find((r) => r.id === userId);
-              const name = member?.displayName || existingResp?.displayName || 'Verantwortliche Person';
+              const name = member?.displayName || existingResp?.displayName || t('defaultPersonName');
               return (
                 <Badge key={userId} tone="neutral" size="md" className="flex items-center gap-1.5 py-1">
                   <span>{name}</span>
@@ -1303,7 +1313,7 @@ export function DayResponsiblesDialog({
                     type="button"
                     onClick={() => setSelectedUserIds((prev) => prev.filter((id) => id !== userId))}
                     className="ml-1 rounded p-0.5 hover:bg-fg/10 text-fg-muted hover:text-fg"
-                    title="Entfernen"
+                    title={t('removeTooltip')}
                   >
                     <Trash2 className="size-3" />
                   </button>
@@ -1313,7 +1323,7 @@ export function DayResponsiblesDialog({
           </div>
         )}
 
-        <Field label="Person hinzufügen">
+        <Field label={t('addPersonLabel')}>
           <Select
             value=""
             onChange={(e) => {
@@ -1323,7 +1333,7 @@ export function DayResponsiblesDialog({
               }
             }}
           >
-            <option value="">-- Person aus Mitgliedern wählen --</option>
+            <option value="">{t('selectPlaceholder')}</option>
             {members
               .filter((m) => !selectedUserIds.includes(m.userId))
               .map((m) => (
@@ -1334,7 +1344,7 @@ export function DayResponsiblesDialog({
           </Select>
         </Field>
 
-        <FormActions onCancel={onClose} saving={saving} label="Speichern" />
+        <FormActions onCancel={onClose} saving={saving} label={t('saveBtn')} />
       </form>
     </Dialog>
   );

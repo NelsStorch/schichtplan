@@ -13,6 +13,7 @@ import {
   Ticket,
   UtensilsCrossed,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { formatZurichTime, type PhysicalCardScanResultDto } from '@schichtplan/shared';
 import { Badge, Button, Card, Input, buttonClasses, cn, useToast } from '@schichtplan/ui';
 import { ApiError, api, errorMessage, useLoginHref } from '@/lib/api';
@@ -57,6 +58,7 @@ export default function BonScanPage() {
 }
 
 function BonScanContent() {
+  const t = useTranslations('web.bonScan');
   const params = useParams<{ slug: string }>();
   const searchParams = useSearchParams();
   const slug = params.slug;
@@ -93,7 +95,7 @@ function BonScanContent() {
   // Bon-Daten abrufen
   const loadCard = useCallback(async (currentPin = pin) => {
     if (!code) {
-      setError('Kein Bon-Code im Scan-Link übergeben.');
+      setError(t('noCodeInLink'));
       setLoading(false);
       return;
     }
@@ -129,12 +131,12 @@ function BonScanContent() {
           setPinError(errorMessage(err));
         }
       } else {
-        setError(errorMessage(err) || 'Bon nicht gefunden oder ungültig.');
+        setError(errorMessage(err) || t('bonNotFoundOrInvalid'));
       }
     } finally {
       setLoading(false);
     }
-  }, [slug, code, pin, pinStorageKey]);
+  }, [slug, code, pin, pinStorageKey, t]);
 
   useEffect(() => {
     if (pinReady) void loadCard();
@@ -158,7 +160,7 @@ function BonScanContent() {
     setPin('');
     setNeedsPin(true);
     setCard(null);
-    toast({ title: 'Stand-PIN abgemeldet', tone: 'info' });
+    toast({ title: t('pinLoggedOut'), tone: 'info' });
   };
 
   // Artikel entwerten
@@ -193,8 +195,8 @@ function BonScanContent() {
 
       setCard(updated);
       toast({
-        title: all ? 'Alle Artikel entwertet' : 'Artikel entwertet',
-        description: 'En Guete und vielen Dank fürs Helfen!',
+        title: all ? t('allRedeemedTitle') : t('itemRedeemedTitle'),
+        description: t('redeemedSuccessDesc'),
         tone: 'success',
       });
     } catch (err) {
@@ -207,7 +209,7 @@ function BonScanContent() {
         return;
       }
       toast({
-        title: 'Entwertung fehlgeschlagen',
+        title: t('redeemFailedTitle'),
         description: errorMessage(err),
         tone: 'error',
       });
@@ -226,7 +228,7 @@ function BonScanContent() {
         {/* KOPFZEILE */}
         <div className="text-center space-y-1">
           <Badge tone="accent" size="sm" className="font-bold uppercase tracking-wider">
-            Feststand &amp; Bar-Kasse
+            {t('boothTitle')}
           </Badge>
           <h1 className="font-display text-xl font-extrabold text-fg truncate">
             {card?.eventTitle || eventTitle || 'Cevi Schichtplan'}
@@ -240,9 +242,9 @@ function BonScanContent() {
               <KeyRound className="size-6" />
             </div>
             <div>
-              <h2 className="font-display text-lg font-bold text-fg">Stand-PIN erforderlich</h2>
+              <h2 className="font-display text-lg font-bold text-fg">{t('pinRequiredTitle')}</h2>
               <p className="text-xs text-fg-muted mt-1">
-                Bitte tippe den 4-stelligen PIN der Standkasse ein. Er bleibt für diese Schicht auf diesem Gerät gespeichert.
+                {t('pinRequiredDesc')}
               </p>
             </div>
             <form onSubmit={handlePinSubmit} className="space-y-3">
@@ -251,7 +253,7 @@ function BonScanContent() {
                 inputMode="numeric"
                 pattern="[0-9]*"
                 maxLength={8}
-                placeholder="z. B. 4821"
+                placeholder={t('pinPlaceholder')}
                 value={pinInput}
                 onChange={(e) => setPinInput(e.target.value)}
                 autoFocus
@@ -259,15 +261,15 @@ function BonScanContent() {
               />
               {pinError && <p className="text-xs font-semibold text-danger-ink">{pinError}</p>}
               <Button type="submit" variant="primary" className="w-full h-11" disabled={!pinInput.trim()}>
-                PIN bestätigen &amp; Bon öffnen
+                {t('pinSubmitBtn')}
               </Button>
             </form>
             <p className="text-xs text-fg-muted">
-              Im OK?{' '}
+              {t('inOkHintPart1')}
               <a href={loginHref} className="font-semibold text-accent-ink hover:underline">
-                Anmelden
-              </a>{' '}
-              geht auch ohne PIN.
+                {t('loginLink')}
+              </a>
+              {t('inOkHintPart2')}
             </p>
           </Card>
         )}
@@ -279,14 +281,13 @@ function BonScanContent() {
               <KeyRound className="size-6" />
             </div>
             <div>
-              <h2 className="font-display text-lg font-bold text-fg">Anmeldung nötig</h2>
+              <h2 className="font-display text-lg font-bold text-fg">{t('loginNeededTitle')}</h2>
               <p className="text-xs text-fg-muted mt-1">
-                Bons entwerten kann nur das OK. Wer ohne Konto am Stand arbeitet, braucht einen Stand-PIN. Den legt das
-                OK in den Einstellungen unter «Verpflegung &amp; Bons» fest.
+                {t('loginNeededDesc')}
               </p>
             </div>
             <a href={loginHref} className={buttonClasses({ className: 'w-full h-11' })}>
-              Anmelden
+              {t('loginBtn')}
             </a>
           </Card>
         )}
@@ -295,7 +296,7 @@ function BonScanContent() {
         {loading && !needsPin && !needsLogin && (
           <div className="p-12 text-center space-y-3">
             <div className="size-8 mx-auto animate-spin rounded-full border-2 border-accent border-t-transparent" />
-            <p className="text-xs text-fg-muted">Bon wird geprüft…</p>
+            <p className="text-xs text-fg-muted">{t('checkingBon')}</p>
           </div>
         )}
 
@@ -305,7 +306,7 @@ function BonScanContent() {
             <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-danger text-danger-fg shadow-md shadow-danger/20">
               <Ban className="size-6" />
             </div>
-            <h2 className="font-display text-lg font-bold text-fg">Ungültiger Bon</h2>
+            <h2 className="font-display text-lg font-bold text-fg">{t('invalidBonTitle')}</h2>
             <p className="text-xs text-fg-muted">{error}</p>
             <Button
               type="button"
@@ -314,7 +315,7 @@ function BonScanContent() {
               onClick={() => void loadCard()}
               className="mt-2"
             >
-              Erneut versuchen
+              {t('tryAgainBtn')}
             </Button>
           </Card>
         )}
@@ -336,20 +337,20 @@ function BonScanContent() {
               <div className="flex items-center justify-center gap-1.5 font-extrabold text-sm uppercase tracking-wider">
                 {card.isBlocked ? (
                   <>
-                    <Ban className="size-4" /> Bon gesperrt
+                    <Ban className="size-4" /> {t('bonBlocked')}
                   </>
                 ) : allRedeemed ? (
                   <>
-                    <Check className="size-4" /> Vollständig eingelöst
+                    <Check className="size-4" /> {t('fullyRedeemed')}
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="size-4 text-success" /> Gültiger Helfer-Bon
+                    <CheckCircle2 className="size-4 text-success" /> {t('validHelperBon')}
                   </>
                 )}
               </div>
               <p className="text-xs opacity-90 font-medium">
-                {card.batchTitle} · Karte #{card.cardNumber?.toString().padStart(3, '0') || '001'}
+                {t('cardInfo', { batchTitle: card.batchTitle, cardNumber: card.cardNumber?.toString().padStart(3, '0') || '001' })}
               </p>
             </div>
 
@@ -384,10 +385,10 @@ function BonScanContent() {
                           <h3 className="font-bold text-base text-fg">{item.title}</h3>
                           <p className="text-xs text-fg-muted">
                             {isRedeemed && item.redeemedAt
-                              ? `Entwertet um ${formatZurichTime(item.redeemedAt)} Uhr`
+                              ? t('redeemedAt', { time: formatZurichTime(item.redeemedAt) })
                               : isBlocked
-                                ? 'Gesperrt'
-                                : 'Einlösbar'}
+                                ? t('statusBlocked')
+                                : t('statusAvailable')}
                           </p>
                         </div>
                       </div>
@@ -396,7 +397,7 @@ function BonScanContent() {
                         tone={isAvail ? 'success' : isRedeemed ? 'neutral' : 'danger'}
                         className="text-xs shrink-0"
                       >
-                        {isAvail ? 'Offen' : isRedeemed ? 'Eingelöst' : 'Gesperrt'}
+                        {isAvail ? t('badgeAvailable') : isRedeemed ? t('badgeRedeemed') : t('badgeBlocked')}
                       </Badge>
                     </div>
 
@@ -411,7 +412,7 @@ function BonScanContent() {
                         className="w-full h-11 text-sm font-bold"
                       >
                         <Check className="size-4 mr-1.5" />
-                        «{item.title}» jetzt entwerten
+                        {t('redeemSingleBtn', { title: item.title })}
                       </Button>
                     )}
                   </Card>
@@ -430,7 +431,7 @@ function BonScanContent() {
                 className="w-full h-11 text-xs font-bold"
               >
                 <Sparkles className="size-3.5 mr-1 text-accent-ink" />
-                Alle {availableItems.length} offenen Artikel auf einmal entwerten
+                {t('redeemAllBtn', { count: availableItems.length })}
               </Button>
             )}
           </div>
@@ -441,14 +442,14 @@ function BonScanContent() {
       {pin && (
         <div className="mx-auto w-full max-w-md pt-6 pb-2 text-center text-xs text-fg-subtle flex items-center justify-between border-t border-line mt-6">
           <span className="flex items-center gap-1.5">
-            <KeyRound className="size-3.5 text-accent-ink" /> Stand-PIN aktiv gemerkt
+            <KeyRound className="size-3.5 text-accent-ink" /> {t('pinActiveRemembered')}
           </span>
           <button
             type="button"
             onClick={handleLogoutPin}
             className="text-danger-ink hover:underline font-semibold inline-flex items-center gap-1"
           >
-            <LogOut className="size-3" /> PIN ändern
+            <LogOut className="size-3" /> {t('changePinBtn')}
           </button>
         </div>
       )}

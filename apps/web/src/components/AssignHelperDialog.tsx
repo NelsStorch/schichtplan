@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { AlertTriangle, ArrowDownUp, Ban, Clock, Filter, Search, UserCheck } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { ageAt } from '@schichtplan/shared';
 import type {
   EventRosterItemDto,
@@ -28,7 +29,6 @@ interface Candidate extends EventRosterItemDto {
   tooYoung: boolean;
 }
 
-
 export function AssignHelperDialog({
   open,
   eventSlug,
@@ -44,12 +44,13 @@ export function AssignHelperDialog({
   onClose: () => void;
   onAssigned: () => void;
 }) {
+  const t = useTranslations('web.assignHelper');
   return (
     <Dialog
       open={open && shift !== null}
       onClose={onClose}
       icon={<UserCheck />}
-      title="Person einteilen"
+      title={t('title')}
       description={shift ? `${shift.title?.trim() ? `${shift.title} · ` : ''}${fmtWeekday(shift.startTime)}, ${fmtTimeRange(shift.startTime, shift.endTime)}` : ''}
       size="lg"
     >
@@ -73,6 +74,7 @@ function AssignHelperForm({
   onCancel: () => void;
   onAssigned: () => void;
 }) {
+  const t = useTranslations('web.assignHelper');
   const toast = useToast();
   const [roster, setRoster] = useState<EventRosterResponseDto | null>(null);
   const [rosterError, setRosterError] = useState<string | null>(null);
@@ -238,11 +240,11 @@ function AssignHelperForm({
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (mode === 'member' && !selected) {
-      setError('Bitte wähle eine Person aus der Liste.');
+      setError(t('errorSelectPerson'));
       return;
     }
     if (collisionWarning?.hasCollision && !confirmCollision) {
-      setError('Bitte bestätige die Zeitkollision mit dem Kontrollkästchen, um die Person trotzdem einzuteilen.');
+      setError(t('errorConfirmCollision'));
       return;
     }
 
@@ -262,7 +264,7 @@ function AssignHelperForm({
       });
 
       toast({
-        title: `${mode === 'member' ? selected?.displayName || 'Person' : guestName} eingeteilt!`,
+        title: t('assignedToastTitle', { name: mode === 'member' ? selected?.displayName || t('fallbackPerson') : guestName }),
         description: `${shift.title?.trim() || chosenTask?.title || fmtTimeRange(shift.startTime, shift.endTime)}${chosenTask && shift.title?.trim() ? ` (${chosenTask.title})` : ''}`,
       });
       onAssigned();
@@ -284,13 +286,13 @@ function AssignHelperForm({
       {error && <Callout tone="danger">{error}</Callout>}
 
       {tasks.length > 1 && (
-        <Field label="Arbeit" required>
+        <Field label={t('taskLabel')} required>
           <Select value={selectedTaskId} onChange={(e) => setSelectedTaskId(e.target.value)}>
-            {tasks.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.title} ({t.filled}/{t.requiredSlots}
-                {t.filled >= t.requiredSlots ? ', voll' : ''}
-                {t.minAge ? `, ab ${t.minAge}` : ''})
+            {tasks.map((tItem) => (
+              <option key={tItem.id} value={tItem.id}>
+                {tItem.title} ({tItem.filled}/{tItem.requiredSlots}
+                {tItem.filled >= tItem.requiredSlots ? t('taskFull') : ''}
+                {tItem.minAge ? t('taskMinAge', { age: tItem.minAge }) : ''})
               </option>
             ))}
           </Select>
@@ -308,7 +310,7 @@ function AssignHelperForm({
               mode === m ? 'bg-surface text-fg shadow-soft' : 'text-fg-muted hover:text-fg'
             )}
           >
-            {m === 'member' ? 'Person mit Konto' : 'Gast / freier Name'}
+            {m === 'member' ? t('modeMember') : t('modeGuest')}
           </button>
         ))}
       </div>
@@ -321,7 +323,7 @@ function AssignHelperForm({
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-fg-subtle" />
               <Input
                 className="pl-9"
-                placeholder={`Name, ${org.nicknameTerm} oder Stufe suchen …`}
+                placeholder={t('searchPlaceholder', { nicknameTerm: org.nicknameTerm })}
                 value={search}
                 autoFocus
                 onChange={(e) => setSearch(e.target.value)}
@@ -329,11 +331,11 @@ function AssignHelperForm({
             </div>
             <div className="relative sm:w-56">
               <ArrowDownUp className="pointer-events-none absolute left-3 top-1/2 z-10 size-4 -translate-y-1/2 text-fg-subtle" />
-              <Select className="pl-9" value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label="Sortierung">
-                <option value="fewest">Wenigste Schichten zuerst</option>
-                <option value="most">Meiste Schichten zuerst</option>
-                <option value="name">Name A–Z</option>
-                <option value="age">Älteste zuerst</option>
+              <Select className="pl-9" value={sort} onChange={(e) => setSort(e.target.value as SortKey)} aria-label={t('sortAria')}>
+                <option value="fewest">{t('sortFewest')}</option>
+                <option value="most">{t('sortMost')}</option>
+                <option value="name">{t('sortName')}</option>
+                <option value="age">{t('sortAge')}</option>
               </Select>
             </div>
           </div>
@@ -349,9 +351,9 @@ function AssignHelperForm({
                     setDeptFilter(e.target.value);
                     setStufeFilter(new Set());
                   }}
-                  aria-label="Abteilung"
+                  aria-label={t('deptFilterAria')}
                 >
-                  <option value="ALL">Alle Abteilungen</option>
+                  <option value="ALL">{t('allDepts')}</option>
                   {departments.map((d) => (
                     <option key={d.id} value={d.id}>
                       {d.name}
@@ -377,7 +379,7 @@ function AssignHelperForm({
                   onChange={(e) => setOnlyOldEnough(e.target.checked)}
                   className="size-4 rounded border-line"
                 />
-                Nur ab {requiredAge} Jahren{tooYoungCount > 0 && onlyOldEnough ? ` (${tooYoungCount} ausgeblendet)` : ''}
+                {t('onlyOldEnough', { age: requiredAge })}{tooYoungCount > 0 && onlyOldEnough ? t('hiddenCount', { count: tooYoungCount }) : ''}
               </label>
             )}
             <label className="flex cursor-pointer select-none items-center gap-2">
@@ -387,7 +389,7 @@ function AssignHelperForm({
                 onChange={(e) => setShowDeregistered(e.target.checked)}
                 className="size-4 rounded border-line"
               />
-              Abgemeldete anzeigen ({deregisteredCount})
+              {t('showDeregistered', { count: deregisteredCount })}
             </label>
             {withoutAccessCount > 0 && (
               <label className="flex cursor-pointer select-none items-center gap-2">
@@ -397,14 +399,14 @@ function AssignHelperForm({
                   onChange={(e) => setShowWithoutAccess(e.target.checked)}
                   className="size-4 rounded border-line"
                 />
-                Eigene Abteilung ohne Zugang anzeigen ({withoutAccessCount})
+                {t('showWithoutAccess', { count: withoutAccessCount })}
               </label>
             )}
           </div>
 
           {/* Personenliste */}
           {rosterError ? (
-            <Callout tone="danger">Personen konnten nicht geladen werden: {rosterError}</Callout>
+            <Callout tone="danger">{t('rosterError', { error: rosterError })}</Callout>
           ) : !roster ? (
             <div className="space-y-2">
               <Skeleton className="h-14 rounded-field" />
@@ -414,7 +416,7 @@ function AssignHelperForm({
           ) : visible.length === 0 ? (
             <div className="flex flex-col items-center gap-2 rounded-field border border-dashed border-line px-4 py-8 text-center text-sm text-fg-muted">
               <Filter className="size-5 text-fg-subtle" />
-              {candidates.length === 0 ? 'Für diesen Anlass gibt es noch keine Personen unter «Helfende».' : 'Niemand passt zu den Filtern.'}
+              {candidates.length === 0 ? t('emptyNoCandidates') : t('emptyNoMatches')}
               {filtersActive && (
                 <Button
                   type="button"
@@ -426,17 +428,17 @@ function AssignHelperForm({
                     setStufeFilter(new Set());
                   }}
                 >
-                  Filter zurücksetzen
+                  {t('resetFilters')}
                 </Button>
               )}
             </div>
           ) : (
             <div>
               <p className="mb-1.5 text-2xs font-semibold uppercase tracking-wider text-fg-subtle">
-                {visible.length} {visible.length === 1 ? 'Person' : 'Personen'}
-                {minShifts !== null && ` · Soll ${minShifts} Schicht${minShifts === 1 ? '' : 'en'} pro Person`}
+                {visible.length} {visible.length === 1 ? t('countPersonsSingular') : t('countPersonsPlural')}
+                {minShifts !== null && (minShifts === 1 ? t('targetShiftsSingular', { minShifts }) : t('targetShiftsPlural', { minShifts }))}
               </p>
-              <div role="radiogroup" aria-label="Person auswählen" className="max-h-[22rem] space-y-1.5 overflow-y-auto pr-1">
+              <div role="radiogroup" aria-label={t('selectPersonAria')} className="max-h-[22rem] space-y-1.5 overflow-y-auto pr-1">
                 {visible.map((c) => (
                   <CandidateRow
                     key={c.userId}
@@ -453,20 +455,19 @@ function AssignHelperForm({
         </div>
       ) : (
         <div className="space-y-3">
-          <Field label={`Name oder ${org.nicknameTerm}`} required>
-            <Input value={guestName} autoFocus placeholder="z.B. Peter Meier / Schnägg" onChange={(e) => setGuestName(e.target.value)} />
+          <Field label={t('guestNameLabel', { nicknameTerm: org.nicknameTerm })} required>
+            <Input value={guestName} autoFocus placeholder={t('guestNamePlaceholder')} onChange={(e) => setGuestName(e.target.value)} />
           </Field>
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="E-Mail (optional)">
+            <Field label={t('guestEmailLabel')}>
               <Input type="email" value={guestEmail} onChange={(e) => setGuestEmail(e.target.value)} />
             </Field>
-            <Field label="Telefon (optional)">
+            <Field label={t('guestPhoneLabel')}>
               <Input type="tel" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} />
             </Field>
           </div>
           <p className="text-xs text-fg-subtle">
-            Sag der Person, dass du sie hier einträgst und wofür ihr ihre Angaben braucht. Erfasse nur, was ihr für den
-            Anlass wirklich braucht.
+            {t('guestNotice')}
           </p>
         </div>
       )}
@@ -476,11 +477,11 @@ function AssignHelperForm({
           <div className="flex items-start gap-2.5">
             <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
             <div className="flex-1 space-y-1">
-              <p className="text-sm font-bold text-warning-ink">Achtung: Zeitkollision</p>
+              <p className="text-sm font-bold text-warning-ink">{t('collisionWarningTitle')}</p>
               <p className="text-fg-muted">
                 {mode === 'member'
-                  ? `${selected?.displayName || 'Diese Person'} ist zur gleichen Zeit bereits eingetragen:`
-                  : `«${guestName}» ist in diesem Anlass zur gleichen Zeit bereits eingetragen:`}
+                  ? t('collisionDescMember', { name: selected?.displayName || t('thisPerson') })
+                  : t('collisionDescGuest', { name: guestName })}
               </p>
               <ul className="space-y-1 pt-1">
                 {collisionWarning.conflicts.map((c) => (
@@ -503,28 +504,27 @@ function AssignHelperForm({
               onChange={(e) => setConfirmCollision(e.target.checked)}
               className="size-4 rounded border-line text-warning focus:ring-warning"
             />
-            <span>Trotzdem einteilen (Warnung bestätigen)</span>
+            <span>{t('confirmCollisionCheckbox')}</span>
           </label>
         </div>
       )}
 
       {chosenTask?.minAge && chosenTask.ageRequirementType !== 'ALL' ? (
         <div className="rounded-field border border-warning/30 bg-warning/10 p-3 text-xs text-warning-ink">
-          <strong>Hinweis Mindestalter:</strong> Bei «{chosenTask.title}» muss mindestens eine Person in der Schicht{' '}
-          {chosenTask.minAge} Jahre alt sein.
+          <strong>{t('hintMinAgeTitle')}</strong> {t('hintMinAge', { taskTitle: chosenTask.title, age: chosenTask.minAge })}
         </div>
       ) : null}
 
       <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
         <Button type="button" variant="ghost" onClick={onCancel}>
-          Abbrechen
+          {t('cancelBtn')}
         </Button>
         <Button type="submit" loading={saving} disabled={mode === 'member' && !selected}>
           {collisionWarning?.hasCollision && confirmCollision
-            ? 'Trotzdem einteilen'
+            ? t('submitAnywayBtn')
             : selected && mode === 'member'
-              ? `${selected.ceviName || selected.firstName} einteilen`
-              : 'Einteilen'}
+              ? t('submitPersonBtn', { name: selected.ceviName || selected.firstName })
+              : t('submitDefaultBtn')}
         </Button>
       </div>
     </form>
@@ -544,12 +544,13 @@ function CandidateRow({
   selected: boolean;
   onSelect: () => void;
 }) {
+  const t = useTranslations('web.assignHelper');
   const disabled = c.inThisShift || c.tooYoung;
   const targetMet = minShifts !== null ? c.shiftCount >= minShifts : c.shiftCount > 0;
   const details = [
     showDepartment ? c.departmentName : null,
-    c.stufen.map((s) => `${s.name}${s.role === 'LEITUNG' ? ' (Leitung)' : ''}`).join(', ') || null,
-    c.ageAtShift !== null ? `${c.ageAtShift} J.` : 'Alter unbekannt',
+    c.stufen.map((s) => `${s.name}${s.role === 'LEITUNG' ? t('roleLeitung') : ''}`).join(', ') || null,
+    c.ageAtShift !== null ? t('ageYears', { age: c.ageAtShift }) : t('ageUnknown'),
   ].filter(Boolean);
 
   return (
@@ -573,21 +574,21 @@ function CandidateRow({
           <p className="truncate text-2xs text-fg-muted">{details.join(' · ')}</p>
           {(c.isDeregistered || !c.hasAccess || c.inThisShift || c.tooYoung || c.conflicts.length > 0) && (
             <div className="mt-1 flex flex-wrap gap-1">
-              {c.inThisShift && <Badge tone="accent" className="text-2xs">schon in dieser Schicht</Badge>}
+              {c.inThisShift && <Badge tone="accent" className="text-2xs">{t('alreadyInShiftBadge')}</Badge>}
               {c.tooYoung && (
                 <Badge tone="danger" className="text-2xs">
-                  <Ban className="mr-0.5 size-3" /> zu jung
+                  <Ban className="mr-0.5 size-3" /> {t('tooYoungBadge')}
                 </Badge>
               )}
-              {!c.hasAccess && <Badge tone="outline" className="text-2xs">ohne Zugang</Badge>}
+              {!c.hasAccess && <Badge tone="outline" className="text-2xs">{t('withoutAccessBadge')}</Badge>}
               {c.isDeregistered && (
                 <Badge tone="neutral" className="text-2xs" title={c.deregistrationReason ?? undefined}>
-                  abgemeldet{c.deregistrationReason ? `: ${c.deregistrationReason}` : ''}
+                  {t('deregisteredBadge')}{c.deregistrationReason ? `: ${c.deregistrationReason}` : ''}
                 </Badge>
               )}
               {c.conflicts.map((s) => (
                 <Badge key={s.id} tone="warning" className="text-2xs">
-                  <Clock className="mr-0.5 size-3" /> gleichzeitig: {s.title} {fmtShortWeekday(s.startTime)} {fmtTime(s.startTime)}
+                  <Clock className="mr-0.5 size-3" /> {t('conflictBadge', { title: shiftName(s), weekday: fmtShortWeekday(s.startTime), time: fmtTime(s.startTime) })}
                 </Badge>
               ))}
             </div>
@@ -602,7 +603,7 @@ function CandidateRow({
           >
             {minShifts !== null ? `${c.shiftCount}/${minShifts}` : c.shiftCount}
           </p>
-          <p className="mt-0.5 text-2xs text-fg-subtle">{c.shiftCount === 1 ? 'Schicht' : 'Schichten'}</p>
+          <p className="mt-0.5 text-2xs text-fg-subtle">{c.shiftCount === 1 ? t('shiftCountSingular') : t('shiftCountPlural')}</p>
         </div>
       </button>
   );

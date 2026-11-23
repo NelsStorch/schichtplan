@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Check, Search } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   REQUIRED_PROFILE_FIELDS,
   accessTypeConfig,
@@ -72,6 +73,7 @@ export function EventAccessFields({
   values: EventAccessValues;
   onChange: (next: EventAccessValues) => void;
 }) {
+  const t = useTranslations('web.eventAccess');
   const { department } = usePortal();
   const org = useOrganization();
   const isVerein = org.slug === 'verein';
@@ -109,17 +111,16 @@ export function EventAccessFields({
   return (
     <div className="space-y-7">
       <fieldset>
-        <legend className="mb-1 text-[13px] font-semibold text-fg">Wer darf sich eintragen?</legend>
+        <legend className="mb-1 text-[13px] font-semibold text-fg">{t('whoCanSignUpLegend')}</legend>
         <p className="mb-3 text-xs text-fg-muted">
-          Eintragen braucht immer ein Konto, ein {org.nicknameTerm} ohne Passwort reicht. Das OK und persönliche Links
-          gehen immer.{' '}
+          {t('whoCanSignUpHint', { nicknameTerm: org.nicknameTerm })}{' '}
           <a
             href={helpUrl('/ok/zugang/')}
             target="_blank"
             rel="noopener"
             className="font-semibold text-accent-ink underline-offset-2 hover:underline"
           >
-            Alle Arten erklärt
+            {t('allTypesExplained')}
           </a>
         </p>
         <div className="grid gap-2.5 sm:grid-cols-2">
@@ -155,8 +156,7 @@ export function EventAccessFields({
 
         {!isVerein && cfg.ceviDb && cfg.scope === 'DEPARTMENT' && department && !department.ceviDbGroupId && (
           <Callout tone="warning" className="mt-3">
-            {department.name} ist noch nicht mit einer {org.authProviderShort}-Gruppe verknüpft. So erfüllt niemand die
-            Bedingung, ausser über einen persönlichen Link.
+            {t('groupNotLinkedWarning', { department: department.name, provider: org.authProviderShort })}
           </Callout>
         )}
       </fieldset>
@@ -164,11 +164,11 @@ export function EventAccessFields({
       {cfg.whitelist && (
         <fieldset className="rounded-card border border-line bg-surface-2/60 p-4 sm:p-5">
           <legend className="px-1 text-[13px] font-semibold text-fg">
-            Weitere {org.unitTermPlural} freischalten
+            {t('whitelistLegend', { unitTermPlural: org.unitTermPlural })}
           </legend>
           <p className="mb-3 text-xs text-fg-muted">
-            {department?.name ?? (isVerein ? 'Dein Verein' : `Deine ${org.unitTerm}`)} ist immer dabei.{' '}
-            {values.allowedDepartmentIds.length > 0 && `${values.allowedDepartmentIds.length} weitere gewählt.`}
+            {department?.name ?? (isVerein ? t('yourVerein') : t('yourUnit', { unitTerm: org.unitTerm }))}{' '}{t('whitelistHint', { department: department?.name ?? (isVerein ? t('yourVerein') : t('yourUnit', { unitTerm: org.unitTerm })) })}{' '}
+            {values.allowedDepartmentIds.length > 0 && t('whitelistSelectedCount', { count: values.allowedDepartmentIds.length })}
           </p>
           {others.length > 6 && (
             <div className="relative mb-2">
@@ -180,8 +180,8 @@ export function EventAccessFields({
                 type="search"
                 value={deptQuery}
                 onChange={(e) => setDeptQuery(e.target.value)}
-                placeholder={`${org.unitTerm} suchen`}
-                aria-label={`${org.unitTerm} suchen`}
+                placeholder={t('searchUnitPlaceholder', { unitTerm: org.unitTerm })}
+                aria-label={t('searchUnitAria', { unitTerm: org.unitTerm })}
                 className="h-10 pl-11"
               />
             </div>
@@ -204,13 +204,13 @@ export function EventAccessFields({
               );
             })}
             {others.length === 0 && (
-              <li className="text-xs text-fg-subtle">Es gibt noch keine anderen {org.unitTermPlural}.</li>
+              <li className="text-xs text-fg-subtle">{t('noOtherUnits', { unitTermPlural: org.unitTermPlural })}</li>
             )}
             {others.length > 0 && visibleOthers.length === 0 && (
               <li className="px-2 py-1 text-xs text-fg-subtle sm:col-span-2 lg:col-span-3">
                 {searching
-                  ? `Keine ${org.unitTerm} gefunden.`
-                  : `Noch keine gewählt. Suche eine ${org.unitTerm} oder zeige alle an.`}
+                  ? t('noUnitFound', { unitTerm: org.unitTerm })
+                  : t('noneSelectedSearchOrShowAll', { unitTerm: org.unitTerm })}
               </li>
             )}
           </ul>
@@ -220,7 +220,7 @@ export function EventAccessFields({
               onClick={() => setShowAllDepts((v) => !v)}
               className="mt-2 px-2 text-xs font-semibold text-accent-ink underline-offset-2 hover:underline"
             >
-              {showAllDepts ? 'Nur gewählte anzeigen' : `Alle ${others.length} ${org.unitTermPlural} anzeigen`}
+              {showAllDepts ? t('showOnlySelected') : t('showAllUnitsCount', { count: others.length, unitTermPlural: org.unitTermPlural })}
             </button>
           )}
         </fieldset>
@@ -228,9 +228,9 @@ export function EventAccessFields({
 
       {cfg.scope === 'DEPARTMENT' && (
         <fieldset>
-          <legend className="mb-1 text-[13px] font-semibold text-fg">Nur bestimmte Stufen</legend>
+          <legend className="mb-1 text-[13px] font-semibold text-fg">{t('stufenLegend')}</legend>
           <p className="mb-3 text-xs text-fg-muted">
-            Keine Auswahl heisst alle Stufen. Wählst du bei einer Abteilung Stufen aus, dürfen von dort nur diese.
+            {t('stufenHint')}
           </p>
           <div className="space-y-3">
             {stufenGroups.map((group) => (
@@ -238,8 +238,10 @@ export function EventAccessFields({
                 {stufenGroups.length > 1 && <p className="mb-1.5 text-xs font-semibold text-fg-subtle">{group.name}</p>}
                 {group.stufen.length === 0 ? (
                   <p className="text-xs text-fg-subtle">
-                    Für {group.name} sind noch keine Stufen erfasst
-                    {group.id === department?.id && ' (Abteilungs-Einstellungen → Stufen)'}.
+                    {t('noStufenRecorded', {
+                      groupName: group.name,
+                      hint: group.id === department?.id ? t('noStufenOwnHint') : '',
+                    })}
                   </p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
@@ -274,22 +276,22 @@ export function EventAccessFields({
       <Switch
         checked={values.leadersOnly}
         onChange={(v) => set('leadersOnly', v)}
-        label="Nur Leitende"
+        label={t('leadersOnlyLabel')}
         description={
           isVerein
-            ? 'Leitungsfunktion in einer Gruppe oder im Verein'
+            ? t('leadersOnlyVerein')
             : cfg.ceviDb
-              ? `Leitungsrolle in ${org.authProviderShort} (Stufenleitung oder ${org.leadTerm})`
-              : `Leitung in einer Stufe (beim Login angegeben oder aus ${org.authProviderShort})`
+              ? t('leadersOnlyCeviDb', { provider: org.authProviderShort, leadTerm: org.leadTerm })
+              : t('leadersOnlyStandard', { provider: org.authProviderShort })
         }
       />
 
       <fieldset>
-        <legend className="mb-1 text-[13px] font-semibold text-fg">Pflichtangaben</legend>
+        <legend className="mb-1 text-[13px] font-semibold text-fg">{t('requiredFieldsLegend')}</legend>
         <p className="mb-3 text-xs text-fg-muted">
-          Wer etwas davon noch nicht im Profil hat, wird beim ersten Eintragen danach gefragt.
+          {t('requiredFieldsHint')}
           {!isVerein &&
-            ` Bei ${org.authProviderShort}-Konten kommen Name, E-Mail und Geburtsdatum aus ${org.authProviderShort}.`}
+            t('requiredFieldsProviderHint', { provider: org.authProviderShort })}
         </p>
         <div className="flex flex-wrap gap-2">
           {(Object.keys(REQUIRED_PROFILE_FIELDS) as RequiredProfileField[]).map((field) => {
@@ -316,8 +318,7 @@ export function EventAccessFields({
       </fieldset>
 
       <p className="text-xs text-fg-muted">
-        Eigene Fragen (z. B. Adresse, Allergien, T-Shirt-Grösse) stellt ihr im OK-Bereich unter «Fragen», mit
-        Aufbewahrungsdauer für die Antworten.
+        {t('questionsHint')}
       </p>
     </div>
   );

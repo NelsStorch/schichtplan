@@ -24,6 +24,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   cancelDeadlineAt,
   cancelDeadlineText,
@@ -74,6 +75,7 @@ const VIEW_STORAGE_KEY = 'schichtplan.eventView';
 
 export default function EventDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
+  const t = useTranslations('web.event.page');
   const { user, department, loading: portalLoading } = usePortal();
   const toast = useToast();
   const confirm = useConfirm();
@@ -176,9 +178,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
         setMembersOnly(true);
         return;
       }
-      setError(err instanceof ApiError && err.status === 404 ? 'Diesen Anlass gibt es nicht (mehr).' : errorMessage(err));
+      setError(err instanceof ApiError && err.status === 404 ? t('eventNotFound') : errorMessage(err));
     }
-  }, [slug]);
+  }, [slug, t]);
 
   useEffect(() => {
     load();
@@ -210,14 +212,14 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
         method: 'POST',
         json: { token },
       });
-      toast({ title: res.message, description: 'Du kannst dich jetzt eintragen.' });
+      toast({ title: res.message, description: t('linkRedeemedDesc') });
       setPendingToken(null);
       const url = new URL(window.location.href);
       url.searchParams.delete('zugang');
       window.history.replaceState(null, '', url);
       await load();
     } catch (err) {
-      toast({ title: 'Link funktioniert nicht', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('linkErrorTitle'), description: errorMessage(err), tone: 'error' });
     } finally {
       setRedeeming(false);
     }
@@ -242,20 +244,20 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
         <div className="mx-auto max-w-xl px-4 pt-16 sm:px-6 sm:pt-24">
           <EmptyState
             icon={<Lock />}
-            title="Nur für Mitglieder"
+            title={t('membersOnlyTitle')}
             description={
               user
-                ? `Diesen Anlass sehen nur Mitglieder von ${department?.name ?? 'dieser Abteilung'}. Gehörst du dazu, gib deine Abteilung an. Sonst frag das OK nach einem Link.`
-                : `Diesen Anlass sehen nur Mitglieder von ${department?.name ?? 'dieser Abteilung'}. Melde dich an, dann siehst du ihn, wenn du dazugehörst.`
+                ? t('membersOnlyDescUser', { department: department?.name ?? t('thisDepartment') })
+                : t('membersOnlyDescGuest', { department: department?.name ?? t('thisDepartment') })
             }
             action={
               user ? (
                 <a href={departmentSetupUrl()} className={buttonClasses({})}>
-                  <Building2 /> Abteilung angeben
+                  <Building2 /> {t('membersOnlyActionUser')}
                 </a>
               ) : (
                 <a href={loginHref} className={buttonClasses({})}>
-                  <LogIn /> Anmelden
+                  <LogIn /> {t('membersOnlyActionGuest')}
                 </a>
               )
             }
@@ -268,16 +270,16 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
   if (error) {
     return (
       <NotFoundView
-        badge="Anlass nicht gefunden"
-        title="Diesen Anlass gibt es nicht"
+        badge={t('notFoundBadge')}
+        title={t('notFoundTitle')}
         description={error}
         homeHref="/"
-        homeLabel="Alle Anlässe anschauen"
+        homeLabel={t('notFoundHomeLabel')}
         departmentName={department?.name}
         departmentLogoUrl={department?.logoUrl}
         secondaryActions={[
           {
-            label: 'Meine Schichten',
+            label: t('myShifts'),
             href: '/meine-schichten',
             icon: <CalendarDays className="size-3.5" />,
           },
@@ -387,10 +389,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
   };
 
   const fmtBreakDuration = (mins: number) => {
-    if (mins < 60) return `${mins} Min.`;
+    if (mins < 60) return t('durationMinutes', { mins });
     const h = Math.floor(mins / 60);
     const m = mins % 60;
-    return m === 0 ? `${h} Std.` : `${h} Std. ${m} Min.`;
+    return m === 0
+      ? t('durationHours', { hours: h })
+      : t('durationHoursMinutes', { hours: h, mins: m });
   };
 
   const findPauseHint = (targetShift: ShiftDto): ShiftPauseHint | null => {
@@ -416,16 +420,16 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
       if (diffMins === 0) {
         return {
           kind: 'direct',
-          label: 'Direkter Anschluss',
-          title: `Direkter Anschluss an deine nächste Schicht «${shiftName(next)}» (${fmtTime(next.startTime)})`,
+          label: t('directConnectionLabel'),
+          title: t('directConnectionTitle', { shiftName: shiftName(next), time: fmtTime(next.startTime) }),
         };
       }
       if (diffMins > 0) {
         const dur = fmtBreakDuration(diffMins);
         return {
           kind: 'break',
-          label: `${dur} Pause danach`,
-          title: `${dur} Pause bis zu deiner nächsten Schicht «${shiftName(next)}» (${fmtTime(next.startTime)})`,
+          label: t('breakAfterLabel', { duration: dur }),
+          title: t('breakAfterTitle', { duration: dur, shiftName: shiftName(next), time: fmtTime(next.startTime) }),
         };
       }
       return null;
@@ -439,8 +443,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
     if (adjacent) {
       return {
         kind: 'direct',
-        label: 'Direkt im Anschluss',
-        title: `Schliesst nahtlos an deine Schicht «${shiftName(adjacent)}» (${fmtTimeRange(adjacent.startTime, adjacent.endTime)}) an`,
+        label: t('directFollowLabel'),
+        title: t('directFollowTitle', { shiftName: shiftName(adjacent), timeRange: fmtTimeRange(adjacent.startTime, adjacent.endTime) }),
       };
     }
     return null;
@@ -455,8 +459,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
   ) => {
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
       toast({
-        title: 'Keine Internetverbindung',
-        description: 'Im Offline-Modus ist nur die Leseansicht verfügbar. Zum Eintragen wird eine Internetverbindung benötigt.',
+        title: t('offlineTitle'),
+        description: t('offlineSignupDesc'),
         tone: 'error',
       });
       return;
@@ -469,7 +473,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
       });
       const handover = findShiftHandover(shift);
       const handoverDesc = handover
-        ? ` (${handover.overlapMinutes} Min. Übergabe mit «${shiftName(handover.otherShift)}»)`
+        ? t('handoverDesc', { minutes: handover.overlapMinutes, shiftName: shiftName(handover.otherShift) })
         : '';
       // Titel sind optional: ohne Titel steht die Arbeit (oder die Zeitspanne) an dessen Stelle
       const shiftTitle = shift.title?.trim();
@@ -477,8 +481,13 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
         ? `${shiftTitle}${task && task.title !== shiftTitle ? ` · ${task.title}` : ''}`
         : task?.title || shiftName(shift);
       toast({
-        title: replacesSignupId ? 'Du hast die Schicht übernommen!' : 'Du bist eingetragen!',
-        description: `${signedUpFor}${handoverDesc}, ${fmtWeekday(shift.startTime)} ab ${fmtTime(shift.startTime)}`,
+        title: replacesSignupId ? t('signupReplacedTitle') : t('signupSuccessTitle'),
+        description: t('signupSuccessDesc', {
+          signedUpFor,
+          handoverDesc,
+          weekday: fmtWeekday(shift.startTime),
+          time: fmtTime(shift.startTime),
+        }),
       });
       await load();
     } catch (err) {
@@ -489,9 +498,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
           : [];
         setParticipationFor({ shift, task, showOnce: true, extraFields, replacesSignupId });
       } else if (err instanceof ApiError && err.data.code === 'TIME_COLLISION') {
-        toast({ title: 'Zeitkollision', description: errorMessage(err), tone: 'error' });
+        toast({ title: t('timeCollisionTitle'), description: errorMessage(err), tone: 'error' });
       } else {
-        toast({ title: 'Eintragen hat nicht geklappt', description: errorMessage(err), tone: 'error' });
+        toast({ title: t('signupFailedTitle'), description: errorMessage(err), tone: 'error' });
       }
     } finally {
       setBusyShift(null);
@@ -505,14 +514,17 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
     }
     // Übernehmen geht auch, wenn das Eintragen geschlossen ist (es kommt kein Platz dazu)
     if (replacesSignupId ? !event.viewer.canTakeOver : !access.canSignup) {
-      toast({ title: 'Eintragen nicht möglich', description: access.message ?? undefined, tone: 'error' });
+      toast({ title: t('signupNotPossibleTitle'), description: access.message ?? undefined, tone: 'error' });
       return;
     }
     const conflict = findConflictingShift(shift);
     if (conflict) {
       toast({
-        title: 'Zeitkollision',
-        description: `Du bist zur gleichen Zeit bereits für die Schicht «${shiftName(conflict)}» (${fmtTimeRange(conflict.startTime, conflict.endTime)}) eingetragen.`,
+        title: t('timeCollisionTitle'),
+        description: t('timeCollisionDesc', {
+          shiftName: shiftName(conflict),
+          timeRange: fmtTimeRange(conflict.startTime, conflict.endTime),
+        }),
         tone: 'error',
       });
       return;
@@ -534,9 +546,14 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
 
   const takeOver = async (shift: ShiftDto, offer: ShiftSignupDto, task?: ShiftTaskDto) => {
     const ok = await confirm({
-      title: 'Schicht übernehmen?',
-      description: `Du übernimmst «${shift.title?.trim() || fmtTimeRange(shift.startTime, shift.endTime)}» (${fmtWeekday(shift.startTime)}, ${fmtTimeRange(shift.startTime, shift.endTime)}) von ${offer.displayName}. Danach bist du eingetragen und ${offer.displayName} nicht mehr.`,
-      confirmLabel: 'Übernehmen',
+      title: t('takeOverConfirmTitle'),
+      description: t('takeOverConfirmDesc', {
+        shiftName: shift.title?.trim() || fmtTimeRange(shift.startTime, shift.endTime),
+        weekday: fmtWeekday(shift.startTime),
+        timeRange: fmtTimeRange(shift.startTime, shift.endTime),
+        name: offer.displayName,
+      }),
+      confirmLabel: t('takeOverConfirmBtn'),
     });
     if (!ok) return;
     await signup(shift, task, offer.id);
@@ -551,15 +568,15 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
         json: { note: note || null },
       });
       toast({
-        title: 'Ersatz wird gesucht',
+        title: t('replacementOfferedTitle'),
         description: replacementFor.personName
-          ? `${replacementFor.personName} bleibt eingetragen, bis jemand übernimmt.`
-          : 'Du bleibst eingetragen, bis jemand übernimmt. Du bekommst dann eine Mail.',
+          ? t('replacementOfferedDescOther', { name: replacementFor.personName })
+          : t('replacementOfferedDescSelf'),
       });
       setReplacementFor(null);
       await load();
     } catch (err) {
-      toast({ title: 'Hat nicht geklappt', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('actionFailedTitle'), description: errorMessage(err), tone: 'error' });
     } finally {
       setBusyShift(null);
     }
@@ -569,10 +586,10 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
     setBusyShift(shift.id);
     try {
       await api(`/api/signups/${signupId}/replacement`, { method: 'DELETE' });
-      toast({ title: 'Ersatz-Suche beendet', description: 'Die Eintragung bleibt bestehen.' });
+      toast({ title: t('replacementWithdrawnTitle'), description: t('replacementWithdrawnDesc') });
       await load();
     } catch (err) {
-      toast({ title: 'Hat nicht geklappt', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('actionFailedTitle'), description: errorMessage(err), tone: 'error' });
     } finally {
       setBusyShift(null);
     }
@@ -588,8 +605,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
   const cancel = async (shift: ShiftDto, signupId?: string, name?: string) => {
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
       toast({
-        title: 'Keine Internetverbindung',
-        description: 'Im Offline-Modus ist nur die Leseansicht verfügbar. Zum Austragen wird eine Internetverbindung benötigt.',
+        title: t('offlineTitle'),
+        description: t('offlineCancelDesc'),
         tone: 'error',
       });
       return;
@@ -607,13 +624,17 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
       if (new Date() >= deadline) {
         const daysText = cancelDeadlineText(deadline, event.cancelDeadlineDays);
         const contactInfo = event.contactUser
-          ? `Bitte melde dich bei ${event.contactUser.displayName}${event.contactUser.phone ? ` (${event.contactUser.phone})` : ''}${event.contactUser.email ? ` oder per Mail an ${event.contactUser.email}` : ''}.`
-          : 'Bitte wende dich direkt an das Event-OK.';
+          ? t('deadlineContactUser', {
+              name: event.contactUser.displayName,
+              phone: event.contactUser.phone ? ` (${event.contactUser.phone})` : '',
+              email: event.contactUser.email ? ` oder per Mail an ${event.contactUser.email}` : '',
+            })
+          : t('deadlineContactOk');
 
         await confirm({
-          title: 'Austragen nicht mehr selbst möglich',
-          description: `Das selbständige Austragen ist ${daysText} gesperrt. ${contactInfo}`,
-          confirmLabel: 'Verstanden',
+          title: t('deadlineTitle'),
+          description: t('deadlineDesc', { daysText, contactInfo }),
+          confirmLabel: t('deadlineBtn'),
           tone: 'default',
         });
         return;
@@ -621,11 +642,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
     }
 
     const ok = await confirm({
-      title: name ? `${name} austragen?` : 'Aus Schicht austragen?',
+      title: name ? t('cancelConfirmTitleOther', { name }) : t('cancelConfirmTitleSelf'),
       description: name
-        ? `${name} wird aus "${shiftName(shift)}" entfernt.`
-        : `Du wirst aus "${shiftName(shift)}" ausgetragen. Der Platz wird für andere frei.`,
-      confirmLabel: 'Austragen',
+        ? t('cancelConfirmDescOther', { name, shiftName: shiftName(shift) })
+        : t('cancelConfirmDescSelf', { shiftName: shiftName(shift) }),
+      confirmLabel: t('cancelBtn'),
       tone: 'danger',
     });
     if (!ok) return;
@@ -633,10 +654,10 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
     try {
       const query = signupId ? `?signupId=${signupId}` : '';
       await api(`/api/shifts/${shift.id}/signup${query}`, { method: 'DELETE' });
-      toast({ title: name ? `${name} ausgetragen` : 'Du bist ausgetragen' });
+      toast({ title: name ? t('cancelSuccessOther', { name }) : t('cancelSuccessSelf') });
       await load();
     } catch (err) {
-      toast({ title: 'Austragen hat nicht geklappt', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('cancelFailedTitle'), description: errorMessage(err), tone: 'error' });
     } finally {
       setBusyShift(null);
     }
@@ -644,18 +665,18 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
 
   const removeOrganizer = async (id: string, name: string) => {
     const ok = await confirm({
-      title: `${name} aus dem OK entfernen?`,
-      description: 'Die Person verliert die Planungsrechte für diesen Anlass.',
-      confirmLabel: 'Entfernen',
+      title: t('removeOrganizerTitle', { name }),
+      description: t('removeOrganizerDesc'),
+      confirmLabel: t('removeBtn'),
       tone: 'danger',
     });
     if (!ok) return;
     try {
       await api(`/api/events/${event.slug}/organizers/${id}`, { method: 'DELETE' });
-      toast({ title: `${name} ist nicht mehr im OK` });
+      toast({ title: t('removeOrganizerSuccess', { name }) });
       await load();
     } catch (err) {
-      toast({ title: 'Entfernen hat nicht geklappt', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('removeOrganizerFailed'), description: errorMessage(err), tone: 'error' });
     }
   };
 
@@ -681,7 +702,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
         canOpenOk && (
           <div className="flex items-center gap-2">
             <Link href={`/events/${slug}/ok`} className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
-              <Shield className="size-4" /> <span className="hidden sm:inline">OK-Bereich</span>
+              <Shield className="size-4" /> <span className="hidden sm:inline">{t('okArea')}</span>
             </Link>
             {canManageShifts && (
               <Button
@@ -690,9 +711,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                   setEditingShift(null);
                   setShowShiftForm(true);
                 }}
-                aria-label="Schicht anlegen"
+                aria-label={t('createShiftAria')}
               >
-                <Plus /> <span className="hidden sm:inline">Schicht</span>
+                <Plus /> <span className="hidden sm:inline">{t('createShift')}</span>
               </Button>
             )}
           </div>
@@ -706,7 +727,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
             href="/"
             className="mb-3 inline-flex items-center gap-1.5 rounded-full py-1 text-sm font-semibold text-fg-muted transition hover:text-fg"
           >
-            <ArrowLeft className="size-4" /> Alle Anlässe
+            <ArrowLeft className="size-4" /> {t('allEvents')}
           </Link>
         )}
 
@@ -746,7 +767,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-white/70">
                   <Users className="size-4" />
-                  Für {event.audience}
+                  {t('forAudience', { audience: event.audience })}
                 </span>
               </p>
               {event.description && (
@@ -764,7 +785,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                       {free}
                     </span>
                     <span className="ml-2 text-sm font-semibold text-white/80">
-                      {free === 1 ? 'Platz frei' : 'Plätze frei'}
+                      {free === 1 ? t('slotFreeSingular') : t('slotFreePlural')}
                     </span>
                   </p>
                   <span className="tabular text-sm font-semibold text-white/70">{percent}%</span>
@@ -776,7 +797,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                   />
                 </div>
                 <p className="tabular mt-2 text-xs text-white/60">
-                  {filled} von {total} besetzt
+                  {t('slotsOccupied', { filled, total })}
                 </p>
                 {(myShiftCount > 0 || (event.cateringTokensEnabled && isEventResponsible)) && (
                   <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -785,7 +806,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                         href="/meine-schichten"
                         className="inline-flex items-center gap-1.5 rounded-full bg-success/25 px-3 py-1 text-xs font-semibold text-white transition hover:bg-success/35"
                       >
-                        <Check className="size-3.5" /> Du bist {myShiftCount}× eingetragen
+                        <Check className="size-3.5" /> {t('myShiftsCountBadge', { count: myShiftCount })}
                       </Link>
                     )}
                     {event.cateringTokensEnabled && (
@@ -794,7 +815,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                         onClick={() => setShowCatering(true)}
                         className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-fg shadow-sm transition hover:brightness-110"
                       >
-                        <UtensilsCrossed className="size-3.5" /> Verpflegungs-Bons
+                        <UtensilsCrossed className="size-3.5" /> {t('cateringTokensBtn')}
                       </button>
                     )}
                   </div>
@@ -816,64 +837,72 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
           )}
           {/* Einladungs-Link Behandlung */}
           {pendingToken && !event.viewer.pendingLink && (
-            <Callout tone="danger" title="Ungültiger Zugangs-Link">
-              <p>Dieser Zugangs-Link ist nicht gültig oder wurde gelöscht. Wenn du eingeladen wurdest, frag bitte beim OK nach einem neuen Link.</p>
+            <Callout tone="danger" title={t('invalidLinkTitle')}>
+              <p>{t('invalidLinkDesc')}</p>
             </Callout>
           )}
 
           {event.viewer.pendingLink && !event.viewer.pendingLink.alreadyRedeemed && (
             event.viewer.pendingLink.alreadyHasAccess && user ? (
-                <Callout tone="info" title="Zugangs-Link erkannt">
+                <Callout tone="info" title={t('linkDetectedTitle')}>
                   <p>
-                    Du hast diesen Anlass über einen {event.viewer.pendingLink.kind === 'PERSONAL' ? 'persönlichen ' : 'Gruppen-'}Link geöffnet
-                    {event.viewer.pendingLink.label ? ` («${event.viewer.pendingLink.label}»)` : ''}.
-                    Da du als {event.viewer.access.isManager ? 'OK-Leitung / Planer*in' : 'Mitglied'} bereits vollen Zugang hast,
-                    musst du den Link nicht einlösen.
+                    {t('linkDetectedDesc', {
+                      linkType: event.viewer.pendingLink.kind === 'PERSONAL' ? t('personalLinkType') : t('groupLinkType'),
+                      label: event.viewer.pendingLink.label ? ` («${event.viewer.pendingLink.label}»)` : '',
+                      role: event.viewer.access.isManager ? t('roleManager') : t('roleMember'),
+                    })}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Button size="sm" variant="secondary" onClick={dismissPendingLink}>
-                      Hinweis ausblenden
+                      {t('dismissLinkHint')}
                     </Button>
                     {!event.viewer.pendingLink.isExpired && !event.viewer.pendingLink.isBoundToOther && (
                       <Button size="sm" variant="ghost" loading={redeeming} onClick={() => redeemLink()}>
-                        Trotzdem einlösen (z. B. zum Testen)
+                        {t('redeemAnywayBtn')}
                       </Button>
                     )}
                   </div>
                 </Callout>
               ) : event.viewer.pendingLink.isExpired ? (
-                <Callout tone="warning" title="Einladungs-Link abgelaufen">
+                <Callout tone="warning" title={t('linkExpiredTitle')}>
                   <p>
-                    Die Einlösefrist für diesen {event.viewer.pendingLink.kind === 'PERSONAL' ? 'persönlichen ' : ''}Link ist abgelaufen.
-                    Wenn du noch mithelfen möchtest, melde dich bitte beim OK.
+                    {t('linkExpiredDesc', {
+                      personalPrefix: event.viewer.pendingLink.kind === 'PERSONAL' ? t('personalPrefix') : '',
+                    })}
                   </p>
                 </Callout>
               ) : event.viewer.pendingLink.isBoundToOther ? (
-                <Callout tone="danger" title="Persönlicher Link bereits vergeben">
-                  <p>
-                    Dieser persönliche Zugangs-Link wurde bereits von einer anderen Person eingelöst.
-                    Persönliche Links können nur einmal verwendet werden. Melde dich beim OK für einen eigenen Link.
-                  </p>
+                <Callout tone="danger" title={t('linkBoundToOtherTitle')}>
+                  <p>{t('linkBoundToOtherDesc')}</p>
                 </Callout>
               ) : !user && !portalLoading ? (
-                <Callout tone="info" title="Du wurdest eingeladen">
+                <Callout tone="info" title={t('invitedTitle')}>
                   <p>
-                    Über diesen {event.viewer.pendingLink.kind === 'PERSONAL' ? 'persönlichen ' : 'Gruppen-'}Link
-                    {event.viewer.pendingLink.label ? ` («${event.viewer.pendingLink.label}»)` : ''} kannst du dich für «{event.title}» eintragen.
-                    Melde dich kurz an, um den Zugang freizuschalten (ein {organization.nicknameTerm} ohne Passwort reicht).
+                    {t('invitedGuestDesc', {
+                      linkType: event.viewer.pendingLink.kind === 'PERSONAL' ? t('personalLinkType') : t('groupLinkType'),
+                      label: event.viewer.pendingLink.label ? ` («${event.viewer.pendingLink.label}»)` : '',
+                      title: event.title,
+                      nicknameTerm: organization.nicknameTerm,
+                    })}
                   </p>
                   <a href={loginHref} className={buttonClasses({ size: 'sm', className: 'mt-3' })}>
-                    <LogIn /> Anmelden und Zugang freischalten
+                    <LogIn /> {t('invitedGuestBtn')}
                   </a>
                 </Callout>
               ) : user ? (
-                <Callout tone="info" title="Du wurdest eingeladen">
+                <Callout tone="info" title={t('invitedTitle')}>
                   <p>
-                    Schalte jetzt deinen Zugang zu «{event.title}» frei
-                    {event.viewer.pendingLink.label ? ` (${event.viewer.pendingLink.kind === 'PERSONAL' ? 'Persönlicher Link' : 'Gruppen-Link'}: «${event.viewer.pendingLink.label}»)` : ''}.
+                    {t('invitedUserDesc', {
+                      title: event.title,
+                      label: event.viewer.pendingLink.label
+                        ? event.viewer.pendingLink.kind === 'PERSONAL'
+                          ? t('inviteUserLabelPersonal', { label: event.viewer.pendingLink.label })
+                          : t('inviteUserLabelGroup', { label: event.viewer.pendingLink.label })
+                        : '',
+                    })}
                   </p>
                   <Button size="sm" className="mt-3" loading={redeeming} onClick={() => redeemLink()}>
-                    <KeyRound /> Jetzt freischalten
+                    <KeyRound /> {t('unlockAccessBtn')}
                   </Button>
                 </Callout>
               ) : null
@@ -888,7 +917,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
         {/* Organisationskomitee */}
         {(event.organizers?.length || canManageEvent || canManageOk) && (
           <section className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center" aria-label="Organisationskomitee">
-            <h2 className="shrink-0 text-sm font-semibold text-fg-subtle">OK</h2>
+            <h2 className="shrink-0 text-sm font-semibold text-fg-subtle">{t('okTitle')}</h2>
             <ul className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">
               {event.organizers?.map((org) => {
                 const lead = org.role === 'OK_LEAD';
@@ -904,13 +933,13 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                         {orgName}
                         {lead ? <Crown className="size-3.5 text-accent-ink" /> : <Shield className="size-3.5 text-fg-subtle" />}
                       </span>
-                      <span className="block text-xs text-fg-subtle">{org.roleTitle || (lead ? 'OK-Leitung' : 'OK-Mitglied')}</span>
+                      <span className="block text-xs text-fg-subtle">{org.roleTitle || (lead ? t('roleOkLead') : t('roleOkMember'))}</span>
                     </span>
                     {canManageOk && (
                       <button
                         type="button"
                         onClick={() => removeOrganizer(org.id, orgName)}
-                        aria-label={`${org.displayName} aus dem OK entfernen`}
+                        aria-label={t('removeOrganizerAria', { name: org.displayName })}
                         className="-mr-2 ml-1 rounded-full p-1.5 text-fg-subtle transition hover:bg-danger/10 hover:text-danger-ink"
                       >
                         <X className="size-3.5" />
@@ -924,12 +953,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
               <div className="flex flex-wrap gap-2 sm:ml-auto">
                 {canManageOk && (
                   <Button variant="secondary" size="sm" onClick={() => setShowOkForm(true)}>
-                    <UserPlus /> OK ernennen
+                    <UserPlus /> {t('appointOkBtn')}
                   </Button>
                 )}
                 {canManageEvent && (
                   <Link href={`/events/${event.slug}/ok/einstellungen`} className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
-                    <Palette className="size-4" /> Einstellungen
+                    <Palette className="size-4" /> {t('settingsBtn')}
                   </Link>
                 )}
               </div>
@@ -956,11 +985,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
       {event.shifts.length > 0 && (
         <div id="schichten" className="sticky top-16 z-20 mt-8 scroll-mt-16 border-b border-line/70 bg-canvas/85 backdrop-blur-xl">
           <div className="mx-auto flex max-w-6xl items-center gap-2 overflow-x-auto px-4 py-3 scrollbar-none sm:px-6">
-            <div role="radiogroup" aria-label="Ansicht" className="flex shrink-0 rounded-full border border-line bg-surface p-0.5">
+            <div role="radiogroup" aria-label={t('viewAria')} className="flex shrink-0 rounded-full border border-line bg-surface p-0.5">
               {(
                 [
-                  { value: 'list', label: 'Liste', icon: List },
-                  { value: 'grid', label: 'Raster', icon: LayoutGrid },
+                  { value: 'list', label: t('viewList'), icon: List },
+                  { value: 'grid', label: t('viewGrid'), icon: LayoutGrid },
                 ] as const
               ).map((option) => {
                 const Icon = option.icon;
@@ -988,7 +1017,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
             {days.length > 1 && (
               <>
                 <Chip selected={day === 'ALL'} onClick={() => setDay('ALL')}>
-                  Alle Tage
+                  {t('allDays')}
                 </Chip>
                 {days.map((d) => (
                   <Chip key={d.key} selected={day === d.key} onClick={() => setDay(d.key)}>
@@ -999,16 +1028,16 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
               </>
             )}
             <Chip selected={onlyOpen} onClick={() => setOnlyOpen((v) => !v)}>
-              Nur mit freien Plätzen
+              {t('onlyWithFreeSlots')}
             </Chip>
             {event.shifts.some((s) => replacementOffers(s).length > 0) && (
               <Chip selected={onlyReplacement} onClick={() => setOnlyReplacement((v) => !v)}>
-                Ersatz gesucht
+                {t('onlyReplacement')}
               </Chip>
             )}
             {event.shifts.some((s) => s.isSetupTeardown) && (
               <Chip selected={onlySetup} onClick={() => setOnlySetup((v) => !v)}>
-                Auf- &amp; Abbau
+                {t('onlySetupTeardown')}
               </Chip>
             )}
             {distinctTasks.length > 1 &&
@@ -1030,16 +1059,16 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
         {event.shifts.length === 0 ? (
           <EmptyState
             icon={<CalendarDays />}
-            title="Noch keine Schichten"
+            title={t('emptyShiftsLeadTitle')}
             description={
               canManageShifts
-                ? 'Lege die erste Schicht an. Helfer*innen können sich danach sofort eintragen.'
-                : 'Das OK plant die Schichten noch. Schau bald wieder vorbei.'
+                ? t('emptyShiftsLeadDesc')
+                : t('emptyShiftsVisitorDesc')
             }
             action={
               canManageShifts && (
                 <Button onClick={() => setShowShiftForm(true)}>
-                  <Plus /> Schicht anlegen
+                  <Plus /> {t('createShiftBtn')}
                 </Button>
               )
             }
@@ -1047,11 +1076,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
         ) : visibleDays.length === 0 ? (
           <EmptyState
             icon={<CalendarSearch />}
-            title="Keine passenden Schichten"
-            description="Mit diesen Filtern bleibt nichts übrig."
+            title={t('emptyFilteredTitle')}
+            description={t('emptyFilteredDesc')}
             action={
               <Button variant="secondary" onClick={resetFilters}>
-                Filter zurücksetzen
+                {t('resetFiltersBtn')}
               </Button>
             }
           />
@@ -1080,10 +1109,10 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                         <div className="mt-1 flex flex-wrap items-center gap-2">
                           {event.dayResponsibles?.[group.key]?.length ? (
                             <Badge tone="neutral" size="sm" className="font-normal">
-                              Tagesleitung: {event.dayResponsibles[group.key].map((r) => r.displayName).join(', ')}
+                              {t('dayLeadBadge', { names: event.dayResponsibles[group.key].map((r) => r.displayName).join(', ') })}
                             </Badge>
                           ) : canManageShifts ? (
-                            <span className="text-2xs text-fg-subtle italic">Keine Tagesleitung hinterlegt</span>
+                            <span className="text-2xs text-fg-subtle italic">{t('noDayLead')}</span>
                           ) : null}
                           {canManageShifts && (
                             <Button
@@ -1097,7 +1126,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                                 })
                               }
                             >
-                              Tagesleitung bearbeiten
+                              {t('editDayLeadBtn')}
                             </Button>
                           )}
                         </div>
@@ -1109,14 +1138,14 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                         dayFree === 0 ? 'bg-success/12 text-success-ink' : 'bg-accent/10 text-accent-ink'
                       )}
                     >
-                      {dayFree === 0 ? 'Alles besetzt' : `${dayFree} frei`} · {dayFilled}/{dayTotal}
+                      {dayFree === 0 ? t('allSlotsFilledBadge') : t('slotsFreeBadge', { free: dayFree })} · {dayFilled}/{dayTotal}
                     </span>
                   </header>
 
                   {myDayShifts.length >= 2 && (
                     <div className="mb-3 flex flex-wrap items-center gap-1.5 rounded-tile border border-accent/25 bg-accent/5 px-3 py-2 text-xs">
                       <span className="mr-1 font-bold text-accent-ink">
-                        Deine {myDayShifts.length} Einsätze an diesem Tag:
+                        {t('myShiftsCountDay', { count: myDayShifts.length })}
                       </span>
                       {myDayShifts.map((s, idx) => {
                         const prev = idx > 0 ? myDayShifts[idx - 1] : null;
@@ -1136,15 +1165,15 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                               >
                                 {diffMins === 0 ? (
                                   <>
-                                    <Zap className="size-3 text-accent" /> Direkter Anschluss
+                                    <Zap className="size-3 text-accent" /> {t('directConnectionLabel')}
                                   </>
                                 ) : diffMins < 0 ? (
                                   <>
-                                    <Zap className="size-3 text-accent" /> {Math.abs(diffMins)} Min. Übergabe
+                                    <Zap className="size-3 text-accent" /> {t('directHandover', { minutes: Math.abs(diffMins) })}
                                   </>
                                 ) : (
                                   <>
-                                    <Coffee className="size-3 text-fg-subtle" /> {fmtBreakDuration(diffMins)} Pause
+                                    <Coffee className="size-3 text-fg-subtle" /> {t('breakTime', { duration: fmtBreakDuration(diffMins) })}
                                   </>
                                 )}
                               </span>
@@ -1185,7 +1214,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
         needsLogin={needsLogin}
         blockedReason={
           !event.allowPublicSignup
-            ? 'Das Eintragen ist geschlossen.'
+            ? t('blockedReasonSignupClosed')
             : user && !access.canSignup
               ? access.message
               : null

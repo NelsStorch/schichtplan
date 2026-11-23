@@ -2,66 +2,62 @@
 
 import { useEffect, useState } from 'react';
 import { Download, Share, Smartphone, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useOrganization } from '@schichtplan/ui';
 import { isPwaPromptDismissed, dismissPwaPrompt } from '@/lib/pwaDismissal';
 
 interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
+  prompt(): Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
 export function PwaInstallBanner() {
+  const t = useTranslations('web.pwa');
   const org = useOrganization();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showIosGuide, setShowIosGuide] = useState(false);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    // Bereits als App (Standalone PWA) installiert?
+    // Wenn bereits als Standalone PWA installiert: niemals anzeigen
     const isStandalone =
       window.matchMedia('(display-mode: standalone)').matches ||
-      Boolean((navigator as unknown as { standalone?: boolean }).standalone);
+      // @ts-expect-error iOS Safari navigator.standalone
+      window.navigator.standalone === true;
 
-    if (isStandalone) return;
-
-    // Kürzlich (innert 14 Tagen) oder in dieser Session weggedrückt?
-    if (isPwaPromptDismissed()) {
+    if (isStandalone || isPwaPromptDismissed()) {
       return;
     }
 
-    // iOS Safari Erkennung (inkl. iPad)
-    const ua = window.navigator.userAgent.toLowerCase();
-    const isIos = /iphone|ipad|ipod/.test(ua) || (ua.includes('macintosh') && window.navigator.maxTouchPoints > 1);
-    const isSafari = isIos && /safari/.test(ua) && !/crios|fxios|opios/.test(ua);
+    // iOS Safari Erkennung (unterstützt beforeinstallprompt nicht)
+    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-    if (isSafari) {
+    if (isIos && isSafari) {
       setShowIosGuide(true);
-      setVisible(true);
-      return;
+      // Kurze Verzögerung für weicheren Einstieg
+      const timer = setTimeout(() => setVisible(true), 2500);
+      return () => clearTimeout(timer);
     }
 
-    // Android / Chromium Browser: beforeinstallprompt abfangen
-    const handler = (e: Event) => {
-      // Vor dem Anzeigen nochmals prüfen (z. B. falls zwischenzeitlich weggedrückt)
-      if (isPwaPromptDismissed()) return;
+    // Android / Chromium Browser Event abfangen
+    const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       setVisible(true);
     };
 
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
   }, []);
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
     await deferredPrompt.prompt();
-    try {
-      await deferredPrompt.userChoice;
-    } catch {}
-    // Sowohl bei Akzeptieren als auch bei Ablehnen: 14 Tage Pause
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      dismissPwaPrompt();
+    }
     dismissPwaPrompt();
     setVisible(false);
     setDeferredPrompt(null);
@@ -76,7 +72,7 @@ export function PwaInstallBanner() {
 
   return (
     <aside
-      aria-label="App-Installation"
+      aria-label={t('ariaLabel')}
       className="fixed bottom-4 left-4 right-4 z-40 mx-auto max-w-lg rounded-card border border-border-muted/80 bg-surface/95 p-4 shadow-lift backdrop-blur-md transition-all duration-300"
     >
       <div className="flex items-start gap-3">
@@ -86,20 +82,20 @@ export function PwaInstallBanner() {
 
         <div className="min-w-0 flex-1">
           <h2 className="text-sm font-semibold text-fg">
-            {org.name} als App installieren
+            {t('title', { orgName: org.name })}
           </h2>
           <p className="mt-1 text-xs leading-relaxed text-fg-muted">
-            Schneller Zugriff auf deine Schichten und Offline-Ansicht auf dem Festgelände ohne Empfang.
+            {t('description')}
           </p>
 
           {showIosGuide ? (
             <div className="mt-2.5 space-y-2.5">
               <div className="rounded-field bg-surface-muted/60 px-3 py-2 text-xs text-fg">
-                <span className="font-medium">Auf dem iPhone/iPad:</span> Unten im Browser auf{' '}
+                <span className="font-medium">{t('iosPrefix')}</span> {t('iosGuidePart1')}
                 <span className="inline-flex items-center gap-0.5 font-semibold text-accent-fg">
-                  <Share className="inline size-3.5" aria-hidden="true" /> Teilen
+                  <Share className="inline size-3.5" aria-hidden="true" /> {t('shareLabel')}
                 </span>{' '}
-                tippen und <strong className="font-semibold">«Zum Home-Bildschirm»</strong> wählen.
+                {t('iosGuidePart2')}<strong className="font-semibold">{t('homeScreenLabel')}</strong>{t('iosGuidePart3')}
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -107,14 +103,14 @@ export function PwaInstallBanner() {
                   onClick={handleDismiss}
                   className="inline-flex items-center gap-1.5 rounded-field bg-accent px-3 py-1.5 text-xs font-semibold text-white shadow-soft transition hover:bg-accent-hover active:scale-95"
                 >
-                  Verstanden
+                  {t('understoodBtn')}
                 </button>
                 <button
                   type="button"
                   onClick={handleDismiss}
                   className="rounded-field px-2.5 py-1.5 text-xs font-medium text-fg-muted hover:text-fg"
                 >
-                  Später
+                  {t('laterBtn')}
                 </button>
               </div>
             </div>
@@ -126,14 +122,14 @@ export function PwaInstallBanner() {
                 className="inline-flex items-center gap-1.5 rounded-field bg-accent px-3 py-1.5 text-xs font-semibold text-white shadow-soft transition hover:bg-accent-hover active:scale-95"
               >
                 <Download className="size-3.5" aria-hidden="true" />
-                App installieren
+                {t('installBtn')}
               </button>
               <button
                 type="button"
                 onClick={handleDismiss}
                 className="rounded-field px-2.5 py-1.5 text-xs font-medium text-fg-muted hover:text-fg"
               >
-                Später
+                {t('laterBtn')}
               </button>
             </div>
           )}
@@ -143,7 +139,7 @@ export function PwaInstallBanner() {
           type="button"
           onClick={handleDismiss}
           className="shrink-0 rounded-field p-1 text-fg-muted transition hover:bg-surface-muted hover:text-fg"
-          aria-label="Hinweis schliessen"
+          aria-label={t('closeAria')}
         >
           <X className="size-4" aria-hidden="true" />
         </button>

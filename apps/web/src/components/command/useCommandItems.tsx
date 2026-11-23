@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   BarChart3,
@@ -79,6 +80,7 @@ interface DepartmentPerson {
 export type PrefixMode = 'ALL' | 'PEOPLE' | 'EVENTS' | 'SHIFTS' | 'HELP';
 
 export function useCommandItems(query: string) {
+  const t = useTranslations('web.command');
   const router = useRouter();
   const pathname = usePathname();
   const toast = useToast();
@@ -175,9 +177,9 @@ export function useCommandItems(query: string) {
   const copyToClipboard = async (text: string, title: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast({ title: `${title} kopiert`, tone: 'success' });
+      toast({ title: t('copiedToast', { title }), tone: 'success' });
     } catch {
-      toast({ title: 'Kopieren fehlgeschlagen', tone: 'error' });
+      toast({ title: t('copyFailedToast'), tone: 'error' });
     }
   };
 
@@ -210,8 +212,8 @@ export function useCommandItems(query: string) {
     ];
     downloadIcs(`${event.slug}.ics`, entries);
     toast({
-      title: 'Kalenderdatei heruntergeladen',
-      description: `«${event.slug}.ics» wurde gespeichert.`,
+      title: t('icsDownloadedToast'),
+      description: t('icsDownloadedDesc', { slug: event.slug }),
       tone: 'success',
     });
   };
@@ -2279,15 +2281,15 @@ export function useCommandItems(query: string) {
   // Sektionen gruppieren
   const groupedSections = useMemo(() => {
     const sectionLabels: Record<CommandSection, string> = {
-      RECENT: 'Zuletzt verwendet',
-      CONTEXT: activeEvent ? `Aktueller Anlass: ${activeEvent.title}` : 'Aktueller Kontext',
-      ACTIONS: 'Schnellaktionen & Verwaltung',
-      EVENTS: 'Anlässe',
-      SHIFTS: 'Schichten & Arbeitsbereiche',
-      PEOPLE: 'Helfende & Personen',
-      NAVIGATION: 'Seiten & Navigation',
-      HELP: 'Tastaturkürzel & Hilfe',
-      SYSTEM: 'System & Design',
+      RECENT: t('sectionRecent'),
+      CONTEXT: activeEvent ? t('sectionContextWithEvent', { title: activeEvent.title }) : t('sectionContextDefault'),
+      ACTIONS: t('sectionActions'),
+      EVENTS: t('sectionEvents'),
+      SHIFTS: t('sectionShifts'),
+      PEOPLE: t('sectionPeople'),
+      NAVIGATION: t('sectionNavigation'),
+      HELP: t('sectionHelp'),
+      SYSTEM: t('sectionSystem'),
     };
 
     const sectionOrder: CommandSection[] = [
@@ -2316,7 +2318,7 @@ export function useCommandItems(query: string) {
     }
 
     return groups;
-  }, [filteredItems, activeEvent]);
+  }, [filteredItems, activeEvent, t]);
 
   return {
     items: filteredItems,

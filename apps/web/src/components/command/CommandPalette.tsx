@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   ArrowLeft,
   ArrowRight,
@@ -23,6 +24,7 @@ import { clearRecentCommands } from './recentCommands';
 import { useCommandItems } from './useCommandItems';
 
 export function CommandPalette() {
+  const t = useTranslations('web.command');
   const { isOpen, close, activeSubActionItem, setActiveSubActionItem } = useCommandPalette();
   const [query, setQuery] = useState('');
   const [subQuery, setSubQuery] = useState('');
@@ -231,13 +233,13 @@ export function CommandPalette() {
                 onClick={() => setActiveSubActionItem(null)}
                 className="flex items-center gap-1 rounded px-1.5 py-0.5 text-accent-ink transition hover:bg-surface-3"
               >
-                <ArrowLeft className="size-3.5" /> Zurück
+                <ArrowLeft className="size-3.5" /> {t('back')}
               </button>
               <ChevronRight className="size-3.5 text-fg-subtle" />
               <div className="flex items-center gap-1.5 truncate text-fg">
                 <span className="truncate">{activeSubActionItem.title}</span>
                 <span className="rounded bg-accent/15 px-1.5 py-0.2 text-[10px] font-bold uppercase text-accent-ink">
-                  Direktaktionen
+                  {t('directActions')}
                 </span>
               </div>
             </div>
@@ -249,7 +251,7 @@ export function CommandPalette() {
                 type="text"
                 value={subQuery}
                 onChange={(e) => setSubQuery(e.target.value)}
-                placeholder={`Aktion für «${activeSubActionItem.title}» wählen...`}
+                placeholder={t('actionForPlaceholder', { title: activeSubActionItem.title })}
                 className="w-full bg-transparent text-sm font-medium text-fg placeholder:text-fg-subtle focus:outline-none"
               />
               {subQuery && (
@@ -270,10 +272,10 @@ export function CommandPalette() {
             {/* Präfix-Tag Indicator (@, #, :, ?) */}
             {prefixMode !== 'ALL' && (
               <Badge tone="accent" className="shrink-0 text-xs font-semibold">
-                {prefixMode === 'PEOPLE' && '@ Helfende'}
-                {prefixMode === 'EVENTS' && '# Anlässe'}
-                {prefixMode === 'SHIFTS' && ': Schichten'}
-                {prefixMode === 'HELP' && '? Hilfe'}
+                {prefixMode === 'PEOPLE' && t('prefixPeople')}
+                {prefixMode === 'EVENTS' && t('prefixEvents')}
+                {prefixMode === 'SHIFTS' && t('prefixShifts')}
+                {prefixMode === 'HELP' && t('prefixHelp')}
               </Badge>
             )}
 
@@ -291,12 +293,12 @@ export function CommandPalette() {
               }}
               placeholder={
                 prefixMode === 'PEOPLE'
-                  ? 'Person oder Helfer suchen...'
+                  ? t('placeholderPeople')
                   : prefixMode === 'EVENTS'
-                    ? 'Anlass suchen...'
+                    ? t('placeholderEvents')
                     : prefixMode === 'SHIFTS'
-                      ? 'Schicht oder freie Plätze suchen...'
-                      : 'Befehl tippen oder nach Schichten, Anlässen, Helfenden suchen...'
+                      ? t('placeholderShifts')
+                      : t('placeholderAll')
               }
               className="w-full bg-transparent text-sm font-medium text-fg placeholder:text-fg-subtle focus:outline-none sm:text-base"
             />
@@ -306,17 +308,17 @@ export function CommandPalette() {
                 type="button"
                 onClick={() => setQuery('')}
                 className="rounded-full p-1 text-fg-subtle transition hover:bg-surface-2 hover:text-fg"
-                aria-label="Suchfeld leeren"
+                aria-label={t('clearSearchAria')}
               >
                 <X className="size-4" />
               </button>
             ) : (
               <div className="hidden items-center gap-1.5 sm:flex">
-                <span className="text-2xs text-fg-subtle">Tippe</span>
+                <span className="text-2xs text-fg-subtle">{t('typeHint')}</span>
                 <kbd className="rounded border border-line bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] text-fg-subtle">
                   ?
                 </kbd>
-                <span className="text-2xs text-fg-subtle">für Hilfe</span>
+                <span className="text-2xs text-fg-subtle">{t('typeHelpHint')}</span>
               </div>
             )}
           </div>
@@ -335,7 +337,7 @@ export function CommandPalette() {
               // SUB-AKTIONEN-LISTE
               filteredSubActions.length === 0 ? (
                 <div className="py-12 text-center text-sm text-fg-muted">
-                  Keine passende Aktion für «{subQuery}» gefunden.
+                  {t('noSubActions', { query: subQuery })}
                 </div>
               ) : (
                 <div className="space-y-1">
@@ -378,7 +380,7 @@ export function CommandPalette() {
                             {isDirect && (
                               <span className="inline-flex items-center gap-0.5 rounded bg-surface-3 px-1 py-0 text-[9px] font-medium text-fg-subtle">
                                 <Zap className="size-2.5 text-warning-ink" />
-                                <span>Sofort</span>
+                                <span>{t('instant')}</span>
                               </span>
                             )}
                           </div>
@@ -390,7 +392,7 @@ export function CommandPalette() {
                         </div>
                         {isSelected && (
                           <div className="flex items-center gap-1.5 text-2xs font-semibold text-accent-ink">
-                            <span>Ausführen</span>
+                            <span>{t('execute')}</span>
                             <CornerDownLeft className="size-3" />
                           </div>
                         )}
@@ -403,7 +405,7 @@ export function CommandPalette() {
               // HAUPT-BEFEHLSLISTE MIT SEKTIONEN
               items.length === 0 ? (
                 <div className="py-12 text-center text-sm text-fg-muted">
-                  Keine Befehle oder Ergebnisse für «{query}» gefunden.
+                  {t('noResults', { query })}
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -425,7 +427,7 @@ export function CommandPalette() {
                             className="flex items-center gap-1 text-[11px] font-medium text-fg-subtle hover:text-danger-ink"
                             title="Verlauf leeren"
                           >
-                            <Trash2 className="size-3" /> Verlauf leeren
+                            <Trash2 className="size-3" /> {t('clearHistory')}
                           </button>
                         )}
                       </div>
@@ -493,7 +495,7 @@ export function CommandPalette() {
                               {itemHasSubActions && (
                                 <button
                                   type="button"
-                                  title="Direktaktionen öffnen (Tab)"
+                                  title={t('openActionsTab')}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setActiveSubActionItem(item);
@@ -505,7 +507,7 @@ export function CommandPalette() {
                                       : 'text-fg-subtle hover:bg-surface-3 hover:text-fg opacity-0 group-hover:opacity-100'
                                   )}
                                 >
-                                  <span>Aktionen</span>
+                                  <span>{t('actions')}</span>
                                   <kbd className="rounded border border-line bg-surface px-1 py-0 font-mono text-[9px]">
                                     ⇥
                                   </kbd>
@@ -590,7 +592,7 @@ export function CommandPalette() {
                     <div className="space-y-3 rounded-xl border border-line bg-surface p-3.5 text-xs">
                       <div>
                         <div className="text-2xs font-semibold text-fg-subtle uppercase tracking-wider mb-1.5 flex justify-between">
-                          <span>Besetzung</span>
+                          <span>{t('slotStaffing')}</span>
                           <span className="font-mono font-bold text-fg">
                             {previewTargetItem.preview.shift.signups?.length || 0} / {previewTargetItem.preview.shift.requiredSlots}
                           </span>
@@ -604,7 +606,7 @@ export function CommandPalette() {
                       {previewTargetItem.preview.shift.signups && previewTargetItem.preview.shift.signups.length > 0 && (
                         <div className="pt-2 border-t border-line/60 space-y-1">
                           <span className="text-2xs font-semibold text-fg-subtle uppercase tracking-wider block mb-1">
-                            Eingeteilte Helfende ({previewTargetItem.preview.shift.signups.length})
+                            {t('assignedHelpersCount', { count: previewTargetItem.preview.shift.signups.length })}
                           </span>
                           <div className="flex flex-wrap gap-1">
                             {previewTargetItem.preview.shift.signups.map((su, idx) => (
@@ -620,7 +622,7 @@ export function CommandPalette() {
                                 <UserRound className="size-2.5 text-accent-ink" />
                                 <span>{su.displayName}</span>
                                 {su.attendance === 'PRESENT' && (
-                                  <span title="Eingecheckt" className="inline-flex">
+                                  <span title={t('checkedIn')} className="inline-flex">
                                     <Check className="size-2.5 text-success-ink" />
                                   </span>
                                 )}
@@ -633,7 +635,7 @@ export function CommandPalette() {
                       {previewTargetItem.preview.shift.description && (
                         <div className="pt-2 border-t border-line/60">
                           <span className="text-2xs font-semibold text-fg-subtle uppercase tracking-wider block mb-0.5">
-                            Beschreibung
+                            {t('description')}
                           </span>
                           <p className="text-2xs text-fg-muted line-clamp-3">
                             {previewTargetItem.preview.shift.description}
@@ -648,7 +650,7 @@ export function CommandPalette() {
                       {previewTargetItem.preview.event?.description && (
                         <div>
                           <span className="text-2xs font-semibold text-fg-subtle uppercase tracking-wider block mb-1">
-                            Beschreibung
+                            {t('description')}
                           </span>
                           <p className="text-2xs text-fg-muted line-clamp-3">
                             {previewTargetItem.preview.event.description}
@@ -659,7 +661,7 @@ export function CommandPalette() {
                       {previewTargetItem.preview.eventStats && (
                         <div className="pt-2 border-t border-line/60 space-y-1.5">
                           <div className="flex justify-between text-2xs font-semibold text-fg-subtle uppercase tracking-wider">
-                            <span>Gesamtbesetzung</span>
+                            <span>{t('overallStaffing')}</span>
                             <span className="font-mono font-bold text-fg">
                               {previewTargetItem.preview.eventStats.filledSlots} / {previewTargetItem.preview.eventStats.totalSlots}
                             </span>
@@ -669,7 +671,7 @@ export function CommandPalette() {
                             total={previewTargetItem.preview.eventStats.totalSlots}
                           />
                           <div className="flex justify-between text-2xs text-fg-subtle pt-0.5">
-                            <span>{previewTargetItem.preview.eventStats.totalShifts} Schichten</span>
+                            <span>{t('totalShiftsCount', { count: previewTargetItem.preview.eventStats.totalShifts })}</span>
                             <span
                               className={cn(
                                 previewTargetItem.preview.eventStats.freeSlots > 0
@@ -741,7 +743,7 @@ export function CommandPalette() {
                       <div className="rounded-xl border border-line bg-surface p-3.5 text-xs space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-2xs font-bold uppercase tracking-wider text-fg-subtle">
-                            Übernommene Schichten ({previewTargetItem.preview.person.shifts?.length || 0})
+                            {t('takenShiftsCount', { count: previewTargetItem.preview.person.shifts?.length || 0 })}
                           </span>
                         </div>
 
@@ -756,11 +758,11 @@ export function CommandPalette() {
                                   <span className="font-semibold text-fg truncate">{s.title}</span>
                                   {s.attendance === 'PRESENT' ? (
                                     <Badge size="sm" tone="success" className="text-[9px] px-1 py-0 shrink-0">
-                                      Eingecheckt
+                                      {t('checkedIn')}
                                     </Badge>
                                   ) : (
                                     <Badge size="sm" tone="neutral" className="text-[9px] px-1 py-0 shrink-0">
-                                      Offen
+                                      {t('open')}
                                     </Badge>
                                   )}
                                 </div>
@@ -773,7 +775,7 @@ export function CommandPalette() {
                           </div>
                         ) : (
                           <div className="py-2 text-center text-2xs text-fg-muted">
-                            Keine Schichten in diesem Anlass übernommen.
+                            {t('noShiftsTaken')}
                           </div>
                         )}
                       </div>
@@ -809,7 +811,7 @@ export function CommandPalette() {
                         }}
                         className="flex w-full items-center justify-between rounded-xl bg-accent px-3 py-2 text-xs font-semibold text-white shadow-soft transition hover:bg-accent/90"
                       >
-                        <span>Ausgewählte Aktion ausführen</span>
+                        <span>{t('executeSelected')}</span>
                         <CornerDownLeft className="size-3.5" />
                       </button>
                       <button
@@ -817,7 +819,7 @@ export function CommandPalette() {
                         onClick={() => setActiveSubActionItem(null)}
                         className="flex w-full items-center justify-between rounded-xl border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-fg transition hover:bg-surface-2"
                       >
-                        <span>Zurück zur Übersicht</span>
+                        <span>{t('backToOverview')}</span>
                         <span className="font-mono text-[10px] text-fg-subtle">Esc</span>
                       </button>
                     </>
@@ -828,7 +830,7 @@ export function CommandPalette() {
                         onClick={() => currentItem.onSelect()}
                         className="flex w-full items-center justify-between rounded-xl bg-accent px-3 py-2 text-xs font-semibold text-white shadow-soft transition hover:bg-accent/90"
                       >
-                        <span>Ausführen</span>
+                        <span>{t('execute')}</span>
                         <CornerDownLeft className="size-3.5" />
                       </button>
 
@@ -838,7 +840,7 @@ export function CommandPalette() {
                           onClick={() => setActiveSubActionItem(currentItem)}
                           className="flex w-full items-center justify-between rounded-xl border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-fg transition hover:bg-surface-2"
                         >
-                          <span>Direktaktionen ({currentItem.subActions?.length})</span>
+                          <span>{t('directActionsCount', { count: currentItem.subActions?.length ?? 0 })}</span>
                           <span className="font-mono text-[10px] text-accent-ink font-bold">⇥ Tab</span>
                         </button>
                       )}
@@ -860,11 +862,11 @@ export function CommandPalette() {
                 <div className="flex items-center gap-3">
                   <span className="flex items-center gap-1">
                     <kbd className="rounded border border-line bg-surface px-1 py-0 font-mono text-[10px]">↵</kbd>
-                    <span>Ausführen</span>
+                    <span>{t('execute')}</span>
                   </span>
                   <span className="flex items-center gap-1">
                     <kbd className="rounded border border-line bg-surface px-1 py-0 font-mono text-[10px]">Esc</kbd>
-                    <span>Zurück</span>
+                    <span>{t('back')}</span>
                   </span>
                 </div>
                 <button
@@ -872,7 +874,7 @@ export function CommandPalette() {
                   onClick={() => setActiveSubActionItem(null)}
                   className="font-medium text-accent-ink hover:underline sm:hidden"
                 >
-                  Zurück zur Liste
+                  {t('backToListMobile')}
                 </button>
               </>
             ) : (
@@ -880,7 +882,7 @@ export function CommandPalette() {
                 <div className="flex items-center gap-3">
                   <span className="flex items-center gap-1">
                     <kbd className="rounded border border-line bg-surface px-1 py-0 font-mono text-[10px]">↵</kbd>
-                    <span>Auswählen</span>
+                    <span>{t('select')}</span>
                   </span>
 
                   {hasSubActions && (
@@ -888,13 +890,13 @@ export function CommandPalette() {
                       <kbd className="rounded border border-accent/40 bg-accent/15 px-1 py-0 font-mono text-[10px] text-accent-ink">
                         ⇥ Tab
                       </kbd>
-                      <span>Aktionen ({currentItem?.subActions?.length})</span>
+                      <span>{t('actions')} ({currentItem?.subActions?.length})</span>
                     </span>
                   )}
 
                   <span className="hidden items-center gap-1 sm:flex">
                     <kbd className="rounded border border-line bg-surface px-1 py-0 font-mono text-[10px]">Esc</kbd>
-                    <span>Schliessen</span>
+                    <span>{t('close')}</span>
                   </span>
                 </div>
 
@@ -904,7 +906,7 @@ export function CommandPalette() {
                     onClick={() => setActiveSubActionItem(currentItem)}
                     className="font-medium text-accent-ink hover:underline sm:hidden"
                   >
-                    Aktionen öffnen (⇥)
+                    {t('openActionsMobile')}
                   </button>
                 )}
               </>
