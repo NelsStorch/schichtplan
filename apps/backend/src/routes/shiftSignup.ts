@@ -1,3 +1,4 @@
+import { toDbLocale } from '@schichtplan/i18n';
 import { z } from 'zod';
 import { FastifyPluginAsync } from 'fastify';
 import {
@@ -276,6 +277,7 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
             nickname: true,
             phone: true,
             birthDate: true,
+            locale: true,
           },
         });
         if (!self) {
@@ -544,6 +546,16 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
               fail: 'signup.taskMinAgeLastSlotReserved' as ErrorKey,
               values: { task: chosenTask.title, minAge: chosenTask.minAge } as ErrorValues,
             };
+          }
+        }
+
+        if (targetUserId === request.user.id && targetUser && !targetUser.locale && request.locale) {
+          const dbLoc = toDbLocale(request.locale);
+          if (dbLoc) {
+            await tx.user.update({
+              where: { id: targetUser.id },
+              data: { locale: dbLoc },
+            });
           }
         }
 

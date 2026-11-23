@@ -1,3 +1,4 @@
+import { toDbLocale } from '@schichtplan/i18n';
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import {
@@ -191,6 +192,7 @@ const nicknameAuthRoutes: FastifyPluginAsync = async (fastify) => {
           homeDepartmentConfirmedAt: validInvite ? new Date() : null,
           homeDepartmentConfirmSource: validInvite ? 'INVITE' : null,
           departmentSetupAt: new Date(),
+          locale: toDbLocale(request.locale),
         },
       });
       await tx.departmentMember.create({

@@ -1,0 +1,51 @@
+{
+  "checkin": {
+    "officialPoster": "{orgName}  ·  OFFIZIELLER HELFER-AUSHANG",
+    "title": "Helfer-Check-in",
+    "subtitle": "Anwesenheit erfassen: Scann den QR-Code vor Beginn deiner Schicht.",
+    "subtitleWindow": "Anwesenheit erfassen: Scann den QR-Code {early} bis {late} deiner Schicht.",
+    "earlyMin": "ab {min} Min. vor",
+    "earlyZero": "ab",
+    "lateMin": "bis {min} Min. nach",
+    "badgeScan": "QR-CODE SCANNEN ZUM EINCHECKEN",
+    "step1Title": "Kamera öffnen",
+    "step1Text": "Smartphone-Kamera oder QR-Scanner auf den Code richten und den Link öffnen.",
+    "step2Title": "Bestätigen",
+    "step2Text": "Mit deinem {orgName}-Konto anmelden oder als Gast deinen Namen bestätigen.",
+    "step3Title": "Eingecheckt!",
+    "step3Text": "Deine Anwesenheit wird sofort erfasst. Du bist für deinen Helfereinsatz startklar!",
+    "windowTitle": "ZEITFENSTER FÜR DEN CHECK-IN",
+    "windowText": "Der Selbst-Check-in öffnet jeweils {earlyText} und bleibt {lateText} aktiv.",
+    "windowEarlyZero": "bei Schichtbeginn",
+    "windowEarlyMin": "{min} Minuten vor deinem Schichtbeginn",
+    "windowLateZero": "bis zum Schichtende",
+    "windowLateMin": "bis {min} Minuten nach deinem Schichtende"
+  },
+  "catering": {
+    "voucherLabel": "VERPFLEGUNGS-GUTSCHEIN",
+    "moreItems": "+ {count} weitere",
+    "footerHint": "Am Stand vorweisen und scannen lassen",
+    "kombiLabel": "KOMBI-GUTSCHEIN",
+    "helperLabel": "HELFER-BON"
+  },
+  "plan": {
+    "page": "Seite {page} von {total}",
+    "stand": "Stand",
+    "overview": "Schichtplan",
+    "aushang": "Schichtplan zum Eintragen",
+    "openSlots": "Offene Plätze",
+    "byPerson": "Einteilung pro Person · {count, plural, one {# Person} other {# Personen}}",
+    "emptyShifts": "Keine Schichten ausgewählt.",
+    "emptyDay": "Keine offenen Plätze an diesem Tag.",
+    "dayMeta": "{count, plural, one {# Schicht} other {# Schichten}}",
+    "dayResponsible": "Tagesleitung: {names}",
+    "slotsFilled": "{filled} von {required} Plätzen besetzt",
+    "colTime": "Zeit",
+    "colShift": "Schicht",
+    "colTask": "Arbeit",
+    "colFilled": "Besetzt",
+    "colAssigned": "Eingeteilt",
+    "colNames": "Namen",
+    "free": "frei"
+  }
+}

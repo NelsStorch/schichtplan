@@ -108,6 +108,20 @@ describe('qrGenerator', () => {
     expect(pdfStr).not.toContain('Cevi Schichtplan');
   });
 
+  it('erzeugt lokalisiertes Check-in-PDF für Französisch', async () => {
+    const pdfBuf = await generateCheckinPdf({
+      text: 'https://geneve.cevi-schichtplan.ch/events/fete/checkin?code=xyz',
+      title: 'Fête de l\'Escalade',
+      departmentName: 'Union Cadets Genève',
+      color: '#e11d48',
+      locale: 'fr',
+    });
+
+    expect(pdfBuf).toBeInstanceOf(Buffer);
+    expect(pdfBuf.subarray(0, 4).toString('utf8')).toBe('%PDF');
+    expect(pdfBuf.length).toBeGreaterThan(5000);
+  });
+
   it('erzeugt Pfadi-QR-Code mit Pfadi-Logo und ohne Cevi-Logo', async () => {
     const svg = await generateQrSvg({
       text: 'https://schleife.pfadi-schichtplan.ch/events/lager/checkin?code=xyz',

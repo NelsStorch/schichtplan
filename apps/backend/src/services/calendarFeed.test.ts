@@ -88,6 +88,41 @@ describe('calendarFeed', () => {
     expect(ics).toContain('END:VCALENDAR');
     expect(ics.endsWith('\r\n')).toBe(true);
   });
+
+  it('buildIcsFeed unterstützt lokalisierte Feeds (z. B. Französisch)', () => {
+    const shifts: CalendarShiftItem[] = [
+      {
+        uid: 'shift-fr-1@cevi-schichtplan.ch',
+        shiftId: 'shift-fr-1',
+        title: 'Stand crêpes',
+        category: 'Kiosk',
+        description: 'Apporter la monnaie.',
+        taskTitle: 'Caisse',
+        startTime: new Date('2026-10-26T08:00:00.000Z'),
+        endTime: new Date('2026-10-26T12:00:00.000Z'),
+        eventId: 'evt-1',
+        eventTitle: 'Fête 2026',
+        eventSlug: 'fete-2026',
+        departmentName: 'Union Cadets Genève',
+        departmentSlug: 'geneve',
+        isResponsible: true,
+        responsibleRole: 'Schichtleitung',
+      },
+    ];
+
+    const ics = buildIcsFeed({
+      userDisplayName: 'Inferno',
+      shifts,
+      domain: 'cevi-schichtplan.ch',
+      locale: 'fr',
+    });
+
+    expect(ics).toContain('PRODID:-//Cevi Schichtplan//FR');
+    expect(ics).toContain('SUMMARY:[Responsable de créneau] Stand crêpes (Caisse) · Fête 2026');
+    expect(ics).toContain('Événement : Fête 2026');
+    expect(ics).toContain('Section: Union Cade');
+    expect(ics).toContain('https://geneve.cevi-schichtplan.ch/events/fete-2026');
+  });
 });
 
 describe('deriveCalendarUrls', () => {

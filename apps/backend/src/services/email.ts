@@ -1,6 +1,7 @@
 import nodemailer, { type Transporter } from 'nodemailer';
 import type { MailKind, OrganizationType } from '@schichtplan/shared';
-import { getOrganization, getOrganizationByDbType } from '@schichtplan/shared';
+import { getOrganization, getOrganizationByDbType, getVocabulary } from '@schichtplan/shared';
+import { getTranslator, parseLocale, type Locale } from '@schichtplan/i18n';
 import { escapeIcsText, foldIcsLine, formatIcsUtc } from './calendarFeed.js';
 import { trackUsage } from './usageStats.js';
 
@@ -148,6 +149,8 @@ export interface EmailTemplateOptions {
   unsubscribeLabel?: string;
   /** Optionale Organisation für dynamisches Branding (Logo, Farben, Footer, Domain) */
   organization?: OrganizationType | string;
+  /** Sprache für Mail-HTML-Attribut und Standard-Texte */
+  locale?: Locale | string | null;
 }
 
 const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
@@ -203,21 +206,6 @@ export function formatEmailSubject(subject: string): string {
   return subject;
 }
 
-/**
- * Liefert eine passende Standard-Anrede für Helfende ohne hinterlegten Namen.
- */
-function getDefaultGreeting(orgSlug: string): string {
-  switch (orgSlug) {
-    case 'pfadi':
-      return 'Pfadi';
-    case 'jubla':
-      return 'Jublaner*in';
-    case 'verein':
-      return 'Helfer*in';
-    default:
-      return 'Cevianer*in';
-  }
-}
 
 /** Entfernt alle Blöcke `<tag ...> ... </tag ...>` samt Inhalt (linear, ohne Regex-Backtracking). */
 function stripBlocks(html: string, tag: string): string {
@@ -354,6 +342,7 @@ export function buildShiftIcsAttachment({
   shiftUrl,
   description,
   organization,
+  locale,
 }: {
   uid: string;
   shiftTitle: string;
@@ -364,22 +353,26 @@ export function buildShiftIcsAttachment({
   shiftUrl?: string;
   description?: string;
   organization?: OrganizationType | string;
+  locale?: Locale | string | null;
 }): string {
-  const org = getOrganization(organization);
+  const l = (locale ? parseLocale(locale) : null) ?? 'de';
+  const org = getOrganization(organization, l);
+  const t = getTranslator(l, { namespace: 'emails' });
+  const vocab = getVocabulary(org.dbType, l);
   const nowUtc = formatIcsUtc(new Date());
   const summary = `${shiftTitle} · ${eventTitle}`;
   const descLines = [
-    `Schicht: ${shiftTitle}`,
-    `Anlass: ${eventTitle}`,
-    departmentName ? `Abteilung: ${departmentName}` : null,
+    t('ics.shift', { shift: shiftTitle }),
+    t('ics.event', { event: eventTitle }),
+    departmentName ? `${vocab.department}: ${departmentName}` : null,
     description ? `\n${description}` : null,
-    shiftUrl ? `\nSchichtplan: ${shiftUrl}` : null,
+    shiftUrl ? `\n${t('ics.shiftPlan', { url: shiftUrl })}` : null,
   ].filter(Boolean) as string[];
 
   const rawLines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    `PRODID:-//${org.name}//DE`,
+    `PRODID:-//${org.name}//${l.toUpperCase()}`,
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
@@ -452,13 +445,16 @@ export function renderEmailTemplate({
   unsubscribeUrl,
   unsubscribeLabel,
   organization,
+  locale,
 }: EmailTemplateOptions): string {
-  const org = getOrganization(organization);
+  const l = (locale ? parseLocale(locale) : null) ?? 'de';
+  const org = getOrganization(organization, l);
+  const t = getTranslator(l, { namespace: 'emails' });
   const brandColor = accentColor && HEX_COLOR_RE.test(accentColor) ? accentColor : org.primaryColor;
   const brandName = org.name;
   const logoUrl = `https://${org.domain}${org.logoUrl}`;
-  const subtitle = headerSubtitle?.trim() || `Schweizer Plattform für ${org.targetGroup}`;
-  const signature = signatureName?.trim() || `Dein ${org.name} Team`;
+  const subtitle = headerSubtitle?.trim() || t('layout.headerSubtitle', { targetGroup: org.targetGroup });
+  const signature = signatureName?.trim() || t('layout.signature', { orgName: org.name });
 
   let calloutBg = '#fafaf9';
   let calloutBorder = '#e4e1de';
@@ -501,7 +497,7 @@ export function renderEmailTemplate({
       : '';
 
   return `<!DOCTYPE html>
-<html lang="de" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<html lang="${l}" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -697,7 +693,7 @@ export function renderEmailTemplate({
                     <!-- Fallback Link Block -->
                     <div class="email-link-box" style="background-color: #fafaf9; border: 1px solid #e4e1de; border-radius: 12px; padding: 12px 16px; margin: 20px 0 0 0;">
                       <p style="margin: 0 0 4px 0; font-size: 11.5px; font-weight: 600; color: #716b66; text-transform: uppercase; letter-spacing: 0.04em;">
-                        Button funktioniert nicht? Direktlink:
+                        ${escapeHtml(t('layout.fallbackLink'))}
                       </p>
                       <p style="margin: 0; font-size: 12px; line-height: 1.4; word-break: break-all;">
                         <a href="${escapeHtml(ctaUrl)}" style="color: ${brandColor}; text-decoration: underline;">${escapeHtml(
@@ -710,7 +706,7 @@ export function renderEmailTemplate({
                     }
 
                     <div class="email-divider" style="margin-top: 28px; padding-top: 18px; border-top: 1px solid #eceae7; font-size: 14px; color: #716b66; line-height: 1.5;">
-                      Herzliche Grüsse<br>
+                      ${escapeHtml(t('layout.closing'))}<br>
                       <strong class="email-signature" style="color: #1c1917;">${escapeHtml(signature)}</strong>
                     </div>
 
@@ -734,14 +730,16 @@ export function renderEmailTemplate({
                             &copy; ${new Date().getFullYear()} <strong>${escapeHtml(brandName)}</strong> &bull;
                             <a href="https://${org.domain}" style="color: #716b66; text-decoration: underline;">${org.domain}</a>
                             &bull;
-                            <a href="https://hilfe.${org.domain}" style="color: #716b66; text-decoration: underline;">Hilfe</a>
+                            <a href="${l === 'de' ? `https://hilfe.${org.domain}` : `https://hilfe.${org.domain}/${l}`}" style="color: #716b66; text-decoration: underline;">${escapeHtml(t('layout.help'))}</a>
                             ${
                               unsubscribeUrl
                                 ? ` &bull; <a href="${escapeHtml(unsubscribeUrl)}" style="color: #716b66; text-decoration: underline;">${escapeHtml(
-                                    unsubscribeLabel || 'Benachrichtigungen verwalten'
+                                    unsubscribeLabel || t('layout.manageNotifications')
                                   )}</a>`
                                 : ''
                             }
+                            &bull;
+                            <a href="https://${org.domain}${t('layout.langSwitchUrl')}" style="color: #716b66; text-decoration: underline;">${escapeHtml(t('layout.langSwitch'))}</a>
                           </p>
                         </td>
                       </tr>
@@ -868,6 +866,20 @@ export async function sendEmail({
 /**
  * 1. E-Mail-Adresse bestätigen (Verifizierungslink)
  */
+export function formatReminderLeadTimeWithTranslator(leadMinutes: number | undefined, t: (key: string, values?: Record<string, string | number>) => string): string {
+  if (leadMinutes === undefined) return t('shiftReminder.leadSoon');
+  if (leadMinutes < 60) return t('shiftReminder.leadMinutes', { count: leadMinutes });
+  if (leadMinutes === 60) return t('shiftReminder.leadOneHour');
+  if (leadMinutes < 1440) return t('shiftReminder.leadHours', { count: Math.round(leadMinutes / 60) });
+  if (leadMinutes === 1440) return t('shiftReminder.leadOneDay');
+  if (leadMinutes === 2880) return t('shiftReminder.leadDays', { count: 2 });
+  if (leadMinutes === 10080) return t('shiftReminder.leadOneWeek');
+  return t('shiftReminder.leadDays', { count: Math.round(leadMinutes / 1440) });
+}
+
+/**
+ * 1. E-Mail-Adresse bestätigen (Verifizierungslink)
+ */
 export async function sendVerificationEmail({
   to,
   name,
@@ -875,6 +887,7 @@ export async function sendVerificationEmail({
   expiresHours = 24,
   deletesUnconfirmed = false,
   organization,
+  locale,
 }: {
   to: string;
   name?: string | null;
@@ -884,25 +897,28 @@ export async function sendVerificationEmail({
   deletesUnconfirmed?: boolean;
   /** Organisation für passendes Branding & SMTP-Absender */
   organization?: OrganizationType;
+  locale?: Locale | string | null;
 }): Promise<boolean> {
-  const org = getOrganization(organization);
-  const defaultGreeting = getDefaultGreeting(org.slug);
+  const l = (locale ? parseLocale(locale) : null) ?? 'de';
+  const org = getOrganization(organization, l);
+  const t = getTranslator(l, { namespace: 'emails' });
+  const defaultGreeting = getVocabulary(org.dbType, l).member;
   const displayName = name?.trim() ? name.trim() : defaultGreeting;
-  const subject = `Bestätige deine E-Mail-Adresse – ${org.name}`;
-  const eyebrow = 'Konto-Aktivierung';
-  const title = `Willkommen beim ${org.name}!`;
-  const preheader = 'Bitte bestätige deine E-Mail-Adresse, um dein Konto zu aktivieren.';
+  const subject = t('verification.subject', { orgName: org.name });
+  const eyebrow = t('verification.eyebrow');
+  const title = t('verification.title', { orgName: org.name });
+  const preheader = t('verification.preheader');
 
   const contentHtml = `
-    <p style="margin: 0 0 16px 0;">Hallo <strong class="email-signature" style="color: #1c1917;">${escapeHtml(displayName)}</strong>,</p>
-    <p style="margin: 0 0 16px 0;">schön, dass du dabei bist! Bitte bestätige kurz deine E-Mail-Adresse, damit wir dir Erinnerungen zu deinen Schichten und Infos vom OK schicken können:</p>
+    <p style="margin: 0 0 16px 0;">${escapeHtml(t('verification.greeting', { name: '' }))} <strong class="email-signature" style="color: #1c1917;">${escapeHtml(displayName)}</strong>,</p>
+    <p style="margin: 0 0 16px 0;">${escapeHtml(t('verification.text'))}</p>
   `;
 
   // Neues Passwort-Konto: ohne Bestätigung wird es nach Ablauf des Links gelöscht (services/unverifiedAccounts.ts)
-  const deleteNote = deletesUnconfirmed ? ' Ohne Bestätigung löschen wir das Konto danach wieder.' : '';
+  const deleteNote = deletesUnconfirmed ? t('verification.deleteNote') : '';
   const calloutBox = {
-    title: 'Sicherheitshinweis',
-    text: `Dieser Bestätigungslink ist ${expiresHours} Stunden gültig.${deleteNote} Falls du diese Adresse nicht selbst eingetragen hast, kannst du diese E-Mail einfach ignorieren.`,
+    title: t('verification.securityTitle'),
+    text: t('verification.securityText', { hours: expiresHours, deleteNote }),
     tone: 'info' as const,
   };
 
@@ -912,13 +928,14 @@ export async function sendVerificationEmail({
     title,
     contentHtml,
     calloutBox,
-    ctaText: 'E-Mail-Adresse bestätigen',
+    ctaText: t('verification.cta'),
     ctaUrl: verificationUrl,
-    footerNote: `Du erhältst diese E-Mail, weil deine Adresse bei einem Konto auf ${org.domain} hinterlegt wurde.`,
+    footerNote: t('verification.footerNote', { domain: org.domain }),
     organization: org.slug,
+    locale: l,
   });
 
-  const text = `Hallo ${displayName},\n\nWillkommen beim ${org.name}!\n\nBitte öffne den folgenden Link in deinem Browser, um deine E-Mail-Adresse zu bestätigen:\n${verificationUrl}\n\nDieser Link ist ${expiresHours} Stunden gültig.${deleteNote}\n\nFalls du diese Adresse nicht selbst eingetragen hast, kannst du diese Nachricht ignorieren.\n\nHerzliche Grüsse\nDein ${org.name} Team\nhttps://${org.domain}`;
+  const text = `${t('verification.greeting', { name: displayName })}\n\n${t('verification.title', { orgName: org.name })}\n\n${verificationUrl}\n\n${t('verification.securityText', { hours: expiresHours, deleteNote })}\n\n${t('layout.closing')}\n${t('layout.signature', { orgName: org.name })}\nhttps://${org.domain}`;
 
   return sendEmail({
     to,
@@ -939,6 +956,7 @@ export async function sendPasswordResetEmail({
   resetUrl,
   expiresHours = 2,
   organization,
+  locale,
 }: {
   to: string;
   name?: string | null;
@@ -946,30 +964,33 @@ export async function sendPasswordResetEmail({
   expiresHours?: number;
   /** Organisation für passendes Branding & SMTP-Absender */
   organization?: OrganizationType;
+  locale?: Locale | string | null;
 }): Promise<boolean> {
-  const org = getOrganization(organization);
-  const defaultGreeting = getDefaultGreeting(org.slug);
+  const l = (locale ? parseLocale(locale) : null) ?? 'de';
+  const org = getOrganization(organization, l);
+  const t = getTranslator(l, { namespace: 'emails' });
+  const defaultGreeting = getVocabulary(org.dbType, l).member;
   const displayName = name?.trim() ? name.trim() : defaultGreeting;
-  const subject = `Passwort zurücksetzen – ${org.name}`;
-  const eyebrow = 'Sicherheit';
-  const title = 'Neues Passwort festlegen';
-  const preheader = `Setze dein Passwort für den ${org.name} zurück.`;
+  const subject = t('passwordReset.subject', { orgName: org.name });
+  const eyebrow = t('passwordReset.eyebrow');
+  const title = t('passwordReset.title');
+  const preheader = t('passwordReset.preheader', { orgName: org.name });
 
   const contentHtml = `
-    <p style="margin: 0 0 16px 0;">Hallo <strong class="email-signature" style="color: #1c1917;">${escapeHtml(displayName)}</strong>,</p>
-    <p style="margin: 0 0 16px 0;">du hast angefordert, das Passwort für dein Konto beim ${escapeHtml(org.name)} zurückzusetzen.</p>
-    <p style="margin: 0;">Klicke auf den Button unten, um ein neues Passwort zu wählen:</p>
+    <p style="margin: 0 0 16px 0;">${escapeHtml(t('passwordReset.greeting', { name: '' }))} <strong class="email-signature" style="color: #1c1917;">${escapeHtml(displayName)}</strong>,</p>
+    <p style="margin: 0 0 16px 0;">${escapeHtml(t('passwordReset.text', { orgName: org.name }))}</p>
+    <p style="margin: 0;">${escapeHtml(t('passwordReset.instructions'))}</p>
   `;
 
   const calloutBox = {
-    title: 'Wichtiger Hinweis',
-    text: `Dieser Link ist ${expiresHours} Stunden gültig. Wenn du diese Anfrage nicht selbst gestellt hast, bleibt dein bisheriges Passwort unverändert.`,
+    title: t('passwordReset.warningTitle'),
+    text: t('passwordReset.warningText', { hours: expiresHours }),
     tone: 'warning' as const,
   };
 
   const footerNote =
-    org.authProviderShort && org.authProviderShort !== 'E-Mail'
-      ? `Tipp: Mit einem ${org.authProviderShort}-Konto kannst du dich auch jederzeit direkt ohne separates Passwort anmelden.`
+    org.authProviderShort && org.authProviderShort !== 'E-Mail' && org.authProviderShort !== 'E-mail' && org.authProviderShort !== 'Email'
+      ? t('passwordReset.footerTip', { provider: org.authProviderShort })
       : undefined;
 
   const html = renderEmailTemplate({
@@ -978,13 +999,14 @@ export async function sendPasswordResetEmail({
     title,
     contentHtml,
     calloutBox,
-    ctaText: 'Neues Passwort wählen',
+    ctaText: t('passwordReset.cta'),
     ctaUrl: resetUrl,
     footerNote,
     organization: org.slug,
+    locale: l,
   });
 
-  const text = `Hallo ${displayName},\n\nÖffne folgenden Link, um ein neues Passwort für den ${org.name} festzulegen:\n${resetUrl}\n\nDieser Link ist ${expiresHours} Stunden gültig. Falls du diese Anfrage nicht selbst gestellt hast, bleibt dein bisheriges Passwort unverändert.\n\nHerzliche Grüsse\nDein ${org.name} Team\nhttps://${org.domain}`;
+  const text = `${t('passwordReset.greeting', { name: displayName })}\n\n${resetUrl}\n\n${t('passwordReset.warningText', { hours: expiresHours })}\n\n${t('layout.closing')}\n${t('layout.signature', { orgName: org.name })}\nhttps://${org.domain}`;
 
   return sendEmail({
     to,
@@ -1006,6 +1028,7 @@ export async function sendAccountExistsEmail({
   loginUrl,
   resetUrl,
   organization,
+  locale,
 }: {
   to: string;
   name?: string | null;
@@ -1013,34 +1036,38 @@ export async function sendAccountExistsEmail({
   resetUrl: string;
   /** Organisation für passendes Branding & SMTP-Absender */
   organization?: OrganizationType;
+  locale?: Locale | string | null;
 }): Promise<boolean> {
-  const org = getOrganization(organization);
-  const defaultGreeting = getDefaultGreeting(org.slug);
+  const l = (locale ? parseLocale(locale) : null) ?? 'de';
+  const org = getOrganization(organization, l);
+  const t = getTranslator(l, { namespace: 'emails' });
+  const defaultGreeting = getVocabulary(org.dbType, l).member;
   const displayName = name?.trim() ? name.trim() : defaultGreeting;
-  const subject = `Du hast schon ein Konto – ${org.name}`;
+  const subject = t('accountExists.subject', { orgName: org.name });
 
   const contentHtml = `
-    <p style="margin: 0 0 16px 0;">Hallo <strong class="email-signature" style="color: #1c1917;">${escapeHtml(displayName)}</strong>,</p>
-    <p style="margin: 0 0 16px 0;">jemand wollte mit dieser E-Mail-Adresse ein neues Konto beim ${escapeHtml(org.name)} anlegen. Zu deiner Adresse gibt es aber bereits ein Konto.</p>
-    <p style="margin: 0;">Melde dich einfach an. Falls du dein Passwort nicht mehr weisst, kannst du es <a href="${escapeHtml(resetUrl)}" style="text-decoration: underline; font-weight: 600;">hier zurücksetzen</a>.</p>
+    <p style="margin: 0 0 16px 0;">${escapeHtml(t('accountExists.greeting', { name: '' }))} <strong class="email-signature" style="color: #1c1917;">${escapeHtml(displayName)}</strong>,</p>
+    <p style="margin: 0 0 16px 0;">${escapeHtml(t('accountExists.text', { orgName: org.name }))}</p>
+    <p style="margin: 0;">${escapeHtml(t('accountExists.instructions'))}</p>
   `;
 
   const html = renderEmailTemplate({
-    preheader: 'Zu deiner E-Mail-Adresse gibt es schon ein Konto.',
-    eyebrow: 'Konto-Hinweis',
-    title: 'Du hast schon ein Konto',
+    preheader: t('accountExists.preheader'),
+    eyebrow: t('accountExists.eyebrow'),
+    title: t('accountExists.title'),
     contentHtml,
     calloutBox: {
-      title: 'Warst das nicht du?',
-      text: 'Dann kannst du diese E-Mail ignorieren. An deinem Konto hat sich nichts geändert.',
+      title: t('accountExists.warningTitle'),
+      text: t('accountExists.warningText'),
       tone: 'info' as const,
     },
-    ctaText: 'Jetzt anmelden',
+    ctaText: t('accountExists.cta'),
     ctaUrl: loginUrl,
     organization: org.slug,
+    locale: l,
   });
 
-  const text = `Hallo ${displayName},\n\njemand wollte mit dieser E-Mail-Adresse ein neues Konto anlegen. Du hast aber schon eines.\n\nAnmelden: ${loginUrl}\nPasswort vergessen: ${resetUrl}\n\nWarst das nicht du? Dann ignoriere diese E-Mail. An deinem Konto hat sich nichts geändert.\n\nHerzliche Grüsse\nDein ${org.name} Team`;
+  const text = `${t('accountExists.greeting', { name: displayName })}\n\n${t('accountExists.text', { orgName: org.name })}\n\n${loginUrl}\n${resetUrl}\n\n${t('accountExists.warningText')}\n\n${t('layout.closing')}\n${t('layout.signature', { orgName: org.name })}`;
 
   return sendEmail({
     to,
@@ -1061,6 +1088,7 @@ export async function sendInactiveAccountEmail({
   loginUrl,
   deleteOn,
   organization,
+  locale,
 }: {
   to: string;
   name?: string | null;
@@ -1068,43 +1096,38 @@ export async function sendInactiveAccountEmail({
   /** Datum der Löschung, z. B. «19.12.2028» */
   deleteOn: string;
   organization?: OrganizationType;
+  locale?: Locale | string | null;
 }): Promise<boolean> {
-  const org = getOrganization(organization);
-  const defaultGreeting = getDefaultGreeting(org.slug);
+  const l = (locale ? parseLocale(locale) : null) ?? 'de';
+  const org = getOrganization(organization, l);
+  const t = getTranslator(l, { namespace: 'emails' });
+  const defaultGreeting = getVocabulary(org.dbType, l).member;
   const displayName = name?.trim() ? name.trim() : defaultGreeting;
-  const subject = `Dein Konto wird gelöscht – ${org.name}`;
+  const subject = t('inactiveAccount.subject', { orgName: org.name });
 
   const contentHtml = `
-    <p style="margin: 0 0 16px 0;">Hallo <strong class="email-signature" style="color: #1c1917;">${escapeHtml(displayName)}</strong>,</p>
-    <p style="margin: 0 0 16px 0;">du hast dein Konto beim ${escapeHtml(org.name)} seit über zwei Jahren nicht mehr benutzt. Damit wir keine Daten länger als nötig aufbewahren, löschen wir es am <strong>${escapeHtml(deleteOn)}</strong>.</p>
-    <p style="margin: 0;">Möchtest du dein Konto behalten? Dann melde dich einfach vorher einmal an. Sonst musst du nichts tun.</p>
+    <p style="margin: 0 0 16px 0;">${escapeHtml(t('inactiveAccount.greeting', { name: '' }))} <strong class="email-signature" style="color: #1c1917;">${escapeHtml(displayName)}</strong>,</p>
+    <p style="margin: 0 0 16px 0;">${escapeHtml(t('inactiveAccount.text', { orgName: org.name, deleteOn }))}</p>
+    <p style="margin: 0;">${escapeHtml(t('inactiveAccount.keepAccount'))}</p>
   `;
 
   const html = renderEmailTemplate({
-    preheader: `Dein Konto wird am ${deleteOn} gelöscht, wenn du dich nicht anmeldest.`,
-    eyebrow: 'Konto-Hinweis',
-    title: 'Dein Konto wird gelöscht',
+    preheader: t('inactiveAccount.preheader', { deleteOn }),
+    eyebrow: t('inactiveAccount.eyebrow'),
+    title: t('inactiveAccount.title'),
     contentHtml,
     calloutBox: {
-      title: 'Was wird gelöscht?',
-      text: 'Dein Profil, deine Kontaktdaten und deine Antworten. In vergangenen Anlässen bleibt deine Schicht als «Gelöschte Person» stehen, ohne Namen.',
+      title: t('inactiveAccount.warningTitle'),
+      text: t('inactiveAccount.warningText'),
       tone: 'info' as const,
     },
-    ctaText: 'Jetzt anmelden',
+    ctaText: t('inactiveAccount.cta'),
     ctaUrl: loginUrl,
     organization: org.slug,
+    locale: l,
   });
 
-  const text = `Hallo ${displayName},
-
-du hast dein Konto beim ${org.name} seit über zwei Jahren nicht mehr benutzt. Wir löschen es am ${deleteOn}.
-
-Möchtest du es behalten? Dann melde dich vorher einmal an: ${loginUrl}
-
-Sonst musst du nichts tun. Gelöscht werden Profil, Kontaktdaten und Antworten. In vergangenen Anlässen bleibt deine Schicht als «Gelöschte Person» stehen, ohne Namen.
-
-Herzliche Grüsse
-Dein ${org.name} Team`;
+  const text = `${t('inactiveAccount.greeting', { name: displayName })}\n\n${t('inactiveAccount.text', { orgName: org.name, deleteOn })}\n\n${loginUrl}\n\n${t('inactiveAccount.warningText')}\n\n${t('layout.closing')}\n${t('layout.signature', { orgName: org.name })}`;
 
   return sendEmail({ to, subject, html, text, organization: org.dbType, kind: 'ACCOUNT_INACTIVE' });
 }
@@ -1130,6 +1153,7 @@ export async function sendShiftReminderEmail({
   isResponsible = false,
   isGuest = false,
   organization,
+  locale,
 }: {
   to: string;
   name?: string | null;
@@ -1153,31 +1177,19 @@ export async function sendShiftReminderEmail({
   isGuest?: boolean;
   /** Organisation für passendes Branding & SMTP-Absender */
   organization?: OrganizationType;
+  locale?: Locale | string | null;
 }): Promise<boolean> {
-  const org = getOrganization(organization);
-  const defaultGreeting = getDefaultGreeting(org.slug);
+  const l = (locale ? parseLocale(locale) : null) ?? 'de';
+  const org = getOrganization(organization, l);
+  const t = getTranslator(l, { namespace: 'emails' });
+  const defaultGreeting = getVocabulary(org.dbType, l).member;
   const displayName = name?.trim() ? name.trim() : defaultGreeting;
-  const leadLabel =
-    leadMinutes !== undefined
-      ? leadMinutes < 60
-        ? `in ${leadMinutes} Minuten`
-        : leadMinutes === 60
-          ? 'in 1 Stunde'
-          : leadMinutes < 1440
-            ? `in ${Math.round(leadMinutes / 60)} Stunden`
-            : leadMinutes === 1440
-              ? 'in 24 Stunden'
-              : leadMinutes === 2880
-                ? 'in 2 Tagen'
-                : leadMinutes === 10080
-                  ? 'in 1 Woche'
-                  : `in ${Math.round(leadMinutes / 1440)} Tagen`
-      : 'bald';
+  const leadLabel = formatReminderLeadTimeWithTranslator(leadMinutes, t as (k: string, v?: Record<string, string | number>) => string);
 
-  const subject = `Erinnerung: Deine Schicht «${shiftTitle}» beginnt ${leadLabel} (${eventTitle})`;
-  const eyebrow = isResponsible ? 'Schichtleitung · Erinnerung' : 'Einsatz-Erinnerung';
-  const title = leadMinutes !== undefined ? `Deine Schicht beginnt ${leadLabel}!` : 'Deine Schicht steht bevor!';
-  const preheader = `Dein Einsatz «${shiftTitle}» bei ${eventTitle} beginnt ${leadLabel} (${timeRangeFormatted}).`;
+  const subject = t('shiftReminder.subject', { shift: shiftTitle, lead: leadLabel, event: eventTitle });
+  const eyebrow = isResponsible ? t('shiftReminder.eyebrowResponsible') : t('shiftReminder.eyebrowHelper');
+  const title = leadMinutes !== undefined ? t('shiftReminder.titleWithLead', { lead: leadLabel }) : t('shiftReminder.titleGeneral');
+  const preheader = t('shiftReminder.preheader', { shift: shiftTitle, event: eventTitle, lead: leadLabel, time: timeRangeFormatted });
   const profileUrl = `https://${org.domain}/profil?tab=benachrichtigungen`;
 
   const cleanNote = reminderNote?.trim() || null;
@@ -1186,9 +1198,7 @@ export async function sendShiftReminderEmail({
     <div class="email-callout" style="background-color: #f4f7f4; border: 1px solid #d5e3d6; border-left: 4px solid ${
       accentColor && /^#[0-9a-fA-F]{6}$/.test(accentColor) ? accentColor : '#2d5a3c'
     }; border-radius: 12px; padding: 16px 18px; margin: 20px 0;">
-      <p class="email-callout-title" style="margin: 0 0 6px 0; font-size: 13.5px; font-weight: 700; color: #1c1917;">Hinweis vom OK (${escapeHtml(
-        eventTitle
-      )})</p>
+      <p class="email-callout-title" style="margin: 0 0 6px 0; font-size: 13.5px; font-weight: 700; color: #1c1917;">${escapeHtml(t('shiftReminder.okNoteTitle', { event: eventTitle }))}</p>
       <p class="email-callout-text" style="margin: 0; font-size: 14px; line-height: 1.55; color: #3f3c39; white-space: pre-line;">${escapeHtml(
         cleanNote
       )}</p>
@@ -1196,21 +1206,21 @@ export async function sendShiftReminderEmail({
     : '';
 
   const roleSentence = isResponsible
-    ? `Zur Erinnerung: ${leadLabel === 'bald' ? 'Bald' : `In Kürze (${leadLabel})`} beginnt deine Schicht als <strong class="email-signature" style="color: #1c1917;">Schichtleitung</strong> beim Anlass <strong class="email-signature" style="color: #1c1917;">${escapeHtml(eventTitle)}</strong>:`
-    : `Zur Erinnerung: ${leadLabel === 'bald' ? 'Bald' : `In Kürze (${leadLabel})`} beginnt deine Schicht beim Anlass <strong class="email-signature" style="color: #1c1917;">${escapeHtml(eventTitle)}</strong>:`;
+    ? t('shiftReminder.roleSentenceResponsible', { lead: leadLabel, event: eventTitle })
+    : t('shiftReminder.roleSentenceHelper', { lead: leadLabel, event: eventTitle });
 
   const contentHtml = `
-    <p style="margin: 0 0 16px 0;">Hallo <strong class="email-signature" style="color: #1c1917;">${escapeHtml(displayName)}</strong>,</p>
-    <p style="margin: 0;">vielen Dank für deinen Einsatz! ${roleSentence}</p>
+    <p style="margin: 0 0 16px 0;">${escapeHtml(t('shiftReminder.greeting', { name: '' }))} <strong class="email-signature" style="color: #1c1917;">${escapeHtml(displayName)}</strong>,</p>
+    <p style="margin: 0;">${escapeHtml(t('shiftReminder.thanks'))} ${roleSentence}</p>
     ${noteBlockHtml}
   `;
 
   const details: EmailDetailRow[] = [
-    { label: 'Anlass', value: eventTitle },
-    ...(departmentName ? [{ label: 'Abteilung', value: departmentName }] : []),
-    { label: isResponsible ? 'Schicht (Leitung)' : 'Schicht', value: shiftTitle, highlight: true },
-    ...(category ? [{ label: 'Bereich', value: category }] : []),
-    { label: 'Zeit', value: timeRangeFormatted },
+    { label: t('shiftReminder.labelEvent'), value: eventTitle },
+    ...(departmentName ? [{ label: t('shiftReminder.labelDepartment'), value: departmentName }] : []),
+    { label: isResponsible ? t('shiftReminder.labelShiftResponsible') : t('shiftReminder.labelShift'), value: shiftTitle, highlight: true },
+    ...(category ? [{ label: t('shiftReminder.labelCategory'), value: category }] : []),
+    { label: t('shiftReminder.labelTime'), value: timeRangeFormatted },
   ];
 
   const googleCalendarUrl =
@@ -1219,31 +1229,31 @@ export async function sendShiftReminderEmail({
           title: `${shiftTitle} (${eventTitle})`,
           startTime,
           endTime,
-          description: `Schicht: ${shiftTitle}\nAnlass: ${eventTitle}${departmentName ? `\nAbteilung: ${departmentName}` : ''}${cleanNote ? `\nHinweis: ${cleanNote}` : ''}${shiftUrl ? `\n${shiftUrl}` : ''}`,
+          description: `${t('shiftReminder.labelShift')}: ${shiftTitle}\n${t('shiftReminder.labelEvent')}: ${eventTitle}${departmentName ? `\n${t('shiftReminder.labelDepartment')}: ${departmentName}` : ''}${cleanNote ? `\n${t('shiftReminder.okNoteTitle', { event: eventTitle })}: ${cleanNote}` : ''}${shiftUrl ? `\n${shiftUrl}` : ''}`,
           location: departmentName || undefined,
         })
       : undefined;
 
   const calloutBox = isGuest
     ? {
-        title: 'Kurzfristig verhindert?',
-        text: 'Melde dich bitte direkt beim OK des Anlasses oder der Abteilungsleitung, damit deine Schicht neu vergeben werden kann.',
+        title: t('shiftReminder.preventedTitle'),
+        text: t('shiftReminder.preventedGuestText'),
         tone: 'neutral' as const,
       }
     : {
-        title: 'Kurzfristig verhindert?',
-        text: 'Öffne den Schichtplan und klicke bei deiner Schicht auf «Ersatz suchen», damit jemand deinen Platz übernehmen kann.',
+        title: t('shiftReminder.preventedTitle'),
+        text: t('shiftReminder.preventedUserText'),
         tone: 'neutral' as const,
       };
 
   const footerNote = isGuest
-    ? `Du erhältst diese Erinnerung für deine Helfer-Eintragung bei «${eventTitle}».`
+    ? t('shiftReminder.footerGuest', { event: eventTitle })
     : leadMinutes !== undefined
-      ? `Du erhältst diese Erinnerung gemäss deinen Einstellungen (${leadLabel.replace(/^in /, '')} vor Schichtbeginn).`
-      : 'Du erhältst diese Erinnerung vor Beginn deiner eingetragenen Schicht.';
+      ? t('shiftReminder.footerSettings', { lead: leadLabel.replace(/^in /, '').replace(/^dans /, '').replace(/^tra /, '') })
+      : t('shiftReminder.footerGeneral');
 
   const unsubscribeUrl = isGuest ? undefined : profileUrl;
-  const unsubscribeLabel = isGuest ? undefined : 'Erinnerungen im Profil anpassen';
+  const unsubscribeLabel = isGuest ? undefined : t('shiftReminder.unsubscribeLabel');
 
   const html = renderEmailTemplate({
     preheader,
@@ -1252,9 +1262,9 @@ export async function sendShiftReminderEmail({
     contentHtml,
     details,
     calloutBox,
-    ctaText: shiftUrl ? 'Zum Schichtplan' : undefined,
+    ctaText: shiftUrl ? t('shiftReminder.cta') : undefined,
     ctaUrl: shiftUrl,
-    secondaryCtaText: googleCalendarUrl ? '📅 Zu Google Kalender' : undefined,
+    secondaryCtaText: googleCalendarUrl ? t('shiftReminder.ctaGoogleCalendar') : undefined,
     secondaryCtaUrl: googleCalendarUrl,
     headerSubtitle: departmentName || undefined,
     accentColor,
@@ -1262,32 +1272,33 @@ export async function sendShiftReminderEmail({
     unsubscribeUrl,
     unsubscribeLabel,
     organization: org.slug,
+    locale: l,
   });
 
   const textLines = [
-    `Hallo ${displayName},`,
+    t('shiftReminder.greeting', { name: displayName }),
     '',
-    `vielen Dank für deinen Einsatz! Deine Schicht beginnt ${leadLabel}:`,
+    `${t('shiftReminder.thanks')} ${roleSentence}`,
     '',
-    `• Anlass: ${eventTitle}`,
-    ...(departmentName ? [`• Abteilung: ${departmentName}`] : []),
-    `• Schicht: ${shiftTitle}${isResponsible ? ' (Schichtleitung)' : ''}`,
-    ...(category ? [`• Bereich: ${category}`] : []),
-    `• Zeit: ${timeRangeFormatted}`,
-    ...(cleanNote ? ['', `Hinweis vom OK (${eventTitle}):`, cleanNote] : []),
-    ...(shiftUrl ? ['', `Zum Schichtplan: ${shiftUrl}`] : []),
-    ...(googleCalendarUrl ? [`Zu Google Kalender: ${googleCalendarUrl}`] : []),
+    `• ${t('shiftReminder.labelEvent')}: ${eventTitle}`,
+    ...(departmentName ? [`• ${t('shiftReminder.labelDepartment')}: ${departmentName}`] : []),
+    `• ${t('shiftReminder.labelShift')}: ${shiftTitle}${isResponsible ? ` (${t('ics.leadRole')})` : ''}`,
+    ...(category ? [`• ${t('shiftReminder.labelCategory')}: ${category}`] : []),
+    `• ${t('shiftReminder.labelTime')}: ${timeRangeFormatted}`,
+    ...(cleanNote ? ['', `${t('shiftReminder.okNoteTitle', { event: eventTitle })}:`, cleanNote] : []),
+    ...(shiftUrl ? ['', `${t('shiftReminder.cta')}: ${shiftUrl}`] : []),
+    ...(googleCalendarUrl ? [`${t('shiftReminder.ctaGoogleCalendar')}: ${googleCalendarUrl}`] : []),
     '',
     ...(isGuest
-      ? ['Kurzfristig verhindert? Bitte melde dich direkt beim OK des Anlasses oder der Abteilungsleitung.']
+      ? [t('shiftReminder.preventedGuestText')]
       : [
-          'Kurzfristig verhindert? Öffne den Schichtplan und klicke bei deiner Schicht auf «Ersatz suchen».',
+          t('shiftReminder.preventedUserText'),
           '',
-          `Erinnerungen anpassen: ${profileUrl}`,
+          `${t('shiftReminder.unsubscribeLabel')}: ${profileUrl}`,
         ]),
     '',
-    'Herzliche Grüsse',
-    departmentName || `Dein ${org.name} Team`,
+    t('layout.closing'),
+    departmentName || t('layout.signature', { orgName: org.name }),
   ];
 
   const icsContent =
@@ -1301,6 +1312,7 @@ export async function sendShiftReminderEmail({
           endTime,
           shiftUrl,
           organization: org.dbType,
+          locale: l,
         })
       : undefined;
 
@@ -1330,6 +1342,7 @@ export async function sendShiftCancelledEmail({
   departmentName,
   accentColor,
   organization,
+  locale,
 }: {
   to: string;
   name?: string | null;
@@ -1340,59 +1353,63 @@ export async function sendShiftCancelledEmail({
   departmentName?: string;
   accentColor?: string | null;
   organization?: OrganizationType;
+  locale?: Locale | string | null;
 }): Promise<boolean> {
-  const org = getOrganization(organization);
-  const defaultGreeting = getDefaultGreeting(org.slug);
+  const l = (locale ? parseLocale(locale) : null) ?? 'de';
+  const org = getOrganization(organization, l);
+  const t = getTranslator(l, { namespace: 'emails' });
+  const defaultGreeting = getVocabulary(org.dbType, l).member;
   const displayName = name?.trim() ? name.trim() : defaultGreeting;
-  const subject = `Schicht abgesagt: «${shiftTitle}» (${eventTitle})`;
+  const subject = t('shiftCancelled.subject', { shift: shiftTitle, event: eventTitle });
   const contentHtml = `
-    <p style="margin: 0 0 16px 0;">Hallo <strong class="email-signature" style="color: #1c1917;">${escapeHtml(displayName)}</strong>,</p>
-    <p style="margin: 0;">die Schicht <strong class="email-signature" style="color: #1c1917;">«${escapeHtml(shiftTitle)}»</strong> beim Anlass <strong class="email-signature" style="color: #1c1917;">${escapeHtml(eventTitle)}</strong> wurde leider abgesagt und aus dem Schichtplan entfernt. Dein Einsatz für diese Schicht entfällt.</p>
+    <p style="margin: 0 0 16px 0;">${escapeHtml(t('shiftCancelled.greeting', { name: '' }))} <strong class="email-signature" style="color: #1c1917;">${escapeHtml(displayName)}</strong>,</p>
+    <p style="margin: 0;">${escapeHtml(t('shiftCancelled.text', { shift: shiftTitle, event: eventTitle }))}</p>
   `;
 
   const details: EmailDetailRow[] = [
-    { label: 'Anlass', value: eventTitle },
-    ...(departmentName ? [{ label: 'Abteilung', value: departmentName }] : []),
-    { label: 'Schicht', value: shiftTitle, highlight: true },
-    { label: 'Ursprüngliche Zeit', value: timeRangeFormatted },
-    { label: 'Status', value: 'Abgesagt / Entfällt' },
+    { label: t('shiftCancelled.labelEvent'), value: eventTitle },
+    ...(departmentName ? [{ label: t('shiftCancelled.labelDepartment'), value: departmentName }] : []),
+    { label: t('shiftCancelled.labelShift'), value: shiftTitle, highlight: true },
+    { label: t('shiftCancelled.labelOriginalTime'), value: timeRangeFormatted },
+    { label: t('shiftCancelled.labelStatus'), value: t('shiftCancelled.statusCancelled') },
   ];
 
   const html = renderEmailTemplate({
-    preheader: `Deine Schicht «${shiftTitle}» bei ${eventTitle} wurde abgesagt.`,
-    eyebrow: 'Schicht abgesagt',
-    title: 'Deine Schicht entfällt',
+    preheader: t('shiftCancelled.preheader', { shift: shiftTitle, event: eventTitle }),
+    eyebrow: t('shiftCancelled.eyebrow'),
+    title: t('shiftCancelled.title'),
     contentHtml,
     details,
     calloutBox: {
-      title: 'Was bedeutet das für dich?',
-      text: 'Du musst zu dieser Schicht nicht antreten. Falls du stattdessen eine andere Schicht übernehmen möchtest, kannst du dich im Schichtplan neu eintragen.',
+      title: t('shiftCancelled.calloutTitle'),
+      text: t('shiftCancelled.calloutText'),
       tone: 'warning',
     },
-    ctaText: eventUrl ? 'Zum Schichtplan' : undefined,
+    ctaText: eventUrl ? t('shiftCancelled.cta') : undefined,
     ctaUrl: eventUrl,
     headerSubtitle: departmentName || undefined,
     accentColor,
-    footerNote: `Du erhältst diese Benachrichtigung, weil du für diese Schicht bei «${eventTitle}» eingetragen warst.`,
+    footerNote: t('shiftCancelled.footerNote', { event: eventTitle }),
     organization: org.slug,
+    locale: l,
   });
 
   const textLines = [
-    `Hallo ${displayName},`,
+    t('shiftCancelled.greeting', { name: displayName }),
     '',
-    `die Schicht «${shiftTitle}» (${timeRangeFormatted}) beim Anlass «${eventTitle}» wurde leider abgesagt und aus dem Schichtplan entfernt. Dein Einsatz für diese Schicht entfällt.`,
+    t('shiftCancelled.text', { shift: shiftTitle, event: eventTitle }),
     '',
-    `• Anlass: ${eventTitle}`,
-    ...(departmentName ? [`• Abteilung: ${departmentName}`] : []),
-    `• Schicht: ${shiftTitle}`,
-    `• Zeit: ${timeRangeFormatted}`,
-    '• Status: Abgesagt / Entfällt',
+    `• ${t('shiftCancelled.labelEvent')}: ${eventTitle}`,
+    ...(departmentName ? [`• ${t('shiftCancelled.labelDepartment')}: ${departmentName}`] : []),
+    `• ${t('shiftCancelled.labelShift')}: ${shiftTitle}`,
+    `• ${t('shiftCancelled.labelOriginalTime')}: ${timeRangeFormatted}`,
+    `• ${t('shiftCancelled.labelStatus')}: ${t('shiftCancelled.statusCancelled')}`,
     '',
-    'Was bedeutet das für dich? Du musst zu dieser Schicht nicht antreten. Falls du stattdessen eine andere Schicht übernehmen möchtest, kannst du dich im Schichtplan neu eintragen.',
-    ...(eventUrl ? ['', `Zum Schichtplan: ${eventUrl}`] : []),
+    t('shiftCancelled.calloutText'),
+    ...(eventUrl ? ['', `${t('shiftCancelled.cta')}: ${eventUrl}`] : []),
     '',
-    'Herzliche Grüsse',
-    departmentName || `Dein ${org.name} Team`,
+    t('layout.closing'),
+    departmentName || t('layout.signature', { orgName: org.name }),
   ];
 
   return sendEmail({
@@ -1420,6 +1437,7 @@ export async function sendReplacementTakenEmail({
   departmentName,
   accentColor,
   organization,
+  locale,
 }: {
   to: string;
   name?: string | null;
@@ -1431,52 +1449,56 @@ export async function sendReplacementTakenEmail({
   departmentName?: string;
   accentColor?: string | null;
   organization?: OrganizationType;
+  locale?: Locale | string | null;
 }): Promise<boolean> {
-  const org = getOrganization(organization);
-  const defaultGreeting = getDefaultGreeting(org.slug);
+  const l = (locale ? parseLocale(locale) : null) ?? 'de';
+  const org = getOrganization(organization, l);
+  const t = getTranslator(l, { namespace: 'emails' });
+  const defaultGreeting = getVocabulary(org.dbType, l).member;
   const displayName = name?.trim() ? name.trim() : defaultGreeting;
-  const subject = `Ersatz gefunden: «${shiftTitle}» (${eventTitle})`;
+  const subject = t('replacementTaken.subject', { shift: shiftTitle, event: eventTitle });
   const contentHtml = `
-    <p style="margin: 0 0 16px 0;">Hallo <strong class="email-signature" style="color: #1c1917;">${escapeHtml(displayName)}</strong>,</p>
-    <p style="margin: 0;">gute Neuigkeiten: <strong class="email-signature" style="color: #1c1917;">${escapeHtml(takenBy)}</strong> hat deine Schicht übernommen. Du bist dafür nicht mehr eingetragen.</p>
+    <p style="margin: 0 0 16px 0;">${escapeHtml(t('replacementTaken.greeting', { name: '' }))} <strong class="email-signature" style="color: #1c1917;">${escapeHtml(displayName)}</strong>,</p>
+    <p style="margin: 0;">${escapeHtml(t('replacementTaken.text', { takenBy }))}</p>
   `;
 
   const details: EmailDetailRow[] = [
-    { label: 'Anlass', value: eventTitle },
-    ...(departmentName ? [{ label: 'Abteilung', value: departmentName }] : []),
-    { label: 'Schicht', value: shiftTitle, highlight: true },
-    { label: 'Zeit', value: timeRangeFormatted },
-    { label: 'Übernommen von', value: takenBy },
+    { label: t('shiftCancelled.labelEvent'), value: eventTitle },
+    ...(departmentName ? [{ label: t('shiftCancelled.labelDepartment'), value: departmentName }] : []),
+    { label: t('shiftCancelled.labelShift'), value: shiftTitle, highlight: true },
+    { label: t('shiftReminder.labelTime'), value: timeRangeFormatted },
+    { label: t('replacementTaken.labelTakenBy'), value: takenBy },
   ];
 
   const html = renderEmailTemplate({
-    preheader: `${takenBy} hat deine Schicht «${shiftTitle}» bei ${eventTitle} übernommen.`,
-    eyebrow: 'Ersatz gefunden',
-    title: 'Deine Schicht wurde übernommen',
+    preheader: t('replacementTaken.preheader', { takenBy, shift: shiftTitle, event: eventTitle }),
+    eyebrow: t('replacementTaken.eyebrow'),
+    title: t('replacementTaken.title'),
     contentHtml,
     details,
-    ctaText: eventUrl ? 'Zum Schichtplan' : undefined,
+    ctaText: eventUrl ? t('replacementTaken.cta') : undefined,
     ctaUrl: eventUrl,
     headerSubtitle: departmentName || undefined,
     accentColor,
-    footerNote: `Du erhältst diese Mail, weil du für deine Schicht bei «${eventTitle}» einen Ersatz gesucht hast.`,
+    footerNote: t('replacementTaken.footerNote', { event: eventTitle }),
     organization: org.slug,
+    locale: l,
   });
 
   const text = [
-    `Hallo ${displayName},`,
+    t('replacementTaken.greeting', { name: displayName }),
     '',
-    `gute Neuigkeiten: ${takenBy} hat deine Schicht übernommen. Du bist dafür nicht mehr eingetragen.`,
+    t('replacementTaken.text', { takenBy }),
     '',
-    `• Anlass: ${eventTitle}`,
-    ...(departmentName ? [`• Abteilung: ${departmentName}`] : []),
-    `• Schicht: ${shiftTitle}`,
-    `• Zeit: ${timeRangeFormatted}`,
-    `• Übernommen von: ${takenBy}`,
-    ...(eventUrl ? ['', `Zum Schichtplan: ${eventUrl}`] : []),
+    `• ${t('shiftCancelled.labelEvent')}: ${eventTitle}`,
+    ...(departmentName ? [`• ${t('shiftCancelled.labelDepartment')}: ${departmentName}`] : []),
+    `• ${t('shiftCancelled.labelShift')}: ${shiftTitle}`,
+    `• ${t('shiftReminder.labelTime')}: ${timeRangeFormatted}`,
+    `• ${t('replacementTaken.labelTakenBy')}: ${takenBy}`,
+    ...(eventUrl ? ['', `${t('replacementTaken.cta')}: ${eventUrl}`] : []),
     '',
-    'Herzliche Grüsse',
-    `Dein ${org.name} Team`,
+    t('layout.closing'),
+    t('layout.signature', { orgName: org.name }),
   ].join('\n');
 
   return sendEmail({
@@ -1505,6 +1527,7 @@ export async function sendGenericEmail({
   preheader,
   footerNote,
   organization,
+  locale,
 }: {
   to: string;
   subject: string;
@@ -1517,8 +1540,10 @@ export async function sendGenericEmail({
   preheader?: string;
   footerNote?: string;
   organization?: OrganizationType;
+  locale?: Locale | string | null;
 }): Promise<boolean> {
-  const org = getOrganization(organization);
+  const l = (locale ? parseLocale(locale) : null) ?? 'de';
+  const org = getOrganization(organization, l);
   const html = renderEmailTemplate({
     preheader: preheader || subject,
     eyebrow,
@@ -1529,6 +1554,7 @@ export async function sendGenericEmail({
     ctaUrl,
     footerNote,
     organization: org.slug,
+    locale: l,
   });
 
   return sendEmail({ to, subject, html, organization: org.dbType, kind: 'ADMIN_NOTICE' });

@@ -1,3 +1,4 @@
+import { fromDbLocale } from '@schichtplan/i18n';
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { ORGANIZATION_DOMAINS, getOrganization } from '@schichtplan/shared';
@@ -54,6 +55,7 @@ const calendarRoutes: FastifyPluginAsync = async (fastify) => {
         firstName: true,
         lastName: true,
         nickname: true,
+        locale: true,
       },
     });
 
@@ -69,10 +71,14 @@ const calendarRoutes: FastifyPluginAsync = async (fastify) => {
     const domain = isLocalHost ? rawHost : (isStaging ? `dev.${org.domain}` : org.domain);
     const userDisplayName = user.nickname || user.firstName;
 
+    const userLocale = user.locale ? fromDbLocale(user.locale) : null;
+    const recipientLocale = userLocale || (request as FastifyRequest).locale || 'de';
+
     const ics = buildIcsFeed({
       userDisplayName,
       shifts,
       domain,
+      locale: recipientLocale,
     });
 
     return reply

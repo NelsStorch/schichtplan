@@ -1,0 +1,51 @@
+{
+  "checkin": {
+    "officialPoster": "{orgName}  ·  OFFICIAL VOLUNTEER POSTER",
+    "title": "Volunteer Check-in",
+    "subtitle": "Record attendance: Scan the QR code before starting your shift.",
+    "subtitleWindow": "Record attendance: Scan the QR code {early} to {late} your shift.",
+    "earlyMin": "from {min} min before",
+    "earlyZero": "from start",
+    "lateMin": "until {min} min after",
+    "badgeScan": "SCAN QR CODE TO CHECK IN",
+    "step1Title": "Open camera",
+    "step1Text": "Point smartphone camera or QR scanner at the code and open the link.",
+    "step2Title": "Confirm",
+    "step2Text": "Log in with your {orgName} account or confirm your name as guest.",
+    "step3Title": "Checked in!",
+    "step3Text": "Your attendance is recorded immediately. You are ready for your shift!",
+    "windowTitle": "TIME WINDOW FOR CHECK-IN",
+    "windowText": "Self-check-in opens {earlyText} and remains active {lateText}.",
+    "windowEarlyZero": "at shift start",
+    "windowEarlyMin": "{min} minutes before your shift start",
+    "windowLateZero": "until shift end",
+    "windowLateMin": "until {min} minutes after your shift end"
+  },
+  "catering": {
+    "voucherLabel": "MEAL VOUCHER",
+    "moreItems": "+ {count} more",
+    "footerHint": "Show at stand to be scanned",
+    "kombiLabel": "COMBO VOUCHER",
+    "helperLabel": "VOLUNTEER VOUCHER"
+  },
+  "plan": {
+    "page": "Page {page} of {total}",
+    "stand": "Status as of",
+    "overview": "Shift schedule",
+    "aushang": "Sign-up poster",
+    "openSlots": "Open slots",
+    "byPerson": "Assignments by person · {count, plural, one {# person} other {# persons}}",
+    "emptyShifts": "No shifts selected.",
+    "emptyDay": "No open slots on this day.",
+    "dayMeta": "{count, plural, one {# shift} other {# shifts}}",
+    "dayResponsible": "Day lead: {names}",
+    "slotsFilled": "{filled} of {required} slots filled",
+    "colTime": "Time",
+    "colShift": "Shift",
+    "colTask": "Task",
+    "colFilled": "Filled",
+    "colAssigned": "Assigned",
+    "colNames": "Names",
+    "free": "free"
+  }
+}

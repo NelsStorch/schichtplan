@@ -1,6 +1,7 @@
 import type { PrismaClient } from '../generated/prisma/client.js';
-import { getOrganizationByDbType, isPlaceholderEmail } from '@schichtplan/shared';
-import { sendEmail } from './email.js';
+import { isPlaceholderEmail } from '@schichtplan/shared';
+import { sendEmail, renderEmailTemplate } from './email.js';
+import { resolveRecipientLocale, getTranslator, getEnabledLocales } from '@schichtplan/i18n';
 import { sendPushToUser } from './webPush.js';
 import { departmentPageUrl } from './shiftReminders.js';
 
@@ -23,7 +24,7 @@ export async function sendDueCateringReminders(
       id: true,
       title: true,
       slug: true,
-      department: { select: { slug: true, name: true, organization: true } },
+      department: { select: { slug: true, name: true, organization: true, defaultLocale: true } },
       shifts: {
         select: {
           id: true,
@@ -67,6 +68,7 @@ export async function sendDueCateringReminders(
             nickname: true,
             emailNotifyCateringTokens: true,
             pushNotifyCateringTokens: true,
+            locale: true,
             _count: { select: { pushSubscriptions: true } },
           },
         },
@@ -146,12 +148,22 @@ export async function sendDueCateringReminders(
         group.user._count.pushSubscriptions > 0
       );
 
+      const orgType = event.department.organization;
+      const enabled = getEnabledLocales(orgType);
+      const recipientLocale = resolveRecipientLocale({
+        user: group.user?.locale,
+        department: event.department.defaultLocale,
+        enabled,
+      });
+      const tPush = getTranslator(recipientLocale, { namespace: 'push' });
+      const tEmails = getTranslator(recipientLocale, { namespace: 'emails' });
+
       // Web Push
       if (hasEligiblePush && group.user) {
         try {
           await sendPushToUser(prisma, group.user.id, {
-            title: `🎁 Verpflegungs-Bons nicht vergessen!`,
-            body: `Hallo ${recipientName}! Du hast bei «${event.title}» noch ${count} offene Gutscheine (${tokenNames}). Hol sie dir am Stand ab!`,
+            title: tPush('cateringTokens.title'),
+            body: tPush('cateringTokens.body', { name: recipientName, event: event.title, count, tokens: tokenNames }),
             url: targetUrl,
             tag: `catering-reminder-${event.id}`,
           });
@@ -165,36 +177,34 @@ export async function sendDueCateringReminders(
       const hasEligibleEmail = Boolean(email && (group.user ? group.user.emailNotifyCateringTokens !== false : true));
       if (hasEligibleEmail && email) {
         try {
-          const orgName = getOrganizationByDbType(event.department.organization).name;
+          const subject = tEmails('cateringTokens.subject', { event: event.title });
+          const text = `${tEmails('cateringTokens.greeting', { name: recipientName })}\n\n${tEmails('cateringTokens.thankYou', { event: event.title })}\n\n${tEmails('cateringTokens.openCount', { count })} ${tokenNames}\n\n${tEmails('cateringTokens.instructions')}\n\n${targetUrl}\n\n${tEmails('cateringTokens.closing')}\n${tEmails('cateringTokens.team', { event: event.title })}`;
+          const html = renderEmailTemplate({
+            title: tEmails('cateringTokens.title'),
+            eyebrow: tEmails('cateringTokens.eyebrow'),
+            preheader: tEmails('cateringTokens.thankYou', { event: event.title }),
+            organization: event.department.organization,
+            locale: recipientLocale,
+            contentHtml: `
+              <p style="margin-top: 0; font-size: 15px;">${tEmails('cateringTokens.greeting', { name: `<strong>${recipientName}</strong>` })}</p>
+              <p style="font-size: 14px; color: #334155;">${tEmails('cateringTokens.thankYou', { event: `<strong>${event.title}</strong>` })}</p>
+              <div style="background-color: #f8fafc; border-left: 4px solid #0284c7; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0;">
+                <strong style="color: #0369a1; font-size: 14px;">${tEmails('cateringTokens.openCount', { count })}</strong>
+                <div style="font-size: 14px; color: #0f172a; margin-top: 4px; font-weight: 600;">${tokenNames}</div>
+              </div>
+              <p style="font-size: 13px; color: #64748b; margin-bottom: 0;">${tEmails('cateringTokens.instructions')}</p>
+            `,
+            ctaText: tEmails('cateringTokens.cta'),
+            ctaUrl: targetUrl,
+          });
+
           await sendEmail({
             to: email,
             organization: event.department.organization,
-            subject: `🎁 Verpflegungs-Gutschein nicht vergessen – ${event.title}`,
-            text: `Hallo ${recipientName}!\n\nDanke für deinen grossartigen Helfereinsatz bei «${event.title}»!\n\nDu hast noch ${count} un-eingelöste Verpflegungs- oder Getränkegutscheine (${tokenNames}).\n\nVergiss nicht, dein Helferessen und dein Getränk vor Festende am Stand abzuholen!\n\nDeine Bons aufrufen: ${targetUrl}\n\nLiebe Grüsse\nDein OK von ${event.title}`,
-            html: `
-              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px 16px; color: #1e293b; line-height: 1.5;">
-                <div style="text-align: center; margin-bottom: 24px;">
-                  <span style="display: inline-block; background-color: #f0fdf4; color: #15803d; padding: 6px 14px; border-radius: 9999px; font-weight: 700; font-size: 13px;">🎁 Noch offene Verpflegungs-Bons</span>
-                  <h1 style="font-size: 22px; font-weight: 800; margin: 12px 0 4px; color: #0f172a;">En Guete am Stand!</h1>
-                  <p style="font-size: 14px; color: #64748b; margin: 0;">${event.title}</p>
-                </div>
-                <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                  <p style="margin-top: 0; font-size: 15px;">Hallo <strong>${recipientName}</strong>,</p>
-                  <p style="font-size: 14px; color: #334155;">Vielen Dank für deinen tatkräftigen Helfereinsatz! Bei «<strong>${event.title}</strong>» warten noch un-eingelöste Bons auf dich:</p>
-                  <div style="background-color: #f8fafc; border-left: 4px solid #0284c7; padding: 12px 16px; margin: 16px 0; border-radius: 0 8px 8px 0;">
-                    <strong style="color: #0369a1; font-size: 14px;">${count} offene Gutscheine:</strong>
-                    <div style="font-size: 14px; color: #0f172a; margin-top: 4px; font-weight: 600;">${tokenNames}</div>
-                  </div>
-                  <p style="font-size: 13px; color: #64748b; margin-bottom: 0;">Hol dir dein Helferessen und dein Getränk vor Festende am Stand ab. Dein Bon kann einfach am Smartphone per Schieberegler entwertet werden.</p>
-                </div>
-                <div style="text-align: center; margin: 28px 0;">
-                  <a href="${targetUrl}" style="background-color: #0284c7; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 12px 28px; border-radius: 9999px; display: inline-block;">Gutscheine öffnen</a>
-                </div>
-                <div style="text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 16px;">
-                  ${orgName} · <a href="${targetUrl}" style="color: #64748b;">Benachrichtigungseinstellungen ändern</a>
-                </div>
-              </div>
-            `,
+            subject,
+            text,
+            html,
+            kind: 'OTHER',
           });
           sent = true;
         } catch {}

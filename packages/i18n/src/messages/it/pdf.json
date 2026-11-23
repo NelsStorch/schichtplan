@@ -1,0 +1,51 @@
+{
+  "checkin": {
+    "officialPoster": "{orgName}  ·  AVVISO UFFICIALE VOLONTARI",
+    "title": "Check-in volontari",
+    "subtitle": "Registrazione presenze: scansiona il codice QR prima dell'inizio del tuo turno.",
+    "subtitleWindow": "Registrazione presenze: scansiona il codice QR {early} e {late} del tuo turno.",
+    "earlyMin": "da {min} min. prima",
+    "earlyZero": "dall'inizio",
+    "lateMin": "fino a {min} min. dopo",
+    "badgeScan": "SCANSIONA IL CODICE QR PER IL CHECK-IN",
+    "step1Title": "Apri la fotocamera",
+    "step1Text": "Punta la fotocamera dello smartphone o il lettore QR sul codice e apri il link.",
+    "step2Title": "Conferma",
+    "step2Text": "Accedi con il tuo account {orgName} o conferma il tuo nome come ospite.",
+    "step3Title": "Registrato!",
+    "step3Text": "La tua presenza viene registrata immediatamente. Sei pronto per il tuo turno di volontariato!",
+    "windowTitle": "FINESTRA TEMPORALE PER IL CHECK-IN",
+    "windowText": "Il self-check-in apre {earlyText} e rimane attivo {lateText}.",
+    "windowEarlyZero": "all'inizio del turno",
+    "windowEarlyMin": "{min} minuti prima dell'inizio del tuo turno",
+    "windowLateZero": "fino alla fine del turno",
+    "windowLateMin": "fino a {min} minuti dopo la fine del tuo turno"
+  },
+  "catering": {
+    "voucherLabel": "BUONO PASTO",
+    "moreItems": "+ altri {count}",
+    "footerHint": "Mostrare allo stand per la convalida",
+    "kombiLabel": "BUONO COMBINATO",
+    "helperLabel": "BUONO VOLONTARIO"
+  },
+  "plan": {
+    "page": "Pagina {page} di {total}",
+    "stand": "Stato",
+    "overview": "Piano turni",
+    "aushang": "Piano turni per iscrizioni",
+    "openSlots": "Posti liberi",
+    "byPerson": "Assegnazione per persona · {count, plural, one {# persona} other {# persone}}",
+    "emptyShifts": "Nessun turno selezionato.",
+    "emptyDay": "Nessun posto disponibile in questo giorno.",
+    "dayMeta": "{count, plural, one {# turno} other {# turni}}",
+    "dayResponsible": "Responsabile del giorno: {names}",
+    "slotsFilled": "{filled} su {required} posti occupati",
+    "colTime": "Orario",
+    "colShift": "Turno",
+    "colTask": "Mansione",
+    "colFilled": "Occupato",
+    "colAssigned": "Assegnato",
+    "colNames": "Nomi",
+    "free": "libero"
+  }
+}

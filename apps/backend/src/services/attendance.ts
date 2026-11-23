@@ -1,3 +1,4 @@
+import type { Locale } from '@schichtplan/i18n';
 import { randomBytes } from 'node:crypto';
 import { CHECKIN_EARLY_MINUTES, type OrganizationType } from '@schichtplan/shared';
 import { eventUrl } from './shiftReminders.js';
@@ -71,6 +72,7 @@ export interface QrCodeInput {
   checkinLateMinutes?: number;
   prisma?: PrismaClient;
   organization?: OrganizationType;
+  locale?: Locale | string | null;
 }
 
 /**

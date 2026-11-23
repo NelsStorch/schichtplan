@@ -1,3 +1,4 @@
+import { parseLocale, getTranslator, type Locale } from '@schichtplan/i18n';
 import { getBrowserOrganization, zurichDateTimeFormat, type DepartmentDto, type ShiftDto, type ShiftSignupDto } from '@schichtplan/shared';
 import { dayKeyToIso, fmtDateRange, fmtDayMonth, fmtShortDate, fmtShortWeekday, fmtWeekday, groupByBusinessDay, fmtTimeRange } from './format';
 import type { EventDetails } from './types';
@@ -15,6 +16,7 @@ export interface PrintPlanOptions {
   showDetails: boolean;
   /** Nur Arbeiten mit freien Plätzen */
   onlyOpen: boolean;
+  locale?: Locale | string | null;
 }
 
 export const PRINT_LAYOUTS: { value: PrintLayout; label: string; text: string }[] = [
@@ -57,6 +59,52 @@ export interface PersonEntry {
   items: { day: string; time: string; shift: string; task: string | null }[];
 }
 
+export interface PlanLabels {
+  page: (pageNumber: number, totalPages: number) => string;
+  stand: string;
+  overview: string;
+  aushang: string;
+  openSlots: string;
+  byPerson: (count: number) => string;
+  emptyShifts: string;
+  emptyDay: string;
+  dayMeta: (count: number) => string;
+  dayResponsible: (names: string) => string;
+  slotsFilled: (filled: number, required: number) => string;
+  colTime: string;
+  colShift: string;
+  colTask: string;
+  colFilled: string;
+  colAssigned: string;
+  colNames: string;
+  free: string;
+}
+
+export function getPlanLabels(locale?: Locale | string | null): PlanLabels {
+  const l = (locale ? parseLocale(locale) : null) ?? 'de';
+  const t = getTranslator(l, { namespace: 'pdf.plan' });
+  return {
+    page: (p, total) => t('page', { page: p, total }),
+    stand: t('stand'),
+    overview: t('overview'),
+    aushang: t('aushang'),
+    openSlots: t('openSlots'),
+    byPerson: (count) => t('byPerson', { count }),
+    emptyShifts: t('emptyShifts'),
+    emptyDay: t('emptyDay'),
+    dayMeta: (count) => t('dayMeta', { count }),
+    dayResponsible: (names) => t('dayResponsible', { names }),
+    slotsFilled: (filled, required) => t('slotsFilled', { filled, required }),
+    colTime: t('colTime'),
+    colShift: t('colShift'),
+    colTask: t('colTask'),
+    colFilled: t('colFilled'),
+    colAssigned: t('colAssigned'),
+    colNames: t('colNames'),
+    free: t('free'),
+  };
+}
+
 /** Alles, was das PDF braucht: fertig aufbereitet, ohne Bezug zu React */
 export interface PlanDocument {
   layout: PrintLayout;
@@ -73,6 +121,8 @@ export interface PlanDocument {
   ceviLogo: string | null;
   days: PlanDay[];
   people: PersonEntry[];
+  locale?: Locale | string | null;
+  labels?: PlanLabels;
 }
 
 interface TaskRow {
@@ -208,15 +258,17 @@ export async function buildPlanDocument(
   for (const url of [event.logoUrl, department?.logoUrl]) {
     if (url && !logo) logo = await loadImage(url);
   }
+  const effectiveLocale = options.locale ?? 'de';
+  const labels = getPlanLabels(effectiveLocale);
   const people = options.layout === 'personen' ? buildPeople(event, options) : [];
   const subtitle =
     options.layout === 'personen'
-      ? `Einteilung pro Person · ${people.length} ${people.length === 1 ? 'Person' : 'Personen'}`
+      ? labels.byPerson(people.length)
       : options.onlyOpen
-        ? 'Offene Plätze'
+        ? labels.openSlots
         : options.layout === 'aushang'
-          ? 'Schichtplan zum Eintragen'
-          : 'Schichtplan';
+          ? labels.aushang
+          : labels.overview;
   return {
     layout: options.layout,
     landscape: options.landscape,
@@ -231,6 +283,8 @@ export async function buildPlanDocument(
     ceviLogo: logo ? brandLogo : null,
     days: options.layout === 'personen' ? [] : buildDays(event, options),
     people,
+    locale: effectiveLocale,
+    labels,
   };
 }
 

@@ -1,0 +1,15 @@
+{
+  "shiftReminder": {
+    "title": "Schicht beginnt {lead}: {shift}",
+    "body": "{event} ({time}){note}",
+    "notePrefix": "\nHinweis: {note}"
+  },
+  "replacementTaken": {
+    "title": "Ersatz gefunden: {shift}",
+    "body": "{takenBy} hat deine Schicht bei {event} ({time}) übernommen."
+  },
+  "cateringTokens": {
+    "title": "🎁 Verpflegungs-Bons nicht vergessen!",
+    "body": "Hallo {name}! Du hast bei «{event}» noch {count, plural, one {# offenen Gutschein} other {# offene Gutscheine}} ({tokens}). Hol sie dir am Stand ab!"
+  }
+}

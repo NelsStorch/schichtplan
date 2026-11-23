@@ -1,3 +1,5 @@
+import { parseLocale, getTranslator, type Locale } from '@schichtplan/i18n';
+import { getVocabulary } from '@schichtplan/shared';
 import crypto from 'node:crypto';
 import type { PrismaClient } from '../db.js';
 import {
@@ -31,6 +33,7 @@ export interface BuildFeedOptions {
   userDisplayName?: string | null;
   shifts: CalendarShiftItem[];
   domain?: string;
+  locale?: Locale | string | null;
 }
 
 /** Formatiert ein Date im iCal-UTC-Format YYYYMMDDTHHmmssZ */
@@ -287,9 +290,11 @@ export async function getUserCalendarShifts(
  * Erzeugt einen gültigen RFC 5545 iCalendar-Feed für Webcal / Kalender-Abonnements.
  */
 export function buildIcsFeed(options: BuildFeedOptions): string {
-  const { userDisplayName, shifts, domain = 'cevi-schichtplan.ch' } = options;
+  const { userDisplayName, shifts, domain = 'cevi-schichtplan.ch', locale } = options;
+  const l = (locale ? parseLocale(locale) : null) ?? 'de';
+  const t = getTranslator(l, { namespace: 'emails' });
   const hostDomain = domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
-  const baseOrg = getOrganization(hostDomain);
+  const baseOrg = getOrganization(hostDomain, l);
   const nowUtc = formatIcsUtc(new Date());
   const calName = userDisplayName
     ? `${baseOrg.name} (${userDisplayName})`
@@ -298,7 +303,7 @@ export function buildIcsFeed(options: BuildFeedOptions): string {
   const rawLines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    `PRODID:-//${baseOrg.name}//DE`,
+    `PRODID:-//${baseOrg.name}//${l.toUpperCase()}`,
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     `X-WR-CALNAME:${escapeIcsText(calName)}`,
@@ -308,14 +313,20 @@ export function buildIcsFeed(options: BuildFeedOptions): string {
   ];
 
   for (const s of shifts) {
-    const rolePrefix = s.isResponsible ? `[${s.responsibleRole || 'Leitung'}] ` : '';
+    const leaderLabel = s.responsibleRole === 'Tagesleitung'
+      ? t('ics.dayLeader')
+      : s.responsibleRole === 'Schichtleitung'
+        ? t('ics.shiftLeader')
+        : (s.responsibleRole || t('ics.leadRole'));
+    const rolePrefix = s.isResponsible ? `[${leaderLabel}] ` : '';
     const titlePart = s.title?.trim()
       ? `${s.title}${s.taskTitle && s.taskTitle !== s.title ? ` (${s.taskTitle})` : ''}`
-      : (s.taskTitle || 'Schicht');
+      : (s.taskTitle || t('ics.shift', { shift: '' }).replace(/:\s*$/, ''));
     const summary = `${rolePrefix}${titlePart} · ${s.eventTitle}`;
 
     const isLocal = hostDomain.includes('localhost') || /^\d+\.\d+\.\d+\.\d+/.test(hostDomain);
-    const org = s.departmentOrganization ? getOrganizationByDbType(s.departmentOrganization) : getOrganization(hostDomain);
+    const org = s.departmentOrganization ? getOrganizationByDbType(s.departmentOrganization, l) : getOrganization(hostDomain, l);
+    const vocab = getVocabulary(org.dbType, l);
     const isStaging = hostDomain.startsWith('dev.') || hostDomain.includes('.dev.');
     const effectiveHost = isLocal ? hostDomain : (isStaging ? `dev.${org.domain}` : org.domain);
     const eventUrl = isLocal
@@ -323,13 +334,13 @@ export function buildIcsFeed(options: BuildFeedOptions): string {
       : `https://${s.departmentSlug}.${effectiveHost}/events/${s.eventSlug}`;
 
     const descParts = [
-      s.isResponsible ? `Rolle: ${s.responsibleRole || 'Leitung'}` : null,
-      s.taskTitle && s.taskTitle !== s.title ? `Aufgabe: ${s.taskTitle}` : null,
-      s.category ? `Kategorie: ${s.category}` : null,
+      s.isResponsible ? t('ics.role', { role: leaderLabel }) : null,
+      s.taskTitle && s.taskTitle !== s.title ? t('ics.task', { task: s.taskTitle }) : null,
+      s.category ? t('ics.category', { category: s.category }) : null,
       s.description,
-      `Anlass: ${s.eventTitle}`,
-      `Abteilung: ${s.departmentName}`,
-      `Link: ${eventUrl}`,
+      t('ics.event', { event: s.eventTitle }),
+      `${vocab.department}: ${s.departmentName}`,
+      t('ics.link', { url: eventUrl }),
     ].filter(Boolean) as string[];
 
     const description = descParts.join('\n');
@@ -348,7 +359,7 @@ export function buildIcsFeed(options: BuildFeedOptions): string {
       'BEGIN:VALARM',
       'TRIGGER:-PT2H',
       'ACTION:DISPLAY',
-      `DESCRIPTION:${escapeIcsText(`Erinnerung: ${summary}`)}`,
+      `DESCRIPTION:${escapeIcsText(t('ics.reminderSubject', { summary }))}`,
       'END:VALARM',
       'END:VEVENT'
     );

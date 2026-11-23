@@ -1,0 +1,15 @@
+{
+  "shiftReminder": {
+    "title": "Le créneau commence {lead} : {shift}",
+    "body": "{event} ({time}){note}",
+    "notePrefix": "\nRemarque : {note}"
+  },
+  "replacementTaken": {
+    "title": "Remplacement trouvé : {shift}",
+    "body": "{takenBy} a repris votre créneau pour {event} ({time})."
+  },
+  "cateringTokens": {
+    "title": "🎁 N'oubliez pas vos bons de repas !",
+    "body": "Bonjour {name} ! Il vous reste {count, plural, one {# bon ouvert} other {# bons ouverts}} pour « {event} » ({tokens}). Venez les récupérer au stand !"
+  }
+}

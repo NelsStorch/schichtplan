@@ -643,6 +643,7 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
             qrStyle: (tenant.qrStyle as 'CORNERS' | 'GRADIENT' | 'SOLID') || 'CORNERS',
             logoUrl: event.logoUrl || tenant.logoUrl,
           },
+          locale: request.locale,
         });
       } catch (err) {
         if (err instanceof TranslatableError && err.key === 'catering.batchNotFound') {

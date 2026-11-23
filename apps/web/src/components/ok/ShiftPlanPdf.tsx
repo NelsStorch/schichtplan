@@ -1,5 +1,6 @@
 import { Document, Font, Image, Page, StyleSheet, Text, View, pdf } from '@react-pdf/renderer';
-import type { PlanDay, PlanDocument, PlanShift, PlanTask, PersonEntry } from '@/lib/printPlan';
+import type { PlanDay, PlanDocument, PlanShift, PlanTask, PersonEntry, PlanLabels } from '@/lib/printPlan';
+import { getPlanLabels } from '@/lib/printPlan';
 
 // Schicht-PDF (Übersicht, Aushang, pro Person). Nur über `createShiftPlanPdf` laden (eigener Chunk).
 
@@ -99,16 +100,18 @@ const s = StyleSheet.create({
 });
 
 export function ShiftPlanPdf({ doc }: { doc: PlanDocument }) {
+  const labels: PlanLabels = doc.labels ?? getPlanLabels(doc.locale);
   const wide = doc.landscape;
-  const footerText = [doc.department, `${doc.title} · ${doc.subtitle}`, `Stand ${doc.stand}`].filter(Boolean).join('  ·  ');
+  const footerText = [doc.department, `${doc.title} · ${doc.subtitle}`, `${labels.stand} ${doc.stand}`].filter(Boolean).join('  ·  ');
+  const langCode = doc.locale ? `${doc.locale}-CH` : 'de-CH';
   return (
-    <Document title={`${doc.subtitle} – ${doc.title}`} author={doc.department ?? 'Schichtplan'} creator="Schichtplan" language="de-CH">
+    <Document title={`${doc.subtitle} – ${doc.title}`} author={doc.department ?? 'Schichtplan'} creator="Schichtplan" language={langCode}>
       <Page size="A4" orientation={wide ? 'landscape' : 'portrait'} style={s.page}>
         {/* Seitenzahl: dynamische Texte mit `bottom` landen ausserhalb der Seite, darum von oben gerechnet */}
         <Text
           fixed
           style={{ ...s.pageNumber, top: (wide ? 595.28 : 841.89) - 27 }}
-          render={({ pageNumber, totalPages }) => `Seite ${pageNumber} von ${totalPages}`}
+          render={({ pageNumber, totalPages }) => labels.page(pageNumber, totalPages)}
         />
         <View fixed style={s.runningHead} render={({ pageNumber }) =>
           pageNumber > 1 ? (
@@ -134,7 +137,7 @@ export function ShiftPlanPdf({ doc }: { doc: PlanDocument }) {
             </Text>
           </View>
           <View style={s.stand}>
-            <Text style={s.standLabel}>Stand</Text>
+            <Text style={s.standLabel}>{labels.stand}</Text>
             <Text style={s.standValue}>{doc.stand}</Text>
           </View>
         </View>
@@ -143,9 +146,9 @@ export function ShiftPlanPdf({ doc }: { doc: PlanDocument }) {
         {doc.layout === 'personen' ? (
           <PeopleTable people={doc.people} />
         ) : doc.days.length === 0 ? (
-          <Text style={s.empty}>Keine Schichten ausgewählt.</Text>
+          <Text style={s.empty}>{labels.emptyShifts}</Text>
         ) : (
-          doc.days.map((day, i) => <DaySection key={day.key} day={day} doc={doc} breakBefore={doc.pageBreakPerDay && i > 0} />)
+          doc.days.map((day, i) => <DaySection key={day.key} day={day} doc={doc} labels={labels} breakBefore={doc.pageBreakPerDay && i > 0} />)
         )}
 
       </Page>
@@ -158,10 +161,10 @@ function columns(doc: PlanDocument) {
   return { time: 74, shift: wide ? 200 : 140, task: wide ? 130 : 84, count: 34 };
 }
 
-function DaySection({ day, doc, breakBefore }: { day: PlanDay; doc: PlanDocument; breakBefore: boolean }) {
+function DaySection({ day, doc, labels, breakBefore }: { day: PlanDay; doc: PlanDocument; labels: PlanLabels; breakBefore: boolean }) {
   const col = columns(doc);
   const ratio = day.required ? day.filled / day.required : 1;
-  const meta = [day.responsibles ? `Tagesleitung: ${day.responsibles}` : null, `${day.shiftCount} ${day.shiftCount === 1 ? 'Schicht' : 'Schichten'}`]
+  const meta = [day.responsibles ? labels.dayResponsible(day.responsibles) : null, labels.dayMeta(day.shiftCount)]
     .filter(Boolean)
     .join(' · ');
   const aushang = doc.layout === 'aushang';
@@ -175,7 +178,7 @@ function DaySection({ day, doc, breakBefore }: { day: PlanDay; doc: PlanDocument
           </View>
           <View style={s.progress}>
             <Text style={s.progressText}>
-              {day.filled} von {day.required} Plätzen besetzt
+              {labels.slotsFilled(day.filled, day.required)}
             </Text>
             <View style={s.progressTrack}>
               <View style={[s.progressFill, { width: 90 * Math.min(1, ratio), backgroundColor: doc.accent }]} />
@@ -183,23 +186,23 @@ function DaySection({ day, doc, breakBefore }: { day: PlanDay; doc: PlanDocument
           </View>
         </View>
         <View style={s.colHead}>
-          <Text style={[s.colLabel, { width: col.time, paddingLeft: 9 }]}>Zeit</Text>
-          <Text style={[s.colLabel, { width: col.shift, paddingLeft: 6 }]}>Schicht</Text>
-          <Text style={[s.colLabel, { width: col.task }]}>Arbeit</Text>
-          <Text style={[s.colLabel, { width: col.count, textAlign: 'center' }]}>Besetzt</Text>
-          <Text style={[s.colLabel, { flex: 1, paddingLeft: 8 }]}>{aushang ? 'Namen' : 'Eingeteilt'}</Text>
+          <Text style={[s.colLabel, { width: col.time, paddingLeft: 9 }]}>{labels.colTime}</Text>
+          <Text style={[s.colLabel, { width: col.shift, paddingLeft: 6 }]}>{labels.colShift}</Text>
+          <Text style={[s.colLabel, { width: col.task }]}>{labels.colTask}</Text>
+          <Text style={[s.colLabel, { width: col.count, textAlign: 'center' }]}>{labels.colFilled}</Text>
+          <Text style={[s.colLabel, { flex: 1, paddingLeft: 8 }]}>{aushang ? labels.colNames : labels.colAssigned}</Text>
         </View>
       </View>
       {day.shifts.length === 0 ? (
-        <Text style={s.empty}>Keine offenen Plätze an diesem Tag.</Text>
+        <Text style={s.empty}>{labels.emptyDay}</Text>
       ) : (
-        day.shifts.map((shift) => <ShiftRow key={shift.id} shift={shift} doc={doc} />)
+        day.shifts.map((shift) => <ShiftRow key={shift.id} shift={shift} doc={doc} labels={labels} />)
       )}
     </View>
   );
 }
 
-function ShiftRow({ shift, doc }: { shift: PlanShift; doc: PlanDocument }) {
+function ShiftRow({ shift, doc, labels }: { shift: PlanShift; doc: PlanDocument; labels: PlanLabels }) {
   const col = columns(doc);
   const slots = shift.tasks.reduce((sum, t) => sum + Math.max(t.required, t.names.length), 0);
   return (
@@ -228,14 +231,14 @@ function ShiftRow({ shift, doc }: { shift: PlanShift; doc: PlanDocument }) {
       <View style={s.tasks}>
         {shift.tasks.map((task, i) => (
           /* biome-ignore lint/suspicious/noArrayIndexKey: Aufgaben einer Schicht im PDF-Export */
-          <TaskRow key={i} task={task} doc={doc} first={i === 0} />
+          <TaskRow key={i} task={task} doc={doc} labels={labels} first={i === 0} />
         ))}
       </View>
     </View>
   );
 }
 
-function TaskRow({ task, doc, first }: { task: PlanTask; doc: PlanDocument; first: boolean }) {
+function TaskRow({ task, doc, labels, first }: { task: PlanTask; doc: PlanDocument; labels: PlanLabels; first: boolean }) {
   const col = columns(doc);
   const free = Math.max(0, task.required - task.names.length);
   const full = free === 0;
@@ -247,17 +250,17 @@ function TaskRow({ task, doc, first }: { task: PlanTask; doc: PlanDocument; firs
           {task.names.length}/{task.required}
         </Text>
       </View>
-      <View style={s.names}>{doc.layout === 'aushang' ? <Slots task={task} landscape={doc.landscape} /> : <NameList task={task} free={free} />}</View>
+      <View style={s.names}>{doc.layout === 'aushang' ? <Slots task={task} landscape={doc.landscape} /> : <NameList task={task} free={free} freeLabel={labels.free} />}</View>
     </View>
   );
 }
 
-function NameList({ task, free }: { task: PlanTask; free: number }) {
-  if (task.names.length === 0) return <Text style={s.free}>{free ? `${free} frei` : '–'}</Text>;
+function NameList({ task, free, freeLabel }: { task: PlanTask; free: number; freeLabel: string }) {
+  if (task.names.length === 0) return <Text style={s.free}>{free ? `${free} ${freeLabel}` : '–'}</Text>;
   return (
     <Text>
       {task.names.join(', ')}
-      {free > 0 && <Text style={s.free}>{`  ·  ${free} frei`}</Text>}
+      {free > 0 && <Text style={s.free}>{`  ·  ${free} ${freeLabel}`}</Text>}
     </Text>
   );
 }

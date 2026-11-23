@@ -1,3 +1,4 @@
+import { parseLocale, getTranslator, type Locale } from '@schichtplan/i18n';
 import crypto from 'node:crypto';
 import PDFDocument from 'pdfkit';
 import type { PrismaClient } from '../generated/prisma/client.js';
@@ -326,9 +327,12 @@ export async function generateBatchPdf(
     /** Adresse der Anlass-Seite, z. B. https://illnau.cevi-schichtplan.ch/events/sommerfest */
     eventUrl: string;
     branding?: BatchPdfBranding;
+    locale?: Locale | string | null;
   }
 ): Promise<Buffer> {
-  const { eventId, batchId, eventUrl, branding = {} } = params;
+  const { eventId, batchId, eventUrl, branding = {}, locale } = params;
+  const l = (locale ? parseLocale(locale) : null) ?? 'de';
+  const t = getTranslator(l, { namespace: 'pdf.catering' });
 
   const batch = await prisma.cateringBatch.findFirst({
     where: { id: batchId, eventId },
@@ -342,7 +346,7 @@ export async function generateBatchPdf(
 
   if (!batch) throw new TranslatableError('catering.batchNotFound');
 
-  const orgConfig = getOrganizationByDbType(batch.event.department.organization);
+  const orgConfig = getOrganizationByDbType(batch.event.department.organization, l);
 
   // Gruppiere Tokens nach Karte (über qrCode & cardNumber)
   const cardsMap = new Map<
@@ -407,7 +411,7 @@ export async function generateBatchPdf(
   const palette = resolveQrPalette(branding.color, branding.secondaryColor, branding.qrStyle);
   const logo = preparePdfLogo(doc, await resolveLogo(branding.logoUrl, prisma, batch.event.department.organization));
   const accent = palette.isTwoTone ? palette.secondary : palette.primary;
-  const label = batch.mode === 'COMBI' ? 'KOMBI-GUTSCHEIN' : 'HELFER-BON';
+  const label = batch.mode === 'COMBI' ? t('kombiLabel') : t('helperLabel');
   const departmentLine = `${batch.event.department.name} · ${batch.title}`.toUpperCase();
 
   for (let pageIdx = 0; pageIdx < totalPages; pageIdx++) {
@@ -514,7 +518,7 @@ export async function generateBatchPdf(
           .font('Helvetica')
           .fontSize(8)
           .fillColor('#6B7280')
-          .text(`+ ${card.items.length - items.length} weitere`, ix + 9, ty, { width: textW - 9, lineBreak: false });
+          .text(t('moreItems', { count: card.items.length - items.length }), ix + 9, ty, { width: textW - 9, lineBreak: false });
       }
 
       // Hinweis unten links
@@ -522,7 +526,7 @@ export async function generateBatchPdf(
         .font('Helvetica')
         .fontSize(6.5)
         .fillColor('#9CA3AF')
-        .text('Am Stand vorweisen und scannen lassen', ix, cy + ch - ip - 7, {
+        .text(t('footerHint'), ix, cy + ch - ip - 7, {
           width: textW,
           lineBreak: false,
           ellipsis: true,

@@ -3,7 +3,7 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 import { CalendarDays, ClipboardCheck, Clock, Download, FileSpreadsheet, Printer, Users } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { type EventRosterResponseDto } from '@schichtplan/shared';
 import { Button, Card, Chip, Dialog, Switch, cn, trackUi, useOrganization, useToast } from '@schichtplan/ui';
 import { HelperHoursDialog } from '@/components/ok/HelperHoursDialog';
@@ -216,6 +216,7 @@ function ExportCard({ icon, title, text, children }: { icon: ReactNode; title: s
 
 function PrintDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const t = useTranslations('web.ok.export');
+  const locale = useLocale();
   const { event } = useOkEvent();
   const { department } = usePortal();
   const toast = useToast();
@@ -233,7 +234,7 @@ function PrintDialog({ open, onClose }: { open: boolean; onClose: () => void }) 
     setSelectedDays(chosen.includes(key) ? chosen.filter((k) => k !== key) : days.filter((k) => k === key || chosen.includes(k)));
 
   const run = async (action: 'print' | 'download') => {
-    const options = { layout, days: chosen, landscape, pageBreakPerDay, showDetails, onlyOpen };
+    const options = { layout, days: chosen, landscape, pageBreakPerDay, showDetails, onlyOpen, locale };
     setBusy(action);
     try {
       const blob = await createShiftPlanPdf(event, department, options);

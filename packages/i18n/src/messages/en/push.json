@@ -1,0 +1,15 @@
+{
+  "shiftReminder": {
+    "title": "Shift starts {lead}: {shift}",
+    "body": "{event} ({time}){note}",
+    "notePrefix": "\nNote: {note}"
+  },
+  "replacementTaken": {
+    "title": "Replacement found: {shift}",
+    "body": "{takenBy} took over your shift for {event} ({time})."
+  },
+  "cateringTokens": {
+    "title": "🎁 Don't forget your catering vouchers!",
+    "body": "Hello {name}! You still have {count, plural, one {# open voucher} other {# open vouchers}} for «{event}» ({tokens}). Pick them up at the stand!"
+  }
+}

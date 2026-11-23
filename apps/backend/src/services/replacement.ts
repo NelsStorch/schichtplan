@@ -1,4 +1,5 @@
 import { formatZurichDate, formatZurichTimeRange, replacementDeadline } from '@schichtplan/shared';
+import { resolveRecipientLocale, getTranslator, getEnabledLocales, type Locale } from '@schichtplan/i18n';
 import { shiftDisplayTitle } from './shiftDto.js';
 import type { PrismaClient } from '../db.js';
 import { usableEmail } from '../routes/eventMessages.js';
@@ -43,6 +44,7 @@ type ReplacedSignup = {
     email: string | null;
     emailVerified: boolean;
     pushNotifyReplacement?: boolean;
+    locale?: Locale | string | null;
   } | null;
 };
 
@@ -58,16 +60,25 @@ export async function notifyReplacementTaken(
   if (!replaced.user) return false;
   const department = await prisma.department.findUnique({
     where: { id: event.departmentId },
-    select: { slug: true, name: true, primaryColor: true, organization: true },
+    select: { slug: true, name: true, primaryColor: true, organization: true, defaultLocale: true },
   });
-  const timeRangeFormatted = `${formatZurichDate(shift.startTime)}, ${formatZurichTimeRange(shift.startTime, shift.endTime)}`;
+  const orgType = department?.organization;
+  const enabled = getEnabledLocales(orgType);
+  const recipientLocale = resolveRecipientLocale({
+    user: replaced.user.locale,
+    department: department?.defaultLocale,
+    enabled,
+  });
+  const timeRangeFormatted = `${formatZurichDate(shift.startTime, recipientLocale)}, ${formatZurichTimeRange(shift.startTime, shift.endTime, recipientLocale)}`;
   const targetUrl = department ? eventUrl(department.slug, event.slug, department.organization) : undefined;
+  const shiftTitle = shiftDisplayTitle(shift);
 
   // Web Push an alle registrierten Geräte (auch für Cevi-Name-Profile ohne E-Mail)
   if (replaced.user.id && replaced.user.pushNotifyReplacement !== false && prisma.pushSubscription) {
+    const tPush = getTranslator(recipientLocale, { namespace: 'push' });
     void sendPushToUser(prisma as PrismaClient, replaced.user.id, {
-      title: `Ersatz gefunden: ${shift.title?.trim() || 'Schicht'}`,
-      body: `${takenBy} hat deine Schicht bei ${event.title} (${timeRangeFormatted}) übernommen.`,
+      title: tPush('replacementTaken.title', { shift: shiftTitle }),
+      body: tPush('replacementTaken.body', { takenBy, event: event.title, time: timeRangeFormatted }),
       url: targetUrl,
       tag: `replacement-taken-${event.slug}`,
     }).catch(() => undefined);
@@ -81,11 +92,12 @@ export async function notifyReplacementTaken(
     name: replaced.user.nickname || replaced.user.ceviName || replaced.user.firstName,
     takenBy,
     eventTitle: event.title,
-    shiftTitle: shiftDisplayTitle(shift),
+    shiftTitle,
     timeRangeFormatted,
     eventUrl: targetUrl,
     departmentName: department?.name,
     accentColor: department?.primaryColor,
     organization: department?.organization,
+    locale: recipientLocale,
   });
 }

@@ -220,6 +220,43 @@ describe('email service', () => {
 
       expect(icsPfadi).toContain('PRODID:-//Pfadi Schichtplan//DE');
     });
+
+    it('verwendet bei Uebergabe einer Sprache das lokalisierte ICS-Vokabular', () => {
+      const icsIt = buildShiftIcsAttachment({
+        uid: 'reminder-it-1@cevi-schichtplan.ch',
+        shiftTitle: 'Cucina',
+        eventTitle: 'Festa 2026',
+        startTime: new Date('2030-05-18T10:00:00Z'),
+        endTime: new Date('2030-05-18T14:00:00Z'),
+        departmentName: 'Cevi Ticino',
+        organization: 'CEVI',
+        locale: 'it',
+      });
+
+      expect(icsIt).toContain('PRODID:-//Cevi Schichtplan//IT');
+      expect(icsIt).toContain('Turno: Cucina');
+      expect(icsIt).toContain('Evento: Festa 2026');
+      expect(icsIt).toContain('Sezione: Cevi Ticino');
+    });
+  });
+
+  describe('renderEmailTemplate Lokalisierung', () => {
+    it('setzt html lang-Attribut und uebersetzt Standard-Texte wie Hilfe-Center und Abmeldung', () => {
+      const htmlFr = renderEmailTemplate({
+        title: 'Bienvenue',
+        contentHtml: '<p>Contenu</p>',
+        organization: 'CEVI',
+        locale: 'fr',
+        unsubscribeUrl: 'https://cevi-schichtplan.ch/profil',
+      });
+
+      expect(htmlFr).toContain('<html lang="fr"');
+      expect(htmlFr).toContain('https://hilfe.cevi-schichtplan.ch/fr');
+      expect(htmlFr).toContain('Aide');
+      expect(htmlFr).toContain('Gérer les notifications');
+      expect(htmlFr).toContain('Meilleures salutations');
+      expect(htmlFr).toContain('Votre équipe Cevi Schichtplan');
+    });
   });
 
   describe('sendVerificationEmail & sendPasswordResetEmail', () => {

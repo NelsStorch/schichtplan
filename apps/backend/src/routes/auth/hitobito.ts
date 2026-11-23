@@ -15,6 +15,7 @@ import {
 } from '../../services/nicknameLogin.js';
 import { mergeCeviNameProfilesInto } from '../../services/mergeProfiles.js';
 import { trackUsage } from '../../services/usageStats.js';
+import { toDbLocale } from '@schichtplan/i18n';
 import { syncCeviDbLeadership } from '../../services/departmentLeaders.js';
 import { syncProviderMemberships } from '../../services/departmentJoin.js';
 import { departmentCreationEligibility } from '../departments/shared.js';
@@ -569,6 +570,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
           emailVerified: true,
           emailVerifiedAt: now,
           providerSyncedAt: now,
+          locale: toDbLocale(reply.request?.locale),
         },
       });
     } else {
@@ -585,6 +587,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
           emailVerified: true,
           emailVerifiedAt: user.emailVerifiedAt || now,
           providerSyncedAt: now,
+          locale: toDbLocale(reply.request?.locale),
         },
       });
     }

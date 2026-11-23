@@ -1,3 +1,4 @@
+import { toDbLocale } from '@schichtplan/i18n';
 import { FastifyPluginAsync, } from 'fastify';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
@@ -200,6 +201,7 @@ const passwordAuthRoutes: FastifyPluginAsync = async (fastify) => {
             phone: phone || null,
             emailVerified: false,
             emailVerifiedAt: null,
+            locale: toDbLocale(request.locale),
           },
         });
       });

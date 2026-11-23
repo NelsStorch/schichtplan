@@ -15,14 +15,14 @@ import {
   DEFAULT_EMAIL_REMINDER_MINUTES,
   DEFAULT_PUSH_REMINDER_MINUTES,
   isPlaceholderEmail,
-  formatReminderLeadTime,
   getOrganization,
   getOrganizationByDbType,
   zurichDateTimeFormat,
   type OrganizationType,
 } from '@schichtplan/shared';
 import type { PrismaClient } from '../db.js';
-import { sendShiftReminderEmail } from './email.js';
+import { sendShiftReminderEmail, formatReminderLeadTimeWithTranslator } from './email.js';
+import { resolveRecipientLocale, getTranslator, getEnabledLocales, type Locale } from '@schichtplan/i18n';
 import { sendPushToUser } from './webPush.js';
 
 export const REMINDER_LEAD_HOURS = 24;
@@ -31,9 +31,10 @@ export const MAX_REMINDER_WINDOW_MINUTES = 10_080;
 export const REMINDER_INTERVAL_MS = 10 * 60 * 1000;
 
 /** «Sa, 01.06.2030, 18:00–22:00» (gleicher Tag) bzw. mit beiden Daten über Mitternacht */
-export function formatShiftTime(start: Date, end: Date): string {
-  const day = zurichDateTimeFormat({ weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
-  const time = zurichDateTimeFormat({ hour: '2-digit', minute: '2-digit' });
+export function formatShiftTime(start: Date, end: Date, locale?: string): string {
+  const intlLocale = locale === 'fr' ? 'fr-CH' : locale === 'it' ? 'it-CH' : locale === 'en' ? 'en-CH' : 'de-CH';
+  const day = zurichDateTimeFormat({ weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }, intlLocale);
+  const time = zurichDateTimeFormat({ hour: '2-digit', minute: '2-digit' }, intlLocale);
   const startDay = day.format(start);
   const endDay = day.format(end);
   return startDay === endDay
@@ -114,6 +115,7 @@ interface CandidateEntry {
     pushRemindersEnabled: boolean;
     pushReminderMinutes: number[];
     hasPushSubscriptions: boolean;
+    locale?: Locale | string | null;
   };
   taskTitle: string | null;
   shift: {
@@ -126,7 +128,7 @@ interface CandidateEntry {
       title: string;
       slug: string;
       reminderNote: string | null;
-      department: { slug: string; name: string; primaryColor: string | null; organization?: OrganizationType };
+      department: { slug: string; name: string; primaryColor: string | null; organization?: OrganizationType; defaultLocale?: Locale | string | null };
     };
   };
 }
@@ -237,6 +239,7 @@ export async function sendDueShiftReminders(
             emailVerified: true,
             nickname: true,
             firstName: true,
+            locale: true,
             shiftRemindersEnabled: true,
             emailReminderMinutes: true,
             pushRemindersEnabled: true,
@@ -257,7 +260,7 @@ export async function sendDueShiftReminders(
                 title: true,
                 slug: true,
                 reminderNote: true,
-                department: { select: { slug: true, name: true, primaryColor: true, organization: true } },
+                department: { select: { slug: true, name: true, primaryColor: true, organization: true, defaultLocale: true } },
               },
             },
           },
@@ -282,6 +285,7 @@ export async function sendDueShiftReminders(
             emailVerified: true,
             nickname: true,
             firstName: true,
+            locale: true,
             shiftRemindersEnabled: true,
             emailReminderMinutes: true,
             pushRemindersEnabled: true,
@@ -301,7 +305,7 @@ export async function sendDueShiftReminders(
                 title: true,
                 slug: true,
                 reminderNote: true,
-                department: { select: { slug: true, name: true, primaryColor: true, organization: true } },
+                department: { select: { slug: true, name: true, primaryColor: true, organization: true, defaultLocale: true } },
               },
             },
           },
@@ -348,6 +352,7 @@ export async function sendDueShiftReminders(
               ? s.user.pushReminderMinutes
               : [...DEFAULT_PUSH_REMINDER_MINUTES],
           hasPushSubscriptions: (s.user._count?.pushSubscriptions ?? 0) > 0,
+          locale: s.user.locale,
         },
         taskTitle: s.task?.title ?? null,
         shift: s.shift,
@@ -425,6 +430,7 @@ export async function sendDueShiftReminders(
             ? r.user.pushReminderMinutes
             : [...DEFAULT_PUSH_REMINDER_MINUTES],
         hasPushSubscriptions: (r.user._count?.pushSubscriptions ?? 0) > 0,
+        locale: r.user.locale,
       },
       taskTitle: null,
       shift: r.shift,
@@ -438,11 +444,18 @@ export async function sendDueShiftReminders(
     const diffMinutes = (shift.startTime.getTime() - now.getTime()) / 60_000;
     if (diffMinutes <= 0) continue;
 
+    const orgType = shift.event.department.organization;
+    const enabled = getEnabledLocales(orgType);
+    const recipientLocale = resolveRecipientLocale({
+      user: user.locale,
+      department: shift.event.department.defaultLocale,
+      enabled,
+    });
     const shiftTitle = shift.title?.trim()
       ? (entry.taskTitle && entry.taskTitle !== shift.title ? `${shift.title} · ${entry.taskTitle}` : shift.title)
       : (entry.taskTitle || 'Schicht');
     const targetUrl = eventUrl(shift.event.department.slug, shift.event.slug, shift.event.department.organization);
-    const timeFormatted = formatShiftTime(shift.startTime, shift.endTime);
+    const timeFormatted = formatShiftTime(shift.startTime, shift.endTime, recipientLocale);
 
     // 1. E-Mail-Erinnerung prüfen
     if (user.shiftRemindersEnabled && user.emailVerified && user.email && !isPlaceholderEmail(user.email)) {
@@ -488,6 +501,7 @@ export async function sendDueShiftReminders(
                 isResponsible: entry.isResponsible,
                 isGuest: entry.userId === null,
                 organization: shift.event.department.organization,
+                locale: recipientLocale,
               });
             } catch {
               ok = false;
@@ -529,13 +543,15 @@ export async function sendDueShiftReminders(
         }
 
         if (claimed) {
-          const leadText = formatReminderLeadTime(targetLead);
+          const tPush = getTranslator(recipientLocale, { namespace: 'push' });
+          const tEmails = getTranslator(recipientLocale, { namespace: 'emails' });
+          const leadText = formatReminderLeadTimeWithTranslator(targetLead, tEmails as (k: string, v?: Record<string, string | number>) => string);
           const noteSuffix = shift.event.reminderNote?.trim()
-            ? `\nHinweis: ${shift.event.reminderNote.trim().slice(0, 120)}`
+            ? tPush('shiftReminder.notePrefix', { note: shift.event.reminderNote.trim().slice(0, 120) })
             : '';
           const pushRes = await sendPush(prisma, user.id, {
-            title: `Schicht beginnt ${leadText}: ${shiftTitle}`,
-            body: `${shift.event.title} (${timeFormatted})${noteSuffix}`,
+            title: tPush('shiftReminder.title', { lead: leadText, shift: shiftTitle }),
+            body: tPush('shiftReminder.body', { event: shift.event.title, time: timeFormatted, note: noteSuffix }),
             url: targetUrl,
             tag: `shift-reminder-${shift.id}-${targetLead}`,
           });

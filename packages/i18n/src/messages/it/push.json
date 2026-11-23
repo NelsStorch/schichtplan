@@ -1,0 +1,15 @@
+{
+  "shiftReminder": {
+    "title": "Il turno inizia {lead}: {shift}",
+    "body": "{event} ({time}){note}",
+    "notePrefix": "\nNota: {note}"
+  },
+  "replacementTaken": {
+    "title": "Sostituto trovato: {shift}",
+    "body": "{takenBy} ha assunto il tuo turno per {event} ({time})."
+  },
+  "cateringTokens": {
+    "title": "🎁 Non dimenticare i tuoi buoni pasto!",
+    "body": "Ciao {name}! Hai ancora {count, plural, one {# buono aperto} other {# buoni aperti}} per «{event}» ({tokens}). Ritirali allo stand!"
+  }
+}

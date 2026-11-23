@@ -1,3 +1,4 @@
+import { parseLocale, getTranslator, type Locale } from '@schichtplan/i18n';
 import { evaluateContrast, getOrganization, getOrganizationByDbType, type ContrastEvaluation, type OrganizationType } from '@schichtplan/shared';
 import PDFDocument from 'pdfkit';
 import QRCode from 'qrcode';
@@ -226,6 +227,7 @@ export interface QrOptions {
   organization?: OrganizationType;
   /** Plakette in der Mitte leer lassen, wenn das Logo später darübergelegt wird (z. B. im Story-Bild) */
   omitLogo?: boolean;
+  locale?: Locale | string | null;
 }
 
 /**
@@ -335,12 +337,14 @@ export async function generateCheckinPdf(options: QrOptions): Promise<Buffer> {
   const palette = resolveQrPalette(options.color, options.secondaryColor, options.qrStyle);
   const { primary: primaryColor, secondary: secondaryColor, isTwoTone } = palette;
 
-  const footerOrg = options.organization ? getOrganizationByDbType(options.organization) : getOrganization(options.text);
+  const l = (options.locale ? parseLocale(options.locale) : null) ?? 'de';
+  const t = getTranslator(l, { namespace: 'pdf.checkin' });
+  const footerOrg = options.organization ? getOrganizationByDbType(options.organization, l) : getOrganization(options.text, l);
   const logo = await resolveLogo(options.logoUrl, options.prisma, footerOrg.dbType);
 
   return new Promise((resolve, reject) => {
     // A4: 595.28 x 841.89 pt
-    const doc = new PDFDocument({ size: 'A4', margin: 36, info: { Title: options.title || 'Helfer-Check-in', Author: footerOrg.name } });
+    const doc = new PDFDocument({ size: 'A4', margin: 36, info: { Title: options.title || t('title'), Author: footerOrg.name } });
     const chunks: Buffer[] = [];
 
     doc.on('data', (chunk) => chunks.push(chunk));
@@ -362,7 +366,7 @@ export async function generateCheckinPdf(options: QrOptions): Promise<Buffer> {
       .font('Helvetica-Bold')
       .fontSize(9.5)
       .fillColor('#6b7280')
-      .text(`${footerOrg.name.toUpperCase()}  ·  OFFIZIELLER HELFER-AUSHANG`, 40, 36);
+      .text(t('officialPoster', { orgName: footerOrg.name.toUpperCase() }), 40, 36);
 
     doc
       .font('Helvetica')
@@ -370,7 +374,7 @@ export async function generateCheckinPdf(options: QrOptions): Promise<Buffer> {
       .fillColor('#374151')
       .text(deptName, 40, 52);
 
-    const title = options.title || 'Helfer-Check-in';
+    const title = options.title || t('title');
     doc
       .font('Helvetica-Bold')
       .fontSize(26)
@@ -379,10 +383,12 @@ export async function generateCheckinPdf(options: QrOptions): Promise<Buffer> {
 
     const earlyMin = options.checkinEarlyMinutes ?? 30;
     const lateMin = options.checkinLateMinutes ?? 30;
+    const earlyPart = earlyMin > 0 ? t('earlyMin', { min: earlyMin }) : t('earlyZero');
+    const latePart = t('lateMin', { min: lateMin });
     const defaultSubtitle =
       lateMin > 0
-        ? `Anwesenheit erfassen: Scann den QR-Code ${earlyMin > 0 ? `ab ${earlyMin} Min. vor` : 'ab'} Beginn bis ${lateMin} Min. nach deiner Schicht.`
-        : 'Anwesenheit erfassen: Scann den QR-Code vor Beginn deiner Schicht.';
+        ? t('subtitleWindow', { early: earlyPart, late: latePart })
+        : t('subtitle');
     const subtitle = options.subtitle && !options.subtitle.startsWith('Anwesenheit:') ? options.subtitle : defaultSubtitle;
     doc
       .font('Helvetica')
@@ -409,7 +415,7 @@ export async function generateCheckinPdf(options: QrOptions): Promise<Buffer> {
       .font('Helvetica-Bold')
       .fontSize(11)
       .fillColor(badgeLabelColor)
-      .text('QR-CODE SCANNEN ZUM EINCHECKEN', 40, cardY + 16, { align: 'center', width: 515.28 });
+      .text(t('badgeScan'), 40, cardY + 16, { align: 'center', width: 515.28 });
 
     // QR-Code im Zentrum
     const qrPixelSize = 256;
@@ -436,18 +442,18 @@ export async function generateCheckinPdf(options: QrOptions): Promise<Buffer> {
     const steps = [
       {
         n: '1',
-        title: 'Kamera öffnen',
-        text: 'Smartphone-Kamera oder QR-Scanner auf den Code richten und den Link öffnen.',
+        title: t('step1Title'),
+        text: t('step1Text'),
       },
       {
         n: '2',
-        title: 'Bestätigen',
-        text: `Mit deinem ${footerOrg.name}-Konto anmelden oder als Gast deinen Namen bestätigen.`,
+        title: t('step2Title'),
+        text: t('step2Text', { orgName: footerOrg.name }),
       },
       {
         n: '3',
-        title: 'Eingecheckt!',
-        text: 'Deine Anwesenheit wird sofort erfasst. Du bist für deinen Helfereinsatz startklar!',
+        title: t('step3Title'),
+        text: t('step3Text'),
       },
     ];
 
@@ -481,9 +487,9 @@ export async function generateCheckinPdf(options: QrOptions): Promise<Buffer> {
     });
 
     // 5. Zeitfenster-Infobox
-    const earlyText = earlyMin === 0 ? 'bei Schichtbeginn' : `${earlyMin} Minuten vor deinem Schichtbeginn`;
-    const lateText = lateMin === 0 ? 'bis zum Schichtende' : `bis ${lateMin} Minuten nach deinem Schichtende`;
-    const windowText = `Der Selbst-Check-in öffnet jeweils ${earlyText} und bleibt ${lateText} aktiv.`;
+    const earlyText = earlyMin === 0 ? t('windowEarlyZero') : t('windowEarlyMin', { min: earlyMin });
+    const lateText = lateMin === 0 ? t('windowLateZero') : t('windowLateMin', { min: lateMin });
+    const windowText = t('windowText', { earlyText, lateText });
 
     const noticeY = 660;
     doc
@@ -494,7 +500,7 @@ export async function generateCheckinPdf(options: QrOptions): Promise<Buffer> {
       .font('Helvetica-Bold')
       .fontSize(10)
       .fillColor('#166534')
-      .text('ZEITFENSTER FÜR DEN CHECK-IN', 56, noticeY + 12);
+      .text(t('windowTitle'), 56, noticeY + 12);
 
     doc
       .font('Helvetica')

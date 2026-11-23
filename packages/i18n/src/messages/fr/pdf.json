@@ -1,0 +1,51 @@
+{
+  "checkin": {
+    "officialPoster": "{orgName}  ·  AFFICHAGE OFFICIEL DES BÉNÉVOLES",
+    "title": "Check-in des bénévoles",
+    "subtitle": "Enregistrement de présence : scannez le code QR avant le début de votre créneau.",
+    "subtitleWindow": "Enregistrement de présence : scannez le code QR {early} et {late} votre créneau.",
+    "earlyMin": "dès {min} min. avant",
+    "earlyZero": "dès",
+    "lateMin": "jusqu'à {min} min. après",
+    "badgeScan": "SCANNEZ LE CODE QR POUR VOUS ENREGISTRER",
+    "step1Title": "Ouvrir l'appareil photo",
+    "step1Text": "Pointez l'appareil photo ou le scanner QR sur le code et ouvrez le lien.",
+    "step2Title": "Confirmer",
+    "step2Text": "Connectez-vous avec votre compte {orgName} ou confirmez votre nom en tant qu'invité.",
+    "step3Title": "Enregistré !",
+    "step3Text": "Votre présence est immédiatement enregistrée. Vous êtes prêt pour votre mission bénévole !",
+    "windowTitle": "PLAGE HORAIRE POUR LE CHECK-IN",
+    "windowText": "Le self-check-in ouvre {earlyText} et reste actif {lateText}.",
+    "windowEarlyZero": "au début du créneau",
+    "windowEarlyMin": "{min} minutes avant le début de votre créneau",
+    "windowLateZero": "jusqu'à la fin du créneau",
+    "windowLateMin": "jusqu'à {min} minutes après la fin de votre créneau"
+  },
+  "catering": {
+    "voucherLabel": "BON DE REPAS",
+    "moreItems": "+ {count} autres",
+    "footerHint": "À présenter au stand pour validation",
+    "kombiLabel": "BON COMBINÉ",
+    "helperLabel": "BON BÉNÉVOLE"
+  },
+  "plan": {
+    "page": "Page {page} sur {total}",
+    "stand": "État",
+    "overview": "Planning des créneaux",
+    "aushang": "Planning d'inscription",
+    "openSlots": "Places disponibles",
+    "byPerson": "Attribution par personne · {count, plural, one {# personne} other {# personnes}}",
+    "emptyShifts": "Aucun créneau sélectionné.",
+    "emptyDay": "Aucune place disponible ce jour-là.",
+    "dayMeta": "{count, plural, one {# créneau} other {# créneaux}}",
+    "dayResponsible": "Responsable du jour : {names}",
+    "slotsFilled": "{filled} sur {required} places occupées",
+    "colTime": "Heure",
+    "colShift": "Créneau",
+    "colTask": "Tâche",
+    "colFilled": "Occupé",
+    "colAssigned": "Attribué",
+    "colNames": "Noms",
+    "free": "libre"
+  }
+}

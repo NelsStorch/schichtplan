@@ -247,4 +247,14 @@ describe('buildPlanDocument', () => {
     expect(mockImageLoader).toHaveBeenCalled();
     expect(doc.logo).toBe('data:image/png;base64,mocked');
   });
+
+  it('unterstützt lokalisierte Untertitel und Labels (z. B. Französisch)', async () => {
+    const event = createMockEvent();
+    const doc = await buildPlanDocument(event, null, { ...defaultOptions, locale: 'fr', layout: 'aushang' }, mockImageLoader);
+
+    expect(doc.subtitle).toBe("Planning d'inscription");
+    expect(doc.labels?.colTime).toBe('Heure');
+    expect(doc.labels?.colShift).toBe('Créneau');
+    expect(doc.labels?.colTask).toBe('Tâche');
+  });
 });
