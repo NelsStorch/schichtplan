@@ -23,9 +23,14 @@ describe('Sprache einer API-Anfrage', () => {
     process.env.I18N_ENABLED_LOCALES = original;
   });
 
-  it('bleibt Deutsch, solange nichts freigeschaltet ist', () => {
-    delete process.env.I18N_ENABLED_LOCALES;
+  it('bleibt Deutsch, wenn nur Deutsch freigeschaltet ist', () => {
+    process.env.I18N_ENABLED_LOCALES = 'de';
     expect(requestLocale(fakeRequest({ cookie: 'fr', acceptLanguage: 'fr-CH', departmentLocale: 'FR' }))).toBe('de');
+  });
+
+  it('fällt auf Deutsch zurück bei nicht unterstützter Sprache', () => {
+    delete process.env.I18N_ENABLED_LOCALES;
+    expect(requestLocale(fakeRequest({ cookie: 'es', acceptLanguage: 'es-ES' }))).toBe('de');
   });
 
   it('folgt Cookie, Browser und Abteilung', () => {

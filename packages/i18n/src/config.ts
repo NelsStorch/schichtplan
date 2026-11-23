@@ -46,10 +46,10 @@ export type OrganizationKey = 'CEVI' | 'PFADI' | 'JUBLA' | 'OTHER';
  * Bis dahin sehen Nutzer*innen nur Deutsch, auch wenn sie eine andere Sprache gewählt haben.
  */
 export const ENABLED_LOCALES: Record<OrganizationKey, readonly Locale[]> = {
-  CEVI: ['de'],
-  PFADI: ['de'],
-  JUBLA: ['de'],
-  OTHER: ['de'],
+  CEVI: ['de', 'fr', 'it', 'en'],
+  PFADI: ['de', 'fr', 'it', 'en'],
+  JUBLA: ['de', 'fr', 'it', 'en'],
+  OTHER: ['de', 'fr', 'it', 'en'],
 };
 
 /** Mindestabdeckung in Prozent, die eine freigeschaltete Sprache haben muss */

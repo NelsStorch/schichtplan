@@ -36,15 +36,15 @@ describe('Datenbank-Enum', () => {
 });
 
 describe('getEnabledLocales', () => {
-  it('liefert vorerst nur Deutsch für alle Verbände', () => {
+  it('liefert alle vier Sprachen für alle Verbände', () => {
     for (const org of ['CEVI', 'PFADI', 'JUBLA', 'OTHER', 'verein', null]) {
-      expect(getEnabledLocales(org)).toEqual(['de']);
+      expect(getEnabledLocales(org)).toEqual(['de', 'fr', 'it', 'en']);
     }
   });
 
   it('übernimmt eine Umgebungs-Liste, Deutsch immer zuerst und ohne Duplikate', () => {
     expect(getEnabledLocales('PFADI', 'fr,en')).toEqual(['de', 'fr', 'en']);
     expect(getEnabledLocales('CEVI', 'en, de, EN, rm')).toEqual(['de', 'en']);
-    expect(getEnabledLocales('CEVI', '  ')).toEqual(['de']);
+    expect(getEnabledLocales('CEVI', '  ')).toEqual(['de', 'fr', 'it', 'en']);
   });
 });
