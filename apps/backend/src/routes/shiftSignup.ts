@@ -181,7 +181,7 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.fail(
           401,
           'signup.accountRequired',
-          { nickname: getVocabulary(request.organization).nickname },
+          { nickname: getVocabulary(request.organization, request.locale).nickname },
           { requiresLogin: true }
         );
       }

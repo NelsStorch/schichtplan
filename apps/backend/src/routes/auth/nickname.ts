@@ -68,7 +68,7 @@ const nicknameAuthRoutes: FastifyPluginAsync = async (fastify) => {
     }
     const matches = await findCeviNameMatches(fastify.prisma, department.id, ceviName, birthDate);
     const result = pickCeviNameMatch(matches);
-    const vocab = getVocabulary(request.organization);
+    const vocab = getVocabulary(request.organization, request.locale);
     // Nur ein erfolgreicher Login ist kein Fehlversuch
     if (result.kind === 'LOGIN') releaseCeviNameAttempt(department.id, ceviName);
     if (result.kind === 'USE_CEVIDB') {
@@ -156,7 +156,7 @@ const nicknameAuthRoutes: FastifyPluginAsync = async (fastify) => {
     // Kein Treffer verrät nichts: kein Fehlversuch
     if (matches.length === 0) releaseCeviNameAttempt(department.id, ceviName);
     if (matches.length > 0) {
-      const vocab = getVocabulary(request.organization);
+      const vocab = getVocabulary(request.organization, request.locale);
       const result = pickCeviNameMatch(matches);
       return reply.status(409).send({
         code: result.kind === 'USE_CEVIDB' ? 'USE_CEVIDB' : result.kind === 'USE_PASSWORD' ? 'USE_PASSWORD' : 'EXISTS',

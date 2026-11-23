@@ -387,7 +387,7 @@ const eventMessageRoutes: FastifyPluginAsync = async (fastify) => {
       const signatureName = `OK ${event.title} (${event.department.name})`;
 
       // Versand im Hintergrund, damit grosse Listen die Anfrage nicht blockieren. Fehlschläge landen im Verlauf.
-      const defaultGreeting = getVocabulary(event.department.organization).member;
+      const defaultGreeting = getVocabulary(event.department.organization, request.locale).member;
       void (async () => {
         let failed = 0;
         for (const r of withEmail) {

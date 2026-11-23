@@ -4,6 +4,7 @@ import {
   classifyUnitRole,
   getHitobitoConfig,
   getHitobitoConfigFromHost,
+  getOrganization,
   getUnitRoleKey,
   getVocabulary,
   getVocabularyFromHost,
@@ -191,6 +192,122 @@ describe('Hitobito & Vokabular (Multi-Verband)', () => {
       expect(getVocabularyFromHost('vereins-schichtplan.ch').departmentLeader).toBe('Vorstand');
       expect(getVocabularyFromHost('cevi-schichtplan.ch').group).toBe('Stufe');
       expect(getVocabularyFromHost(null).group).toBe('Stufe'); // Default CEVI
+    });
+
+    it('liefert mehrsprachiges Vokabular für Französisch (fr)', () => {
+      expect(getVocabulary('CEVI', 'fr')).toMatchObject({
+        department: 'Section',
+        departmentLeader: 'Direction de section',
+        member: 'Membre Cevi',
+        memberPlural: 'Membres Cevi',
+        group: 'Groupe',
+        nickname: 'Nom Cevi',
+        authProvider: 'Cevi.DB',
+      });
+      expect(getVocabulary('PFADI', 'fr')).toMatchObject({
+        department: 'Groupe',
+        departmentLeader: 'Responsable de groupe',
+        member: 'Scout',
+        memberPlural: 'Scouts',
+        group: 'Unité',
+        nickname: 'Totem',
+        authProvider: 'MSdS MiData',
+      });
+      expect(getVocabulary('JUBLA', 'fr')).toMatchObject({
+        department: 'Groupe',
+        departmentLeader: 'Direction de groupe',
+        member: 'Membre Jubla',
+        nickname: "Nom d'animateur",
+        authProvider: 'Jubla-DB',
+      });
+      expect(getVocabulary('OTHER', 'fr')).toMatchObject({
+        department: 'Association',
+        departmentLeader: 'Comité',
+        member: 'Membre',
+        nickname: 'Surnom',
+        authProvider: 'E-mail & mot de passe',
+      });
+    });
+
+    it('liefert mehrsprachiges Vokabular für Italienisch (it)', () => {
+      expect(getVocabulary('CEVI', 'it')).toMatchObject({
+        department: 'Sezione',
+        departmentLeader: 'Direzione di sezione',
+        member: 'Membro Cevi',
+        nickname: 'Nome Cevi',
+      });
+      expect(getVocabulary('PFADI', 'it')).toMatchObject({
+        department: 'Sezione',
+        departmentLeader: 'Direzione di sezione',
+        member: 'Scout',
+        nickname: 'Nome scout',
+        authProvider: 'MSS MiData',
+      });
+      expect(getVocabulary('JUBLA', 'it')).toMatchObject({
+        department: 'Gruppo',
+        departmentLeader: 'Direzione di gruppo',
+        nickname: 'Nome animatore',
+      });
+      expect(getVocabulary('OTHER', 'it')).toMatchObject({
+        department: 'Associazione',
+        departmentLeader: 'Comitato',
+        nickname: 'Soprannome',
+        authProvider: 'E-mail e password',
+      });
+    });
+
+    it('liefert mehrsprachiges Vokabular für Englisch (en)', () => {
+      expect(getVocabulary('CEVI', 'en')).toMatchObject({
+        department: 'Department',
+        departmentLeader: 'Department Lead',
+        member: 'Cevi member',
+        nickname: 'Cevi nickname',
+      });
+      expect(getVocabulary('PFADI', 'en')).toMatchObject({
+        department: 'Group',
+        departmentLeader: 'Group Lead',
+        member: 'Scout',
+        nickname: 'Scout name',
+        authProvider: 'PBS MiData',
+      });
+      expect(getVocabulary('JUBLA', 'en')).toMatchObject({
+        department: 'Group',
+        departmentLeader: 'Group Lead',
+        member: 'Jubla member',
+        nickname: 'Leader nickname',
+      });
+      expect(getVocabulary('OTHER', 'en')).toMatchObject({
+        department: 'Club',
+        departmentLeader: 'Board',
+        member: 'Member',
+        nickname: 'Nickname',
+        authProvider: 'Email & Password',
+      });
+    });
+
+    it('ermittelt mehrsprachiges Vokabular aus Hostnamen mit Sprache', () => {
+      expect(getVocabularyFromHost('pfadi-schichtplan.ch', 'fr').nickname).toBe('Totem');
+      expect(getVocabularyFromHost('dev.jubla-schichtplan.ch', 'it').department).toBe('Gruppo');
+      expect(getVocabularyFromHost('cevi-schichtplan.ch', 'en').member).toBe('Cevi member');
+      expect(getVocabularyFromHost('vereins-schichtplan.ch', 'fr').department).toBe('Association');
+    });
+
+    it('liefert lokalisierte OrganizationConfig über getOrganization', () => {
+      const pfadiFr = getOrganization('pfadi', 'fr');
+      expect(pfadiFr.unitTerm).toBe('Groupe');
+      expect(pfadiFr.nicknameTerm).toBe('Totem');
+      expect(pfadiFr.leadTerm).toBe('Responsable de groupe');
+      expect(pfadiFr.authProviderShort).toBe('MSdS MiData');
+      expect(pfadiFr.independentNotice).toContain('Mouvement Scout de Suisse');
+
+      const ceviIt = getOrganization('cevi', 'it');
+      expect(ceviIt.unitTerm).toBe('Sezione');
+      expect(ceviIt.nicknameTerm).toBe('Nome Cevi');
+
+      const vereinEn = getOrganization('verein', 'en');
+      expect(vereinEn.unitTerm).toBe('Club');
+      expect(vereinEn.leadTerm).toBe('Board');
+      expect(vereinEn.nicknameTerm).toBe('Nickname');
     });
   });
 
@@ -457,5 +574,24 @@ describe('organizationForLevel (Begriffe pro Ebene)', () => {
     });
     expect(organizationForLevel(ORGANIZATIONS.jubla, null).unitTerm).toBe('Schar');
     expect(organizationForLevel(ORGANIZATIONS.verein, 'Bund').unitTerm).toBe('Verein');
+  });
+
+  it('übersetzt höhere Ebenen für FR, IT und EN', async () => {
+    const { ORGANIZATIONS, organizationForLevel } = await import('@schichtplan/shared');
+    expect(organizationForLevel(ORGANIZATIONS.jubla, 'Bund', 'fr')).toMatchObject({
+      unitTerm: 'Organisation',
+      unitTermPlural: 'Organisations',
+      leadTerm: 'Direction',
+    });
+    expect(organizationForLevel(ORGANIZATIONS.pfadi, 'Kanton', 'it')).toMatchObject({
+      unitTerm: 'Organizzazione',
+      unitTermPlural: 'Organizzazioni',
+      leadTerm: 'Direzione',
+    });
+    expect(organizationForLevel(ORGANIZATIONS.cevi, 'Region', 'en')).toMatchObject({
+      unitTerm: 'Organization',
+      unitTermPlural: 'Organizations',
+      leadTerm: 'Leadership',
+    });
   });
 });

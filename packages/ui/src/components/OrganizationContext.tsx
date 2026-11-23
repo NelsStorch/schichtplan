@@ -2,12 +2,15 @@
 
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import {
-  ORGANIZATIONS,
+  getOrganization,
+  getVocabulary,
   organizationForLevel,
   type OrganizationConfig,
   type OrganizationSlug,
+  type OrganizationVocabulary,
 } from '@schichtplan/shared';
 import { applyAccent } from '../theme/accent';
+import { useAppLocale } from '../i18n/LocaleSwitcher';
 
 /**
  * Verband der aktuellen Domain (cevi, pfadi, jubla, verein). Das Server-Layout ermittelt ihn aus dem Host
@@ -28,7 +31,7 @@ export function OrganizationProvider({
   levelName?: string | null;
   children: ReactNode;
 }) {
-  const org = ORGANIZATIONS[slug ?? 'cevi'];
+  const org = getOrganization(slug ?? 'cevi');
   useEffect(() => {
     applyAccent(org.primaryColor);
   }, [org.primaryColor]);
@@ -41,8 +44,16 @@ export function useOrganizationSlug(): OrganizationSlug | null {
   return useContext(OrganizationContext)?.slug ?? null;
 }
 
-/** Konfiguration des Verbands dieser Domain (ohne Provider: Cevi), mit den Begriffen der Ebene */
+/** Konfiguration des Verbands dieser Domain (ohne Provider: Cevi), mit den Begriffen der Ebene und Sprache */
 export function useOrganization(): OrganizationConfig {
   const ctx = useContext(OrganizationContext);
-  return organizationForLevel(ORGANIZATIONS[ctx?.slug ?? 'cevi'], ctx?.levelName);
+  const locale = useAppLocale();
+  return organizationForLevel(getOrganization(ctx?.slug ?? 'cevi', locale), ctx?.levelName, locale);
+}
+
+/** Verbandsspezifisches Vokabular der aktuellen Domain in der aktiven Sprache */
+export function useVocabulary(): OrganizationVocabulary {
+  const org = useOrganization();
+  const locale = useAppLocale();
+  return getVocabulary(org.dbType, locale);
 }
