@@ -2,6 +2,7 @@
 
 import { ArrowDown, ArrowUp, Check, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useEventText } from '@/lib/eventText';
 import {
   DEFAULT_QUESTION_RETENTION_DAYS,
   EVENT_QUESTION_PRESETS,
@@ -83,6 +84,8 @@ const EMPTY_QUESTION: QuestionDraft = {
   sensitive: false,
 };
 
+type PresetKey = 'ADDRESS' | 'DIET' | 'TSHIRT' | 'EMERGENCY';
+
 function fromPreset(preset: EventQuestionPreset): QuestionDraft {
   return { ...EMPTY_QUESTION, label: preset.label, type: preset.type, optionsText: preset.options.join('\n'), sensitive: Boolean(preset.sensitive) };
 }
@@ -98,6 +101,12 @@ export function QuestionsEditor({
   disabled?: boolean;
 }) {
   const t = useTranslations('web.ok.questions');
+  const eventText = useEventText();
+  const presets = EVENT_QUESTION_PRESETS.map((p) => ({
+    ...p,
+    label: t(`presets.${p.key as PresetKey}.label`),
+    hint: t(`presets.${p.key as PresetKey}.hint`),
+  }));
   const update = (index: number, patch: Partial<QuestionDraft>) =>
     onChange(questions.map((q, i) => (i === index ? { ...q, ...patch } : q)));
   const move = (index: number, delta: number) => {
@@ -113,7 +122,7 @@ export function QuestionsEditor({
       <div>
         <p className="mb-2 text-[13px] font-semibold text-fg">{t('presetsTitle')}</p>
         <div className="flex flex-wrap gap-2">
-          {EVENT_QUESTION_PRESETS.map((preset) => {
+          {presets.map((preset) => {
             const added = usedLabels.has(preset.label.toLowerCase());
             return (
               <button
@@ -199,7 +208,7 @@ export function QuestionsEditor({
               >
                 {(Object.keys(EVENT_QUESTION_TYPES) as EventQuestionType[]).map((type) => (
                   <option key={type} value={type}>
-                    {EVENT_QUESTION_TYPES[type]}
+                    {eventText.questionType(type)}
                   </option>
                 ))}
               </Select>

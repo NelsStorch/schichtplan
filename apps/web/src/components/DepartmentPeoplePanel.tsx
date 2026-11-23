@@ -5,9 +5,7 @@ import { BadgeCheck, Check, Crown, Database, LayoutList, Pencil, Table2, UserMin
 import { useTranslations } from 'next-intl';
 import {
   DEPARTMENT_PERMISSION_KEYS,
-  DEPARTMENT_PERMISSIONS,
   STUFE_ROLES,
-  departmentRoleLabel,
   formatZurichDate,
   type OrganizationConfig,
   type DepartmentPermission,
@@ -17,16 +15,16 @@ import {
 } from '@schichtplan/shared';
 import { Badge, Button, Callout, EmptyState, Input, Skeleton, cn, useConfirm, useOrganization, useToast } from '@schichtplan/ui';
 import { api, errorMessage } from '@/lib/api';
+import { usePermissionText } from '@/lib/permissionText';
 import { usePortal } from '@/lib/portal';
 import { DepartmentInviteBox } from './DepartmentInviteBox';
 import { PermissionEditor } from './PermissionEditor';
 
-const roleLabel = (p: DepartmentPersonDto) =>
-  departmentRoleLabel({
-    isLeader: p.departmentRole === 'ADMIN',
-    permissions: p.permissions,
-    isHomeDepartment: p.isMember ?? p.isHomeDepartment,
-  });
+const roleInput = (p: DepartmentPersonDto) => ({
+  isLeader: p.departmentRole === 'ADMIN',
+  permissions: p.permissions,
+  isHomeDepartment: p.isMember ?? p.isHomeDepartment,
+});
 
 /** Gehört zur Abteilung (Heimabteilung oder zusätzlich beigetreten) */
 const isMemberHere = (p: DepartmentPersonDto) => p.isMember ?? p.isHomeDepartment;
@@ -34,6 +32,7 @@ const isMemberHere = (p: DepartmentPersonDto) => p.isMember ?? p.isHomeDepartmen
 /** Personen der Abteilung: Rechte und Stufen bearbeiten, Übersicht wer was darf. */
 export function DepartmentPeoplePanel() {
   const t = useTranslations('web.department.people');
+  const permText = usePermissionText();
   const toast = useToast();
   const confirm = useConfirm();
   const { user, isDeptAdmin, permissions } = usePortal();
@@ -129,7 +128,7 @@ export function DepartmentPeoplePanel() {
             ? t('summaryHintVerein')
             : t('summaryHintOrg', { leadTerm: org.leadTerm, provider: org.authProviderShort })}
         </p>
-        <div role="tablist" aria-label="Ansicht" className="flex rounded-full bg-surface-2 p-0.5">
+        <div role="tablist" aria-label={t('x.viewAria')} className="flex rounded-full bg-surface-2 p-0.5">
           {(
             [
               { key: 'list', label: t('viewList'), icon: LayoutList },
@@ -203,7 +202,7 @@ export function DepartmentPeoplePanel() {
                   <p className="flex flex-wrap items-center gap-1.5 text-sm font-semibold text-fg">
                     <span className="truncate">{p.displayName}</span>
                     <Badge size="sm" tone={p.departmentRole === 'ADMIN' ? 'accent' : 'neutral'}>
-                      {p.departmentRole === 'ADMIN' && <Crown className="size-3" />} {roleLabel(p)}
+                      {p.departmentRole === 'ADMIN' && <Crown className="size-3" />} {permText.roleLabel(roleInput(p))}
                     </Badge>
                     {p.source === 'CEVIDB' && !isVerein && (
                       <Badge size="sm">
@@ -236,7 +235,7 @@ export function DepartmentPeoplePanel() {
                   )}
                 </div>
                 {p.canConfirmHome && (
-                  <Button size="sm" variant="ghost" onClick={() => confirmHome(p)} aria-label={`${p.displayName} bestätigen`}>
+                  <Button size="sm" variant="ghost" onClick={() => confirmHome(p)} aria-label={t('x.confirmAria', { name: p.displayName })}>
                     <BadgeCheck /> <span className="hidden sm:inline">{t('confirmBtn')}</span>
                   </Button>
                 )}
@@ -281,6 +280,7 @@ export function DepartmentPeoplePanel() {
 /** Übersicht: Personen mit Rechten (Zeilen) und Rechte (Spalten) */
 function PermissionMatrix({ people }: { people: DepartmentPersonDto[] }) {
   const t = useTranslations('web.department.people');
+  const permText = usePermissionText();
   const rows = people.filter((p) => p.departmentRole === 'ADMIN' || p.permissions.length > 0);
   if (rows.length === 0) {
     return <EmptyState title={t('matrixEmptyTitle')} description={t('matrixEmptyDesc')} />;
@@ -291,15 +291,15 @@ function PermissionMatrix({ people }: { people: DepartmentPersonDto[] }) {
         <thead className="sticky top-0 z-10 bg-surface">
           <tr>
             <th scope="col" className="sticky left-0 z-10 bg-surface px-3 py-2 text-left font-semibold text-fg-subtle">
-              Person
+              {t('x.colPerson')}
             </th>
             {DEPARTMENT_PERMISSION_KEYS.map((perm) => (
               <th key={perm} scope="col" className="px-1 py-2 align-bottom font-semibold text-fg-subtle">
                 <span
-                  title={DEPARTMENT_PERMISSIONS[perm].description}
+                  title={permText.description(perm)}
                   className="mx-auto block max-h-52 rotate-180 whitespace-nowrap [writing-mode:vertical-rl]"
                 >
-                  {DEPARTMENT_PERMISSIONS[perm].label}
+                  {permText.label(perm)}
                 </span>
               </th>
             ))}
@@ -313,20 +313,20 @@ function PermissionMatrix({ people }: { people: DepartmentPersonDto[] }) {
               <tr key={p.userId}>
                 <th scope="row" className="sticky left-0 bg-surface px-3 py-2 text-left font-normal">
                   <span className="block max-w-40 truncate font-semibold text-fg">{p.ceviName || p.firstName}</span>
-                  <span className="block text-2xs text-fg-subtle">{roleLabel(p)}</span>
+                  <span className="block text-2xs text-fg-subtle">{permText.roleLabel(roleInput(p))}</span>
                 </th>
                 {DEPARTMENT_PERMISSION_KEYS.map((perm) => (
                   <td key={perm} className="px-1 py-2 text-center">
                     {isLeader || has.has(perm) ? (
                       <Check
                         className={cn('mx-auto size-4', isLeader ? 'text-fg-subtle' : 'text-accent-ink')}
-                        aria-label={`${DEPARTMENT_PERMISSIONS[perm].label}: ja`}
+                        aria-label={t('x.yes', { label: permText.label(perm) })}
                       />
                     ) : (
                       <span
                         className="text-fg-subtle/40"
                         role="img"
-                        aria-label={`${DEPARTMENT_PERMISSIONS[perm].label}: nein`}
+                        aria-label={t('x.no', { label: permText.label(perm) })}
                       >
                         ·
                       </span>
@@ -467,7 +467,7 @@ function PersonEditor({
 
       {isMemberHere(person) && stufen.length > 0 && (
         <div>
-          <p className="mb-1.5 text-xs font-semibold text-fg-subtle">Stufen</p>
+          <p className="mb-1.5 text-xs font-semibold text-fg-subtle">{t('x.levels')}</p>
           <ul className="space-y-1.5">
             {stufen.map((stufe) => {
               const isLocked = locked.has(stufe.id);

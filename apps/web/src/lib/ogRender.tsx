@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og';
+import { getLocale, getTranslations } from 'next-intl/server';
 import QRCode from 'qrcode';
 import { formatZurichDateRange, formatZurichShiftWhen, getOrganization } from '@schichtplan/shared';
 import {
@@ -29,7 +30,8 @@ export async function departmentOgResponse(): Promise<Response> {
   const { origin, host } = await getRequestOrigin();
   const org = getOrganization(host);
   const department = await getDepartmentPreview();
-  const key = `${host}:dept:${ogVersion(department?.name, department?.logoUrl, department?.primaryColor)}`;
+  const [t, locale] = await Promise.all([getTranslations('web.meta'), getLocale()]);
+  const key = `${host}:${locale}:dept:${ogVersion(department?.name, department?.logoUrl, department?.primaryColor)}`;
   return cachedOgImage(key, TTL, async () => {
     const logo = (await loadImage(department?.logoUrl, origin)) ?? (await loadBrandLogo(host));
     return new ImageResponse(
@@ -37,7 +39,7 @@ export async function departmentOgResponse(): Promise<Response> {
         logo={logo}
         accent={safeAccent(department?.primaryColor ?? org.primaryColor)}
         title={department?.name ?? org.name}
-        subtitle="Schicht aussuchen, eintragen, fertig."
+        subtitle={t('pickSignUpDone')}
         eyebrow={org.name}
         host={host}
       />,
@@ -108,7 +110,8 @@ export async function eventOgResponse(
   if (!event || (shiftId && !event.shift)) return null;
   const org = getOrganization(host);
   const replacement = isReplacementPreview(event, wantsReplacement);
-  const key = `${host}:event:${event.slug}:${eventVersion(event, department, replacement ? 'ersatz' : '')}`;
+  const [t, locale] = await Promise.all([getTranslations('web.meta'), getLocale()]);
+  const key = `${host}:${locale}:event:${event.slug}:${eventVersion(event, department, replacement ? 'ersatz' : '')}`;
 
   return cachedOgImage(key, TTL, async () => {
     const images = await eventImages(event, department, origin, host);
@@ -121,7 +124,7 @@ export async function eventOgResponse(
         background={images.background}
         title={shift.title}
         subtitle={`${formatZurichShiftWhen(shift.startTime, shift.endTime)} · ${event.title}`}
-        badge={replacement ? 'Ersatz gesucht' : openSlotsLabel(shift.openSlots, 'Schicht ist besetzt')}
+        badge={replacement ? t('replacementWanted') : openSlotsLabel(shift.openSlots, 'shift', t)}
         eyebrow={images.department?.name ?? org.name}
         host={host}
       />
@@ -134,7 +137,7 @@ export async function eventOgResponse(
         subtitle={[formatZurichDateRange(event.startDate, event.endDate, event.dayCutoffTime), images.department?.name]
           .filter(Boolean)
           .join(' · ')}
-        badge={openSlotsLabel(event.openSlots)}
+        badge={openSlotsLabel(event.openSlots, 'all', t)}
         eyebrow={org.name}
         host={host}
       />
@@ -152,7 +155,8 @@ export async function eventStoryResponse(slug: string): Promise<Response | null>
   ]);
   if (!event) return null;
   const org = getOrganization(host);
-  const key = `${host}:story:${event.slug}:${eventVersion(event, department)}`;
+  const [t, locale] = await Promise.all([getTranslations('web.meta'), getLocale()]);
+  const key = `${host}:${locale}:story:${event.slug}:${eventVersion(event, department)}`;
   // Kurz halten: QR-Farben und -Stil der Abteilung stecken nicht im Fingerabdruck
   return cachedOgImage(key, 10 * 60 * 1000, async () => {
     const images = await eventImages(event, department, origin, host);
@@ -169,10 +173,11 @@ export async function eventStoryResponse(slug: string): Promise<Response | null>
         background={images.background}
         title={event.title}
         subtitle={formatZurichDateRange(event.startDate, event.endDate, event.dayCutoffTime)}
-        badge={openSlotsLabel(event.openSlots)}
+        badge={openSlotsLabel(event.openSlots, 'all', t)}
         eyebrow={images.department?.name ?? org.name}
         qr={qr}
         qrLogo={branded ? images.logo : null}
+        scanLabel={t('scanAndSignUp')}
         host={host}
       />,
       { ...(await ogImageOptions()), ...STORY_SIZE }

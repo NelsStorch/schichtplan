@@ -190,7 +190,7 @@ export function useCommandItems(query: string) {
     } else if (cleanPhone.startsWith('0')) {
       cleanPhone = '41' + cleanPhone.slice(1);
     }
-    const greeting = firstName ? `Hallo ${firstName}! ` : 'Hallo! ';
+    const greeting = firstName ? t('toast.greetingName', { name: firstName }) : t('toast.greeting');
     const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(greeting)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
@@ -235,18 +235,18 @@ export function useCommandItems(query: string) {
     const freeSlots = Math.max(0, shift.requiredSlots - (shift.signups?.length || 0));
     const link = `${eventUrl}#shift-${shift.id}`;
     const text = [
-      `*Helfer gesucht für «${eventTitle}»!* 🙋`,
-      `Schicht: *${shift.title || shiftName(shift)}*`,
-      `⏰ Zeit: ${shiftTime}`,
-      shift.category ? `📍 Bereich: ${shift.category}` : null,
-      `👥 Noch ${freeSlots} freie ${freeSlots === 1 ? 'Platz' : 'Plätze'}!`,
+      t('wa.shiftHeading', { event: eventTitle }),
+      t('wa.shiftLine', { shift: shift.title || shiftName(shift) }),
+      t('wa.time', { time: shiftTime }),
+      shift.category ? t('wa.area', { area: shift.category }) : null,
+      t('wa.freeSlots', { count: freeSlots }),
       '',
-      `👉 Hier direkt ansehen & eintragen:`,
+      t('wa.viewAndSignUp'),
       link,
     ]
       .filter(Boolean)
       .join('\n');
-    copyToClipboard(text, 'WhatsApp-Aufruf');
+    copyToClipboard(text, t('wa.callLabel'));
   };
 
   const copyEventWhatsAppCall = (
@@ -260,38 +260,38 @@ export function useCommandItems(query: string) {
       0
     );
     const text = [
-      `*Helferaufruf für «${event.title}»!* ⛺`,
-      `📅 Datum: ${dateText}`,
+      t('wa.eventHeading', { event: event.title }),
+      t('wa.date', { date: dateText }),
       '',
-      `Wir suchen noch ${totalMissing} helfende ${totalMissing === 1 ? 'Hand' : 'Hände'} für folgende Schichten:`,
+      t('wa.missingHands', { count: totalMissing }),
       ...shiftsWithGaps.slice(0, 8).map((s) => {
         const free = Math.max(0, s.requiredSlots - (s.signups?.length || 0));
-        return `• *${s.title || shiftName(s)}* (${fmtShortWeekday(s.startTime)} ${fmtTimeRange(s.startTime, s.endTime)}): noch ${free} ${free === 1 ? 'Platz' : 'Plätze'}`;
+        return t('wa.gapLine', { shift: s.title || shiftName(s), time: `${fmtShortWeekday(s.startTime)} ${fmtTimeRange(s.startTime, s.endTime)}`, count: free });
       }),
-      shiftsWithGaps.length > 8 ? `... und weitere ${shiftsWithGaps.length - 8} Schichten.` : null,
+      shiftsWithGaps.length > 8 ? t('wa.moreShifts', { count: shiftsWithGaps.length - 8 }) : null,
       '',
-      `👉 Jetzt Schichtplan öffnen & direkt eintragen:`,
+      t('wa.openAndSignUp'),
       eventUrl,
     ]
       .filter(Boolean)
       .join('\n');
-    copyToClipboard(text, `WhatsApp-Helferaufruf (${totalMissing} offene Plätze)`);
+    copyToClipboard(text, t('wa.eventCallLabel', { count: totalMissing }));
   };
 
   const copyEventTextPlan = (event: EventDto | EventDetails, shifts: ShiftDto[]) => {
     const dateText = fmtShortDate(event.startDate);
     const lines = [
-      `📋 Schichtplan: ${event.title} (${dateText})`,
-      `Total Schichten: ${shifts.length}`,
+      t('text.planHeading', { event: event.title, date: dateText }),
+      t('text.totalShifts', { count: shifts.length }),
       '--------------------------------------------------',
       ...shifts.map((s) => {
         const time = `${fmtShortWeekday(s.startTime)} ${fmtTimeRange(s.startTime, s.endTime)}`;
-        const names = (s.signups || []).map((su) => su.displayName).join(', ') || 'Keine Helfenden eingeteilt';
+        const names = (s.signups || []).map((su) => su.displayName).join(', ') || t('text.noHelpers');
         const count = `${s.signups?.length || 0}/${s.requiredSlots}`;
         return `• [${time}] ${s.title || shiftName(s)}${s.category ? ` (${s.category})` : ''}: ${names} [${count}]`;
       }),
     ];
-    copyToClipboard(lines.join('\n'), 'Schichtplan als Text');
+    copyToClipboard(lines.join('\n'), t('text.planLabel'));
   };
 
   const copyHelpersEmailList = (shifts: ShiftDto[]) => {
@@ -308,10 +308,10 @@ export function useCommandItems(query: string) {
     }
     const list = Array.from(emails).filter(Boolean);
     if (list.length === 0) {
-      toast({ title: 'Keine E-Mail-Adressen hinterlegt', tone: 'info' });
+      toast({ title: t('text.noEmails'), tone: 'info' });
       return;
     }
-    copyToClipboard(list.join(', '), `${list.length} Helfer-E-Mail-Adressen`);
+    copyToClipboard(list.join(', '), t('text.helperEmails', { count: list.length }));
   };
 
   const copyHelpersPhoneList = (shifts: ShiftDto[], eventTitle: string) => {
@@ -331,14 +331,14 @@ export function useCommandItems(query: string) {
       }
     }
     const lines = [
-      `📞 Helfer-Telefonliste: ${eventTitle}`,
+      t('text.phoneHeading', { event: eventTitle }),
       '--------------------------------------------------',
       ...Array.from(helperMap.values()).map((h) => {
-        const phoneStr = h.phone ? h.phone : 'Keine Telefonnummer';
+        const phoneStr = h.phone ? h.phone : t('text.noPhone');
         return `• ${h.name}: ${phoneStr} [${h.shifts.join('; ')}]`;
       }),
     ];
-    copyToClipboard(lines.join('\n'), 'Telefonliste');
+    copyToClipboard(lines.join('\n'), t('text.phoneLabel'));
   };
 
   // =========================================================================
@@ -357,8 +357,8 @@ export function useCommandItems(query: string) {
       });
       const newSignupId = res?.id || res?.signupId || `temp-${Date.now()}`;
       toast({
-        title: 'Erfolgreich eingetragen!',
-        description: `Du bist jetzt für «${shift.title || shiftName(shift)}» eingeteilt.`,
+        title: t('toast.signedUp'),
+        description: t('toast.signedUpDesc', { shift: shift.title || shiftName(shift) }),
         tone: 'success',
       });
 
@@ -392,7 +392,7 @@ export function useCommandItems(query: string) {
       }
     } catch (err) {
       toast({
-        title: 'Eintragen fehlgeschlagen',
+        title: t('toast.signUpFailed'),
         description: errorMessage(err),
         tone: 'error',
       });
@@ -405,8 +405,8 @@ export function useCommandItems(query: string) {
         method: 'DELETE',
       });
       toast({
-        title: 'Einsatz storniert',
-        description: `Eintragung für «${shiftTitle}» wurde erfolgreich entfernt.`,
+        title: t('toast.cancelled'),
+        description: t('toast.cancelledDesc', { shift: shiftTitle }),
         tone: 'info',
       });
       setLoadedEventDetails((prev) => {
@@ -425,7 +425,7 @@ export function useCommandItems(query: string) {
       }
     } catch (err) {
       toast({
-        title: 'Stornieren fehlgeschlagen',
+        title: t('toast.cancelFailed'),
         description: errorMessage(err),
         tone: 'error',
       });
@@ -437,18 +437,18 @@ export function useCommandItems(query: string) {
       if (isAlreadyOffered) {
         await api(`/api/signups/${signupId}/replacement`, { method: 'DELETE' });
         toast({
-          title: '«Ersatz gesucht» zurückgezogen',
-          description: 'Du übernimmst die Schicht wieder regulär.',
+          title: t('toast.replacementWithdrawn'),
+          description: t('toast.replacementWithdrawnDesc'),
           tone: 'info',
         });
       } else {
         await api(`/api/signups/${signupId}/replacement`, {
           method: 'PUT',
-          json: { note: 'Ersatz gesucht (aus Befehlsmenü gemeldet)' },
+          json: { note: t('toast.replacementNote') },
         });
         toast({
-          title: '«Ersatz gesucht» gemeldet',
-          description: 'Deine Schicht wurde zur Übernahme durch andere Helfer ausgeschrieben.',
+          title: t('toast.replacementOffered'),
+          description: t('toast.replacementOfferedDesc'),
           tone: 'info',
         });
       }
@@ -464,7 +464,7 @@ export function useCommandItems(query: string) {
       }
     } catch (err) {
       toast({
-        title: 'Aktion fehlgeschlagen',
+        title: t('toast.actionFailed'),
         description: errorMessage(err),
         tone: 'error',
       });
@@ -481,15 +481,14 @@ export function useCommandItems(query: string) {
       });
       setAttendanceOverrides((prev) => ({ ...prev, [signupId]: newStatus }));
       toast({
-        title: newStatus === 'PRESENT' ? `${helperName} eingecheckt` : `Anwesenheit zurückgesetzt`,
-        description:
-          newStatus === 'PRESENT' ? 'Erfolgreich als anwesend markiert' : 'Status wurde zurückgesetzt',
+        title: newStatus === 'PRESENT' ? t('toast.checkedIn', { name: helperName }) : t('toast.attendanceReset'),
+        description: newStatus === 'PRESENT' ? t('toast.markedPresent') : t('toast.statusReset'),
         tone: newStatus === 'PRESENT' ? 'success' : 'info',
       });
     } catch {
       toast({
-        title: 'Check-in fehlgeschlagen',
-        description: 'Die Anwesenheit konnte nicht aktualisiert werden.',
+        title: t('toast.checkInFailed'),
+        description: t('toast.checkInFailedDesc'),
         tone: 'error',
       });
     }
@@ -514,12 +513,12 @@ export function useCommandItems(query: string) {
       }
       setAttendanceOverrides((prev) => ({ ...prev, ...updates }));
       toast({
-        title: targetStatus === 'PRESENT' ? 'Alle Helfenden eingecheckt' : 'Anwesenheit zurückgesetzt',
-        description: `${shift.signups.length} ${shift.signups.length === 1 ? 'Person' : 'Personen'} aktualisiert`,
+        title: targetStatus === 'PRESENT' ? t('toast.allCheckedIn') : t('toast.attendanceReset'),
+        description: t('toast.peopleUpdated', { count: shift.signups.length }),
         tone: targetStatus === 'PRESENT' ? 'success' : 'info',
       });
     } catch {
-      toast({ title: 'Aktualisierung fehlgeschlagen', tone: 'error' });
+      toast({ title: t('toast.updateFailed'), tone: 'error' });
     }
   };
 
@@ -535,10 +534,10 @@ export function useCommandItems(query: string) {
     toast({
       title:
         choice === 'dark'
-          ? 'Dunkelmodus aktiviert'
+          ? t('toast.darkOn')
           : choice === 'light'
-            ? 'Hellmodus aktiviert'
-            : 'System-Farbschema aktiv',
+            ? t('toast.lightOn')
+            : t('toast.systemOn'),
       tone: 'info',
     });
     close();
@@ -558,8 +557,8 @@ export function useCommandItems(query: string) {
     if (prefixMode === 'HELP') {
       list.push({
         id: 'help-shortcuts',
-        title: 'Tastatur-Navigation & Schnellbedienung',
-        subtitle: '↑ / ↓ zum Navigieren · ↵ zum Ausführen · ⇥ Tab für Unteraktionen · Esc zum Schliessen',
+        title: t('help.keyboardTitle'),
+        subtitle: t('help.keyboardSubtitle'),
         section: 'HELP',
         icon: <Keyboard className="size-4 text-accent-ink" />,
         keywords: ['hilfe', 'tastatur', 'shortcuts', 'navigation'],
@@ -567,19 +566,19 @@ export function useCommandItems(query: string) {
         preview: {
           type: 'ACTION',
           details: [
-            { label: 'Öffnen', value: '⌘K oder Strg+K' },
-            { label: 'Hauptaktion', value: '↵ Enter' },
-            { label: 'Unteraktionen', value: '⇥ Tab' },
-            { label: 'Zurück / Schliessen', value: 'Esc' },
-            { label: 'Sofortaktionen', value: '⚡ Direkt ohne Seitenwechsel' },
+            { label: t('help.open'), value: t('help.openKeys') },
+            { label: t('help.mainAction'), value: '↵ Enter' },
+            { label: t('help.subActions'), value: '⇥ Tab' },
+            { label: t('help.backClose'), value: 'Esc' },
+            { label: t('help.instantActions'), value: t('help.instantValue') },
           ],
         },
       });
 
       list.push({
         id: 'help-prefix-people',
-        title: 'Präfix @ für Personen',
-        subtitle: 'Tippe «@name», um blitzschnell nach Helfenden und Kontakten zu suchen',
+        title: t('help.prefixPeopleTitle'),
+        subtitle: t('help.prefixPeopleSubtitle'),
         section: 'HELP',
         icon: <UserRound className="size-4 text-accent-ink" />,
         keywords: ['präfix', 'filter', 'person', 'helfer', '@'],
@@ -588,8 +587,8 @@ export function useCommandItems(query: string) {
 
       list.push({
         id: 'help-prefix-events',
-        title: 'Präfix # oder > für Anlässe',
-        subtitle: 'Tippe «#herbst» oder «>lager», um ausschliesslich Anlässe zu durchsuchen',
+        title: t('help.prefixEventsTitle'),
+        subtitle: t('help.prefixEventsSubtitle'),
         section: 'HELP',
         icon: <CalendarDays className="size-4 text-accent-ink" />,
         keywords: ['präfix', 'filter', 'anlass', 'event', '#', '>'],
@@ -598,8 +597,8 @@ export function useCommandItems(query: string) {
 
       list.push({
         id: 'help-prefix-shifts',
-        title: 'Präfix : oder ! für Schichten',
-        subtitle: 'Tippe «:kueche» oder «!frei», um direkt freie Schichten zu finden',
+        title: t('help.prefixShiftsTitle'),
+        subtitle: t('help.prefixShiftsSubtitle'),
         section: 'HELP',
         icon: <Ticket className="size-4 text-accent-ink" />,
         keywords: ['präfix', 'filter', 'schicht', 'aufgabe', ':', '!'],
@@ -624,8 +623,8 @@ export function useCommandItems(query: string) {
       if (isOkArea) {
         list.push({
           id: `context-to-helper-view`,
-          title: `Zur Helfer-Ansicht wechseln`,
-          subtitle: `${eventTitle} aus Sicht der Helfenden öffnen`,
+          title: t('ctx.helperView'),
+          subtitle: t('ctx.helperViewSubtitle', { event: eventTitle }),
           section: 'CONTEXT',
           icon: <Ticket className="size-4 text-accent-ink" />,
           keywords: ['helfer', 'ansicht', 'eintragen', 'öffentlich', activeSlug, eventTitle],
@@ -637,7 +636,7 @@ export function useCommandItems(query: string) {
           subActions: [
             {
               id: 'copy-link',
-              title: 'Anlass-Link kopieren',
+              title: t('ctx.copyEventLink'),
               icon: <Copy className="size-3.5" />,
               closeOnSelect: false,
               onSelect: () => copyToClipboard(eventUrl, 'Anlass-Link'),
@@ -647,7 +646,7 @@ export function useCommandItems(query: string) {
             type: 'EVENT',
             event: activeEvent,
             details: [
-              { label: 'Bereich', value: 'Helfer-Ansicht' },
+              { label: t('ctx.area'), value: t('ctx.helperViewValue') },
               { label: 'URL', value: eventUrl },
             ],
           },
@@ -656,8 +655,8 @@ export function useCommandItems(query: string) {
         if (canManageEvent) {
           list.push({
             id: `context-to-ok-view`,
-            title: `Zum OK-Bereich wechseln`,
-            subtitle: `Planung, Schichten und Helfende für ${eventTitle} verwalten`,
+            title: t('ctx.okArea'),
+            subtitle: t('ctx.okAreaSubtitle', { event: eventTitle }),
             section: 'CONTEXT',
             icon: <LayoutDashboard className="size-4 text-accent-ink" />,
             keywords: ['ok', 'leitung', 'admin', 'planung', activeSlug, eventTitle],
@@ -669,7 +668,7 @@ export function useCommandItems(query: string) {
             subActions: [
               {
                 id: 'ok-schichten',
-                title: 'Direkt zu Schichten',
+                title: t('ctx.toShifts'),
                 icon: <CalendarDays className="size-3.5" />,
                 onSelect: () => {
                   router.push(`/events/${activeSlug}/ok/schichten`);
@@ -678,7 +677,7 @@ export function useCommandItems(query: string) {
               },
               {
                 id: 'ok-helfende',
-                title: 'Direkt zu Helfenden',
+                title: t('ctx.toHelpers'),
                 icon: <Users className="size-3.5" />,
                 onSelect: () => {
                   router.push(`/events/${activeSlug}/ok/helfende`);
@@ -690,8 +689,8 @@ export function useCommandItems(query: string) {
               type: 'EVENT',
               event: activeEvent,
               details: [
-                { label: 'Bereich', value: 'OK-Zentrale' },
-                { label: 'Rolle', value: isDeptAdmin ? 'Abteilungsleitung' : 'OK-Planung' },
+                { label: t('ctx.area'), value: t('ctx.okCentral') },
+                { label: t('ctx.role'), value: isDeptAdmin ? org.leadTerm : t('ctx.okPlanning') },
               ],
             },
           });
@@ -712,10 +711,10 @@ export function useCommandItems(query: string) {
 
         list.push({
           id: `context-open-shifts`,
-          title: `Lücken-Finder: ${totalMissing} offene Plätze`,
-          subtitle: `${shiftsWithGaps.length} Schichten benötigen noch Unterstützung`,
+          title: t('ctx.gapFinder', { count: totalMissing }),
+          subtitle: t('ctx.gapFinderSubtitle', { count: shiftsWithGaps.length }),
           section: 'CONTEXT',
-          badge: `${totalMissing} offen`,
+          badge: t('ctx.openCount', { count: totalMissing }),
           badgeTone: 'warning',
           icon: <Search className="size-4 text-warning-ink" />,
           keywords: ['lücken', 'frei', 'offen', 'unbesetzt', 'bedarf', 'helfer gesucht', activeSlug],
@@ -732,42 +731,42 @@ export function useCommandItems(query: string) {
           subActions: [
             {
               id: 'copy-whatsapp-gaps',
-              title: 'WhatsApp-Helferaufruf kopieren',
-              subtitle: 'Fertige Nachricht mit allen offenen Schichten für den Chat',
+              title: t('ctx.copyWaCall'),
+              subtitle: t('ctx.copyWaCallSubtitle'),
               icon: <Share2 className="size-3.5 text-accent-ink" />,
               closeOnSelect: false,
               onSelect: () => copyEventWhatsAppCall(activeEvent, shiftsWithGaps, eventUrl),
             },
             {
               id: 'copy-link',
-              title: 'Anlass-Link zum Eintragen kopieren',
+              title: t('ctx.copySignupLink'),
               icon: <Copy className="size-3.5" />,
               closeOnSelect: false,
-              onSelect: () => copyToClipboard(eventUrl, 'Link zum Eintragen'),
+              onSelect: () => copyToClipboard(eventUrl, t('ctx.signupLinkLabel')),
             },
           ],
           preview: {
             type: 'ACTION',
             details: [
-              { label: 'Offene Plätze', value: `${totalMissing} Helfer gesucht` },
+              { label: t('ctx.openSpots'), value: t('ctx.helpersWanted', { count: totalMissing }) },
               {
-                label: 'Betroffene Schichten',
+                label: t('ctx.affectedShifts'),
                 value: `${shiftsWithGaps.length} von ${detailedEvent?.shifts?.length || 0}`,
               },
             ],
             quickActions: [
               {
                 id: 'wa-gaps',
-                label: 'WhatsApp-Aufruf',
+                label: t('wa.callLabel'),
                 icon: <Share2 className="size-3.5" />,
                 tone: 'accent',
                 onClick: () => copyEventWhatsAppCall(activeEvent, shiftsWithGaps, eventUrl),
               },
               {
                 id: 'copy-url',
-                label: 'Link kopieren',
+                label: t('ctx.copyLink'),
                 icon: <Copy className="size-3.5" />,
-                onClick: () => copyToClipboard(eventUrl, 'Link zum Eintragen'),
+                onClick: () => copyToClipboard(eventUrl, t('ctx.signupLinkLabel')),
               },
             ],
           },
@@ -777,8 +776,8 @@ export function useCommandItems(query: string) {
       // Direkte Schnellaktionen für den aktuellen Anlass: WhatsApp-Aufruf, Plan kopieren, Kalender
       list.push({
         id: `context-share-whatsapp`,
-        title: `WhatsApp-Helferaufruf kopieren`,
-        subtitle: `Fertiger Text für Gruppenchats mit Datum, Lücken und Link`,
+        title: t('ctx.copyWaCall'),
+        subtitle: t('ctx.copyWaCallSubtitle2'),
         section: 'CONTEXT',
         icon: <Share2 className="size-4 text-accent-ink" />,
         keywords: ['whatsapp', 'aufruf', 'teilen', 'chat', 'helfer gesucht', activeSlug],
@@ -792,8 +791,8 @@ export function useCommandItems(query: string) {
       if (detailedEvent?.shifts?.length) {
         list.push({
           id: `context-copy-textplan`,
-          title: `Schichtplan als Text kopieren`,
-          subtitle: `Vollständige Übersicht aller Schichten und Helfer für E-Mail oder Chat`,
+          title: t('ctx.copyPlanText'),
+          subtitle: t('ctx.copyPlanTextSubtitle'),
           section: 'CONTEXT',
           icon: <Copy className="size-4 text-accent-ink" />,
           keywords: ['plan', 'text', 'kopieren', 'übersicht', 'export', activeSlug],
@@ -806,8 +805,8 @@ export function useCommandItems(query: string) {
 
         list.push({
           id: `context-copy-helpers-email`,
-          title: `E-Mail-Verteiler aller Helfenden kopieren`,
-          subtitle: `Adressen aller eingeteilten Helfer für Rundmails`,
+          title: t('ctx.copyEmails'),
+          subtitle: t('ctx.copyEmailsSubtitle'),
           section: 'CONTEXT',
           icon: <Mail className="size-4 text-accent-ink" />,
           keywords: ['mail', 'email', 'verteiler', 'helfer', 'rundmail', activeSlug],
@@ -820,8 +819,8 @@ export function useCommandItems(query: string) {
 
         list.push({
           id: `context-copy-helpers-phone`,
-          title: `Helfer-Telefonliste kopieren`,
-          subtitle: `Name, Telefonnummer und Schichten für Notfälle und Koordination`,
+          title: t('ctx.copyPhones'),
+          subtitle: t('ctx.copyPhonesSubtitle'),
           section: 'CONTEXT',
           icon: <Phone className="size-4 text-accent-ink" />,
           keywords: ['telefon', 'liste', 'notfall', 'kontakte', 'anrufen', activeSlug],
@@ -835,8 +834,8 @@ export function useCommandItems(query: string) {
 
       list.push({
         id: `context-download-ics`,
-        title: `Kalendereintrag (.ics) herunterladen`,
-        subtitle: `Direkt in Apple Kalender, Outlook oder Handy-Kalender importieren`,
+        title: t('ctx.downloadIcs'),
+        subtitle: t('ctx.downloadIcsSubtitle'),
         section: 'CONTEXT',
         icon: <Download className="size-4 text-accent-ink" />,
         keywords: ['kalender', 'ics', 'ical', 'outlook', 'apple', 'download', activeSlug],
@@ -849,8 +848,8 @@ export function useCommandItems(query: string) {
 
       list.push({
         id: `context-add-gcal`,
-        title: `Zu Google Kalender hinzufügen`,
-        subtitle: `Öffnet Google Kalender mit vorausgefülltem Eintrag`,
+        title: t('ctx.addGoogle'),
+        subtitle: t('ctx.addGoogleSubtitle'),
         section: 'CONTEXT',
         icon: <ExternalLink className="size-4 text-accent-ink" />,
         keywords: ['google', 'kalender', 'termin', 'gcal', activeSlug],
@@ -865,8 +864,8 @@ export function useCommandItems(query: string) {
       if (canManageEvent) {
         list.push({
           id: `context-add-shift`,
-          title: `Neue Schicht anlegen`,
-          subtitle: `In «${eventTitle}» eine weitere Schicht erfassen`,
+          title: t('ctx.newShift'),
+          subtitle: t('ctx.newShiftSubtitle', { event: eventTitle }),
           section: 'CONTEXT',
           icon: <CalendarPlus className="size-4 text-accent-ink" />,
           keywords: ['schicht', 'neu', 'erstellen', 'anlegen', activeSlug, eventTitle],
@@ -884,8 +883,8 @@ export function useCommandItems(query: string) {
         // Helfer zuweisen
         list.push({
           id: `context-assign-helper`,
-          title: `Helfer manuell zuteilen`,
-          subtitle: `Person für eine Schicht in «${eventTitle}» einteilen`,
+          title: t('ctx.assignHelper'),
+          subtitle: t('ctx.assignHelperSubtitle', { event: eventTitle }),
           section: 'CONTEXT',
           icon: <UserPlus className="size-4 text-accent-ink" />,
           keywords: ['helfer', 'zuweisen', 'zuteilen', 'eintragen', activeSlug, eventTitle],
@@ -904,8 +903,8 @@ export function useCommandItems(query: string) {
       // Check-in & Anwesenheit
       list.push({
         id: `context-checkin`,
-        title: `Helfer-Check-in & QR-Code`,
-        subtitle: `Anwesenheit vor Ort am Anlass prüfen`,
+        title: t('ctx.checkin'),
+        subtitle: t('ctx.checkinSubtitle'),
         section: 'CONTEXT',
         icon: <ClipboardCheck className="size-4 text-accent-ink" />,
         keywords: ['checkin', 'anwesenheit', 'qr', 'scannen', 'vor ort', activeSlug, eventTitle],
@@ -919,8 +918,8 @@ export function useCommandItems(query: string) {
       // Plan drucken / PDF-Export
       list.push({
         id: `context-print-pdf`,
-        title: `Schichtplan drucken / PDF`,
-        subtitle: `Druckversion oder PDF für «${eventTitle}» erstellen`,
+        title: t('ctx.print'),
+        subtitle: t('ctx.printSubtitle', { event: eventTitle }),
         section: 'CONTEXT',
         icon: <Printer className="size-4 text-accent-ink" />,
         keywords: ['drucken', 'pdf', 'export', 'aushang', 'papier', activeSlug, eventTitle],
@@ -938,7 +937,7 @@ export function useCommandItems(query: string) {
       // Link kopieren
       list.push({
         id: `context-copy-link`,
-        title: `Anlass-Link kopieren`,
+        title: t('ctx.copyEventLink'),
         subtitle: eventUrl,
         section: 'CONTEXT',
         icon: <Copy className="size-4 text-accent-ink" />,
@@ -957,7 +956,7 @@ export function useCommandItems(query: string) {
         for (const shift of detailedEvent.shifts) {
           const shiftTime = `${fmtShortWeekday(shift.startTime)} ${fmtTimeRange(shift.startTime, shift.endTime)}`;
           const freeSlots = Math.max(0, shift.requiredSlots - (shift.signups?.length || 0));
-          const slotBadge = freeSlots > 0 ? `${freeSlots} frei` : 'Voll besetzt';
+          const slotBadge = freeSlots > 0 ? t('shift.freeBadge', { count: freeSlots }) : t('fullyStaffed');
 
           // Hat der aktuell angemeldete Benutzer diese Schicht übernommen?
           const mySignup = user ? shift.signups?.find((su) => su.userId === user.id) : null;
@@ -973,8 +972,8 @@ export function useCommandItems(query: string) {
           if (user && !isMyShift && freeSlots > 0) {
             shiftSubActions.push({
               id: 'direct-signup',
-              title: `⚡ Direkt eintragen (als ${displayName(user)})`,
-              subtitle: 'Schicht sofort übernehmen, ohne die Seite zu wechseln',
+              title: t('shift.signUpNow', { name: displayName(user) }),
+              subtitle: t('shift.signUpNowSubtitle'),
               icon: <UserPlus className="size-3.5 text-success-ink" />,
               closeOnSelect: false,
               onSelect: () => handleDirectSignup(shift),
@@ -985,8 +984,8 @@ export function useCommandItems(query: string) {
           if (isMyShift && mySignup) {
             shiftSubActions.push({
               id: 'direct-cancel',
-              title: '⚡ Meinen Einsatz stornieren',
-              subtitle: 'Sofort aus dieser Schicht austragen',
+              title: t('shift.cancelMine'),
+              subtitle: t('shift.cancelMineSubtitle'),
               icon: <Trash2 className="size-3.5 text-danger-ink" />,
               closeOnSelect: false,
               onSelect: () =>
@@ -995,10 +994,8 @@ export function useCommandItems(query: string) {
 
             shiftSubActions.push({
               id: 'direct-replacement',
-              title: isMyShiftReplacement ? '«Ersatz gesucht» zurückziehen' : '«Ersatz gesucht» ausschreiben',
-              subtitle: isMyShiftReplacement
-                ? 'Du übernimmst die Schicht wieder regulär'
-                : 'Schicht zur Übernahme für andere Helfer anbieten',
+              title: isMyShiftReplacement ? t('shift.withdrawReplacement') : t('shift.offerReplacement'),
+              subtitle: isMyShiftReplacement ? t('shift.withdrawReplacementSubtitle') : t('shift.offerReplacementSubtitle'),
               icon: <RotateCcw className="size-3.5 text-warning-ink" />,
               closeOnSelect: false,
               onSelect: () => handleDirectReplacement(mySignup.id, isMyShiftReplacement),
@@ -1013,9 +1010,9 @@ export function useCommandItems(query: string) {
             shiftSubActions.push({
               id: 'checkin-all-shift',
               title: allPresent
-                ? `Anwesenheit für Schicht zurücksetzen (${shift.signups.length})`
-                : `Alle Helfenden dieser Schicht einchecken (${shift.signups.length})`,
-              subtitle: allPresent ? 'Alle als offen markieren' : 'Alle eingeteilten Helfer als anwesend markieren',
+                ? t('shift.resetAttendance', { count: shift.signups.length })
+                : t('shift.checkInAll', { count: shift.signups.length }),
+              subtitle: allPresent ? t('shift.markAllOpen') : t('shift.markAllPresent'),
               icon: allPresent ? <RotateCcw className="size-3.5" /> : <CheckCircle2 className="size-3.5 text-success-ink" />,
               closeOnSelect: false,
               onSelect: () => toggleShiftAllAttendance(shift),
@@ -1027,8 +1024,8 @@ export function useCommandItems(query: string) {
               const isPres = curAtt === 'PRESENT';
               shiftSubActions.push({
                 id: `checkin-helper-${su.id}`,
-                title: isPres ? `${su.displayName} abmelden` : `${su.displayName} einchecken`,
-                subtitle: isPres ? 'Als offen markieren' : 'Als anwesend bestätigen',
+                title: isPres ? t('shift.checkOut', { name: su.displayName }) : t('shift.checkIn', { name: su.displayName }),
+                subtitle: isPres ? t('shift.markOpen') : t('shift.confirmPresent'),
                 icon: isPres ? <RotateCcw className="size-3.5" /> : <Check className="size-3.5 text-success-ink" />,
                 closeOnSelect: false,
                 onSelect: () => toggleAttendance(su.id, su.displayName, isPres ? 'PRESENT' : null),
@@ -1041,15 +1038,15 @@ export function useCommandItems(query: string) {
               const helperPhone = su.guestPhone || su.userPhone || matchedPerson?.phone;
               shiftSubActions.push({
                 id: `wa-helper-${su.id}`,
-                title: `WhatsApp an ${su.displayName} schreiben`,
-                subtitle: helperPhone ? `Direktchat mit ${helperPhone} öffnen` : 'Handynummer eingeben & Direktchat starten',
+                title: t('shift.waTo', { name: su.displayName }),
+                subtitle: helperPhone ? t('person.directChat', { phone: helperPhone }) : t('shift.enterPhoneAndChat'),
                 icon: <MessageSquare className="size-3.5 text-success-ink" />,
                 closeOnSelect: false,
                 onSelect: () => {
                   if (helperPhone) {
                     openWhatsAppDirect(helperPhone, su.userFirstName || su.displayName);
                   } else {
-                    const input = window.prompt(`Handynummer für ${su.displayName} eingeben (z. B. 079 123 45 67):`);
+                    const input = window.prompt(t('person.phonePrompt', { name: su.displayName }));
                     if (input?.trim()) {
                       openWhatsAppDirect(input.trim(), su.userFirstName || su.displayName);
                     }
@@ -1062,8 +1059,8 @@ export function useCommandItems(query: string) {
           // 4. Direktaktion: WhatsApp-Aufruf für diese Schicht
           shiftSubActions.push({
             id: 'copy-shift-whatsapp',
-            title: 'WhatsApp-Helferaufruf für diese Schicht kopieren',
-            subtitle: 'Fertige Vorlage mit Zeit, Bereich und Link',
+            title: t('shift.copyWaCall'),
+            subtitle: t('shift.copyWaCallSubtitle'),
             icon: <Share2 className="size-3.5 text-accent-ink" />,
             closeOnSelect: false,
             onSelect: () => copyShiftWhatsAppCall(eventTitle, shift, eventUrl),
@@ -1072,32 +1069,32 @@ export function useCommandItems(query: string) {
           // 5. Direktaktion: Schichtdetails als Text kopieren
           shiftSubActions.push({
             id: 'copy-shift-text',
-            title: 'Schichtdetails als Text kopieren',
-            subtitle: `${shiftTime} · ${shift.category || 'Allgemein'} · ${shift.signups?.length || 0}/${shift.requiredSlots}`,
+            title: t('shift.copyDetails'),
+            subtitle: `${shiftTime} · ${shift.category || t('shift.general')} · ${shift.signups?.length || 0}/${shift.requiredSlots}`,
             icon: <Copy className="size-3.5" />,
             closeOnSelect: false,
             onSelect: () => {
-              const names = (shift.signups || []).map((su) => su.displayName).join(', ') || 'Niemand eingeteilt';
+              const names = (shift.signups || []).map((su) => su.displayName).join(', ') || t('shift.nobody');
               const text = [
-                `📋 Schicht: ${shift.title || shiftName(shift)}`,
-                `Anlass: ${eventTitle}`,
-                `Zeit: ${shiftTime}`,
-                shift.category ? `Bereich: ${shift.category}` : null,
-                `Besetzung: ${shift.signups?.length || 0} von ${shift.requiredSlots} (${freeSlots} frei)`,
-                `Helfende: ${names}`,
-                shift.description ? `Hinweise: ${shift.description}` : null,
+                t('shift.detailShift', { shift: shift.title || shiftName(shift) }),
+                t('shift.detailEvent', { event: eventTitle }),
+                t('shift.detailTime', { time: shiftTime }),
+                shift.category ? t('shift.detailArea', { area: shift.category }) : null,
+                t('shift.detailStaffing', { filled: shift.signups?.length || 0, total: shift.requiredSlots, free: freeSlots }),
+                t('shift.detailHelpers', { names }),
+                shift.description ? t('shift.detailNotes', { notes: shift.description }) : null,
                 `Link: ${eventUrl}#shift-${shift.id}`,
               ]
                 .filter(Boolean)
                 .join('\n');
-              copyToClipboard(text, 'Schichtdetails');
+              copyToClipboard(text, t('shift.detailsLabel'));
             },
           });
 
           // 6. Direktlink kopieren
           shiftSubActions.push({
             id: 'copy-shift-link',
-            title: 'Direktlink zur Schicht kopieren',
+            title: t('shift.copyDirectLink'),
             icon: <Copy className="size-3.5" />,
             closeOnSelect: false,
             onSelect: () => {
@@ -1109,7 +1106,7 @@ export function useCommandItems(query: string) {
           // 7. Navigation
           shiftSubActions.push({
             id: 'select-shift-plan',
-            title: 'Im Schichtplan anspringen',
+            title: t('shift.jumpTo'),
             subtitle: `${shiftTime} · ${slotBadge}`,
             icon: <Ticket className="size-3.5 text-accent-ink" />,
             onSelect: () => {
@@ -1129,7 +1126,7 @@ export function useCommandItems(query: string) {
           if (canManageEvent) {
             shiftSubActions.push({
               id: 'manage-shift',
-              title: 'Im OK-Bereich bearbeiten',
+              title: t('shift.editInOk'),
               icon: <Settings className="size-3.5" />,
               onSelect: () => {
                 router.push(`/events/${activeSlug}/ok/schichten`);
@@ -1143,7 +1140,7 @@ export function useCommandItems(query: string) {
           if (user && !isMyShift && freeSlots > 0) {
             quickActions.push({
               id: 'quick-signup',
-              label: 'Jetzt eintragen',
+              label: t('shift.signUpQuick'),
               icon: <UserPlus className="size-3.5" />,
               tone: 'success',
               onClick: () => handleDirectSignup(shift),
@@ -1151,7 +1148,7 @@ export function useCommandItems(query: string) {
           } else if (isMyShift && mySignup) {
             quickActions.push({
               id: 'quick-cancel',
-              label: 'Einsatz stornieren',
+              label: t('shift.cancelQuick'),
               icon: <Trash2 className="size-3.5" />,
               tone: 'danger',
               onClick: () =>
@@ -1167,7 +1164,7 @@ export function useCommandItems(query: string) {
           });
           quickActions.push({
             id: 'quick-copy',
-            label: 'Kopieren',
+            label: t('shift.copy'),
             icon: <Copy className="size-3.5" />,
             onClick: () => copyToClipboard(`${eventUrl}#shift-${shift.id}`, 'Schicht-Link'),
           });
@@ -1175,9 +1172,9 @@ export function useCommandItems(query: string) {
           list.push({
             id: `shift-${shift.id}`,
             title: shift.title || shiftTime,
-            subtitle: `${shiftTime} · ${shift.category || 'Allgemein'} (${slotBadge})${isMyShift ? ' · ★ Eingeteilt' : ''}`,
+            subtitle: `${shiftTime} · ${shift.category || t('shift.general')} (${slotBadge})${isMyShift ? ` · ★ ${t('shift.assigned')}` : ''}`,
             section: 'SHIFTS',
-            badge: isMyShift ? 'Mein Einsatz' : slotBadge,
+            badge: isMyShift ? t('shift.myShift') : slotBadge,
             badgeTone: isMyShift
               ? 'success'
               : freeSlots > 0
@@ -1234,11 +1231,11 @@ export function useCommandItems(query: string) {
               },
               quickActions,
               details: [
-                { label: 'Uhrzeit', value: shiftTime },
-                { label: 'Kategorie', value: shift.category || 'Allgemein' },
-                { label: 'Freie Plätze', value: `${freeSlots} von ${shift.requiredSlots}` },
+                { label: t('shift.time'), value: shiftTime },
+                { label: t('shift.category'), value: shift.category || t('shift.general') },
+                { label: t('ctx.openSpots'), value: t('shift.freeOf', { free: freeSlots, total: shift.requiredSlots }) },
                 ...(shift.signups?.length
-                  ? [{ label: 'Eingeteilt', value: shift.signups.map((s) => s.displayName).join(', ') }]
+                  ? [{ label: t('shift.assigned'), value: shift.signups.map((s) => s.displayName).join(', ') }]
                   : []),
               ],
             },
@@ -1253,8 +1250,8 @@ export function useCommandItems(query: string) {
     if (can('EVENTS_CREATE') || isDeptAdmin) {
       list.push({
         id: 'action-create-event',
-        title: 'Neuen Anlass erstellen',
-        subtitle: `Neues ${org.name}-Lager, Fest oder Veranstaltung erfassen`,
+        title: t('admin.newEvent'),
+        subtitle: t('admin.newEventSubtitle'),
         section: 'ACTIONS',
         icon: <CalendarPlus className="size-4 text-accent-ink" />,
         keywords: ['anlass', 'event', 'neu', 'erstellen', 'veranstaltung'],
@@ -1276,8 +1273,8 @@ export function useCommandItems(query: string) {
     if (can('DEPARTMENT_SETTINGS') || isDeptAdmin) {
       list.push({
         id: 'action-dept-settings',
-        title: `${org.unitTerm} bearbeiten`,
-        subtitle: 'Name, Logo, Akzentfarbe und Startseiten-Einstellungen',
+        title: t('admin.editUnit', { unit: org.unitTerm }),
+        subtitle: t('admin.editUnitSubtitle'),
         section: 'ACTIONS',
         icon: <Settings2 className="size-4 text-accent-ink" />,
         keywords: ['abteilung', 'einstellungen', 'logo', 'farbe', 'design'],
@@ -1292,8 +1289,8 @@ export function useCommandItems(query: string) {
     if (can('STUFEN_MANAGE') || isDeptAdmin) {
       list.push({
         id: 'action-manage-stufen',
-        title: 'Stufen verwalten',
-        subtitle: `Stufen erfassen, ${org.authProviderShort || 'Verband'} verknüpfen oder bearbeiten`,
+        title: t('admin.levels'),
+        subtitle: t('admin.levelsSubtitle', { provider: org.authProviderShort || t('admin.association') }),
         section: 'ACTIONS',
         icon: <Wrench className="size-4 text-accent-ink" />,
         keywords: ['stufen', 'gruppen', ...(org.authProviderShort ? [org.authProviderShort.toLowerCase()] : []), 'verwalten'],
@@ -1308,8 +1305,8 @@ export function useCommandItems(query: string) {
     if (can('PEOPLE_MANAGE') || isDeptAdmin) {
       list.push({
         id: 'action-manage-people',
-        title: 'Personen und Rechte verwalten',
-        subtitle: 'Berechtigungen, Rollen und Abteilungsmitglieder pflegen',
+        title: t('admin.people'),
+        subtitle: t('admin.peopleSubtitle'),
         section: 'ACTIONS',
         icon: <UserCheck className="size-4 text-accent-ink" />,
         keywords: ['personen', 'rechte', 'rollen', 'mitglieder', 'admin'],
@@ -1324,8 +1321,8 @@ export function useCommandItems(query: string) {
     if (can('PEOPLE_VIEW') || can('DEPARTMENT_SETTINGS') || isDeptAdmin) {
       list.push({
         id: 'action-dept-stats',
-        title: 'Abteilungsstatistik & Jahresrückblick (GV)',
-        subtitle: 'Helferstunden, Stufenauswertung und Ehrentafel für den GV-Jahresbericht',
+        title: t('admin.stats'),
+        subtitle: t('admin.statsSubtitle'),
         section: 'ACTIONS',
         icon: <BarChart3 className="size-4 text-accent-ink" />,
         keywords: ['statistik', 'gv', 'jahresbericht', 'helferstunden', 'ehrentafel', 'stufen', 'ranking', 'auswertung', 'stunden'],
@@ -1341,8 +1338,8 @@ export function useCommandItems(query: string) {
     if (canViewPeople && people.length > 0) {
       list.push({
         id: 'action-copy-dept-emails',
-        title: 'E-Mail-Verteiler aller Abteilungsmitglieder kopieren',
-        subtitle: `Deduplizierte Adressen von ${people.filter((p) => p.email).length} Personen in die Zwischenablage`,
+        title: t('admin.copyMemberEmails'),
+        subtitle: t('admin.copyMemberEmailsSubtitle', { count: people.filter((p) => p.email).length }),
         section: 'ACTIONS',
         icon: <Mail className="size-4 text-accent-ink" />,
         keywords: ['mail', 'verteiler', 'abteilung', 'alle', 'rundmail'],
@@ -1351,10 +1348,10 @@ export function useCommandItems(query: string) {
           recordRecentCommand('action-copy-dept-emails');
           const emails = Array.from(new Set(people.map((p) => p.email?.trim()).filter(Boolean)));
           if (emails.length === 0) {
-            toast({ title: 'Keine E-Mail-Adressen vorhanden', tone: 'info' });
+            toast({ title: t('text.noEmails'), tone: 'info' });
             return;
           }
-          copyToClipboard(emails.join(', '), `${emails.length} Abteilungs-E-Mail-Adressen`);
+          copyToClipboard(emails.join(', '), t('admin.memberEmails', { count: emails.length }));
         },
       });
     }
@@ -1362,15 +1359,15 @@ export function useCommandItems(query: string) {
     // Direkter WhatsApp-Chat per Handynummer
     list.push({
       id: 'action-direct-whatsapp',
-      title: 'WhatsApp-Nachricht an Handynummer senden',
-      subtitle: 'Direktchat öffnen (Handynummer eingeben)',
+      title: t('admin.waDirect'),
+      subtitle: t('admin.waDirectSubtitle'),
       section: 'ACTIONS',
       icon: <MessageSquare className="size-4 text-success-ink" />,
       keywords: ['whatsapp', 'chat', 'nachricht', 'schreiben', 'direktchat', 'kontakt', 'handy', 'wa', 'message'],
       closeOnSelect: false,
       onSelect: () => {
         recordRecentCommand('action-direct-whatsapp');
-        const input = window.prompt('Handynummer für WhatsApp-Direktchat eingeben (z. B. 079 123 45 67):');
+        const input = window.prompt(t('admin.waDirectPrompt'));
         if (input?.trim()) {
           openWhatsAppDirect(input.trim());
         }
@@ -1382,7 +1379,7 @@ export function useCommandItems(query: string) {
     // =========================================================================
     for (const event of allEvents) {
       const status = eventStatus(event);
-      const statusBadge = status === 'past' ? 'Vergangen' : status === 'live' ? 'Findet statt' : 'Demnächst';
+      const statusBadge = status === 'past' ? t('event.past') : status === 'live' ? t('event.live') : t('event.upcoming');
       const badgeTone: BadgeTone = status === 'past' ? 'neutral' : status === 'live' ? 'accent' : 'success';
       const eventUrl =
         typeof window !== 'undefined'
@@ -1393,19 +1390,19 @@ export function useCommandItems(query: string) {
       const eventQuickActions: CommandQuickAction[] = [
         {
           id: 'quick-ics',
-          label: 'Kalender (.ics)',
+          label: t('event.calendarIcs'),
           icon: <Download className="size-3.5" />,
           onClick: () => handleDownloadIcs(event),
         },
         {
           id: 'quick-gcal',
-          label: 'Google Kalender',
+          label: t('event.googleCalendar'),
           icon: <ExternalLink className="size-3.5" />,
           onClick: () => handleGoogleCalendar(event),
         },
         {
           id: 'quick-link',
-          label: 'Link kopieren',
+          label: t('ctx.copyLink'),
           icon: <Copy className="size-3.5" />,
           onClick: () => copyToClipboard(eventUrl, 'Anlass-Link'),
         },
@@ -1414,8 +1411,8 @@ export function useCommandItems(query: string) {
       const eventSubActions: CommandSubAction[] = [
         {
           id: 'open-event',
-          title: 'Zum Anlass gehen',
-          subtitle: `Schichtplan und Details öffnen`,
+          title: t('event.goTo'),
+          subtitle: t('event.goToSubtitle'),
           icon: <Ticket className="size-3.5" />,
           onSelect: () => {
             router.push(`/events/${event.slug}`);
@@ -1424,23 +1421,23 @@ export function useCommandItems(query: string) {
         },
         {
           id: 'download-ics',
-          title: 'Kalenderdatei (.ics) herunterladen',
-          subtitle: 'Direkt in Apple/Outlook/Handy importieren',
+          title: t('event.downloadIcs'),
+          subtitle: t('event.downloadIcsSubtitle'),
           icon: <Download className="size-3.5 text-accent-ink" />,
           closeOnSelect: false,
           onSelect: () => handleDownloadIcs(event),
         },
         {
           id: 'add-gcal',
-          title: 'Zu Google Kalender hinzufügen',
-          subtitle: 'Neuen Termin in Google Kalender eintragen',
+          title: t('ctx.addGoogle'),
+          subtitle: t('event.addGoogleSubtitle'),
           icon: <ExternalLink className="size-3.5 text-accent-ink" />,
           closeOnSelect: false,
           onSelect: () => handleGoogleCalendar(event),
         },
         {
           id: 'copy-link',
-          title: 'Anlass-Link kopieren',
+          title: t('ctx.copyEventLink'),
           subtitle: eventUrl,
           icon: <Copy className="size-3.5" />,
           closeOnSelect: false,
@@ -1451,8 +1448,8 @@ export function useCommandItems(query: string) {
       if (can('EVENTS_EDIT_SETTINGS') || can('SHIFTS_MANAGE') || isDeptAdmin) {
         eventSubActions.push({
           id: 'open-ok',
-          title: 'OK-Bereich öffnen',
-          subtitle: 'Planung, Schichten und Helfende verwalten',
+          title: t('event.openOk'),
+          subtitle: t('event.openOkSubtitle'),
           icon: <LayoutDashboard className="size-3.5" />,
           onSelect: () => {
             router.push(`/events/${event.slug}/ok`);
@@ -1461,8 +1458,8 @@ export function useCommandItems(query: string) {
         });
         eventSubActions.push({
           id: 'open-export',
-          title: 'Drucken & Export (PDF/Excel)',
-          subtitle: 'Aushänge und Tabellen exportieren',
+          title: t('event.export'),
+          subtitle: t('event.exportSubtitle'),
           icon: <Download className="size-3.5" />,
           onSelect: () => {
             router.push(`/events/${event.slug}/ok/export`);
@@ -1473,8 +1470,8 @@ export function useCommandItems(query: string) {
 
       eventSubActions.push({
         id: 'open-checkin',
-        title: 'Helfer-Check-in & QR-Code',
-        subtitle: 'Präsenz am Anlass erfassen',
+        title: t('ctx.checkin'),
+        subtitle: t('event.checkinSubtitle'),
         icon: <ClipboardCheck className="size-3.5" />,
         onSelect: () => {
           router.push(`/events/${event.slug}/checkin`);
@@ -1502,8 +1499,8 @@ export function useCommandItems(query: string) {
           event,
           quickActions: eventQuickActions,
           details: [
-            { label: 'Datum', value: `${fmtShortWeekday(event.startDate)} ${fmtShortDate(event.startDate)}` },
-            { label: 'Status', value: statusBadge },
+            { label: t('event.date'), value: `${fmtShortWeekday(event.startDate)} ${fmtShortDate(event.startDate)}` },
+            { label: t('event.status'), value: statusBadge },
             { label: 'Slug', value: event.slug },
           ],
         },
@@ -1680,17 +1677,17 @@ export function useCommandItems(query: string) {
 
         if (hasShifts) {
           if (allPresent) {
-            badgeText = `Anwesend (${personShifts.length})`;
+            badgeText = t('person.presentAll', { count: personShifts.length });
             badgeTone = 'success';
           } else if (presentCount > 0) {
-            badgeText = `${presentCount}/${personShifts.length} anwesend`;
+            badgeText = t('person.presentPartial', { present: presentCount, total: personShifts.length });
             badgeTone = 'warning';
           } else {
-            badgeText = `${personShifts.length} ${personShifts.length === 1 ? 'Schicht' : 'Schichten'}`;
+            badgeText = `${t('person.shiftCount', { count: personShifts.length })}`;
             badgeTone = 'accent';
           }
         } else if (activeEvent && prefixMode === 'PEOPLE') {
-          badgeText = '0 Schichten';
+          badgeText = t('person.shiftCount', { count: 0 });
           badgeTone = 'neutral';
         }
 
@@ -1699,11 +1696,11 @@ export function useCommandItems(query: string) {
           const shiftSummaries = personShifts
             .slice(0, 2)
             .map((s) => `${shiftName(s)} (${fmtShortWeekday(s.startTime)} ${fmtTimeRange(s.startTime, s.endTime)})`);
-          subtitleText = `${personShifts.length} ${personShifts.length === 1 ? 'Schicht' : 'Schichten'}: ${shiftSummaries.join(', ')}${personShifts.length > 2 ? ` (+${personShifts.length - 2} weitere)` : ''}`;
+          subtitleText = `${t('person.shiftCount', { count: personShifts.length })}: ${shiftSummaries.join(', ')}${personShifts.length > 2 ? ` ${t('person.more', { count: personShifts.length - 2 })}` : ''}`;
         } else if (activeEvent) {
-          subtitleText = `Keine Schichten in «${activeEvent.title}» · ${person.ceviName ? `«${person.ceviName}»` : person.role || 'Abteilungsmitglied'}`;
+          subtitleText = `${t('person.noShiftsIn', { event: activeEvent.title })} · ${person.ceviName ? `«${person.ceviName}»` : person.role || t('person.member')}`;
         } else {
-          subtitleText = `${person.ceviName ? `«${person.ceviName}» · ` : ''}${person.email || person.phone || person.role || 'Abteilungsmitglied'}`;
+          subtitleText = `${person.ceviName ? `«${person.ceviName}» · ` : ''}${person.email || person.phone || person.role || t('person.member')}`;
         }
 
         const canManageCurrent = can('EVENTS_EDIT_SETTINGS') || can('SHIFTS_MANAGE') || isDeptAdmin;
@@ -1716,9 +1713,9 @@ export function useCommandItems(query: string) {
           personSubActions.push({
             id: 'toggle-checkin-all',
             title: allPresent
-              ? `Anwesenheit für ${person.name} zurücksetzen`
-              : `Als anwesend einchecken (${personShifts.length} ${personShifts.length === 1 ? 'Schicht' : 'Schichten'})`,
-            subtitle: `${presentCount} von ${personShifts.length} Schichten eingecheckt`,
+              ? t('person.resetAttendance', { name: person.name })
+              : t('person.checkInAll', { shifts: t('person.shiftCount', { count: personShifts.length }) }),
+            subtitle: t('person.checkedInOf', { present: presentCount, total: personShifts.length }),
             icon: allPresent ? (
               <RotateCcw className="size-3.5" />
             ) : (
@@ -1738,8 +1735,8 @@ export function useCommandItems(query: string) {
           const isPres = s.attendance === 'PRESENT';
           personSubActions.push({
             id: `person-shift-${s.shiftId}-${s.signupId}`,
-            title: `Schicht: ${s.title?.trim() || s.taskTitle || shiftName(s)}${s.title?.trim() && s.taskTitle ? ` (${s.taskTitle})` : ''}`,
-            subtitle: `${fmtShortWeekday(s.startTime)} ${fmtTimeRange(s.startTime, s.endTime)}${s.category ? ` · ${s.category}` : ''} · ${isPres ? 'Eingecheckt' : 'Noch offen'}`,
+            title: t('person.shiftTitle', { shift: `${s.title?.trim() || s.taskTitle || shiftName(s)}${s.title?.trim() && s.taskTitle ? ` (${s.taskTitle})` : ''}` }),
+            subtitle: `${fmtShortWeekday(s.startTime)} ${fmtTimeRange(s.startTime, s.endTime)}${s.category ? ` · ${s.category}` : ''} · ${isPres ? t('checkedIn') : t('person.stillOpen')}`,
             icon: <CalendarDays className="size-3.5 text-accent-ink" />,
             onSelect: () => {
               if (activeSlug && pathname.startsWith(`/events/${activeSlug}`)) {
@@ -1758,7 +1755,7 @@ export function useCommandItems(query: string) {
           if (canManageCurrent) {
             personSubActions.push({
               id: `toggle-single-att-${s.signupId}`,
-              title: isPres ? `Anwesenheit für «${s.title}» zurücksetzen` : `Für «${s.title}» als anwesend markieren`,
+              title: isPres ? t('person.resetShiftAttendance', { shift: s.title }) : t('person.markShiftPresent', { shift: s.title }),
               icon: isPres ? <RotateCcw className="size-3.5" /> : <Check className="size-3.5 text-success-ink" />,
               closeOnSelect: false,
               onSelect: () => toggleAttendance(s.signupId, person.name, isPres ? 'PRESENT' : null),
@@ -1770,8 +1767,8 @@ export function useCommandItems(query: string) {
         if (person.phone) {
           personSubActions.push({
             id: 'wa-chat',
-            title: `WhatsApp-Nachricht an ${person.firstName || person.name} senden`,
-            subtitle: `Direktchat mit ${person.phone} öffnen`,
+            title: t('person.waTo', { name: person.firstName || person.name }),
+            subtitle: t('person.directChat', { phone: person.phone }),
             icon: <MessageSquare className="size-3.5 text-success-ink" />,
             closeOnSelect: false,
             onSelect: () => openWhatsAppDirect(person.phone!, person.firstName),
@@ -1779,7 +1776,7 @@ export function useCommandItems(query: string) {
 
           personSubActions.push({
             id: 'call-phone',
-            title: `Anrufen (${person.phone})`,
+            title: t('person.call', { phone: person.phone }),
             icon: <Phone className="size-3.5 text-accent-ink" />,
             onSelect: () => {
               window.location.href = `tel:${person.phone}`;
@@ -1788,29 +1785,29 @@ export function useCommandItems(query: string) {
 
           personSubActions.push({
             id: 'sms-phone',
-            title: `SMS senden (${person.phone})`,
+            title: t('person.sms', { phone: person.phone }),
             icon: <Phone className="size-3.5" />,
             onSelect: () => openSmsDirect(person.phone!),
           });
 
           personSubActions.push({
             id: 'copy-phone',
-            title: 'Telefonnummer kopieren',
+            title: t('person.copyPhone'),
             subtitle: person.phone,
             icon: <Copy className="size-3.5" />,
             closeOnSelect: false,
-            onSelect: () => copyToClipboard(person.phone!, 'Telefonnummer'),
+            onSelect: () => copyToClipboard(person.phone!, t('person.phoneLabel')),
           });
         } else {
           personSubActions.push({
             id: 'wa-chat-prompt',
-            title: `WhatsApp-Nachricht an ${person.firstName || person.name} senden`,
-            subtitle: 'Keine Handynummer hinterlegt (klicken für Direkteingabe)',
+            title: t('person.waTo', { name: person.firstName || person.name }),
+            subtitle: t('person.noMobile'),
             icon: <MessageSquare className="size-3.5 text-success-ink" />,
             closeOnSelect: false,
             onSelect: () => {
               const input = window.prompt(
-                `Handynummer für ${person.firstName || person.name} eingeben (z. B. 079 123 45 67):`
+                t('person.phonePrompt', { name: person.firstName || person.name })
               );
               if (input?.trim()) {
                 openWhatsAppDirect(input.trim(), person.firstName);
@@ -1822,7 +1819,7 @@ export function useCommandItems(query: string) {
         if (person.email) {
           personSubActions.push({
             id: 'send-email',
-            title: `E-Mail an ${person.email} schreiben`,
+            title: t('person.emailTo', { email: person.email }),
             icon: <Mail className="size-3.5 text-accent-ink" />,
             onSelect: () => {
               window.location.href = `mailto:${person.email}`;
@@ -1831,7 +1828,7 @@ export function useCommandItems(query: string) {
 
           personSubActions.push({
             id: 'copy-email',
-            title: 'E-Mail-Adresse kopieren',
+            title: t('person.copyEmail'),
             subtitle: person.email,
             icon: <Copy className="size-3.5" />,
             closeOnSelect: false,
@@ -1843,8 +1840,8 @@ export function useCommandItems(query: string) {
         if (activeSlug && canManageCurrent) {
           personSubActions.push({
             id: 'assign-shift',
-            title: 'Für eine Schicht einteilen',
-            subtitle: `Person manuell einer Schicht von «${activeEvent?.title || 'Anlass'}» zuweisen`,
+            title: t('person.assign'),
+            subtitle: t('person.assignSubtitle', { event: activeEvent?.title || t('person.eventFallback') }),
             icon: <UserPlus className="size-3.5" />,
             onSelect: () => {
               if (contextData.onOpenAssignModal) {
@@ -1858,8 +1855,8 @@ export function useCommandItems(query: string) {
 
           personSubActions.push({
             id: 'view-ok-helpers',
-            title: 'Im OK-Bereich bei Helfenden öffnen',
-            subtitle: `Filtert die Helfer-Tabelle nach «${person.name}»`,
+            title: t('person.openInOk'),
+            subtitle: t('person.openInOkSubtitle', { name: person.name }),
             icon: <Users className="size-3.5 text-accent-ink" />,
             onSelect: () => {
               router.push(`/events/${activeSlug}/ok/helfende?search=${encodeURIComponent(person.name)}`);
@@ -1880,7 +1877,7 @@ export function useCommandItems(query: string) {
                 openWhatsAppDirect(person.phone, person.firstName);
               } else {
                 const input = window.prompt(
-                  `Handynummer für ${person.firstName || person.name} eingeben (z. B. 079 123 45 67):`
+                  t('person.phonePrompt', { name: person.firstName || person.name })
                 );
                 if (input?.trim()) {
                   openWhatsAppDirect(input.trim(), person.firstName);
@@ -1892,7 +1889,7 @@ export function useCommandItems(query: string) {
         if (person.phone) {
           personQuickActions.push({
             id: 'p-call',
-            label: 'Anrufen',
+            label: t('person.callShort'),
             icon: <Phone className="size-3.5" />,
             onClick: () => {
               window.location.href = `tel:${person.phone}`;
@@ -1955,7 +1952,7 @@ export function useCommandItems(query: string) {
               ceviName: person.ceviName,
               email: person.email,
               phone: person.phone,
-              role: person.role || (hasShifts ? `${personShifts.length} Schichten eingeteilt` : 'Abteilungsmitglied'),
+              role: person.role || (hasShifts ? t('person.assignedCount', { count: personShifts.length }) : t('person.member')),
               stufen: person.stufen?.map((s) => s.name),
               shifts: personShifts.map((s) => ({
                 id: s.shiftId,
@@ -1968,17 +1965,17 @@ export function useCommandItems(query: string) {
             },
             quickActions: personQuickActions,
             details: [
-              { label: 'Name', value: `${person.firstName || ''} ${person.lastName || ''}`.trim() || person.name },
+              { label: t('person.name'), value: `${person.firstName || ''} ${person.lastName || ''}`.trim() || person.name },
               ...(person.ceviName ? [{ label: org.nicknameTerm, value: person.ceviName }] : []),
               ...(person.email ? [{ label: 'E-Mail', value: person.email }] : []),
-              ...(person.phone ? [{ label: 'Telefon', value: person.phone }] : []),
+              ...(person.phone ? [{ label: t('person.phone'), value: person.phone }] : []),
               ...(activeEvent
                 ? [
                     {
-                      label: 'Einsätze',
+                      label: t('person.shifts'),
                       value: hasShifts
-                        ? `${personShifts.length} ${personShifts.length === 1 ? 'Schicht' : 'Schichten'}`
-                        : 'Keine Einsätze',
+                        ? `${t('person.shiftCount', { count: personShifts.length })}`
+                        : t('person.noShifts'),
                     },
                   ]
                 : []),
@@ -1995,8 +1992,8 @@ export function useCommandItems(query: string) {
     // =========================================================================
     list.push({
       id: 'nav-home',
-      title: 'Anlässe & Startseite',
-      subtitle: `Übersicht aller Veranstaltungen der ${department?.name || 'Abteilung'}`,
+      title: t('nav.home'),
+      subtitle: t('nav.homeSubtitle', { name: department?.name || org.unitTerm }),
       section: 'NAVIGATION',
       icon: <CalendarDays className="size-4" />,
       keywords: ['start', 'home', 'anlässe', 'events', 'abteilung'],
@@ -2009,8 +2006,8 @@ export function useCommandItems(query: string) {
 
     list.push({
       id: 'nav-my-shifts',
-      title: 'Meine Schichten',
-      subtitle: 'Deine angemeldeten Einsätze und Bestätigungen',
+      title: t('nav.myShifts'),
+      subtitle: t('nav.myShiftsSubtitle'),
       section: 'NAVIGATION',
       icon: <Ticket className="size-4" />,
       keywords: ['meine', 'schichten', 'einsätze', 'termine', 'helfer'],
@@ -2022,7 +2019,7 @@ export function useCommandItems(query: string) {
       subActions: [
         {
           id: 'open-my-shifts',
-          title: 'Meine Schichten öffnen',
+          title: t('nav.openMyShifts'),
           icon: <Ticket className="size-3.5" />,
           onSelect: () => {
             router.push('/meine-schichten');
@@ -2035,8 +2032,8 @@ export function useCommandItems(query: string) {
     if (user) {
       list.push({
         id: 'nav-profile',
-        title: 'Mein Profil & Kontaktdaten',
-        subtitle: `${displayName(user)} · Angaben, Benachrichtigungen, Sicherheit und Daten`,
+        title: t('nav.profile'),
+        subtitle: t('nav.profileSubtitle', { name: displayName(user) }),
         section: 'NAVIGATION',
         icon: <UserRound className="size-4" />,
         keywords: ['profil', 'konto', 'name', 'einstellungen', 'telefon', 'mail'],
@@ -2053,8 +2050,8 @@ export function useCommandItems(query: string) {
 
     list.push({
       id: 'nav-help',
-      title: 'Hilfe-Center öffnen',
-      subtitle: `Anleitungen für Helfende, OK-Teams und ${org.unitTerm}sleiter`,
+      title: t('nav.help'),
+      subtitle: t('nav.helpSubtitle', { lead: org.leadTerm }),
       section: 'NAVIGATION',
       icon: <LifeBuoy className="size-4" />,
       keywords: ['hilfe', 'anleitung', 'support', 'doku', 'faq'],
@@ -2065,7 +2062,7 @@ export function useCommandItems(query: string) {
       subActions: [
         {
           id: 'help-external',
-          title: 'In neuem Tab öffnen',
+          title: t('nav.newTab'),
           icon: <ExternalLink className="size-3.5" />,
           onSelect: () => {
             window.open(helpBase, '_blank');
@@ -2076,8 +2073,8 @@ export function useCommandItems(query: string) {
 
     list.push({
       id: 'nav-status',
-      title: 'System-Status prüfen',
-      subtitle: 'Verfügbarkeit der Dienste, DB und Mailserver',
+      title: t('nav.status'),
+      subtitle: t('nav.statusSubtitle'),
       section: 'NAVIGATION',
       icon: <ExternalLink className="size-4" />,
       keywords: ['status', 'uptime', 'server', 'betrieb'],
@@ -2092,8 +2089,8 @@ export function useCommandItems(query: string) {
     // =========================================================================
     list.push({
       id: 'system-theme-dark',
-      title: 'Design: Dunkelmodus aktivieren',
-      subtitle: 'Dunkles Farbschema (Nachtansicht)',
+      title: t('nav.dark'),
+      subtitle: t('nav.darkSubtitle'),
       section: 'SYSTEM',
       icon: <Moon className="size-4" />,
       keywords: ['dark', 'dunkel', 'nacht', 'theme', 'design', 'schwarz'],
@@ -2102,8 +2099,8 @@ export function useCommandItems(query: string) {
 
     list.push({
       id: 'system-theme-light',
-      title: 'Design: Hellmodus aktivieren',
-      subtitle: 'Helles Farbschema (Tagesansicht)',
+      title: t('nav.light'),
+      subtitle: t('nav.lightSubtitle'),
       section: 'SYSTEM',
       icon: <Sun className="size-4" />,
       keywords: ['light', 'hell', 'tag', 'theme', 'design', 'weiss'],
@@ -2112,8 +2109,8 @@ export function useCommandItems(query: string) {
 
     list.push({
       id: 'system-theme-system',
-      title: 'Design: System-Standard folgen',
-      subtitle: 'Automatisch an Geräte-Einstellung anpassen',
+      title: t('nav.system'),
+      subtitle: t('nav.systemSubtitle'),
       section: 'SYSTEM',
       icon: <Sparkles className="size-4" />,
       keywords: ['system', 'automatisch', 'theme', 'design'],
@@ -2123,8 +2120,8 @@ export function useCommandItems(query: string) {
     if (user) {
       list.push({
         id: 'system-logout',
-        title: 'Abmelden',
-        subtitle: `Als ${displayName(user)} abmelden`,
+        title: t('nav.logout'),
+        subtitle: t('nav.logoutSubtitle', { name: displayName(user) }),
         section: 'SYSTEM',
         icon: <LogOut className="size-4 text-danger-ink" />,
         keywords: ['abmelden', 'logout', 'ausloggen', 'verlassen'],
@@ -2136,8 +2133,8 @@ export function useCommandItems(query: string) {
     } else {
       list.push({
         id: 'system-login',
-        title: 'Anmelden',
-        subtitle: org.authProviderShort ? `Mit ${org.authProviderShort} oder E-Mail/Passwort anmelden` : 'Mit E-Mail/Passwort anmelden',
+        title: t('nav.login'),
+        subtitle: org.authProviderShort ? t('nav.loginWith', { provider: org.authProviderShort }) : t('nav.loginEmail'),
         section: 'SYSTEM',
         icon: <LogIn className="size-4 text-accent-ink" />,
         keywords: ['anmelden', 'login', 'einloggen', ...(org.authProviderShort ? [org.authProviderShort.toLowerCase()] : [])],

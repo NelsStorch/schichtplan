@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Check, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useEventText } from '@/lib/eventText';
 import {
   REQUIRED_PROFILE_FIELDS,
   accessTypeConfig,
@@ -74,6 +75,7 @@ export function EventAccessFields({
   onChange: (next: EventAccessValues) => void;
 }) {
   const t = useTranslations('web.eventAccess');
+  const eventText = useEventText();
   const { department } = usePortal();
   const org = useOrganization();
   const isVerein = org.slug === 'verein';
@@ -145,8 +147,8 @@ export function EventAccessFields({
                 />
                 <Icon className={cn('mt-0.5 size-5 shrink-0', selected ? 'text-accent-ink' : 'text-fg-subtle')} />
                 <span className="min-w-0 pr-5">
-                  <span className="block text-sm font-semibold text-fg">{info.label}</span>
-                  <span className="mt-0.5 block text-xs leading-relaxed text-fg-muted">{info.description}</span>
+                  <span className="block text-sm font-semibold text-fg">{eventText.accessType(info.key).label}</span>
+                  <span className="mt-0.5 block text-xs leading-relaxed text-fg-muted">{eventText.accessType(info.key).description}</span>
                 </span>
                 {selected && <Check className="absolute right-3 top-3 size-4 text-accent-ink" />}
               </label>
@@ -310,7 +312,7 @@ export function EventAccessFields({
                 )}
               >
                 {on && <Check className="size-3.5" />}
-                {REQUIRED_PROFILE_FIELDS[field].label}
+                {eventText.profileField(field)}
               </button>
             );
           })}

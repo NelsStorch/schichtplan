@@ -11,6 +11,7 @@ import {
 import { getLoginUrl } from '@schichtplan/shared/redirect';
 import { Button, Select, Textarea, useToast } from '@schichtplan/ui';
 import { api, errorMessage } from '@/lib/api';
+import { usePermissionText } from '@/lib/permissionText';
 import { usePortal } from '@/lib/portal';
 
 type InvitePresetOption = 'MEMBER' | DepartmentPermissionPreset;
@@ -43,6 +44,7 @@ function parseEmailList(raw: string): string[] {
 
 export function DepartmentInviteBox({ onError }: { onError?: (msg: string) => void }) {
   const t = useTranslations('web.department.invite');
+  const perm = usePermissionText();
   const { department, refresh, isDeptAdmin, permissions, can } = usePortal();
   const toast = useToast();
 
@@ -136,7 +138,7 @@ export function DepartmentInviteBox({ onError }: { onError?: (msg: string) => vo
           value={inviteEmail}
           onChange={(e) => setInviteEmail(e.target.value)}
           placeholder={t('emailPlaceholder')}
-          aria-label="E-Mail-Adressen für Einladung"
+          aria-label={t('x.emailsAria')}
           className="min-h-[2.5rem] text-sm"
         />
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -145,20 +147,20 @@ export function DepartmentInviteBox({ onError }: { onError?: (msg: string) => vo
               <Select
                 value={preset}
                 onChange={(e) => setPreset(e.target.value as InvitePresetOption)}
-                aria-label="Rolle / Rechte bei Einladung"
+                aria-label={t('x.roleAria')}
                 className="h-9 w-auto min-w-44 text-xs"
               >
-                <option value="MEMBER">Als Mitglied (ohne Zusatzrechte)</option>
+                <option value="MEMBER">{t('x.asMember')}</option>
                 {allowedPresets.map((key) => (
                   <option key={key} value={key}>
-                    Mit Recht: {DEPARTMENT_PERMISSION_PRESETS[key].label}
+                    {t('x.withRight', { label: perm.presetLabel(key) })}
                   </option>
                 ))}
               </Select>
             )}
             {parsedEmails.length > 1 && (
               <span className="text-2xs font-medium text-fg-muted">
-                {parsedEmails.length} E-Mail-Adressen erkannt
+                {t('x.emailsFound', { count: parsedEmails.length })}
               </span>
             )}
           </div>

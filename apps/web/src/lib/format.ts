@@ -1,32 +1,33 @@
-import { businessDayKey, formatZurichTimeRange, zurichDateTimeFormat } from '@schichtplan/shared';
+import { businessDayKey, formatZurichTimeRange, getDefaultIntlLocale, zurichDateTimeFormat } from '@schichtplan/shared';
 
 export { businessDayKey };
 
 // Anlässe finden in der Schweiz statt: Zeiten immer in Schweizer Zeit anzeigen,
 // auch wenn jemand aus dem Ausland schaut (zurichDateTimeFormat setzt die Zeitzone fest).
-const timeFmt = zurichDateTimeFormat({ hour: '2-digit', minute: '2-digit' });
-const weekdayFmt = zurichDateTimeFormat({ weekday: 'long' });
-const shortWeekdayFmt = zurichDateTimeFormat({ weekday: 'short' });
-const dayMonthFmt = zurichDateTimeFormat({ day: 'numeric', month: 'long' });
-const shortDateFmt = zurichDateTimeFormat({ day: '2-digit', month: '2-digit' });
-const fullDateFmt = zurichDateTimeFormat({ day: 'numeric', month: 'long', year: 'numeric' });
+// Formatter erst beim Aufruf holen (zwischengespeichert): so gilt die aktive Sprache der Person.
+const timeFmt = () => zurichDateTimeFormat({ hour: '2-digit', minute: '2-digit' });
+const weekdayFmt = () => zurichDateTimeFormat({ weekday: 'long' });
+const shortWeekdayFmt = () => zurichDateTimeFormat({ weekday: 'short' });
+const dayMonthFmt = () => zurichDateTimeFormat({ day: 'numeric', month: 'long' });
+const shortDateFmt = () => zurichDateTimeFormat({ day: '2-digit', month: '2-digit' });
+const fullDateFmt = () => zurichDateTimeFormat({ day: 'numeric', month: 'long', year: 'numeric' });
 
-export const fmtTime = (iso: string) => timeFmt.format(new Date(iso));
+export const fmtTime = (iso: string) => timeFmt().format(new Date(iso));
 /** Zeitspanne einheitlich «18:00–22:00» */
 export const fmtTimeRange = (startIso: string, endIso: string) => formatZurichTimeRange(startIso, endIso);
-export const fmtWeekday = (iso: string) => weekdayFmt.format(new Date(iso));
-export const fmtShortWeekday = (iso: string) => shortWeekdayFmt.format(new Date(iso)).replace('.', '');
-export const fmtDayMonth = (iso: string) => dayMonthFmt.format(new Date(iso));
-export const fmtShortDate = (iso: string) => shortDateFmt.format(new Date(iso));
-export const fmtFullDate = (iso: string) => fullDateFmt.format(new Date(iso));
+export const fmtWeekday = (iso: string) => weekdayFmt().format(new Date(iso));
+export const fmtShortWeekday = (iso: string) => shortWeekdayFmt().format(new Date(iso)).replace('.', '');
+export const fmtDayMonth = (iso: string) => dayMonthFmt().format(new Date(iso));
+export const fmtShortDate = (iso: string) => shortDateFmt().format(new Date(iso));
+export const fmtFullDate = (iso: string) => fullDateFmt().format(new Date(iso));
 
-/** "16.10. bis 18. Oktober 2026" bzw. "16. Oktober 2026" */
+/** «16.–18. Oktober 2026» bzw. «16. Oktober 2026», in der aktiven Sprache (Intl formatRange) */
 export function fmtDateRange(startIso: string, endIso: string, cutoff?: string | null) {
   // Über Geschäftstage mit der Tageswechsel-Uhrzeit des Anlasses, damit ein Ende um 00:30 nicht als Folgetag erscheint
   const start = dayKeyToIso(businessDayKey(startIso, cutoff));
   const end = dayKeyToIso(businessDayKey(endIso, cutoff));
   if (start === end) return fmtFullDate(start);
-  return `${fmtShortDate(start)} bis ${fmtFullDate(end)}`;
+  return fullDateFmt().formatRange(new Date(start), new Date(end));
 }
 
 /** Anzeigename einer Schicht: der Titel, oder die Zeitspanne wenn keiner gesetzt ist (Titel sind optional) */
@@ -68,18 +69,23 @@ export function fmtRelativeDay(iso: string, now = new Date()) {
   return diff > 0 ? `in ${diff} Tagen` : `vor ${-diff} Tagen`;
 }
 
-/** Formatierung für den Stand der Offline-Daten: "Heute, 14:32 Uhr", "Gestern, 09:15 Uhr" oder "25.10., 14:32 Uhr" */
+/** Stand der Offline-Daten: «Heute, 14:32 Uhr», «Gestern, 09:15 Uhr» oder «25.10., 14:32 Uhr» (in der aktiven Sprache) */
 export function fmtStand(value: Date | string): string {
   const date = typeof value === 'string' ? new Date(value) : value;
   if (isNaN(date.getTime())) return '';
   const now = new Date();
-  const time = timeFmt.format(date);
+  const time = timeFmt().format(date);
   const diff = Math.round(
     (Date.parse(businessDayKey(date.toISOString())) - Date.parse(businessDayKey(now.toISOString()))) / 86_400_000
   );
-  if (diff === 0) return `Heute, ${time} Uhr`;
-  if (diff === -1) return `Gestern, ${time} Uhr`;
-  return `${shortDateFmt.format(date)}, ${time} Uhr`;
+  const locale = getDefaultIntlLocale();
+  // «Uhr» nur im Deutschen, in den anderen Sprachen steht die Uhrzeit allein
+  const clock = locale.startsWith('de') ? `${time} Uhr` : time;
+  if (diff === 0 || diff === -1) {
+    const day = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(diff, 'day');
+    return `${day.charAt(0).toUpperCase()}${day.slice(1)}, ${clock}`;
+  }
+  return `${shortDateFmt().format(date)}, ${clock}`;
 }
 
 export const isPast = (iso: string) => new Date(iso).getTime() < Date.now();

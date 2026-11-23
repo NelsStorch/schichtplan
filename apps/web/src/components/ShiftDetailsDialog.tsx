@@ -157,12 +157,12 @@ export function ShiftDetailsDialog({
   /** Schicht-Link teilen (Handy: Teilen-Menü, sonst kopieren). Der Link bekommt eine eigene Vorschau. */
   const shareShift = async () => {
     const url = `${window.location.origin}/events/${encodeURIComponent(event.slug)}?schicht=${shift.id}${sharesReplacement ? '&ersatz=1' : ''}`;
-    const name = shift.title?.trim() || (shift.tasks?.length === 1 ? shift.tasks[0].title : '') || 'Schicht';
+    const name = shift.title?.trim() || (shift.tasks?.length === 1 ? shift.tasks[0].title : '') || t('x.shift');
     const when = `${fmtWeekday(shift.startTime)} ${fmtDayMonth(shift.startTime)}, ${fmtTimeRange(shift.startTime, shift.endTime)}`;
-    const need = free > 0 ? ` Noch ${free === 1 ? '1 Platz' : `${free} Plätze`} frei.` : '';
+    const need = free > 0 ? ` ${t('x.shareFree', { count: free })}` : '';
     const text = sharesReplacement
-      ? `Ersatz gesucht: ${name} am ${event.title} (${when}). Übernimmst du?`
-      : `${name} am ${event.title} (${when}).${need} Trägst du dich ein?`;
+      ? t('x.shareReplacement', { shift: name, event: event.title, when })
+      : t('x.shareShift', { shift: name, event: event.title, when, need });
     if (typeof navigator.share === 'function') {
       try {
         await navigator.share({ title: `${name} – ${event.title}`, text, url });
@@ -536,7 +536,7 @@ export function ShiftDetailsDialog({
                         {t('noHelpersYet')}
                       </p>
                     ) : (
-                      <ul className="flex flex-wrap gap-1.5" aria-label="Eingetragene Helfende">
+                      <ul className="flex flex-wrap gap-1.5" aria-label={t('x.signedUpAria')}>
                         {taskSignups.map((s) => {
                           const isCurrentUser = currentUser && s.userId === currentUser.id;
                           const wanted = Boolean(s.replacementWantedAt) && !over;
@@ -599,7 +599,7 @@ export function ShiftDetailsDialog({
 
                     {/* «Ersatz gesucht»: wer und warum, mit Übernehmen */}
                     {offers.length > 0 && (
-                      <ul className="mt-3 space-y-2" aria-label="Ersatz gesucht">
+                      <ul className="mt-3 space-y-2" aria-label={t('x.replacementAria')}>
                         {offers.map((o) => (
                           <li
                             key={o.id}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useTransition } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Languages } from 'lucide-react';
 import {
   LOCALE_LABELS,
@@ -23,6 +23,7 @@ export interface LandingLocaleSwitcherProps {
  * Schreibt das sprachweite Cookie auf der Root-Domain und wechselt zur lokalisierten URL (/fr, /en, etc.).
  */
 export function LandingLocaleSwitcher({ className, selectClassName }: LandingLocaleSwitcherProps) {
+  const t = useTranslations('common.language');
   const rawLocale = useLocale();
   const current = (parseLocale(rawLocale) ?? 'de') as Locale;
   const { pseudo, pseudoAvailable } = useLocaleSettings();
@@ -56,7 +57,7 @@ export function LandingLocaleSwitcher({ className, selectClassName }: LandingLoc
       } ${className ?? ''}`}
     >
       <Languages className="size-3.5 shrink-0 text-fg-subtle" aria-hidden="true" />
-      <span className="sr-only">Sprache wählen / Choisir la langue / Choose language</span>
+      <span className="sr-only">{t('switch')}</span>
       <select
         value={value}
         onChange={(e) => change(e.target.value)}

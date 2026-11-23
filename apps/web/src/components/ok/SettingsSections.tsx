@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   createContext,
   useCallback,
@@ -134,6 +135,7 @@ export function SectionsProvider({
 
 /** Sprungleiste: bleibt am PC beim Scrollen sichtbar und zeigt den aktuellen Abschnitt */
 export function SectionNav({ sections }: { sections: readonly (readonly [id: string, label: string])[] }) {
+  const t = useTranslations('web.ok.layout');
   const ctx = useContext(SectionsContext);
   const nav = useRef<HTMLElement>(null);
   const active = ctx?.active;
@@ -151,7 +153,7 @@ export function SectionNav({ sections }: { sections: readonly (readonly [id: str
     <nav
       ref={nav}
       data-sticky-bars
-      aria-label="Abschnitte"
+      aria-label={t('sectionsAria')}
       className="-mx-4 mb-6 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0 lg:sticky lg:top-16 lg:z-10 lg:-mx-2 lg:flex-nowrap lg:border-b lg:border-line/70 lg:bg-canvas/85 lg:px-2 lg:py-2 lg:backdrop-blur-xl lg:backdrop-saturate-150"
     >
       {sections.map(([id, label]) => (

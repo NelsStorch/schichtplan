@@ -81,7 +81,19 @@
     "leaderRole": "Responsable",
     "okContactRole": "Contact organisation",
     "teamWithYou": "Avec vous : <bold>{helpers}</bold>",
-    "teamNoneYet": "Aucun autre bénévole inscrit pour le moment"
+    "teamNoneYet": "Aucun autre bénévole inscrit pour le moment",
+    "calendar": {
+      "lead": "Responsable",
+      "role": "Rôle : {role}",
+      "task": "Tâche : {task}",
+      "category": "Catégorie : {category}",
+      "leaders": "Responsables du créneau / du jour : {names}",
+      "coHelpers": "Inscrits avec toi : {names}",
+      "event": "Événement : {event}",
+      "unit": "Section : {name}",
+      "file": "mes-creneaux",
+      "shiftFile": "creneau"
+    }
   },
   "replacementDialog": {
     "titleSelf": "Trouver un·e remplaçant·e",
@@ -335,7 +347,15 @@
       "linkTakenBadge": "Lien déjà utilisé",
       "unlockAccessAction": "Débloquer l’accès",
       "notUnlockedForYou": "Accès non autorisé",
-      "signupForTaskAction": "S’inscrire à cette tâche"
+      "signupForTaskAction": "S’inscrire à cette tâche",
+      "x": {
+        "shift": "Créneau",
+        "shareFree": "{count, plural, one {Encore # place libre.} other {Encore # places libres.}}",
+        "signedUpAria": "Bénévoles inscrits",
+        "replacementAria": "Remplaçant·e recherché·e",
+        "shareReplacement": "Remplaçant·e recherché·e : {shift} à {event} ({when}). Tu le reprends ?",
+        "shareShift": "{shift} à {event} ({when}).{need} Tu t’inscris ?"
+      }
     },
     "ticket": {
       "ariaLabel": "Tranche {title}, de {from} à {to}, {status}",
@@ -506,7 +526,15 @@
       "directHandover": "{minutes} min de transmission",
       "breakTime": "{duration} de pause",
       "blockedReasonSignupClosed": "Les inscriptions sont closes.",
-      "thisDepartment": "ce groupe"
+      "thisDepartment": "ce groupe",
+      "x": {
+        "committeeAria": "Comité d’organisation"
+      }
+    },
+    "x": {
+      "collision": "Chevauchement avec un de tes créneaux",
+      "tasksAria": "Tâches",
+      "filledAria": "{filled} places sur {total} occupées"
     }
   },
   "ok": {
@@ -548,7 +576,8 @@
       "noPermissionArea": "Vous n'avez pas l'autorisation pour « {area} » dans cet événement. Veuillez contacter le CO ou la direction du groupe.",
       "noPermissionGeneral": "L'espace CO est réservé à l'équipe organisatrice, à la direction du groupe et aux personnes autorisées à voir tous les événements.",
       "toShiftPlan": "Vers le planning",
-      "helpGuide": "Guide dans le centre d'aide"
+      "helpGuide": "Guide dans le centre d'aide",
+      "sectionsAria": "Sections"
     },
     "overview": {
       "title": "Aperçu",
@@ -821,7 +850,56 @@
       "createdSuccessDesc": "{shifts} tranches créées pour « {title} » ({slots} places).",
       "createdSuccessDescNoTitle": "{shifts} tranches créées ({slots} places).",
       "createFailed": "Échec de la création",
-      "slotsIncreased": "{title} : places augmentées à {count}"
+      "slotsIncreased": "{title} : places augmentées à {count}",
+      "x": {
+        "hoursPreset": "{hours} h",
+        "overlapNonePreset": "0 min (aucun)",
+        "minutesShort": "{minutes} min",
+        "footerSummary": "{shifts, plural, one {# créneau} other {# créneaux}} · {slots, plural, one {# place} other {# places}} chacun = {total} places au total",
+        "noneGenerated": "Aucun créneau généré",
+        "createCount": "{count, plural, one {Créer # créneau} other {Créer # créneaux}}",
+        "create": "Créer",
+        "titleLabel": "Stand / titre du créneau (facultatif)",
+        "titleHint": "p. ex. grill, caisse, bar – ou laisser vide si seules les tâches comptent",
+        "titlePlaceholder": "p. ex. stand grill (facultatif)",
+        "categoryLabel": "Catégorie (facultatif)",
+        "categoryHint": "Pour regrouper par secteur/stand",
+        "categoryPlaceholder": "p. ex. stands, cuisine",
+        "setupTeardown": "Créneaux de montage ou démontage",
+        "minAgeAll": "Âge minimum pour tout le créneau :",
+        "none": "Aucun",
+        "tasksTitle": "Tâches et places par créneau",
+        "tasksText": "Définis quelles tâches et combien de personnes sont prévues par créneau ({count, plural, one {# place} other {# places}} par créneau).",
+        "addTask": "Ajouter une tâche",
+        "fromCatalog": "Ajouter depuis le catalogue des tâches :",
+        "taskNumber": "Tâche n° {number}",
+        "removeTask": "Supprimer la tâche",
+        "taskName": "Nom de la tâche *",
+        "taskNameHint": "p. ex. grill, caisse, renfort",
+        "taskNamePlaceholder": "p. ex. grill",
+        "slots": "Places",
+        "less": "Moins",
+        "more": "Plus",
+        "minAge": "Âge minimum",
+        "taskNote": "Note ou description de la tâche (facultatif)",
+        "operatingPeriod": "Période d’exploitation totale",
+        "totalHours": "{hours} heures au total",
+        "start": "Début *",
+        "end": "Fin *",
+        "duration": "Durée par créneau",
+        "durationValue": "{minutes} minutes ({hours} h)",
+        "overlap": "Chevauchement pour la relève",
+        "overlapNone": "Aucun",
+        "overlapLead": "{minutes} min d’avance",
+        "overlapInfo": "Chaque relève commence <strong>{minutes} minutes avant la fin du créneau précédent</strong> pour la passation.",
+        "firstEarlier": "Commencer aussi le 1er créneau {minutes} min plus tôt (p. ex. pour monter le stand avant l’ouverture)",
+        "preview": "Aperçu en direct ({count, plural, one {# créneau} other {# créneaux}})",
+        "helpersNeeded": "{count} bénévoles nécessaires",
+        "noneGeneratedHint": "Aucun créneau généré. Vérifie l’heure de début et de fin.",
+        "oneSlot": "1 place ({title})",
+        "shift": "Créneau",
+        "handoverBadge": "+{minutes} min relève"
+      }
     },
     "tasks": {
       "pageTitle": "Catalogue des tâches",
@@ -1011,7 +1089,20 @@
         "submit": "Attribuer ({count})",
         "submitSingle": "Attribuer",
         "successToast": "{name} attribué(e)",
-        "failToast": "Échec de l’attribution"
+        "failToast": "Échec de l’attribution",
+        "x": {
+          "pair": "«{a}» et «{b}»",
+          "soFar": "{count}{target} {count, plural, one {créneau} other {créneaux}} jusqu’ici",
+          "age": "{age} ans",
+          "multiHint": "tu peux choisir plusieurs créneaux",
+          "selectedCount": "Sélection : {count, plural, one {# créneau} other {# créneaux}}",
+          "after": "ensuite {after}/{target}",
+          "targetMet": "objectif atteint",
+          "shift": "Créneau",
+          "taskFor": "Tâche pour {shift}",
+          "deselect": "Désélectionner {shift}",
+          "overlap": "Les créneaux choisis {pair} se chevauchent."
+        }
       },
       "history": {
         "loadError": "Impossible de charger l’historique : {error}",
@@ -1024,7 +1115,12 @@
         "deregisteredNoReason": "Désinscrit(e)",
         "attendance": "Présence : {status}",
         "messageSent": "Message reçu : « {subject} »",
-        "emptyHistory": "Aucune entrée dans l’historique pour le moment."
+        "emptyHistory": "Aucune entrée dans l’historique pour le moment.",
+        "x": {
+          "title": "Historique",
+          "lastMessaged": "dernier message {date}",
+          "notMessaged": "pas encore contacté·e par le comité"
+        }
       },
       "hours": {
         "title": "Statistiques des heures bénévoles",
@@ -1043,7 +1139,56 @@
         "summaryTotalHours": "Heures effectuées",
         "summaryAvgHours": "Moyenne d’heures par bénévole",
         "configTitle": "Paramètres de calcul",
-        "configIncludeUnconfirmed": "Prendre aussi en compte les tranches non confirmées"
+        "configIncludeUnconfirmed": "Prendre aussi en compte les tranches non confirmées",
+        "x": {
+          "helpLink": "Guide dans le centre d’aide",
+          "hours": "{hours} h",
+          "footerSummary": "pour les {helpers} bénévoles actifs dans {levels} unités ({shifts} engagements)",
+          "close": "Fermer",
+          "hoursUnit": "h",
+          "hoursSplit": "{event} h événement · {setup} h montage",
+          "signups": "Inscriptions aux créneaux",
+          "rankingCalculated": "Classement calculé",
+          "includeSetup": "Inclure montage et démontage",
+          "colEvent": "Événement",
+          "colSetup": "Montage",
+          "noHelpers": "Aucun bénévole trouvé.",
+          "guest": "Invité·e",
+          "noLevels": "Aucune unité avec des heures de bénévolat.",
+          "pctOfAll": "{pct} % de toutes les heures",
+          "levelSummary": "{people, plural, one {# personne} other {# personnes}} · {shifts, plural, one {# engagement} other {# engagements}} · Ø {avg} h/personne",
+          "showHelpers": "Afficher les bénévoles",
+          "involved": "Personnes impliquées ({count}) :"
+        }
+      },
+      "x": {
+        "csvName": "Nom",
+        "csvFullName": "Nom complet",
+        "csvLevels": "Unités",
+        "csvAge": "Âge",
+        "csvType": "Type",
+        "csvShifts": "Créneaux",
+        "csvTarget": "Objectif",
+        "csvMissing": "Manquant",
+        "csvHours": "Heures",
+        "csvStatus": "Statut",
+        "csvAssignedShifts": "Créneaux attribués",
+        "guest": "Invité·e",
+        "account": "Compte",
+        "deregistered": "Désinscrit·e",
+        "csvFilePrefix": "benevoles",
+        "levelAria": "Unité",
+        "countFilterAria": "Filtrer par nombre de créneaux",
+        "countAria": "Nombre de créneaux",
+        "dayAria": "Jour",
+        "personTypeAria": "Type de personne",
+        "bucketTitle": "{people} avec {count, plural, one {# créneau} other {# créneaux}}",
+        "selected": "{people} sélectionné·e·s",
+        "exportTitle": "Liste filtrée en CSV (Excel)",
+        "selectAria": "Sélectionner {name}",
+        "guestNoMessages": "Les invité·e·s sans compte ne reçoivent pas de messages",
+        "openShift": "Ouvrir le créneau dans le planning",
+        "shift": "Créneau"
       }
     },
     "attendance": {
@@ -1078,7 +1223,40 @@
       "statusPresent": "Présent",
       "statusExcused": "Excusé",
       "statusNoShow": "Absent",
-      "statusOpen": "Ouvert"
+      "statusOpen": "Ouvert",
+      "statusLong": {
+        "PRESENT": "Présent·e",
+        "EXCUSED": "Excusé·e",
+        "NO_SHOW": "Absent·e"
+      },
+      "x": {
+        "colDay": "Jour",
+        "colTime": "Heure",
+        "colShift": "Créneau",
+        "colTask": "Tâche",
+        "colName": "Nom",
+        "colAttendance": "Présence",
+        "colRecorded": "Saisi",
+        "colPresent": "Là",
+        "colStatus": "Statut",
+        "csvFilePrefix": "presence",
+        "printBlocked": "Aperçu d’impression bloqué",
+        "printBlockedDesc": "Autorise les fenêtres pop-up pour cette page.",
+        "printTitle": "Présence : {event}",
+        "offTitle": "La liste de présence est désactivée",
+        "offDesc": "Active-la dans «Réglages». Tu y choisis aussi si seul le comité coche ou si les bénévoles s’enregistrent aussi eux-mêmes par code QR.",
+        "qrAlt": "Code QR pour l’auto-enregistrement",
+        "copyLink": "Copier le lien",
+        "qrNote": "Créé avec le générateur QR de {name}. Le lien contient un code secret : qui le connaît peut s’enregistrer de partout. À renouveler si besoin.",
+        "allDays": "Tous les jours",
+        "clearSearch": "Effacer la recherche",
+        "noQrTitle": "Aucun code QR",
+        "noQrText": "Enregistre à nouveau les réglages pour créer un code d’enregistrement.",
+        "running": "en cours",
+        "presentOf": "{present} / {total} présent·e·s",
+        "attendanceOf": "Présence de {name}",
+        "statusSelected": "{status} (cliquer à nouveau = en attente)"
+      }
     },
     "access": {
       "closedBadge": "Inscriptions fermées",
@@ -1106,7 +1284,50 @@
       "colEmail": "E-mail",
       "colPhone": "Téléphone",
       "colSignedUpAt": "Inscrit(e) le",
-      "colShifts": "Tranches"
+      "colShifts": "Tranches",
+      "x": {
+        "deleteTitle": "Supprimer le lien «{label}» ?",
+        "deleteLoseAccess": "{count, plural, one {# personne perd l’accès.} other {# personnes perdent l’accès.}} Les inscriptions existantes sont conservées.",
+        "deleteNoLonger": "Le lien ne fonctionnera plus.",
+        "noLinksDesc": "Un lien personnel vaut pour une personne, un lien de groupe pour toutes celles qui l’ont (p. ex. chat des parents).",
+        "kindGroup": "Groupe",
+        "kindPersonal": "Personnel",
+        "expired": "Expiré",
+        "notRedeemed": "Pas encore utilisé",
+        "nobodyYet": "Personne pour l’instant",
+        "redeemedBy": "Utilisé par {names}",
+        "deadline": "Valable jusqu’au : {date}",
+        "deleteAria": "Supprimer le lien {label}",
+        "kindPersonalText": "Valable uniquement pour le premier compte qui l’utilise.",
+        "kindGroupText": "Valable pour toutes les personnes qui ont le lien, p. ex. dans le chat de groupe.",
+        "createTitle": "Créer un lien d’accès",
+        "forWhom": "Pour qui ?",
+        "forWhomHint": "Visible uniquement par toi, p. ex. «Maman de Léo» ou «Chat parents Louveteaux».",
+        "kindAria": "Type de lien",
+        "expiresLabel": "Date limite (facultatif)",
+        "expiresHint": "Jusqu’à quand le lien peut être utilisé. Les personnes déjà débloquées gardent leur accès.",
+        "cancel": "Annuler",
+        "createAndCopy": "Créer et copier",
+        "csvName": "Nom",
+        "csvFirstName": "Prénom",
+        "csvLastName": "Nom de famille",
+        "csvEmail": "E-mail",
+        "csvMobile": "Portable",
+        "csvBirthDate": "Date de naissance",
+        "csvUnit": "Section",
+        "csvShifts": "Créneaux",
+        "nobodySignedUp": "Personne d’inscrit pour l’instant",
+        "searchAria": "Rechercher bénévoles et réponses",
+        "clearSearch": "Effacer la recherche",
+        "resetFilter": "Réinitialiser le filtre",
+        "noMatches": "Aucune entrée correspondante",
+        "noMatchesDesc": "Ajuste la recherche ou le filtre de réponses.",
+        "colPerson": "Personne",
+        "colContact": "Contact",
+        "noUnit": "sans section",
+        "viaLink": "via le lien",
+        "born": "né·e le {date}"
+      }
     },
     "catering": {
       "pageTitle": "Restauration & Bons",
@@ -1152,7 +1373,60 @@
       "overviewRecentTitle": "Dernières validations au stand",
       "overviewRecentTime": "{time}",
       "overviewRefreshBtn": "Actualiser",
-      "overviewCloseBtn": "Fermer"
+      "overviewCloseBtn": "Fermer",
+      "x": {
+        "resetConfirmTitle": "Réactiver le bon ?",
+        "resetConfirmDesc": "«{item}» de {name} repasse à «Ouvert / utilisable» (p. ex. après un glissement involontaire).",
+        "reset": "Réinitialiser",
+        "resetDone": "Bon réinitialisé",
+        "resetDoneDesc": "{item} ({name}) peut de nouveau être utilisé.",
+        "resetFailed": "La réinitialisation a échoué",
+        "csvPerson": "Personne",
+        "csvRole": "Rôle",
+        "csvVoucher": "Bon",
+        "csvStatus": "Statut",
+        "csvRedeemedAt": "Utilisé le",
+        "csvShift": "Créneau",
+        "csvShiftStart": "Début du créneau",
+        "csvShiftEnd": "Fin du créneau",
+        "csvLeader": "Responsable de créneau",
+        "csvHelper": "Bénévole",
+        "csvRedeemed": "Utilisé",
+        "csvOpen": "Ouvert",
+        "shift": "Créneau",
+        "csvFilePrefix": "bons-repas",
+        "disabledTitle": "Les bons repas ne sont pas activés",
+        "disabledDesc": "Active les bons numériques repas et boissons dans les réglages de l’événement pour que bénévoles et responsables reçoivent automatiquement leurs bons par créneau.",
+        "enableInSettings": "Activer dans les réglages",
+        "validAlways": "Toujours valable (sans plage horaire)",
+        "validFromStart": "Dès le début du créneau ou l’enregistrement",
+        "validEarly": "{count, plural, one {Dès # heure avant le début du créneau (ou l’enregistrement)} other {Dès # heures avant le début du créneau (ou l’enregistrement)}}",
+        "validity": "Validité : {label}.",
+        "refresh": "Actualiser",
+        "csvExport": "Export CSV",
+        "configure": "Configurer",
+        "loading": "Chargement des bons et statistiques…",
+        "inclLeaders": "Bénévoles et responsables inclus",
+        "collected": "Retirés au stand",
+        "notRedeemed": "Pas encore utilisés",
+        "byItemTitle": "Bilan par type de bon",
+        "resetFilter": "Réinitialiser le filtre",
+        "pctRedeemed": "{pct} % utilisés",
+        "redeemedCount": "<strong>{count}</strong> utilisés",
+        "openOf": "{open} ouverts (sur {total})",
+        "allTokens": "Tous les bons ({count})",
+        "allTokensFiltered": "Tous les bons ({shown} sur {total})",
+        "allTokensHint": "Pour les bénévoles sans smartphone, tu peux chercher les bons ici et les valider manuellement – ou réinitialiser des bons utilisés par erreur.",
+        "filterStatus": "Filtrer par statut",
+        "filterRole": "Filtrer par rôle",
+        "filterItem": "Filtrer par type de bon",
+        "resetTitle": "Réinitialiser le bon s’il a été utilisé par erreur",
+        "availableFrom": "Dès {time}",
+        "recentTitle": "Dernières utilisations au stand",
+        "timeOClock": "{time}"
+      },
+      "defaultItemMeal": "1x repas bénévole",
+      "defaultItemDrink": "1x boisson"
     },
     "physicalBons": {
       "createTitle": "Imprimer un nouveau lot de bons",
@@ -1169,7 +1443,25 @@
       "batchCombiTitle": "Planches combinées #{id}",
       "batchSingleTitle": "Bons individuels #{id}",
       "cardsCount": "{count, plural, one {# carte} other {# cartes}}",
-      "totalBonsCount": "{count, plural, one {# bon} other {# bons}}"
+      "totalBonsCount": "{count, plural, one {# bon} other {# bons}}",
+      "x": {
+        "helpersSignedUp": "{count} bénévoles inscrits",
+        "typeFormat": "Type et format du bon",
+        "combiText": "1 billet imprimé contient tous les bons du créneau (p. ex. {items}). Validables au stand séparément ou ensemble.",
+        "recommended": "Recommandé pour les fêtes",
+        "singleText": "Un billet par article (p. ex. 1 billet pour {first}, 1 billet pour {second}).",
+        "food": "repas",
+        "drinks": "boissons",
+        "classic": "Bons classiques détachables",
+        "setExact": "Régler pour les {count} bénévoles",
+        "batchName": "Nom du lot (facultatif)",
+        "batchNameHint": "p. ex. «Réserve stand grill» ou «Impression principale»",
+        "batchPlaceholder": "p. ex. lot {number}",
+        "previousBatches": "Lots imprimés précédents ({count})",
+        "refresh": "Actualiser",
+        "alreadyRedeemed": "{count} déjà utilisés",
+        "downloadTitle": "Télécharger la feuille A4 en PDF"
+      }
     },
     "questions": {
       "pageTitle": "Questions",
@@ -1207,7 +1499,25 @@
       "sensitiveDesc": "(p. ex. allergies, médicaments). Les bénévoles doivent consentir expressément et les réponses sont toujours supprimées après un délai.",
       "optionsPlaceholder": "Une option par ligne, p. ex.\nS\nM\nL",
       "optionsAria": "Options de réponse",
-      "customQuestionBtn": "Question personnalisée"
+      "customQuestionBtn": "Question personnalisée",
+      "presets": {
+        "ADDRESS": {
+          "label": "Adresse (rue, NPA, localité)",
+          "hint": "p. ex. pour un envoi ou l’assurance"
+        },
+        "DIET": {
+          "label": "Allergies / alimentation",
+          "hint": "p. ex. végétarien, sans lactose, noix"
+        },
+        "TSHIRT": {
+          "label": "Taille de t-shirt",
+          "hint": "Choix de XS à XXL"
+        },
+        "EMERGENCY": {
+          "label": "Contact d’urgence (nom et téléphone)",
+          "hint": "Qui le comité appelle en cas d’urgence"
+        }
+      }
     },
     "settings": {
       "pageTitle": "Paramètres",
@@ -1312,6 +1622,12 @@
       "onlyOpenDesc": "À afficher lorsqu’il manque encore des bénévoles.",
       "pdfError": "Impossible de générer le PDF",
       "exportFailed": "Échec de l’exportation"
+    },
+    "roles": {
+      "okLead": "Direction du comité",
+      "okMember": "Membre du comité",
+      "platformAdmin": "Admin de la plateforme",
+      "notFound": "Événement introuvable"
     }
   },
   "home": {
@@ -1373,7 +1689,10 @@
     "otherLevelsDismissBtn": "Ne plus afficher",
     "offlineStatus": "Mode hors-ligne :",
     "offlineAsOf": "État : {stand}. ",
-    "offlineReadOnlyNotice": "Lecture seule (l’inscription et la désinscription nécessitent Internet)."
+    "offlineReadOnlyNotice": "Lecture seule (l’inscription et la désinscription nécessitent Internet).",
+    "x": {
+      "mainNav": "Navigation principale"
+    }
   },
   "tile": {
     "statusLive": "En cours",
@@ -1447,7 +1766,10 @@
       "secondaryColorLabel": "Couleur secondaire du groupe",
       "customSecondaryColorTitle": "Choisir une couleur secondaire personnalisée",
       "qrStyleCornersTwoToneDesc": "Coins de visée en couleur secondaire (idéal pour les scanners)",
-      "qrStyleGradientTwoToneDesc": "Transition diagonale de la couleur principale à la couleur secondaire"
+      "qrStyleGradientTwoToneDesc": "Transition diagonale de la couleur principale à la couleur secondaire",
+      "x": {
+        "sectionsAria": "Rubriques"
+      }
     },
     "stufen": {
       "newStufePlaceholder": "Nouvelle branche, p. ex. Castors",
@@ -1467,7 +1789,17 @@
       "emptyTitleOrg": "Pas encore de branches",
       "emptyDescVerein": "Créez les groupes ou équipes de votre association, p. ex. actifs, juniors, comité.",
       "emptyDescOrg": "Créez les branches de votre {unitTerm}, p. ex. {examples}.",
-      "groupIdHint": "ID {provider} facultatif: numéro du groupe de branche dans {dbHost}. Les branches de {provider} sont créées et liées automatiquement."
+      "groupIdHint": "ID {provider} facultatif: numéro du groupe de branche dans {dbHost}. Les branches de {provider} sont créées et liées automatiquement.",
+      "x": {
+        "personCount": "{count} pers.",
+        "nameAria": "Nom de l’unité {name}",
+        "linked": "Lié au groupe {provider}",
+        "deleteAria": "Supprimer l’unité {name}",
+        "newGroupPlaceholder": "Nouveau groupe, p. ex. actifs",
+        "newGroupAria": "Nom du nouveau groupe",
+        "newLevelPlaceholder": "Nouvelle unité, p. ex. {org, select, pfadi {Louveteaux} jubla {Groupe} other {Cadets}}",
+        "newLevelAria": "Nom de la nouvelle unité"
+      }
     },
     "invite": {
       "title": "Inviter des personnes & lien d’invitation",
@@ -1482,7 +1814,14 @@
       "emailPlaceholder": "Saisir les adresses e-mail (séparées par une virgule ou une par ligne)…",
       "sendBtn": "Inviter",
       "sendingBtn": "Envoi en cours…",
-      "sentSuccess": "{count, plural, one {# invitation envoyée} other {# invitations envoyées}}"
+      "sentSuccess": "{count, plural, one {# invitation envoyée} other {# invitations envoyées}}",
+      "x": {
+        "emailsAria": "Adresses e-mail pour l’invitation",
+        "roleAria": "Rôle / droits à l’invitation",
+        "asMember": "Comme membre (sans droits supplémentaires)",
+        "withRight": "Avec droit : {label}",
+        "emailsFound": "{count, plural, one {# adresse e-mail reconnue} other {# adresses e-mail reconnues}}"
+      }
     },
     "audit": {
       "loadFailedToast": "Impossible de charger le journal",
@@ -1562,7 +1901,15 @@
       "unconfirmHome": "Annuler la confirmation",
       "cancel": "Annuler",
       "save": "Enregistrer",
-      "personSavedToast": "{name} enregistré"
+      "personSavedToast": "{name} enregistré",
+      "x": {
+        "viewAria": "Affichage",
+        "confirmAria": "Confirmer {name}",
+        "colPerson": "Personne",
+        "levels": "Unités",
+        "yes": "{label} : oui",
+        "no": "{label} : non"
+      }
     },
     "permissions": {
       "presetLegend": "Modèle",
@@ -1571,7 +1918,8 @@
       "presetCustom": "Droits personnalisés",
       "groupDepartment": "Groupe",
       "groupEvents": "Événements (s’applique à tous les événements du groupe)",
-      "grantableHint": "Vous ne pouvez attribuer que les autorisations que vous possédez vous-même, et globalement moins que vous n'en possédez."
+      "grantableHint": "Vous ne pouvez attribuer que les autorisations que vous possédez vous-même, et globalement moins que vous n'en possédez.",
+      "memberNoRights": "Membre sans droits particuliers"
     },
     "stats": {
       "loadFailedToast": "Impossible de charger les statistiques",
@@ -1812,7 +2160,10 @@
       "functionLabel": "Secteur / Fonction",
       "functionPlaceholder": "Logistique & Grill",
       "saveBtn": "Enregistrer",
-      "addBtn": "Ajouter au comité"
+      "addBtn": "Ajouter au comité",
+      "x": {
+        "whoLabel": "{nickname} ou e-mail"
+      }
     },
     "dayResponsibles": {
       "title": "Responsables du jour",
@@ -1909,7 +2260,10 @@
     "contrastSuccessSingle": "La couleur remplit toutes les exigences de contraste pour affiches et écrans.",
     "qrPreviewAria": "Aperçu du code QR",
     "qrPrimary": "QR princ.: {ratio}:1",
-    "qrSecondary": "QR sec.: {ratio}:1"
+    "qrSecondary": "QR sec.: {ratio}:1",
+    "x": {
+      "loading": "Chargement de l’aperçu …"
+    }
   },
   "eventMeta": {
     "leaders": "Responsables"
@@ -2149,7 +2503,15 @@
     "countdownWaiting": "Délai de sécurité : confirmation possible dans {seconds} secondes…",
     "countdownDone": "Délai écoulé. Vous pouvez maintenant confirmer la modification.",
     "slugWaitBtn": "Veuillez patienter ({seconds}s)",
-    "slugConfirmBtn": "Modifier & enregistrer malgré tout"
+    "slugConfirmBtn": "Modifier & enregistrer malgré tout",
+    "banners": {
+      "chilbi": "Kermesse et tente de fête",
+      "sola": "Camp d’été",
+      "lagerfeuer": "Feu de camp et forêt",
+      "grill": "Grill et buvette",
+      "huette": "Cabane et montagne",
+      "weihnachten": "Noël en forêt et hiver"
+    }
   },
   "command": {
     "back": "Retour",
@@ -2204,6 +2566,551 @@
     "copiedToast": "{title} copié",
     "copyFailedToast": "Échec de la copie",
     "icsDownloadedToast": "Fichier de calendrier téléchargé",
-    "icsDownloadedDesc": "« {slug}.ics » a été enregistré."
+    "icsDownloadedDesc": "« {slug}.ics » a été enregistré.",
+    "wa": {
+      "shiftHeading": "*Bénévoles recherchés pour «{event}» !* 🙋",
+      "shiftLine": "Créneau : *{shift}*",
+      "time": "⏰ Heure : {time}",
+      "area": "📍 Secteur : {area}",
+      "freeSlots": "👥 {count, plural, one {Encore # place libre !} other {Encore # places libres !}}",
+      "viewAndSignUp": "👉 Voir et s’inscrire directement ici :",
+      "callLabel": "Appel WhatsApp",
+      "eventHeading": "*Appel aux bénévoles pour «{event}» !* ⛺",
+      "date": "📅 Date : {date}",
+      "missingHands": "{count, plural, one {Nous cherchons encore # bénévole pour les créneaux suivants :} other {Nous cherchons encore # bénévoles pour les créneaux suivants :}}",
+      "gapLine": "• *{shift}* ({time}) : {count, plural, one {encore # place} other {encore # places}}",
+      "moreShifts": "… et {count, plural, one {un autre créneau} other {# autres créneaux}}.",
+      "openAndSignUp": "👉 Ouvrir le planning et s’inscrire directement :",
+      "eventCallLabel": "Appel WhatsApp ({count, plural, one {# place libre} other {# places libres}})"
+    },
+    "text": {
+      "planHeading": "📋 Planning : {event} ({date})",
+      "totalShifts": "Total des créneaux : {count}",
+      "noHelpers": "Aucun bénévole inscrit",
+      "planLabel": "Planning en texte",
+      "noEmails": "Aucune adresse e-mail enregistrée",
+      "helperEmails": "{count, plural, one {# adresse e-mail de bénévole} other {# adresses e-mail de bénévoles}}",
+      "phoneHeading": "📞 Liste téléphonique des bénévoles : {event}",
+      "noPhone": "Pas de numéro de téléphone",
+      "phoneLabel": "Liste téléphonique"
+    },
+    "toast": {
+      "greetingName": "Salut {name} ! ",
+      "greeting": "Salut ! ",
+      "signedUp": "Inscription réussie !",
+      "signedUpDesc": "Tu es maintenant inscrit·e pour «{shift}».",
+      "signUpFailed": "L’inscription a échoué",
+      "cancelled": "Engagement annulé",
+      "cancelledDesc": "L’inscription pour «{shift}» a été supprimée.",
+      "cancelFailed": "L’annulation a échoué",
+      "replacementWithdrawn": "«Remplaçant·e recherché·e» retiré",
+      "replacementWithdrawnDesc": "Tu reprends le créneau normalement.",
+      "replacementNote": "Remplaçant·e recherché·e (signalé via le menu de commandes)",
+      "replacementOffered": "«Remplaçant·e recherché·e» signalé",
+      "replacementOfferedDesc": "Ton créneau est proposé à d’autres bénévoles.",
+      "actionFailed": "L’action a échoué",
+      "checkedIn": "{name} enregistré·e",
+      "attendanceReset": "Présence réinitialisée",
+      "markedPresent": "Marqué·e comme présent·e",
+      "statusReset": "Le statut a été réinitialisé",
+      "checkInFailed": "L’enregistrement a échoué",
+      "checkInFailedDesc": "La présence n’a pas pu être mise à jour.",
+      "allCheckedIn": "Tous les bénévoles enregistrés",
+      "peopleUpdated": "{count, plural, one {# personne mise à jour} other {# personnes mises à jour}}",
+      "updateFailed": "La mise à jour a échoué",
+      "darkOn": "Mode sombre activé",
+      "lightOn": "Mode clair activé",
+      "systemOn": "Thème du système actif"
+    },
+    "help": {
+      "keyboardTitle": "Navigation au clavier et raccourcis",
+      "keyboardSubtitle": "↑ / ↓ pour naviguer · ↵ pour exécuter · ⇥ Tab pour les sous-actions · Esc pour fermer",
+      "open": "Ouvrir",
+      "openKeys": "⌘K ou Ctrl+K",
+      "mainAction": "Action principale",
+      "subActions": "Sous-actions",
+      "backClose": "Retour / fermer",
+      "instantActions": "Actions immédiates",
+      "instantValue": "⚡ Directement, sans changer de page",
+      "prefixPeopleTitle": "Préfixe @ pour les personnes",
+      "prefixPeopleSubtitle": "Tape «@nom» pour chercher rapidement des bénévoles et contacts",
+      "prefixEventsTitle": "Préfixe # ou > pour les événements",
+      "prefixEventsSubtitle": "Tape «#automne» ou «>camp» pour ne chercher que des événements",
+      "prefixShiftsTitle": "Préfixe : ou ! pour les créneaux",
+      "prefixShiftsSubtitle": "Tape «:cuisine» ou «!libre» pour trouver directement des créneaux libres"
+    },
+    "ctx": {
+      "helperView": "Passer à la vue bénévoles",
+      "helperViewSubtitle": "Ouvrir {event} du point de vue des bénévoles",
+      "copyEventLink": "Copier le lien de l’événement",
+      "area": "Espace",
+      "helperViewValue": "Vue bénévoles",
+      "okArea": "Passer à l’espace comité",
+      "okAreaSubtitle": "Gérer la planification, les créneaux et les bénévoles de {event}",
+      "toShifts": "Aller aux créneaux",
+      "toHelpers": "Aller aux bénévoles",
+      "okCentral": "Centrale du comité",
+      "role": "Rôle",
+      "okPlanning": "Planification du comité",
+      "gapFinder": "Détecteur de trous : {count, plural, one {# place libre} other {# places libres}}",
+      "gapFinderSubtitle": "{count, plural, one {# créneau a encore besoin de renfort} other {# créneaux ont encore besoin de renfort}}",
+      "openCount": "{count} libres",
+      "copyWaCall": "Copier l’appel WhatsApp",
+      "copyWaCallSubtitle": "Message prêt avec tous les créneaux libres pour le chat",
+      "copySignupLink": "Copier le lien d’inscription",
+      "signupLinkLabel": "Lien d’inscription",
+      "openSpots": "Places libres",
+      "helpersWanted": "{count} bénévoles recherchés",
+      "affectedShifts": "Créneaux concernés",
+      "copyLink": "Copier le lien",
+      "copyWaCallSubtitle2": "Texte prêt pour les chats de groupe avec date, créneaux libres et lien",
+      "copyPlanText": "Copier le planning en texte",
+      "copyPlanTextSubtitle": "Vue complète de tous les créneaux et bénévoles pour e-mail ou chat",
+      "copyEmails": "Copier la liste e-mail des bénévoles",
+      "copyEmailsSubtitle": "Adresses de tous les bénévoles inscrits pour un envoi groupé",
+      "copyPhones": "Copier la liste téléphonique",
+      "copyPhonesSubtitle": "Nom, téléphone et créneaux pour les urgences et la coordination",
+      "downloadIcs": "Télécharger l’entrée de calendrier (.ics)",
+      "downloadIcsSubtitle": "Importer directement dans Apple Calendrier, Outlook ou le calendrier du téléphone",
+      "addGoogle": "Ajouter à Google Agenda",
+      "addGoogleSubtitle": "Ouvre Google Agenda avec l’entrée préremplie",
+      "newShift": "Créer un créneau",
+      "newShiftSubtitle": "Ajouter un créneau à «{event}»",
+      "assignHelper": "Affecter un·e bénévole manuellement",
+      "assignHelperSubtitle": "Inscrire une personne à un créneau de «{event}»",
+      "checkin": "Enregistrement des bénévoles et code QR",
+      "checkinSubtitle": "Vérifier la présence sur place",
+      "print": "Imprimer le planning / PDF",
+      "printSubtitle": "Créer une version imprimable ou un PDF de «{event}»"
+    },
+    "shift": {
+      "freeBadge": "{count} libres",
+      "signUpNow": "⚡ S’inscrire directement (en tant que {name})",
+      "signUpNowSubtitle": "Prendre le créneau tout de suite, sans changer de page",
+      "cancelMine": "⚡ Annuler mon engagement",
+      "cancelMineSubtitle": "Me désinscrire tout de suite de ce créneau",
+      "withdrawReplacement": "Retirer «remplaçant·e recherché·e»",
+      "offerReplacement": "Chercher un·e remplaçant·e",
+      "withdrawReplacementSubtitle": "Tu reprends le créneau normalement",
+      "offerReplacementSubtitle": "Proposer le créneau à d’autres bénévoles",
+      "resetAttendance": "Réinitialiser la présence du créneau ({count})",
+      "checkInAll": "Enregistrer tous les bénévoles du créneau ({count})",
+      "markAllOpen": "Tout marquer comme en attente",
+      "markAllPresent": "Marquer tous les bénévoles comme présents",
+      "checkOut": "Retirer la présence de {name}",
+      "checkIn": "Enregistrer {name}",
+      "markOpen": "Marquer comme en attente",
+      "confirmPresent": "Confirmer la présence",
+      "waTo": "Écrire à {name} sur WhatsApp",
+      "enterPhoneAndChat": "Saisir le numéro et ouvrir le chat",
+      "copyWaCall": "Copier l’appel WhatsApp pour ce créneau",
+      "copyWaCallSubtitle": "Modèle prêt avec heure, secteur et lien",
+      "copyDetails": "Copier les détails du créneau",
+      "general": "Général",
+      "nobody": "Personne d’inscrit",
+      "detailShift": "📋 Créneau : {shift}",
+      "detailEvent": "Événement : {event}",
+      "detailTime": "Heure : {time}",
+      "detailArea": "Secteur : {area}",
+      "detailStaffing": "Occupation : {filled} sur {total} ({free} libres)",
+      "detailHelpers": "Bénévoles : {names}",
+      "detailNotes": "Remarques : {notes}",
+      "detailsLabel": "Détails du créneau",
+      "copyDirectLink": "Copier le lien direct du créneau",
+      "jumpTo": "Afficher dans le planning",
+      "editInOk": "Modifier dans l’espace comité",
+      "signUpQuick": "S’inscrire",
+      "cancelQuick": "Annuler l’engagement",
+      "copy": "Copier",
+      "assigned": "Inscrit·e",
+      "myShift": "Mon créneau",
+      "time": "Heure",
+      "category": "Catégorie",
+      "freeOf": "{free} sur {total}"
+    },
+    "person": {
+      "phonePrompt": "Numéro de portable de {name} (p. ex. 079 123 45 67) :",
+      "presentAll": "Présent·e ({count})",
+      "presentPartial": "{present}/{total} présent·e·s",
+      "shiftCount": "{count, plural, one {# créneau} other {# créneaux}}",
+      "more": "(+{count} autres)",
+      "noShiftsIn": "Aucun créneau dans «{event}»",
+      "member": "Membre",
+      "resetAttendance": "Réinitialiser la présence de {name}",
+      "checkInAll": "Enregistrer comme présent·e ({shifts})",
+      "checkedInOf": "{present} créneaux sur {total} enregistrés",
+      "shiftTitle": "Créneau : {shift}",
+      "stillOpen": "En attente",
+      "resetShiftAttendance": "Réinitialiser la présence pour «{shift}»",
+      "markShiftPresent": "Marquer présent·e pour «{shift}»",
+      "waTo": "Envoyer un WhatsApp à {name}",
+      "directChat": "Ouvrir le chat avec {phone}",
+      "call": "Appeler ({phone})",
+      "sms": "Envoyer un SMS ({phone})",
+      "copyPhone": "Copier le numéro",
+      "phoneLabel": "Numéro de téléphone",
+      "noMobile": "Pas de numéro de portable (cliquer pour le saisir)",
+      "emailTo": "Écrire à {email}",
+      "copyEmail": "Copier l’adresse e-mail",
+      "assign": "Inscrire à un créneau",
+      "assignSubtitle": "Affecter manuellement la personne à un créneau de «{event}»",
+      "eventFallback": "Événement",
+      "openInOk": "Ouvrir dans les bénévoles (espace comité)",
+      "openInOkSubtitle": "Filtre le tableau des bénévoles sur «{name}»",
+      "callShort": "Appeler",
+      "assignedCount": "{count, plural, one {# créneau attribué} other {# créneaux attribués}}",
+      "name": "Nom",
+      "phone": "Téléphone",
+      "shifts": "Engagements",
+      "noShifts": "Aucun engagement"
+    },
+    "admin": {
+      "newEvent": "Créer un événement",
+      "newEventSubtitle": "Ajouter un camp, une fête ou un événement",
+      "editUnit": "Modifier : {unit}",
+      "editUnitSubtitle": "Nom, logo, couleur et réglages de la page d’accueil",
+      "levels": "Gérer les unités",
+      "levelsSubtitle": "Créer, lier à {provider} ou modifier les unités",
+      "association": "Mouvement",
+      "people": "Gérer les personnes et les droits",
+      "peopleSubtitle": "Gérer les autorisations, rôles et membres",
+      "stats": "Statistiques et bilan annuel (AG)",
+      "statsSubtitle": "Heures de bénévolat, analyse par unité et tableau d’honneur pour le rapport annuel",
+      "copyMemberEmails": "Copier la liste e-mail de tous les membres",
+      "copyMemberEmailsSubtitle": "Adresses de {count, plural, one {# personne} other {# personnes}} sans doublons dans le presse-papiers",
+      "memberEmails": "{count, plural, one {# adresse e-mail} other {# adresses e-mail}}",
+      "waDirect": "Envoyer un WhatsApp à un numéro",
+      "waDirectSubtitle": "Ouvrir un chat (saisir le numéro)",
+      "waDirectPrompt": "Numéro de portable pour le chat WhatsApp (p. ex. 079 123 45 67) :"
+    },
+    "event": {
+      "past": "Passé",
+      "live": "En cours",
+      "upcoming": "Bientôt",
+      "calendarIcs": "Calendrier (.ics)",
+      "googleCalendar": "Google Agenda",
+      "goTo": "Aller à l’événement",
+      "goToSubtitle": "Ouvrir le planning et les détails",
+      "downloadIcs": "Télécharger le fichier calendrier (.ics)",
+      "downloadIcsSubtitle": "Importer dans Apple/Outlook/téléphone",
+      "addGoogleSubtitle": "Ajouter un rendez-vous dans Google Agenda",
+      "openOk": "Ouvrir l’espace comité",
+      "openOkSubtitle": "Gérer la planification, les créneaux et les bénévoles",
+      "export": "Impression et export (PDF/Excel)",
+      "exportSubtitle": "Exporter affiches et tableaux",
+      "checkinSubtitle": "Enregistrer la présence à l’événement",
+      "date": "Date",
+      "status": "Statut"
+    },
+    "nav": {
+      "home": "Événements et accueil",
+      "homeSubtitle": "Vue d’ensemble des événements de {name}",
+      "myShifts": "Mes créneaux",
+      "myShiftsSubtitle": "Tes engagements et confirmations",
+      "openMyShifts": "Ouvrir mes créneaux",
+      "profile": "Mon profil et coordonnées",
+      "profileSubtitle": "{name} · Données, notifications, sécurité",
+      "help": "Ouvrir le centre d’aide",
+      "helpSubtitle": "Guides pour bénévoles, comités et {lead}",
+      "newTab": "Ouvrir dans un nouvel onglet",
+      "status": "Vérifier l’état du système",
+      "statusSubtitle": "Disponibilité des services, de la base de données et des e-mails",
+      "dark": "Thème : activer le mode sombre",
+      "darkSubtitle": "Couleurs sombres (vue de nuit)",
+      "light": "Thème : activer le mode clair",
+      "lightSubtitle": "Couleurs claires (vue de jour)",
+      "system": "Thème : suivre le système",
+      "systemSubtitle": "S’adapte automatiquement à l’appareil",
+      "logout": "Se déconnecter",
+      "logoutSubtitle": "Déconnecter {name}",
+      "login": "Se connecter",
+      "loginWith": "Se connecter avec {provider} ou e-mail/mot de passe",
+      "loginEmail": "Se connecter avec e-mail/mot de passe"
+    }
+  },
+  "statsReport": {
+    "attendedOnly": "Uniquement les présences confirmées",
+    "allSignups": "Tous les créneaux inscrits",
+    "withSetup": "montage et démontage inclus",
+    "withoutSetup": "sans montage/démontage",
+    "csv": {
+      "filePrefix": "heures-benevoles",
+      "allYearsSlug": "toutes-annees",
+      "title": "{org} - Bilan annuel {dept}",
+      "year": "Année : {year}",
+      "allYears": "Toutes les années saisies",
+      "asOf": "État au : {date}",
+      "filter": "Filtre : {signups}, {setup}",
+      "totalHours": "Heures totales (h)",
+      "timeWorked": "Temps effectué",
+      "activeHelpers": "Bénévoles actifs",
+      "eventCount": "Nombre d’événements",
+      "shiftCount": "Nombre de créneaux",
+      "fillRate": "Taux d’occupation (%)",
+      "attendedRate": "Taux de présence confirmée (%)",
+      "avgHours": "Ø heures par bénévole",
+      "helpersSection": "--- TABLEAU D’HONNEUR ET HEURES ---",
+      "rank": "Rang",
+      "name": "Nom",
+      "levels": "Unités",
+      "shiftsTotal": "Créneaux au total",
+      "confirmedShifts": "Créneaux confirmés",
+      "hoursDecimal": "Heures (décimal)",
+      "guest": "Invité·e/externe",
+      "noLevel": "Sans unité",
+      "yes": "Oui",
+      "no": "Non",
+      "eventsSection": "--- ÉVÉNEMENTS DE L’ANNÉE ---",
+      "event": "Événement",
+      "dateStart": "Date de début",
+      "dateEnd": "Date de fin",
+      "helpers": "Bénévoles",
+      "shifts": "Créneaux",
+      "filledSlots": "Places occupées",
+      "requiredSlots": "Places nécessaires",
+      "eventHours": "Heures d’événement (h)",
+      "setupHours": "Montage/démontage (h)",
+      "confirmedHours": "Heures confirmées (h)",
+      "attendanceRate": "Taux de présence (%)",
+      "levelsSection": "--- RÉPARTITION PAR UNITÉ ---",
+      "level": "Unité",
+      "shareTotal": "Part du total (%)"
+    },
+    "hoursShort": "{hours} h"
+  },
+  "perm": {
+    "providerFallback": "mouvement",
+    "custom": "Droits personnalisés",
+    "member": "Membre",
+    "guest": "Invité·e",
+    "DEPARTMENT_SETTINGS": {
+      "label": "Modifier la section",
+      "description": "Nom, logo, couleur, personne de contact et «page d’accueil réservée aux membres»."
+    },
+    "STUFEN_MANAGE": {
+      "label": "Gérer les unités",
+      "description": "Créer, renommer, lier à {provider} et supprimer des unités."
+    },
+    "PEOPLE_VIEW": {
+      "label": "Voir les personnes",
+      "description": "Liste des personnes de la section avec unités et droits."
+    },
+    "PEOPLE_MANAGE": {
+      "label": "Gérer les personnes et les droits",
+      "description": "Attribuer des unités, retirer des personnes de la section et donner des droits, mais moins que les siens. Voit le journal."
+    },
+    "TEMPLATES_MANAGE": {
+      "label": "Gérer les modèles",
+      "description": "Enregistrer des événements comme modèles et supprimer des modèles."
+    },
+    "EVENTS_VIEW_ALL": {
+      "label": "Voir tous les événements",
+      "description": "Aussi les brouillons et l’espace comité de tous les événements, coordonnées des bénévoles incluses."
+    },
+    "EVENTS_CREATE": {
+      "label": "Créer des événements",
+      "description": "Créer de nouveaux événements, aussi à partir de modèles. La direction du comité modifie ensuite les réglages."
+    },
+    "EVENTS_EDIT_SETTINGS": {
+      "label": "Modifier les événements",
+      "description": "Modifier les réglages de tous les événements (comme la direction du comité), déplacer des événements."
+    },
+    "SHIFTS_MANAGE": {
+      "label": "Planifier les créneaux",
+      "description": "Créneaux, tâches et responsables du jour dans tous les événements."
+    },
+    "HELPERS_MANAGE": {
+      "label": "Affecter les bénévoles",
+      "description": "Inscrire et désinscrire des bénévoles, gérer désinscriptions et liens d’accès dans tous les événements."
+    },
+    "MESSAGES_SEND": {
+      "label": "Envoyer des messages",
+      "description": "E-mails aux bénévoles de tous les événements."
+    },
+    "ATTENDANCE_MANAGE": {
+      "label": "Saisir les présences",
+      "description": "Tenir la liste de présence et télécharger le code QR d’enregistrement."
+    },
+    "EXPORT": {
+      "label": "Exporter",
+      "description": "Télécharger listes, planning PDF et heures de bénévolat."
+    },
+    "ORGANIZERS_MANAGE": {
+      "label": "Nommer le comité",
+      "description": "Nommer et retirer la direction et les membres du comité de tous les événements."
+    },
+    "EVENTS_DELETE": {
+      "label": "Supprimer des événements",
+      "description": "Supprimer définitivement des événements avec tous les créneaux et inscriptions."
+    },
+    "preset": {
+      "ADMINISTRATION": {
+        "label": "Administration",
+        "description": "Presque tout comme {lead}. Donne des droits, mais moins que les siens."
+      },
+      "EVENT_COORDINATION": {
+        "label": "Coordination des événements",
+        "description": "Crée des événements et participe à la planification de tous. L’ancien rôle «Planification»."
+      },
+      "EVENT_EDITING": {
+        "label": "Modifier les événements",
+        "description": "Modifie tous les événements existants comme la direction du comité, sans en créer de nouveaux."
+      },
+      "EVENT_CREATION": {
+        "label": "Créer des événements",
+        "description": "Crée de nouveaux événements. La planification et les réglages passent ensuite par le comité."
+      }
+    }
+  },
+  "csv": {
+    "day": "Jour",
+    "start": "Début",
+    "end": "Fin",
+    "shift": "Créneau",
+    "task": "Tâche",
+    "category": "Catégorie",
+    "slots": "Places",
+    "filled": "Occupées",
+    "assigned": "Inscrits",
+    "name": "Nom",
+    "age": "Âge",
+    "guestEmail": "E-mail (invité·e)",
+    "guestPhone": "Téléphone (invité·e)",
+    "firstName": "Prénom",
+    "lastName": "Nom de famille",
+    "level": "Unité",
+    "ageAtEvent": "Âge à l’événement",
+    "shifts": "Créneaux",
+    "targetMet": "Objectif atteint",
+    "deregistered": "Désinscrit·e",
+    "reason": "Motif",
+    "yes": "oui",
+    "no": "non",
+    "unit": "Section",
+    "type": "Type",
+    "email": "E-mail",
+    "phone": "Téléphone",
+    "shiftCount": "Nombre de créneaux",
+    "hoursDecimal": "Heures totales (décimal)",
+    "totalTime": "Durée totale",
+    "eventHours": "Heures d’événement",
+    "setupHours": "Heures de montage",
+    "assignedShifts": "Créneaux attribués",
+    "guest": "Invité·e",
+    "account": "Compte",
+    "totalSummary": "TOTAL / RÉSUMÉ",
+    "activeHelpers": "{count} bénévoles actifs",
+    "average": "Moyenne : {hours} h/personne",
+    "rank": "Rang",
+    "levelGroup": "Unité / groupe",
+    "helperPeople": "Bénévoles",
+    "share": "Part (%)",
+    "shiftAssignments": "Engagements",
+    "avgPerPerson": "Moyenne (h/personne)",
+    "helpersWithHours": "Bénévoles (avec heures)",
+    "total": "TOTAL",
+    "noLevel": "Sans unité / invité·e·s",
+    "file": {
+      "plan": "planning",
+      "assignments": "repartition",
+      "helpers": "benevoles",
+      "hours": "heures-benevoles",
+      "ranking": "classement-unites"
+    },
+    "layout": {
+      "plan": {
+        "label": "Vue d’ensemble",
+        "text": "Compact : tous les créneaux par jour avec occupation et noms."
+      },
+      "aushang": {
+        "label": "À afficher",
+        "text": "Gros caractères, une ligne par place. Places libres à compléter à la main."
+      },
+      "personen": {
+        "label": "Par personne",
+        "text": "Qui aide quand et où, trié par nom. À distribuer ou consulter."
+      }
+    }
+  },
+  "meta": {
+    "slotsAllFull": "Tous les créneaux sont pris",
+    "slotsShiftFull": "Le créneau est complet",
+    "slotsFree": "{count, plural, one {Encore # place libre} other {Encore # places libres}}",
+    "replacementWanted": "Remplaçant·e recherché·e",
+    "shiftTitleReplacement": "Remplaçant·e recherché·e : {shift} – {event}",
+    "shiftReplacementDesc": "{when}. Un·e remplaçant·e est recherché·e pour ce créneau. Tu le reprends ? ({where})",
+    "signUpAt": "{where} : inscris-toi maintenant.",
+    "pickAndSignUp": "Choisis un créneau et inscris-toi.",
+    "pickSignUpDone": "Choisir un créneau, s’inscrire, c’est fait.",
+    "deptDescription": "Tous les événements et créneaux libres au même endroit. Choisir, s’inscrire, c’est fait.",
+    "orgDescription": "Créneaux pour fêtes, camps et événements {orgName} : consulter, s’inscrire, c’est fait.",
+    "manifestDeptDescription": "Événements et créneaux de {name} : consulter, s’inscrire, c’est fait.",
+    "myShifts": "Mes créneaux",
+    "myShiftsShortcut": "Tes créneaux réservés et horaires",
+    "myShiftsDescription": "Aperçu de tes créneaux, avec export vers le calendrier.",
+    "eventsShortcut": "Événements et créneaux",
+    "eventsShortcutShort": "Événements",
+    "eventsShortcutDesc": "Tous les événements et créneaux libres",
+    "eventFallbackTitle": "Événement",
+    "eventFallbackDesc": "Voir les créneaux de l’événement et t’inscrire.",
+    "checkinDescription": "T’enregistrer à ton créneau.",
+    "loginTitle": "Se connecter",
+    "loginDescription": "Connecte-toi pour t’inscrire à des créneaux.",
+    "scanAndSignUp": "Scanner et s’inscrire"
+  },
+  "eventText": {
+    "access": {
+      "PUBLIC": {
+        "label": "Public",
+        "short": "Public",
+        "description": "Toutes les personnes ayant le lien. Un profil {nickname} sans mot de passe suffit."
+      },
+      "CEVIDB_ALL": {
+        "label": "{org, select, verein {Tous les comptes enregistrés} other {{provider}, ensemble des {units}}}",
+        "short": "{org, select, verein {Compte} other {{provider}}}",
+        "description": "{org, select, verein {Toutes les personnes avec un compte confirmé.} other {Toutes les personnes avec une connexion {provider}, quelle que soit leur {unit}. Pour les événements régionaux et les cours.}}"
+      },
+      "DEPARTMENT": {
+        "label": "{org, select, verein {Interne à l’association} pfadi {Interne au groupe} jubla {Interne au groupe} other {Interne à la section}}",
+        "short": "Interne",
+        "description": "{org, select, verein {Toutes les personnes ayant indiqué cette association à la connexion.} pfadi {Toutes les personnes ayant indiqué ce {unit} à la connexion.} jubla {Toutes les personnes ayant indiqué ce {unit} à la connexion.} other {Toutes les personnes ayant indiqué cette {unit} à la connexion.}}"
+      },
+      "DEPARTMENT_CEVIDB": {
+        "label": "{org, select, verein {Interne à l’association} pfadi {Interne au groupe, {provider}} jubla {Interne au groupe, {provider}} other {Interne à la section, {provider}}}",
+        "short": "{org, select, verein {Interne} other {Interne · {provider}}}",
+        "description": "{org, select, verein {Uniquement les membres confirmés de cette association.} pfadi {Uniquement avec une connexion {provider} et dans ce {unit}.} jubla {Uniquement avec une connexion {provider} et dans ce {unit}.} other {Uniquement avec une connexion {provider} et dans cette {unit}.}}"
+      },
+      "WHITELIST": {
+        "label": "Plusieurs {units}",
+        "short": "Liste blanche",
+        "description": "{org, select, other {Comme en interne, avec en plus l’accès pour d’autres {units}.}}"
+      },
+      "WHITELIST_CEVIDB": {
+        "label": "{org, select, verein {Plusieurs {units}} other {Plusieurs {units}, {provider}}}",
+        "short": "{org, select, verein {Liste blanche} other {Liste blanche · {provider}}}",
+        "description": "{org, select, verein {Comme en interne, avec en plus l’accès pour d’autres {units}.} other {Comme en interne avec {provider}, avec en plus l’accès pour d’autres {units}.}}"
+      }
+    },
+    "profileField": {
+      "PHONE": "Numéro de portable",
+      "EMAIL": "E-mail",
+      "BIRTH_DATE": "Date de naissance",
+      "FULL_NAME": "Prénom et nom"
+    },
+    "questionType": {
+      "TEXT": "Texte libre",
+      "YES_NO": "Oui / non",
+      "CHOICE": "Choix"
+    },
+    "category": {
+      "c0": "Cuisine et restauration",
+      "c1": "Grill et distribution des repas",
+      "c2": "Bar et boissons",
+      "c3": "Caisse et bons",
+      "c4": "Montage et préparation",
+      "c5": "Démontage et rangement",
+      "c6": "Activité et postes",
+      "c7": "Renfort et polyvalents"
+    }
   }
 }

@@ -18,6 +18,7 @@ import { PRINT_LAYOUTS, createShiftPlanPdf, downloadBlob, pdfFilename, printBlob
 
 export default function ExportPage() {
   const t = useTranslations('web.ok.export');
+  const tCsv = useTranslations('web.csv');
   const { event, base } = useOkEvent();
   const toast = useToast();
   const org = useOrganization();
@@ -36,7 +37,7 @@ export default function ExportPage() {
   const sorted = days.flatMap((d) => [...d.items].sort((a, b) => a.startTime.localeCompare(b.startTime)).map((s) => ({ day: d.key, shift: s })));
 
   const exportPlan = () => {
-    const rows: (string | number)[][] = [['Tag', 'Beginn', 'Ende', 'Schicht', 'Arbeit', 'Kategorie', 'Plätze', 'Besetzt', 'Eingeteilt']];
+    const rows: (string | number)[][] = [[tCsv('day'), tCsv('start'), tCsv('end'), tCsv('shift'), tCsv('task'), tCsv('category'), tCsv('slots'), tCsv('filled'), tCsv('assigned')]];
     for (const { day, shift } of sorted) {
       for (const task of shift.tasks ?? []) {
         const names = (shift.signups ?? []).filter((s) => s.taskId === task.id).map((s) => s.displayName);
@@ -53,12 +54,12 @@ export default function ExportPage() {
         ]);
       }
     }
-    downloadCsv(`schichtplan-${event.slug}.csv`, rows);
+    downloadCsv(`${tCsv('file.plan')}-${event.slug}.csv`, rows);
     trackUi('UI_CSV', 'SHIFTS');
   };
 
   const exportAssignments = () => {
-    const rows: (string | number)[][] = [['Name', 'Alter', 'Tag', 'Beginn', 'Ende', 'Schicht', 'Arbeit', 'E-Mail (Gast)', 'Telefon (Gast)']];
+    const rows: (string | number)[][] = [[tCsv('name'), tCsv('age'), tCsv('day'), tCsv('start'), tCsv('end'), tCsv('shift'), tCsv('task'), tCsv('guestEmail'), tCsv('guestPhone')]];
     const list = sorted.flatMap(({ day, shift }) =>
       (shift.signups ?? []).map((su) => ({ day, shift, su }))
     );
@@ -76,7 +77,7 @@ export default function ExportPage() {
         su.guestPhone ?? '',
       ]);
     }
-    downloadCsv(`einteilung-${event.slug}.csv`, rows);
+    downloadCsv(`${tCsv('file.assignments')}-${event.slug}.csv`, rows);
     trackUi('UI_CSV', 'ASSIGNMENTS');
   };
 
@@ -86,7 +87,7 @@ export default function ExportPage() {
       const roster = await api<EventRosterResponseDto>(`/api/events/${event.slug}/roster`);
       const min = roster.minShiftsPerPerson;
       const rows: (string | number)[][] = [
-        [org.nicknameTerm, 'Vorname', 'Nachname', org.unitTerm, 'Stufe', 'Alter am Anlass', 'Schichten', ...(min ? ['Soll erfüllt'] : []), 'Abgemeldet', 'Grund'],
+        [org.nicknameTerm, tCsv('firstName'), tCsv('lastName'), org.unitTerm, tCsv('level'), tCsv('ageAtEvent'), tCsv('shifts'), ...(min ? [tCsv('targetMet')] : []), tCsv('deregistered'), tCsv('reason')],
       ];
       for (const i of roster.items) {
         rows.push([
@@ -97,12 +98,12 @@ export default function ExportPage() {
           i.stufen.map((s) => s.name).join(', '),
           i.age ?? '',
           i.shiftCount,
-          ...(min ? [i.isDeregistered ? '' : i.shiftCount >= min ? 'ja' : 'nein'] : []),
-          i.isDeregistered ? 'ja' : '',
+          ...(min ? [i.isDeregistered ? '' : i.shiftCount >= min ? tCsv('yes') : tCsv('no')] : []),
+          i.isDeregistered ? tCsv('yes') : '',
           i.deregistrationReason ?? '',
         ]);
       }
-      downloadCsv(`helfende-${event.slug}.csv`, rows);
+      downloadCsv(`${tCsv('file.helpers')}-${event.slug}.csv`, rows);
       trackUi('UI_CSV', 'ROSTER');
     } catch (err) {
       toast({ title: t('exportFailed'), description: errorMessage(err), tone: 'error' });
@@ -113,7 +114,7 @@ export default function ExportPage() {
 
   const exportHelperHours = () => {
     const { helpers, summary } = computeHelperStats(event, roster, DEFAULT_HELPER_STATS_CONFIG);
-    exportHelperHoursCsv(event.slug, helpers, summary);
+    exportHelperHoursCsv(event.slug, helpers, summary, tCsv, { nickname: org.nicknameTerm, unit: org.unitTerm });
     trackUi('UI_CSV', 'HOURS');
   };
 
@@ -216,6 +217,7 @@ function ExportCard({ icon, title, text, children }: { icon: ReactNode; title: s
 
 function PrintDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const t = useTranslations('web.ok.export');
+  const tCsv = useTranslations('web.csv');
   const locale = useLocale();
   const { event } = useOkEvent();
   const { department } = usePortal();
@@ -284,8 +286,8 @@ function PrintDialog({ open, onClose }: { open: boolean; onClose: () => void }) 
                 onChange={() => setLayout(l.value)}
               />
               <span>
-                <span className="block text-sm font-semibold text-fg">{l.label}</span>
-                <span className="block text-xs text-fg-muted">{l.text}</span>
+                <span className="block text-sm font-semibold text-fg">{tCsv(`layout.${l.value}.label`)}</span>
+                <span className="block text-xs text-fg-muted">{tCsv(`layout.${l.value}.text`)}</span>
               </span>
             </label>
           ))}

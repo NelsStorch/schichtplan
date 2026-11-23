@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
+import { useEventText } from '@/lib/eventText';
 import { Check, Copy, Download, Filter, Link2, Plus, Search, Share2, Trash2, User, Users, X } from 'lucide-react';
 import {
   PLACEHOLDER_LAST_NAME,
-  REQUIRED_PROFILE_FIELDS,
   retentionNotice,
   type EventAccessLinkDto,
   type EventParticipantDto,
@@ -38,6 +38,7 @@ function linkUrl(slug: string, token: string) {
 /** OK-Dashboard: Wer darf sich eintragen, Zugangs-Links, Angaben der eingetragenen Personen */
 export function EventAccessPanel({ event }: { event: EventDetails }) {
   const t = useTranslations('web.ok.access');
+  const eventText = useEventText();
   return (
     <div className="space-y-8">
       <Card className="p-5 shadow-soft">
@@ -51,7 +52,7 @@ export function EventAccessPanel({ event }: { event: EventDetails }) {
         <p className="mt-1 text-xs text-fg-muted">
           {t('requiredFieldsLabel', {
             fields: event.requiredFields.length
-              ? event.requiredFields.map((f) => REQUIRED_PROFILE_FIELDS[f].label).join(', ')
+              ? event.requiredFields.map((f) => eventText.profileField(f)).join(', ')
               : t('noneRequired'),
           })}
           {event.questions.length > 0 && ` · ${t('ownQuestions', { count: event.questions.length })}`}. {t('settingsHint')}
@@ -103,11 +104,11 @@ function AccessLinks({ eventSlug }: { eventSlug: string }) {
 
   const remove = async (link: EventAccessLinkDto) => {
     const ok = await confirm({
-      title: `Link «${link.label}» löschen?`,
+      title: t('x.deleteTitle', { label: link.label }),
       description:
         link.redeemedBy.length > 0
-          ? `${link.redeemedBy.length} Person(en) verlieren den Zugang. Bestehende Eintragungen bleiben.`
-          : 'Der Link funktioniert danach nicht mehr.',
+          ? t('x.deleteLoseAccess', { count: link.redeemedBy.length })
+          : t('x.deleteNoLonger'),
       confirmLabel: t('deleteBtn'),
       tone: 'danger',
     });
@@ -142,7 +143,7 @@ function AccessLinks({ eventSlug }: { eventSlug: string }) {
         <EmptyState
           icon={<Link2 />}
           title={t('noLinks')}
-          description="Ein persönlicher Link gilt für eine Person, ein Gruppen-Link für alle, die ihn haben (z. B. Elternchat)."
+          description={t('x.noLinksDesc')}
         />
       ) : (
         <ul className="divide-y divide-line overflow-hidden rounded-card border border-line bg-surface">
@@ -159,20 +160,20 @@ function AccessLinks({ eventSlug }: { eventSlug: string }) {
               <div className="min-w-0 flex-1">
                 <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-fg">
                   {link.label}
-                  <Badge size="sm">{link.kind === 'GROUP' ? 'Gruppe' : 'Persönlich'}</Badge>
+                  <Badge size="sm">{link.kind === 'GROUP' ? t('x.kindGroup') : t('x.kindPersonal')}</Badge>
                   {link.isExpired && (
                     <Badge size="sm" tone="danger">
-                      Abgelaufen
+                      {t('x.expired')}
                     </Badge>
                   )}
                 </p>
                 <p className="mt-0.5 text-xs text-fg-muted">
                   {link.redeemedBy.length === 0
                     ? link.kind === 'PERSONAL'
-                      ? 'Noch nicht eingelöst'
-                      : 'Noch niemand'
-                    : `Eingelöst von ${link.redeemedBy.map((r) => r.displayName).join(', ')}`}
-                  {link.expiresAt && ` · Einlösefrist: ${fmtFullDate(link.expiresAt)}`}
+                      ? t('x.notRedeemed')
+                      : t('x.nobodyYet')
+                    : t('x.redeemedBy', { names: link.redeemedBy.map((r) => r.displayName).join(', ') })}
+                  {link.expiresAt && ` · ${t('x.deadline', { date: fmtFullDate(link.expiresAt) })}`}
                 </p>
               </div>
               <div className="flex items-center gap-1.5">
@@ -184,7 +185,7 @@ function AccessLinks({ eventSlug }: { eventSlug: string }) {
                   size="icon-sm"
                   variant="ghost"
                   onClick={() => remove(link)}
-                  aria-label={`Link ${link.label} löschen`}
+                  aria-label={t('x.deleteAria', { label: link.label })}
                   className="hover:text-danger-ink"
                 >
                   <Trash2 />
@@ -226,6 +227,7 @@ function CreateLinkDialog({
   onClose: () => void;
   onCreated: (token: string, label: string) => void;
 }) {
+  const t = useTranslations('web.ok.access');
   const [label, setLabel] = useState('');
   const [kind, setKind] = useState<'PERSONAL' | 'GROUP'>('PERSONAL');
   const [expires, setExpires] = useState('');
@@ -259,26 +261,26 @@ function CreateLinkDialog({
   const kinds = [
     {
       value: 'PERSONAL' as const,
-      title: 'Persönlich',
-      text: 'Gilt nur für das erste Konto, das ihn einlöst.',
+      title: t('x.kindPersonal'),
+      text: t('x.kindPersonalText'),
       icon: User,
     },
     {
       value: 'GROUP' as const,
-      title: 'Gruppe',
-      text: 'Gilt für alle, die den Link haben, z. B. im Gruppenchat.',
+      title: t('x.kindGroup'),
+      text: t('x.kindGroupText'),
       icon: Users,
     },
   ];
 
   return (
-    <Dialog open={open} onClose={onClose} icon={<Link2 />} title="Zugangs-Link erstellen">
+    <Dialog open={open} onClose={onClose} icon={<Link2 />} title={t('x.createTitle')}>
       <form onSubmit={submit} className="space-y-5">
         {error && <Callout tone="danger">{error}</Callout>}
-        <Field label="Für wen?" required hint="Nur für dich sichtbar, z. B. «Mami von Falk» oder «Elternchat Hiskia».">
+        <Field label={t('x.forWhom')} required hint={t('x.forWhomHint')}>
           <Input value={label} onChange={(e) => setLabel(e.target.value)} autoFocus minLength={2} maxLength={100} />
         </Field>
-        <div className="grid gap-2.5 sm:grid-cols-2" role="radiogroup" aria-label="Art des Links">
+        <div className="grid gap-2.5 sm:grid-cols-2" role="radiogroup" aria-label={t('x.kindAria')}>
           {kinds.map((k) => {
             const Icon = k.icon;
             const selected = kind === k.value;
@@ -305,17 +307,17 @@ function CreateLinkDialog({
           })}
         </div>
         <Field
-          label="Einlösefrist (optional)"
-          hint="Bis wann der Link neu eingelöst werden kann. Bereits freigeschaltete Personen behalten ihren Zugang."
+          label={t('x.expiresLabel')}
+          hint={t('x.expiresHint')}
         >
           <Input type="date" value={expires} onChange={(e) => setExpires(e.target.value)} />
         </Field>
         <div className="flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:justify-end">
           <Button variant="ghost" onClick={onClose}>
-            Abbrechen
+            {t('x.cancel')}
           </Button>
           <Button type="submit" loading={saving} disabled={label.trim().length < 2}>
-            <Copy /> Erstellen und kopieren
+            <Copy /> {t('x.createAndCopy')}
           </Button>
         </div>
       </form>
@@ -428,14 +430,14 @@ function Participants({ event }: { event: EventDetails }) {
   const download = () => {
     if (!people) return;
     const header = [
-      'Name',
-      'Vorname',
-      'Nachname',
-      'E-Mail',
-      'Handy',
-      'Geburtsdatum',
-      'Abteilung',
-      'Schichten',
+      t('x.csvName'),
+      t('x.csvFirstName'),
+      t('x.csvLastName'),
+      t('x.csvEmail'),
+      t('x.csvMobile'),
+      t('x.csvBirthDate'),
+      t('x.csvUnit'),
+      t('x.csvShifts'),
       ...event.questions.map((q) => q.label),
     ];
     const rows = people.map((p) => [
@@ -483,7 +485,7 @@ function Participants({ event }: { event: EventDetails }) {
       ) : people === null ? (
         <Skeleton className="h-40 rounded-card" />
       ) : people.length === 0 ? (
-        <EmptyState icon={<Users />} title="Noch niemand eingetragen" />
+        <EmptyState icon={<Users />} title={t('x.nobodySignedUp')} />
       ) : (
         <div className="space-y-4">
           {questionSummaries.length > 0 && (
@@ -524,14 +526,14 @@ function Participants({ event }: { event: EventDetails }) {
                 placeholder={t('searchPlaceholder')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                aria-label="Helfende und Antworten durchsuchen"
+                aria-label={t('x.searchAria')}
               />
               {search && (
                 <button
                   type="button"
                   onClick={() => setSearch('')}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-subtle hover:text-fg"
-                  aria-label="Suche leeren"
+                  aria-label={t('x.clearSearch')}
                 >
                   <X className="size-3.5" />
                 </button>
@@ -546,7 +548,7 @@ function Participants({ event }: { event: EventDetails }) {
                   setAnswerFilter(null);
                 }}
               >
-                Filter zurücksetzen
+                {t('x.resetFilter')}
               </Button>
             )}
           </div>
@@ -555,17 +557,17 @@ function Participants({ event }: { event: EventDetails }) {
           {filteredPeople.length === 0 ? (
             <EmptyState
               icon={<Filter />}
-              title="Keine passenden Einträge"
-              description="Passe die Suche oder den Antwort-Filter an."
+              title={t('x.noMatches')}
+              description={t('x.noMatchesDesc')}
             />
           ) : (
             <div className="overflow-x-auto rounded-card border border-line bg-surface">
               <table className="w-full min-w-[40rem] text-left text-sm">
                 <thead className="bg-surface-2 text-xs font-semibold text-fg-subtle">
                   <tr>
-                    <th scope="col" className="px-4 py-2.5">Person</th>
-                    <th scope="col" className="px-4 py-2.5">Kontakt</th>
-                    <th scope="col" className="px-4 py-2.5">Schichten</th>
+                    <th scope="col" className="px-4 py-2.5">{t('x.colPerson')}</th>
+                    <th scope="col" className="px-4 py-2.5">{t('x.colContact')}</th>
+                    <th scope="col" className="px-4 py-2.5">{t('x.csvShifts')}</th>
                     {event.questions.map((q) => (
                       <th scope="col" key={q.id} className="px-4 py-2.5">
                         {q.label}
@@ -584,14 +586,14 @@ function Participants({ event }: { event: EventDetails }) {
                             p.firstName && p.lastName && p.lastName !== PLACEHOLDER_LAST_NAME
                               ? `${p.firstName} ${p.lastName}`
                               : null,
-                            p.homeDepartmentName ?? 'ohne Abteilung',
+                            p.homeDepartmentName ?? t('x.noUnit'),
                           ]
                             .filter(Boolean)
                             .join(' · ')}
                         </p>
                         {p.viaLink && (
                           <Badge size="sm" className="mt-1">
-                            <Link2 className="size-3" /> über Link
+                            <Link2 className="size-3" /> {t('x.viaLink')}
                           </Badge>
                         )}
                       </td>
@@ -606,7 +608,7 @@ function Participants({ event }: { event: EventDetails }) {
                             {p.email}
                           </a>
                         )}
-                        {p.birthDate && <span className="block">geb. {p.birthDate.split('-').reverse().join('.')}</span>}
+                        {p.birthDate && <span className="block">{t('x.born', { date: p.birthDate.split('-').reverse().join('.') })}</span>}
                       </td>
                       <td className="tabular px-4 py-3 text-fg">{p.shiftCount}</td>
                       {event.questions.map((q) => (

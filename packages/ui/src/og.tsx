@@ -608,6 +608,8 @@ export interface OgStoryProps {
   qr: string;
   /** Logo, das mittig über den QR-Code gelegt wird (dessen Plakette ist dann leer) */
   qrLogo?: string | null;
+  /** Aufruf unter dem QR-Code (Standard: «Scannen & eintragen») */
+  scanLabel?: string;
   /** Kurze Adresse unter dem QR-Code */
   host: string;
   /** Absender über dem Titel, z. B. Abteilungsname */
@@ -618,7 +620,19 @@ export interface OgStoryProps {
  * Hochformat-Bild (1080×1920) für Instagram-Story und WhatsApp-Status. Oben und unten bleibt Platz für die
  * Bedienelemente der Apps, der QR-Code führt zum Anlass (in Stories lassen sich Links nicht antippen).
  */
-export function OgStory({ title, subtitle, logo, accent = DEFAULT_ACCENT, background, badge, qr, qrLogo, host, eyebrow }: OgStoryProps) {
+export function OgStory({
+  title,
+  subtitle,
+  logo,
+  accent = DEFAULT_ACCENT,
+  background,
+  badge,
+  qr,
+  qrLogo,
+  host,
+  eyebrow,
+  scanLabel = 'Scannen & eintragen',
+}: OgStoryProps) {
   const color = safeAccent(accent);
   const p = background
     ? { ...ogPalette('#3f3f46'), pill: '#ffffff', pillText: mixColor(color, '#000000', luminance(color) > 0.3 ? 0.55 : 0.1) }
@@ -765,7 +779,7 @@ export function OgStory({ title, subtitle, logo, accent = DEFAULT_ACCENT, backgr
             ) : null}
           </div>
           <div style={{ display: 'flex', marginTop: 14, fontSize: 32, fontWeight: 700, color: '#18181b' }}>
-            Scannen &amp; eintragen
+            {scanLabel}
           </div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', textAlign: 'center', width: '100%', fontSize: 30, color: p.muted }}>

@@ -143,12 +143,12 @@ export function PersonHistory({
   return (
     <div className="space-y-2">
       <p className="text-2xs font-bold uppercase tracking-wider text-fg-subtle">
-        Verlauf
+        {t('x.title')}
         {userId && (
           <span className="ml-2 font-normal normal-case tracking-normal text-fg-muted">
             {lastMessage
-              ? `zuletzt angeschrieben ${fmtStand(lastMessage.createdAt)}`
-              : 'noch nicht vom OK angeschrieben'}
+              ? t('x.lastMessaged', { date: fmtStand(lastMessage.createdAt) })
+              : t('x.notMessaged')}
           </span>
         )}
       </p>

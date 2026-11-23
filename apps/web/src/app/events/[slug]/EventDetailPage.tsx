@@ -25,6 +25,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { customRoleTitle } from '@/lib/permissionText';
 import {
   cancelDeadlineAt,
   cancelDeadlineText,
@@ -916,7 +917,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
 
         {/* Organisationskomitee */}
         {(event.organizers?.length || canManageEvent || canManageOk) && (
-          <section className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center" aria-label="Organisationskomitee">
+          <section className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center" aria-label={t('x.committeeAria')}>
             <h2 className="shrink-0 text-sm font-semibold text-fg-subtle">{t('okTitle')}</h2>
             <ul className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0">
               {event.organizers?.map((org) => {
@@ -933,7 +934,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                         {orgName}
                         {lead ? <Crown className="size-3.5 text-accent-ink" /> : <Shield className="size-3.5 text-fg-subtle" />}
                       </span>
-                      <span className="block text-xs text-fg-subtle">{org.roleTitle || (lead ? t('roleOkLead') : t('roleOkMember'))}</span>
+                      <span className="block text-xs text-fg-subtle">{customRoleTitle(org.roleTitle) ?? (lead ? t('roleOkLead') : t('roleOkMember'))}</span>
                     </span>
                     {canManageOk && (
                       <button

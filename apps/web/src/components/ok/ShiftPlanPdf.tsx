@@ -144,7 +144,7 @@ export function ShiftPlanPdf({ doc }: { doc: PlanDocument }) {
         <View style={[s.accentBar, { backgroundColor: doc.accent }]} />
 
         {doc.layout === 'personen' ? (
-          <PeopleTable people={doc.people} />
+          <PeopleTable people={doc.people} labels={labels} />
         ) : doc.days.length === 0 ? (
           <Text style={s.empty}>{labels.emptyShifts}</Text>
         ) : (
@@ -286,22 +286,22 @@ function Slots({ task, landscape }: { task: PlanTask; landscape: boolean }) {
   );
 }
 
-function PeopleTable({ people }: { people: PersonEntry[] }) {
-  if (people.length === 0) return <Text style={s.empty}>Noch niemand eingeteilt.</Text>;
+function PeopleTable({ people, labels }: { people: PersonEntry[]; labels: PlanLabels }) {
+  if (people.length === 0) return <Text style={s.empty}>{labels.peopleEmpty}</Text>;
   return (
     <View>
       <View style={s.colHead}>
-        <Text style={[s.colLabel, { width: 150, paddingLeft: 6 }]}>Name</Text>
-        <Text style={[s.colLabel, { width: 58 }]}>Tag</Text>
-        <Text style={[s.colLabel, { width: 68 }]}>Zeit</Text>
-        <Text style={[s.colLabel, { flex: 1 }]}>Schicht · Arbeit</Text>
+        <Text style={[s.colLabel, { width: 150, paddingLeft: 6 }]}>{labels.colName}</Text>
+        <Text style={[s.colLabel, { width: 58 }]}>{labels.colDay}</Text>
+        <Text style={[s.colLabel, { width: 68 }]}>{labels.colTime}</Text>
+        <Text style={[s.colLabel, { flex: 1 }]}>{labels.colShiftTask}</Text>
       </View>
       {people.map((p, i) => (
         <View key={p.name} style={[s.person, i % 2 ? { backgroundColor: '#f9fafb' } : {}]} wrap={false}>
           <View style={s.personName}>
             <Text style={{ fontWeight: 700, fontSize: 10 }}>{p.name}</Text>
             <Text style={s.small}>
-              {p.items.length} {p.items.length === 1 ? 'Schicht' : 'Schichten'}
+              {labels.personShifts(p.items.length)}
             </Text>
           </View>
           <View style={{ flex: 1 }}>

@@ -6,6 +6,7 @@ import { fontVariables } from '@schichtplan/ui/fonts';
 import { LocaleSettingsProvider } from '@schichtplan/ui/i18n';
 import { getRequestLocale } from '@schichtplan/ui/i18n/server';
 import { NextIntlClientProvider } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { getRequestOrigin, ogImage, ogVersion, safeAccent } from '@schichtplan/ui/og';
 import { CommandPalette, CommandPaletteProvider } from '@/components/command';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
@@ -32,9 +33,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const image = ogImage(`${origin}/og`, title, ...version);
   // Vorschaubild schon vorbereiten, damit es bereitliegt, wenn ein Messenger es abholt
   warmOgImage(departmentOgResponse);
-  const description = department
-    ? 'Alle Anlässe und offenen Schichten an einem Ort. Schicht aussuchen, eintragen, fertig.'
-    : `Schichten für Chilbi, Lager und ${org.orgName}-Anlässe: anschauen, eintragen, fertig.`;
+  const t = await getTranslations('web.meta');
+  const description = department ? t('deptDescription') : t('orgDescription', { orgName: org.orgName });
   return {
     metadataBase: new URL(origin),
     title: { default: tabTitle, template: `%s · ${brandName}` },

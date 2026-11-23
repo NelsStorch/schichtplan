@@ -126,7 +126,7 @@ export function DepartmentStufenPanel() {
                   onClick={() => create({ name: s.name, ceviDbGroupId: s.ceviDbGroupId })}
                 >
                   <Plus /> {s.name}
-                  <span className="text-xs font-normal text-fg-subtle">{s.personCount} Pers.</span>
+                  <span className="text-xs font-normal text-fg-subtle">{t('x.personCount', { count: s.personCount })}</span>
                 </Button>
               </li>
             ))}
@@ -152,12 +152,12 @@ export function DepartmentStufenPanel() {
             <li key={stufe.id} className="flex items-center gap-3 px-3 py-2">
               <Input
                 defaultValue={stufe.name}
-                aria-label={`Name der Stufe ${stufe.name}`}
+                aria-label={t('x.nameAria', { name: stufe.name })}
                 onBlur={(e) => rename(stufe, e.target.value)}
                 className="h-10 flex-1 border-transparent bg-transparent px-2 hover:border-line"
               />
               {!isVerein && stufe.ceviDbGroupId !== null && (
-                <Badge size="sm" title={`Mit ${org.authProviderShort}-Gruppe verknüpft`}>
+                <Badge size="sm" title={t('x.linked', { provider: org.authProviderShort })}>
                   <Database className="size-3" /> {stufe.ceviDbGroupId}
                 </Badge>
               )}
@@ -165,7 +165,7 @@ export function DepartmentStufenPanel() {
                 size="icon-sm"
                 variant="ghost"
                 onClick={() => remove(stufe)}
-                aria-label={`Stufe ${stufe.name} löschen`}
+                aria-label={t('x.deleteAria', { name: stufe.name })}
                 className="hover:text-danger-ink"
               >
                 <Trash2 />
@@ -184,10 +184,10 @@ export function DepartmentStufenPanel() {
           onChange={(e) => setName(e.target.value)}
           placeholder={
             isVerein
-              ? 'Neue Gruppe, z. B. Aktivriege'
-              : `Neue Stufe, z. B. ${org.slug === 'pfadi' ? 'Wölfe' : org.slug === 'jubla' ? 'Schar' : 'Hiskia'}`
+              ? t('x.newGroupPlaceholder')
+              : t('x.newLevelPlaceholder', { org: org.slug })
           }
-          aria-label={isVerein ? 'Name der neuen Gruppe' : 'Name der neuen Stufe'}
+          aria-label={isVerein ? t('x.newGroupAria') : t('x.newLevelAria')}
           minLength={2}
           className="h-10"
         />

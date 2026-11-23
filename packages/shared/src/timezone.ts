@@ -18,6 +18,21 @@ export const SIGNUP_OPEN_GRACE_MS = 2000;
  */
 export type IntlLocale = string;
 
+let defaultIntlLocale: IntlLocale = SWISS_LOCALE;
+
+/**
+ * Standardsprache für Formatierungen ohne ausdrückliche Sprache. Nur im Browser setzen (dort gibt es genau eine
+ * aktive Sprache, gesetzt von `LocaleSettingsProvider`); der Server bedient mehrere Sprachen gleichzeitig und
+ * übergibt die Sprache darum immer ausdrücklich.
+ */
+export function setDefaultIntlLocale(intlLocale: IntlLocale): void {
+  defaultIntlLocale = intlLocale;
+}
+
+export function getDefaultIntlLocale(): IntlLocale {
+  return defaultIntlLocale;
+}
+
 const MAX_CACHED_FORMATTERS = 200;
 const dateTimeFormats = new Map<string, Intl.DateTimeFormat>();
 const numberFormats = new Map<string, Intl.NumberFormat>();
@@ -40,7 +55,7 @@ function cached<T>(cache: Map<string, T>, key: string, create: () => T): T {
  */
 export function zurichDateTimeFormat(
   options: Omit<Intl.DateTimeFormatOptions, 'timeZone'>,
-  intlLocale: IntlLocale = SWISS_LOCALE
+  intlLocale: IntlLocale = defaultIntlLocale
 ): Intl.DateTimeFormat {
   const opts: Intl.DateTimeFormatOptions = { ...options, timeZone: SWISS_TIMEZONE };
   return cached(dateTimeFormats, `${intlLocale}|${JSON.stringify(opts)}`, () => new Intl.DateTimeFormat(intlLocale, opts));
@@ -50,7 +65,7 @@ export function zurichDateTimeFormat(
 export function formatSwissNumber(
   value: number,
   options: Intl.NumberFormatOptions = {},
-  intlLocale: IntlLocale = SWISS_LOCALE
+  intlLocale: IntlLocale = defaultIntlLocale
 ): string {
   return cached(numberFormats, `${intlLocale}|${JSON.stringify(options)}`, () => new Intl.NumberFormat(intlLocale, options)).format(
     value
@@ -58,7 +73,7 @@ export function formatSwissNumber(
 }
 
 /** Texte sprachgerecht vergleichen (Umlaute, Akzente), z. B. `names.sort((a, b) => compareSwissText(a, b))` */
-export function compareSwissText(a: string, b: string, intlLocale: IntlLocale = SWISS_LOCALE): number {
+export function compareSwissText(a: string, b: string, intlLocale: IntlLocale = defaultIntlLocale): number {
   return cached(collators, intlLocale, () => new Intl.Collator(intlLocale)).compare(a, b);
 }
 
@@ -97,7 +112,7 @@ export function formatZurichDateTime(date: Date | string | null | undefined): st
  */
 export function zurichDateTimeParts(
   date: Date | string | null | undefined,
-  intlLocale: IntlLocale = SWISS_LOCALE
+  intlLocale: IntlLocale = defaultIntlLocale
 ): { date: string; time: string } | null {
   const d = toValidDate(date);
   if (!d) return null;
@@ -111,7 +126,7 @@ export function zurichDateTimeParts(
  * Formatiert die Uhrzeit in Schweizer Zeit:
  * z. B. "18:00"
  */
-export function formatZurichTime(date: Date | string | null | undefined, intlLocale: IntlLocale = SWISS_LOCALE): string {
+export function formatZurichTime(date: Date | string | null | undefined, intlLocale: IntlLocale = defaultIntlLocale): string {
   const d = toValidDate(date);
   return d ? zurichDateTimeFormat(TIME_OPTIONS, intlLocale).format(d) : '';
 }
@@ -120,7 +135,7 @@ export function formatZurichTime(date: Date | string | null | undefined, intlLoc
  * Formatiert das Datum in Schweizer Zeit:
  * z. B. "24.10.2026"
  */
-export function formatZurichDate(date: Date | string | null | undefined, intlLocale: IntlLocale = SWISS_LOCALE): string {
+export function formatZurichDate(date: Date | string | null | undefined, intlLocale: IntlLocale = defaultIntlLocale): string {
   const d = toValidDate(date);
   return d ? zurichDateTimeFormat(DATE_OPTIONS, intlLocale).format(d) : '';
 }
@@ -132,7 +147,7 @@ export function formatZurichDate(date: Date | string | null | undefined, intlLoc
 export function formatDayKey(
   dayKey: string,
   options: Omit<Intl.DateTimeFormatOptions, 'timeZone'>,
-  intlLocale: IntlLocale = SWISS_LOCALE
+  intlLocale: IntlLocale = defaultIntlLocale
 ): string {
   const d = toValidDate(`${dayKey.slice(0, 10)}T12:00:00Z`);
   return d ? zurichDateTimeFormat(options, intlLocale).format(d) : '';
@@ -243,7 +258,7 @@ export function formatZurichDateRange(
 export function formatZurichShiftWhen(
   start: Date | string,
   end: Date | string,
-  intlLocale: IntlLocale = SWISS_LOCALE
+  intlLocale: IntlLocale = defaultIntlLocale
 ): string {
   const d = toValidDate(start);
   if (!d) return '';
@@ -304,7 +319,7 @@ export function formatDays(n: number): string {
 export function formatZurichTimeRange(
   start: Date | string,
   end: Date | string,
-  intlLocale: IntlLocale = SWISS_LOCALE
+  intlLocale: IntlLocale = defaultIntlLocale
 ): string {
   return `${formatZurichTime(start, intlLocale)}–${formatZurichTime(end, intlLocale)}`;
 }

@@ -19,7 +19,7 @@ import {
   parseLocale,
   type Locale,
 } from '@schichtplan/i18n';
-import { getRootDomain } from '@schichtplan/shared';
+import { getRootDomain, setDefaultIntlLocale } from '@schichtplan/shared';
 import { cn } from '../utils/cn';
 
 interface LocaleSettings {
@@ -32,6 +32,10 @@ const LocaleSettingsContext = createContext<LocaleSettings>({ enabled: ['de'], p
 
 /** Vom Server-Layout befüllt (`getRequestLocale`) */
 export function LocaleSettingsProvider({ children, ...settings }: LocaleSettings & { children: ReactNode }) {
+  const intlLocale = useIntlLocale();
+  // Datums- und Zahlenformate ohne ausdrückliche Sprache (timezone.ts) folgen im Browser der aktiven Sprache.
+  // Vor den Kindern setzen, damit schon deren erstes Rendern stimmt; auf dem Server nie (mehrere Sprachen gleichzeitig).
+  if (typeof window !== 'undefined') setDefaultIntlLocale(intlLocale);
   return <LocaleSettingsContext.Provider value={settings}>{children}</LocaleSettingsContext.Provider>;
 }
 

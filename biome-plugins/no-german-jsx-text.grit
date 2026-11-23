@@ -1,0 +1,18 @@
+// Mehrsprachigkeit: feste deutsche Texte in JSX gehören in die Kataloge (packages/i18n/src/messages).
+// Erkennt JSX-Text und Text-Attribute (title, label, placeholder, aria-label, hint, description, alt)
+// mit Umlauten oder typischen deutschen Wörtern. Regex nur mit (?:…), da Gruppen sonst als Variablen zählen.
+// Ausgenommen: Admin-Bereich (noch nicht übersetzt), deutsche Rechtstexte der Landing, Styleguide.
+language js
+
+or {
+  JsxText() as $text where {
+    $filename <: not r"(?s).*(?:apps.admin.|.datenschutz.|.impressum.|.nutzungsbedingungen.|.app.design.).*",
+    $text <: r"(?s).*(?:[äöüÄÖÜ]|\b(?:und|oder|der|die|das|nicht|für|noch|mit|kein|keine|Schicht|Schichten|Anlass|Helfende|Abteilung|Speichern|Abbrechen|Schliessen|Zurück)\b).*",
+    register_diagnostic(span=$text, message="Fester deutscher Text in JSX: über next-intl (t('…')) und die Kataloge in packages/i18n übersetzen.", severity="error")
+  },
+  JsxAttribute() as $attr where {
+    $filename <: not r"(?s).*(?:apps.admin.|.datenschutz.|.impressum.|.nutzungsbedingungen.|.app.design.).*",
+    $attr <: r"(?s)^(?:title|label|placeholder|aria-label|hint|description|alt)=\"[^\"]*(?:[äöüÄÖÜ]|\b(?:und|oder|der|die|das|nicht|für|noch|mit|kein|keine|Schicht|Schichten|Anlass|Helfende|Abteilung)\b)[^\"]*\"$",
+    register_diagnostic(span=$attr, message="Fester deutscher Text in einem JSX-Attribut: über next-intl (t('…')) übersetzen.", severity="error")
+  }
+}

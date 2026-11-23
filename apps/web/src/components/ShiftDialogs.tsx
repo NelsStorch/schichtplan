@@ -1171,7 +1171,7 @@ function OrganizerForm({
         </Field>
       ) : (
         <Field
-          label={`${org.nicknameTerm} oder E-Mail`}
+          label={t('x.whoLabel', { nickname: org.nicknameTerm })}
           required
           hint={
             isVerein
@@ -1182,7 +1182,7 @@ function OrganizerForm({
           <Input
             value={form.who}
             autoFocus
-            placeholder={`${org.nicknameTerm} oder E-Mail`}
+            placeholder={t('x.whoLabel', { nickname: org.nicknameTerm })}
             onChange={(e) => setForm({ ...form, who: e.target.value })}
           />
         </Field>

@@ -81,7 +81,19 @@
     "leaderRole": "Responsabile",
     "okContactRole": "Contatto organizzazione",
     "teamWithYou": "Con te nel turno: <bold>{helpers}</bold>",
-    "teamNoneYet": "Nessun altro volontario iscritto per ora"
+    "teamNoneYet": "Nessun altro volontario iscritto per ora",
+    "calendar": {
+      "lead": "Responsabile",
+      "role": "Ruolo: {role}",
+      "task": "Mansione: {task}",
+      "category": "Categoria: {category}",
+      "leaders": "Responsabili turno / giorno: {names}",
+      "coHelpers": "Assegnati con te: {names}",
+      "event": "Evento: {event}",
+      "unit": "Sezione: {name}",
+      "file": "i-miei-turni",
+      "shiftFile": "turno"
+    }
   },
   "replacementDialog": {
     "titleSelf": "Cerca sostituto/a",
@@ -335,7 +347,15 @@
       "linkTakenBadge": "Link già utilizzato",
       "unlockAccessAction": "Sblocca accesso",
       "notUnlockedForYou": "Non autorizzato",
-      "signupForTaskAction": "Iscriviti a questa mansione"
+      "signupForTaskAction": "Iscriviti a questa mansione",
+      "x": {
+        "shift": "Turno",
+        "shareFree": "{count, plural, one {Ancora # posto libero.} other {Ancora # posti liberi.}}",
+        "signedUpAria": "Volontari iscritti",
+        "replacementAria": "Cercasi sostituto",
+        "shareReplacement": "Cercasi sostituto: {shift} a {event} ({when}). Lo prendi tu?",
+        "shareShift": "{shift} a {event} ({when}).{need} Ti iscrivi?"
+      }
     },
     "ticket": {
       "ariaLabel": "Turno {title}, dalle {from} alle {to}, {status}",
@@ -506,7 +526,15 @@
       "directHandover": "{minutes} min passaggio di consegne",
       "breakTime": "{duration} di pausa",
       "blockedReasonSignupClosed": "Le iscrizioni sono chiuse.",
-      "thisDepartment": "questo gruppo"
+      "thisDepartment": "questo gruppo",
+      "x": {
+        "committeeAria": "Comitato organizzativo"
+      }
+    },
+    "x": {
+      "collision": "Sovrapposizione con uno dei tuoi turni",
+      "tasksAria": "Mansioni",
+      "filledAria": "{filled} posti su {total} coperti"
     }
   },
   "ok": {
@@ -548,7 +576,8 @@
       "noPermissionArea": "Non hai l'autorizzazione per «{area}» in questo evento. Chiedi al CO o alla direzione del gruppo.",
       "noPermissionGeneral": "L'area CO è riservata al comitato organizzatore, alla direzione gruppo e a chi può visualizzare tutti gli eventi.",
       "toShiftPlan": "Al piano turni",
-      "helpGuide": "Guida nel centro assistenza"
+      "helpGuide": "Guida nel centro assistenza",
+      "sectionsAria": "Sezioni"
     },
     "overview": {
       "title": "Panoramica",
@@ -821,7 +850,56 @@
       "createdSuccessDesc": "Creati {shifts} turni per «{title}» ({slots} posti).",
       "createdSuccessDescNoTitle": "Creati {shifts} turni ({slots} posti).",
       "createFailed": "Creazione non riuscita",
-      "slotsIncreased": "{title}: posti aumentati a {count}"
+      "slotsIncreased": "{title}: posti aumentati a {count}",
+      "x": {
+        "hoursPreset": "{hours} h",
+        "overlapNonePreset": "0 min (nessuno)",
+        "minutesShort": "{minutes} min",
+        "footerSummary": "{shifts, plural, one {# turno} other {# turni}} · {slots, plural, one {# posto} other {# posti}} ciascuno = {total} posti in totale",
+        "noneGenerated": "Nessun turno generato",
+        "createCount": "{count, plural, one {Crea # turno} other {Crea # turni}}",
+        "create": "Crea",
+        "titleLabel": "Stand / titolo del turno (facoltativo)",
+        "titleHint": "p. es. griglia, cassa, bar – o lascia vuoto se contano solo le mansioni",
+        "titlePlaceholder": "p. es. stand griglia (facoltativo)",
+        "categoryLabel": "Categoria (facoltativa)",
+        "categoryHint": "Per raggruppare per settore/stand",
+        "categoryPlaceholder": "p. es. stand, cucina",
+        "setupTeardown": "Turni di allestimento o smontaggio",
+        "minAgeAll": "Età minima per tutto il turno:",
+        "none": "Nessuna",
+        "tasksTitle": "Mansioni e posti per turno",
+        "tasksText": "Stabilisci quali mansioni e quante persone servono per turno ({count, plural, one {# posto} other {# posti}} per turno).",
+        "addTask": "Aggiungi mansione",
+        "fromCatalog": "Aggiungi dal catalogo delle mansioni:",
+        "taskNumber": "Mansione n. {number}",
+        "removeTask": "Rimuovi mansione",
+        "taskName": "Nome della mansione *",
+        "taskNameHint": "p. es. griglia, cassa, jolly",
+        "taskNamePlaceholder": "p. es. griglia",
+        "slots": "Posti",
+        "less": "Meno",
+        "more": "Più",
+        "minAge": "Età minima",
+        "taskNote": "Nota o descrizione della mansione (facoltativa)",
+        "operatingPeriod": "Periodo complessivo di attività",
+        "totalHours": "{hours} ore in totale",
+        "start": "Inizio *",
+        "end": "Fine *",
+        "duration": "Durata per turno",
+        "durationValue": "{minutes} minuti ({hours} h)",
+        "overlap": "Sovrapposizione per il cambio",
+        "overlapNone": "Nessuna",
+        "overlapLead": "{minutes} min di anticipo",
+        "overlapInfo": "Ogni cambio inizia <strong>{minutes} minuti prima della fine del turno precedente</strong> per il passaggio di consegne.",
+        "firstEarlier": "Inizia anche il 1° turno {minutes} min prima (p. es. per allestire lo stand prima dell’apertura)",
+        "preview": "Anteprima ({count, plural, one {# turno} other {# turni}})",
+        "helpersNeeded": "{count} volontari necessari",
+        "noneGeneratedHint": "Nessun turno generato. Controlla orario di inizio e fine.",
+        "oneSlot": "1 posto ({title})",
+        "shift": "Turno",
+        "handoverBadge": "+{minutes} min cambio"
+      }
     },
     "tasks": {
       "pageTitle": "Catalogo mansioni",
@@ -1011,7 +1089,20 @@
         "submit": "Assegna ({count})",
         "submitSingle": "Assegna",
         "successToast": "{name} assegnato",
-        "failToast": "Assegnazione non riuscita"
+        "failToast": "Assegnazione non riuscita",
+        "x": {
+          "pair": "«{a}» e «{b}»",
+          "soFar": "{count}{target} {count, plural, one {turno} other {turni}} finora",
+          "age": "{age} anni",
+          "multiHint": "puoi scegliere più turni",
+          "selectedCount": "Selezionati: {count, plural, one {# turno} other {# turni}}",
+          "after": "poi {after}/{target}",
+          "targetMet": "obiettivo raggiunto",
+          "shift": "Turno",
+          "taskFor": "Mansione per {shift}",
+          "deselect": "Deseleziona {shift}",
+          "overlap": "I turni scelti {pair} si sovrappongono."
+        }
       },
       "history": {
         "loadError": "Impossibile caricare la cronologia: {error}",
@@ -1024,7 +1115,12 @@
         "deregisteredNoReason": "Disiscritto",
         "attendance": "Presenza: {status}",
         "messageSent": "Messaggio ricevuto: «{subject}»",
-        "emptyHistory": "Nessuna voce nella cronologia per ora."
+        "emptyHistory": "Nessuna voce nella cronologia per ora.",
+        "x": {
+          "title": "Cronologia",
+          "lastMessaged": "ultimo messaggio {date}",
+          "notMessaged": "non ancora contattato/a dal comitato"
+        }
       },
       "hours": {
         "title": "Statistiche ore volontari",
@@ -1043,7 +1139,56 @@
         "summaryTotalHours": "Ore totali",
         "summaryAvgHours": "Media ore per volontario",
         "configTitle": "Impostazioni di calcolo",
-        "configIncludeUnconfirmed": "Includi anche i turni non confermati"
+        "configIncludeUnconfirmed": "Includi anche i turni non confermati",
+        "x": {
+          "helpLink": "Guida nel centro assistenza",
+          "hours": "{hours} h",
+          "footerSummary": "per tutti i {helpers} volontari attivi in {levels} unità ({shifts} impegni)",
+          "close": "Chiudi",
+          "hoursUnit": "h",
+          "hoursSplit": "{event} h evento · {setup} h allestimento",
+          "signups": "Iscrizioni ai turni",
+          "rankingCalculated": "Classifica calcolata",
+          "includeSetup": "Includi allestimento e smontaggio",
+          "colEvent": "Evento",
+          "colSetup": "Allestimento",
+          "noHelpers": "Nessun volontario trovato.",
+          "guest": "Ospite",
+          "noLevels": "Nessuna unità con ore di volontariato.",
+          "pctOfAll": "{pct} % di tutte le ore",
+          "levelSummary": "{people, plural, one {# persona} other {# persone}} · {shifts, plural, one {# impegno} other {# impegni}} · Ø {avg} h/persona",
+          "showHelpers": "Mostra volontari",
+          "involved": "Persone coinvolte ({count}):"
+        }
+      },
+      "x": {
+        "csvName": "Nome",
+        "csvFullName": "Nome completo",
+        "csvLevels": "Unità",
+        "csvAge": "Età",
+        "csvType": "Tipo",
+        "csvShifts": "Turni",
+        "csvTarget": "Obiettivo",
+        "csvMissing": "Mancanti",
+        "csvHours": "Ore",
+        "csvStatus": "Stato",
+        "csvAssignedShifts": "Turni assegnati",
+        "guest": "Ospite",
+        "account": "Account",
+        "deregistered": "Disiscritto/a",
+        "csvFilePrefix": "volontari",
+        "levelAria": "Unità",
+        "countFilterAria": "Filtra per numero di turni",
+        "countAria": "Numero di turni",
+        "dayAria": "Giorno",
+        "personTypeAria": "Tipo di persona",
+        "bucketTitle": "{people} con {count, plural, one {# turno} other {# turni}}",
+        "selected": "{people} selezionati",
+        "exportTitle": "Elenco filtrato in CSV (Excel)",
+        "selectAria": "Seleziona {name}",
+        "guestNoMessages": "Gli ospiti senza account non ricevono messaggi",
+        "openShift": "Apri il turno nel piano",
+        "shift": "Turno"
       }
     },
     "attendance": {
@@ -1078,7 +1223,40 @@
       "statusPresent": "Presente",
       "statusExcused": "Giustificato",
       "statusNoShow": "Assente",
-      "statusOpen": "Aperto"
+      "statusOpen": "Aperto",
+      "statusLong": {
+        "PRESENT": "Presente",
+        "EXCUSED": "Giustificato/a",
+        "NO_SHOW": "Assente"
+      },
+      "x": {
+        "colDay": "Giorno",
+        "colTime": "Orario",
+        "colShift": "Turno",
+        "colTask": "Mansione",
+        "colName": "Nome",
+        "colAttendance": "Presenza",
+        "colRecorded": "Registrato",
+        "colPresent": "C’è",
+        "colStatus": "Stato",
+        "csvFilePrefix": "presenza",
+        "printBlocked": "Anteprima di stampa bloccata",
+        "printBlockedDesc": "Consenti i pop-up per questa pagina.",
+        "printTitle": "Presenza: {event}",
+        "offTitle": "Il registro presenze è disattivato",
+        "offDesc": "Attivalo in «Impostazioni». Lì scegli anche se solo il comitato spunta o se i volontari si registrano anche da soli con il codice QR.",
+        "qrAlt": "Codice QR per il check-in autonomo",
+        "copyLink": "Copia link",
+        "qrNote": "Creato con il generatore QR di {name}. Il link contiene un codice segreto: chi lo conosce può registrarsi da ovunque. Rinnovalo se necessario.",
+        "allDays": "Tutti i giorni",
+        "clearSearch": "Cancella ricerca",
+        "noQrTitle": "Nessun codice QR",
+        "noQrText": "Salva di nuovo le impostazioni per creare un codice di check-in.",
+        "running": "in corso",
+        "presentOf": "{present} / {total} presenti",
+        "attendanceOf": "Presenza di {name}",
+        "statusSelected": "{status} (clicca di nuovo = aperto)"
+      }
     },
     "access": {
       "closedBadge": "Iscrizioni chiuse",
@@ -1106,7 +1284,50 @@
       "colEmail": "Email",
       "colPhone": "Telefono",
       "colSignedUpAt": "Iscritto il",
-      "colShifts": "Turni"
+      "colShifts": "Turni",
+      "x": {
+        "deleteTitle": "Eliminare il link «{label}»?",
+        "deleteLoseAccess": "{count, plural, one {# persona perde l’accesso.} other {# persone perdono l’accesso.}} Le iscrizioni esistenti restano.",
+        "deleteNoLonger": "Il link non funzionerà più.",
+        "noLinksDesc": "Un link personale vale per una persona, un link di gruppo per tutti quelli che lo hanno (p. es. chat dei genitori).",
+        "kindGroup": "Gruppo",
+        "kindPersonal": "Personale",
+        "expired": "Scaduto",
+        "notRedeemed": "Non ancora utilizzato",
+        "nobodyYet": "Ancora nessuno",
+        "redeemedBy": "Utilizzato da {names}",
+        "deadline": "Valido fino al: {date}",
+        "deleteAria": "Elimina il link {label}",
+        "kindPersonalText": "Vale solo per il primo account che lo utilizza.",
+        "kindGroupText": "Vale per tutti quelli che hanno il link, p. es. nella chat di gruppo.",
+        "createTitle": "Crea un link di accesso",
+        "forWhom": "Per chi?",
+        "forWhomHint": "Visibile solo a te, p. es. «Mamma di Luca» o «Chat genitori Lupetti».",
+        "kindAria": "Tipo di link",
+        "expiresLabel": "Scadenza (facoltativa)",
+        "expiresHint": "Fino a quando il link può essere utilizzato. Le persone già abilitate mantengono l’accesso.",
+        "cancel": "Annulla",
+        "createAndCopy": "Crea e copia",
+        "csvName": "Nome",
+        "csvFirstName": "Nome",
+        "csvLastName": "Cognome",
+        "csvEmail": "E-mail",
+        "csvMobile": "Cellulare",
+        "csvBirthDate": "Data di nascita",
+        "csvUnit": "Sezione",
+        "csvShifts": "Turni",
+        "nobodySignedUp": "Ancora nessun iscritto",
+        "searchAria": "Cerca volontari e risposte",
+        "clearSearch": "Cancella ricerca",
+        "resetFilter": "Reimposta filtro",
+        "noMatches": "Nessuna voce corrispondente",
+        "noMatchesDesc": "Modifica la ricerca o il filtro delle risposte.",
+        "colPerson": "Persona",
+        "colContact": "Contatto",
+        "noUnit": "senza sezione",
+        "viaLink": "tramite link",
+        "born": "nato/a il {date}"
+      }
     },
     "catering": {
       "pageTitle": "Ristorazione e Buoni",
@@ -1152,7 +1373,60 @@
       "overviewRecentTitle": "Ultime convalide allo stand",
       "overviewRecentTime": "{time}",
       "overviewRefreshBtn": "Aggiorna",
-      "overviewCloseBtn": "Chiudi"
+      "overviewCloseBtn": "Chiudi",
+      "x": {
+        "resetConfirmTitle": "Riattivare il buono?",
+        "resetConfirmDesc": "«{item}» di {name} torna su «Aperto / utilizzabile» (p. es. dopo uno scorrimento involontario).",
+        "reset": "Reimposta",
+        "resetDone": "Buono reimpostato",
+        "resetDoneDesc": "{item} ({name}) può essere di nuovo utilizzato.",
+        "resetFailed": "Reimpostazione non riuscita",
+        "csvPerson": "Persona",
+        "csvRole": "Ruolo",
+        "csvVoucher": "Buono",
+        "csvStatus": "Stato",
+        "csvRedeemedAt": "Utilizzato il",
+        "csvShift": "Turno",
+        "csvShiftStart": "Inizio turno",
+        "csvShiftEnd": "Fine turno",
+        "csvLeader": "Responsabile del turno",
+        "csvHelper": "Volontario",
+        "csvRedeemed": "Utilizzato",
+        "csvOpen": "Aperto",
+        "shift": "Turno",
+        "csvFilePrefix": "buoni-pasto",
+        "disabledTitle": "I buoni pasto non sono attivati",
+        "disabledDesc": "Attiva i buoni digitali per pasti e bevande nelle impostazioni dell’evento, così volontari e responsabili ricevono automaticamente i loro buoni per turno.",
+        "enableInSettings": "Attiva nelle impostazioni",
+        "validAlways": "Sempre valido (senza fascia oraria)",
+        "validFromStart": "Dall’inizio del turno o dal check-in",
+        "validEarly": "{count, plural, one {Da # ora prima dell’inizio del turno (o del check-in)} other {Da # ore prima dell’inizio del turno (o del check-in)}}",
+        "validity": "Validità: {label}.",
+        "refresh": "Aggiorna",
+        "csvExport": "Esporta CSV",
+        "configure": "Configura",
+        "loading": "Caricamento di buoni e statistiche…",
+        "inclLeaders": "Volontari e responsabili inclusi",
+        "collected": "Ritirati allo stand",
+        "notRedeemed": "Non ancora utilizzati",
+        "byItemTitle": "Bilancio per tipo di buono",
+        "resetFilter": "Reimposta filtro",
+        "pctRedeemed": "{pct} % utilizzati",
+        "redeemedCount": "<strong>{count}</strong> utilizzati",
+        "openOf": "{open} aperti (su {total})",
+        "allTokens": "Tutti i buoni ({count})",
+        "allTokensFiltered": "Tutti i buoni ({shown} su {total})",
+        "allTokensHint": "Per i volontari senza smartphone puoi cercare qui i buoni e convalidarli manualmente – o reimpostare i buoni utilizzati per errore.",
+        "filterStatus": "Filtra per stato",
+        "filterRole": "Filtra per ruolo",
+        "filterItem": "Filtra per tipo di buono",
+        "resetTitle": "Reimposta il buono se utilizzato per errore",
+        "availableFrom": "Dalle {time}",
+        "recentTitle": "Ultimi utilizzi allo stand",
+        "timeOClock": "{time}"
+      },
+      "defaultItemMeal": "1x pasto volontari",
+      "defaultItemDrink": "1x bevanda"
     },
     "physicalBons": {
       "createTitle": "Stampa nuovo lotto di buoni",
@@ -1169,7 +1443,25 @@
       "batchCombiTitle": "Fogli combinati #{id}",
       "batchSingleTitle": "Buoni singoli #{id}",
       "cardsCount": "{count, plural, one {# tessera} other {# tessere}}",
-      "totalBonsCount": "{count, plural, one {# buono} other {# buoni}}"
+      "totalBonsCount": "{count, plural, one {# buono} other {# buoni}}",
+      "x": {
+        "helpersSignedUp": "{count} volontari iscritti",
+        "typeFormat": "Tipo e formato del buono",
+        "combiText": "1 biglietto stampato contiene tutti i buoni del turno (p. es. {items}). Allo stand si possono convalidare singolarmente o insieme.",
+        "recommended": "Consigliato per le feste",
+        "singleText": "Un biglietto per articolo (p. es. 1 biglietto per {first}, 1 biglietto per {second}).",
+        "food": "cibo",
+        "drinks": "bevande",
+        "classic": "Buoni classici a strappo",
+        "setExact": "Imposta per tutti i {count} volontari",
+        "batchName": "Nome del lotto (facoltativo)",
+        "batchNameHint": "p. es. «Riserva stand griglia» o «Stampa principale»",
+        "batchPlaceholder": "p. es. lotto {number}",
+        "previousBatches": "Lotti stampati finora ({count})",
+        "refresh": "Aggiorna",
+        "alreadyRedeemed": "{count} già utilizzati",
+        "downloadTitle": "Scarica il foglio A4 in PDF"
+      }
     },
     "questions": {
       "pageTitle": "Domande",
@@ -1207,7 +1499,25 @@
       "sensitiveDesc": "(ad es. allergie, farmaci). I volontari devono fornire esplicito consenso e le risposte vengono sempre eliminate dopo il periodo prestabilito.",
       "optionsPlaceholder": "Un’opzione per riga, ad es.\nS\nM\nL",
       "optionsAria": "Opzioni di risposta",
-      "customQuestionBtn": "Domanda personalizzata"
+      "customQuestionBtn": "Domanda personalizzata",
+      "presets": {
+        "ADDRESS": {
+          "label": "Indirizzo (via, NPA, località)",
+          "hint": "p. es. per spedizioni o assicurazione"
+        },
+        "DIET": {
+          "label": "Allergie / alimentazione",
+          "hint": "p. es. vegetariano, senza lattosio, noci"
+        },
+        "TSHIRT": {
+          "label": "Taglia della maglietta",
+          "hint": "Scelta da XS a XXL"
+        },
+        "EMERGENCY": {
+          "label": "Contatto di emergenza (nome e telefono)",
+          "hint": "Chi chiama il comitato in caso di emergenza"
+        }
+      }
     },
     "settings": {
       "pageTitle": "Impostazioni",
@@ -1312,6 +1622,12 @@
       "onlyOpenDesc": "Da affiggere quando si cercano ancora volontari.",
       "pdfError": "Impossibile creare il PDF",
       "exportFailed": "Esportazione non riuscita"
+    },
+    "roles": {
+      "okLead": "Direzione del comitato",
+      "okMember": "Membro del comitato",
+      "platformAdmin": "Amministratore piattaforma",
+      "notFound": "Evento non trovato"
     }
   },
   "home": {
@@ -1373,7 +1689,10 @@
     "otherLevelsDismissBtn": "Non mostrare più",
     "offlineStatus": "Modalità offline:",
     "offlineAsOf": "Aggiornato al: {stand}. ",
-    "offlineReadOnlyNotice": "Sola lettura (iscrizione e cancellazione richiedono Internet)."
+    "offlineReadOnlyNotice": "Sola lettura (iscrizione e cancellazione richiedono Internet).",
+    "x": {
+      "mainNav": "Navigazione principale"
+    }
   },
   "tile": {
     "statusLive": "In corso",
@@ -1447,7 +1766,10 @@
       "secondaryColorLabel": "Colore secondario della sezione",
       "customSecondaryColorTitle": "Scegli colore secondario personalizzato",
       "qrStyleCornersTwoToneDesc": "Angoli di scansione nel colore secondario (ottimale per scanner)",
-      "qrStyleGradientTwoToneDesc": "Transizione diagonale dal colore primario a quello secondario"
+      "qrStyleGradientTwoToneDesc": "Transizione diagonale dal colore primario a quello secondario",
+      "x": {
+        "sectionsAria": "Sezioni"
+      }
     },
     "stufen": {
       "newStufePlaceholder": "Nuova branca, ad es. Castori",
@@ -1467,7 +1789,17 @@
       "emptyTitleOrg": "Ancora nessuna branca",
       "emptyDescVerein": "Crea i gruppi o le squadre della tua associazione, ad es. attivi, juniores, comitato.",
       "emptyDescOrg": "Crea le branche della tua {unitTerm}, ad es. {examples}.",
-      "groupIdHint": "ID {provider} opzionale: numero del gruppo di branca in {dbHost}. Le branche di {provider} vengono create e collegate automaticamente."
+      "groupIdHint": "ID {provider} opzionale: numero del gruppo di branca in {dbHost}. Le branche di {provider} vengono create e collegate automaticamente.",
+      "x": {
+        "personCount": "{count} pers.",
+        "nameAria": "Nome dell’unità {name}",
+        "linked": "Collegato al gruppo {provider}",
+        "deleteAria": "Elimina l’unità {name}",
+        "newGroupPlaceholder": "Nuovo gruppo, p. es. attivi",
+        "newGroupAria": "Nome del nuovo gruppo",
+        "newLevelPlaceholder": "Nuova unità, p. es. {org, select, pfadi {Lupetti} jubla {Gruppo} other {Cadetti}}",
+        "newLevelAria": "Nome della nuova unità"
+      }
     },
     "invite": {
       "title": "Invita persone & link di invito",
@@ -1482,7 +1814,14 @@
       "emailPlaceholder": "Inserisci indirizzi e-mail (separati da virgola o uno per riga)…",
       "sendBtn": "Invita",
       "sendingBtn": "Invio in corso…",
-      "sentSuccess": "{count, plural, one {# invito inviato} other {# inviti inviati}}"
+      "sentSuccess": "{count, plural, one {# invito inviato} other {# inviti inviati}}",
+      "x": {
+        "emailsAria": "Indirizzi e-mail per l’invito",
+        "roleAria": "Ruolo / diritti all’invito",
+        "asMember": "Come membro (senza diritti aggiuntivi)",
+        "withRight": "Con diritto: {label}",
+        "emailsFound": "{count, plural, one {# indirizzo e-mail riconosciuto} other {# indirizzi e-mail riconosciuti}}"
+      }
     },
     "audit": {
       "loadFailedToast": "Impossibile caricare il registro",
@@ -1562,7 +1901,15 @@
       "unconfirmHome": "Revoca conferma",
       "cancel": "Annulla",
       "save": "Salva",
-      "personSavedToast": "{name} salvato"
+      "personSavedToast": "{name} salvato",
+      "x": {
+        "viewAria": "Vista",
+        "confirmAria": "Conferma {name}",
+        "colPerson": "Persona",
+        "levels": "Unità",
+        "yes": "{label}: sì",
+        "no": "{label}: no"
+      }
     },
     "permissions": {
       "presetLegend": "Modello",
@@ -1571,7 +1918,8 @@
       "presetCustom": "Permessi personalizzati",
       "groupDepartment": "Gruppo",
       "groupEvents": "Eventi (si applica a tutti gli eventi del gruppo)",
-      "grantableHint": "Puoi assegnare solo le autorizzazioni che hai tu stesso, e complessivamente meno di quante ne hai."
+      "grantableHint": "Puoi assegnare solo le autorizzazioni che hai tu stesso, e complessivamente meno di quante ne hai.",
+      "memberNoRights": "Membro senza diritti particolari"
     },
     "stats": {
       "loadFailedToast": "Impossibile caricare le statistiche",
@@ -1812,7 +2160,10 @@
       "functionLabel": "Settore / Mansione",
       "functionPlaceholder": "Logistica & Grill",
       "saveBtn": "Salva",
-      "addBtn": "Inserisci nel comitato"
+      "addBtn": "Inserisci nel comitato",
+      "x": {
+        "whoLabel": "{nickname} o e-mail"
+      }
     },
     "dayResponsibles": {
       "title": "Responsabili del giorno",
@@ -1909,7 +2260,10 @@
     "contrastSuccessSingle": "Il colore soddisfa tutti i requisiti di contrasto per manifesti e schermi.",
     "qrPreviewAria": "Anteprima codice QR",
     "qrPrimary": "QR princ.: {ratio}:1",
-    "qrSecondary": "QR sec.: {ratio}:1"
+    "qrSecondary": "QR sec.: {ratio}:1",
+    "x": {
+      "loading": "Caricamento anteprima …"
+    }
   },
   "eventMeta": {
     "leaders": "Responsabili"
@@ -2149,7 +2503,15 @@
     "countdownWaiting": "Conto alla rovescia di sicurezza: conferma possibile tra {seconds} secondi…",
     "countdownDone": "Conto alla rovescia terminato. Ora puoi confermare la modifica.",
     "slugWaitBtn": "Attendere prego ({seconds}s)",
-    "slugConfirmBtn": "Modifica & salva comunque"
+    "slugConfirmBtn": "Modifica & salva comunque",
+    "banners": {
+      "chilbi": "Sagra e tendone",
+      "sola": "Campo estivo",
+      "lagerfeuer": "Fuoco di campo e bosco",
+      "grill": "Griglia e ristoro",
+      "huette": "Capanna e montagna",
+      "weihnachten": "Natale nel bosco e inverno"
+    }
   },
   "command": {
     "back": "Indietro",
@@ -2204,6 +2566,551 @@
     "copiedToast": "{title} copiato",
     "copyFailedToast": "Copia non riuscita",
     "icsDownloadedToast": "File di calendario scaricato",
-    "icsDownloadedDesc": "«{slug}.ics» è stato salvato."
+    "icsDownloadedDesc": "«{slug}.ics» è stato salvato.",
+    "wa": {
+      "shiftHeading": "*Cercasi volontari per «{event}»!* 🙋",
+      "shiftLine": "Turno: *{shift}*",
+      "time": "⏰ Orario: {time}",
+      "area": "📍 Settore: {area}",
+      "freeSlots": "👥 {count, plural, one {Ancora # posto libero!} other {Ancora # posti liberi!}}",
+      "viewAndSignUp": "👉 Guarda e iscriviti direttamente qui:",
+      "callLabel": "Appello WhatsApp",
+      "eventHeading": "*Appello ai volontari per «{event}»!* ⛺",
+      "date": "📅 Data: {date}",
+      "missingHands": "{count, plural, one {Cerchiamo ancora # volontario per i seguenti turni:} other {Cerchiamo ancora # volontari per i seguenti turni:}}",
+      "gapLine": "• *{shift}* ({time}): {count, plural, one {ancora # posto} other {ancora # posti}}",
+      "moreShifts": "… e {count, plural, one {un altro turno} other {altri # turni}}.",
+      "openAndSignUp": "👉 Apri il piano dei turni e iscriviti subito:",
+      "eventCallLabel": "Appello WhatsApp ({count, plural, one {# posto libero} other {# posti liberi}})"
+    },
+    "text": {
+      "planHeading": "📋 Piano dei turni: {event} ({date})",
+      "totalShifts": "Totale turni: {count}",
+      "noHelpers": "Nessun volontario assegnato",
+      "planLabel": "Piano dei turni come testo",
+      "noEmails": "Nessun indirizzo e-mail registrato",
+      "helperEmails": "{count, plural, one {# indirizzo e-mail di volontari} other {# indirizzi e-mail di volontari}}",
+      "phoneHeading": "📞 Elenco telefonico volontari: {event}",
+      "noPhone": "Nessun numero di telefono",
+      "phoneLabel": "Elenco telefonico"
+    },
+    "toast": {
+      "greetingName": "Ciao {name}! ",
+      "greeting": "Ciao! ",
+      "signedUp": "Iscrizione riuscita!",
+      "signedUpDesc": "Ora sei assegnato/a a «{shift}».",
+      "signUpFailed": "Iscrizione non riuscita",
+      "cancelled": "Impegno annullato",
+      "cancelledDesc": "L’iscrizione a «{shift}» è stata rimossa.",
+      "cancelFailed": "Annullamento non riuscito",
+      "replacementWithdrawn": "«Cercasi sostituto» ritirato",
+      "replacementWithdrawnDesc": "Riprendi il turno normalmente.",
+      "replacementNote": "Cercasi sostituto (segnalato dal menu comandi)",
+      "replacementOffered": "«Cercasi sostituto» segnalato",
+      "replacementOfferedDesc": "Il tuo turno è stato offerto ad altri volontari.",
+      "actionFailed": "Azione non riuscita",
+      "checkedIn": "{name} registrato/a",
+      "attendanceReset": "Presenza azzerata",
+      "markedPresent": "Segnato/a come presente",
+      "statusReset": "Lo stato è stato azzerato",
+      "checkInFailed": "Check-in non riuscito",
+      "checkInFailedDesc": "Non è stato possibile aggiornare la presenza.",
+      "allCheckedIn": "Tutti i volontari registrati",
+      "peopleUpdated": "{count, plural, one {# persona aggiornata} other {# persone aggiornate}}",
+      "updateFailed": "Aggiornamento non riuscito",
+      "darkOn": "Modalità scura attivata",
+      "lightOn": "Modalità chiara attivata",
+      "systemOn": "Tema di sistema attivo"
+    },
+    "help": {
+      "keyboardTitle": "Navigazione da tastiera e scorciatoie",
+      "keyboardSubtitle": "↑ / ↓ per navigare · ↵ per eseguire · ⇥ Tab per le sotto-azioni · Esc per chiudere",
+      "open": "Apri",
+      "openKeys": "⌘K o Ctrl+K",
+      "mainAction": "Azione principale",
+      "subActions": "Sotto-azioni",
+      "backClose": "Indietro / chiudi",
+      "instantActions": "Azioni immediate",
+      "instantValue": "⚡ Direttamente, senza cambiare pagina",
+      "prefixPeopleTitle": "Prefisso @ per le persone",
+      "prefixPeopleSubtitle": "Digita «@nome» per cercare velocemente volontari e contatti",
+      "prefixEventsTitle": "Prefisso # o > per gli eventi",
+      "prefixEventsSubtitle": "Digita «#autunno» o «>campo» per cercare solo eventi",
+      "prefixShiftsTitle": "Prefisso : o ! per i turni",
+      "prefixShiftsSubtitle": "Digita «:cucina» o «!libero» per trovare subito turni liberi"
+    },
+    "ctx": {
+      "helperView": "Passa alla vista volontari",
+      "helperViewSubtitle": "Apri {event} dal punto di vista dei volontari",
+      "copyEventLink": "Copia il link dell’evento",
+      "area": "Area",
+      "helperViewValue": "Vista volontari",
+      "okArea": "Passa all’area comitato",
+      "okAreaSubtitle": "Gestisci pianificazione, turni e volontari di {event}",
+      "toShifts": "Vai ai turni",
+      "toHelpers": "Vai ai volontari",
+      "okCentral": "Centrale del comitato",
+      "role": "Ruolo",
+      "okPlanning": "Pianificazione del comitato",
+      "gapFinder": "Trova lacune: {count, plural, one {# posto libero} other {# posti liberi}}",
+      "gapFinderSubtitle": "{count, plural, one {# turno ha ancora bisogno di aiuto} other {# turni hanno ancora bisogno di aiuto}}",
+      "openCount": "{count} liberi",
+      "copyWaCall": "Copia l’appello WhatsApp",
+      "copyWaCallSubtitle": "Messaggio pronto con tutti i turni liberi per la chat",
+      "copySignupLink": "Copia il link per iscriversi",
+      "signupLinkLabel": "Link per iscriversi",
+      "openSpots": "Posti liberi",
+      "helpersWanted": "{count} volontari cercati",
+      "affectedShifts": "Turni interessati",
+      "copyLink": "Copia link",
+      "copyWaCallSubtitle2": "Testo pronto per le chat di gruppo con data, lacune e link",
+      "copyPlanText": "Copia il piano come testo",
+      "copyPlanTextSubtitle": "Panoramica completa di turni e volontari per e-mail o chat",
+      "copyEmails": "Copia la lista e-mail dei volontari",
+      "copyEmailsSubtitle": "Indirizzi di tutti i volontari assegnati per invii collettivi",
+      "copyPhones": "Copia l’elenco telefonico",
+      "copyPhonesSubtitle": "Nome, telefono e turni per emergenze e coordinamento",
+      "downloadIcs": "Scarica la voce di calendario (.ics)",
+      "downloadIcsSubtitle": "Importa direttamente in Calendario Apple, Outlook o nel calendario del telefono",
+      "addGoogle": "Aggiungi a Google Calendar",
+      "addGoogleSubtitle": "Apre Google Calendar con la voce già compilata",
+      "newShift": "Crea un turno",
+      "newShiftSubtitle": "Aggiungi un turno a «{event}»",
+      "assignHelper": "Assegna un volontario manualmente",
+      "assignHelperSubtitle": "Assegna una persona a un turno di «{event}»",
+      "checkin": "Check-in volontari e codice QR",
+      "checkinSubtitle": "Verifica la presenza sul posto",
+      "print": "Stampa il piano / PDF",
+      "printSubtitle": "Crea una versione stampabile o un PDF di «{event}»"
+    },
+    "shift": {
+      "freeBadge": "{count} liberi",
+      "signUpNow": "⚡ Iscriviti subito (come {name})",
+      "signUpNowSubtitle": "Prendi subito il turno, senza cambiare pagina",
+      "cancelMine": "⚡ Annulla il mio impegno",
+      "cancelMineSubtitle": "Disiscriviti subito da questo turno",
+      "withdrawReplacement": "Ritira «cercasi sostituto»",
+      "offerReplacement": "Cerca un sostituto",
+      "withdrawReplacementSubtitle": "Riprendi il turno normalmente",
+      "offerReplacementSubtitle": "Offri il turno ad altri volontari",
+      "resetAttendance": "Azzera la presenza del turno ({count})",
+      "checkInAll": "Registra tutti i volontari del turno ({count})",
+      "markAllOpen": "Segna tutti come aperti",
+      "markAllPresent": "Segna tutti i volontari come presenti",
+      "checkOut": "Annulla presenza di {name}",
+      "checkIn": "Registra {name}",
+      "markOpen": "Segna come aperto",
+      "confirmPresent": "Conferma presenza",
+      "waTo": "Scrivi a {name} su WhatsApp",
+      "enterPhoneAndChat": "Inserisci il numero e apri la chat",
+      "copyWaCall": "Copia l’appello WhatsApp per questo turno",
+      "copyWaCallSubtitle": "Modello pronto con orario, settore e link",
+      "copyDetails": "Copia i dettagli del turno",
+      "general": "Generale",
+      "nobody": "Nessuno assegnato",
+      "detailShift": "📋 Turno: {shift}",
+      "detailEvent": "Evento: {event}",
+      "detailTime": "Orario: {time}",
+      "detailArea": "Settore: {area}",
+      "detailStaffing": "Copertura: {filled} su {total} ({free} liberi)",
+      "detailHelpers": "Volontari: {names}",
+      "detailNotes": "Note: {notes}",
+      "detailsLabel": "Dettagli del turno",
+      "copyDirectLink": "Copia il link diretto al turno",
+      "jumpTo": "Vai al turno nel piano",
+      "editInOk": "Modifica nell’area comitato",
+      "signUpQuick": "Iscriviti ora",
+      "cancelQuick": "Annulla impegno",
+      "copy": "Copia",
+      "assigned": "Assegnato/a",
+      "myShift": "Il mio turno",
+      "time": "Orario",
+      "category": "Categoria",
+      "freeOf": "{free} su {total}"
+    },
+    "person": {
+      "phonePrompt": "Numero di cellulare di {name} (p. es. 079 123 45 67):",
+      "presentAll": "Presente ({count})",
+      "presentPartial": "{present}/{total} presenti",
+      "shiftCount": "{count, plural, one {# turno} other {# turni}}",
+      "more": "(+{count} altri)",
+      "noShiftsIn": "Nessun turno in «{event}»",
+      "member": "Membro",
+      "resetAttendance": "Azzera la presenza di {name}",
+      "checkInAll": "Registra come presente ({shifts})",
+      "checkedInOf": "{present} turni su {total} registrati",
+      "shiftTitle": "Turno: {shift}",
+      "stillOpen": "Ancora aperto",
+      "resetShiftAttendance": "Azzera la presenza per «{shift}»",
+      "markShiftPresent": "Segna presente per «{shift}»",
+      "waTo": "Invia un WhatsApp a {name}",
+      "directChat": "Apri la chat con {phone}",
+      "call": "Chiama ({phone})",
+      "sms": "Invia SMS ({phone})",
+      "copyPhone": "Copia il numero",
+      "phoneLabel": "Numero di telefono",
+      "noMobile": "Nessun cellulare registrato (clicca per inserirlo)",
+      "emailTo": "Scrivi a {email}",
+      "copyEmail": "Copia l’indirizzo e-mail",
+      "assign": "Assegna a un turno",
+      "assignSubtitle": "Assegna manualmente la persona a un turno di «{event}»",
+      "eventFallback": "Evento",
+      "openInOk": "Apri tra i volontari (area comitato)",
+      "openInOkSubtitle": "Filtra la tabella dei volontari per «{name}»",
+      "callShort": "Chiama",
+      "assignedCount": "{count, plural, one {# turno assegnato} other {# turni assegnati}}",
+      "name": "Nome",
+      "phone": "Telefono",
+      "shifts": "Impegni",
+      "noShifts": "Nessun impegno"
+    },
+    "admin": {
+      "newEvent": "Crea un evento",
+      "newEventSubtitle": "Aggiungi un campo, una festa o un evento",
+      "editUnit": "Modifica: {unit}",
+      "editUnitSubtitle": "Nome, logo, colore e impostazioni della pagina iniziale",
+      "levels": "Gestisci le unità",
+      "levelsSubtitle": "Crea, collega a {provider} o modifica le unità",
+      "association": "Movimento",
+      "people": "Gestisci persone e diritti",
+      "peopleSubtitle": "Gestisci autorizzazioni, ruoli e membri",
+      "stats": "Statistiche e bilancio annuale (AG)",
+      "statsSubtitle": "Ore di volontariato, analisi per unità e albo d’onore per il rapporto annuale",
+      "copyMemberEmails": "Copia la lista e-mail di tutti i membri",
+      "copyMemberEmailsSubtitle": "Indirizzi di {count, plural, one {# persona} other {# persone}} senza doppioni negli appunti",
+      "memberEmails": "{count, plural, one {# indirizzo e-mail} other {# indirizzi e-mail}}",
+      "waDirect": "Invia un WhatsApp a un numero",
+      "waDirectSubtitle": "Apri una chat (inserisci il numero)",
+      "waDirectPrompt": "Numero di cellulare per la chat WhatsApp (p. es. 079 123 45 67):"
+    },
+    "event": {
+      "past": "Passato",
+      "live": "In corso",
+      "upcoming": "Prossimamente",
+      "calendarIcs": "Calendario (.ics)",
+      "googleCalendar": "Google Calendar",
+      "goTo": "Vai all’evento",
+      "goToSubtitle": "Apri il piano dei turni e i dettagli",
+      "downloadIcs": "Scarica il file calendario (.ics)",
+      "downloadIcsSubtitle": "Importa in Apple/Outlook/telefono",
+      "addGoogleSubtitle": "Aggiungi un appuntamento a Google Calendar",
+      "openOk": "Apri l’area comitato",
+      "openOkSubtitle": "Gestisci pianificazione, turni e volontari",
+      "export": "Stampa ed esportazione (PDF/Excel)",
+      "exportSubtitle": "Esporta avvisi e tabelle",
+      "checkinSubtitle": "Registra la presenza all’evento",
+      "date": "Data",
+      "status": "Stato"
+    },
+    "nav": {
+      "home": "Eventi e pagina iniziale",
+      "homeSubtitle": "Panoramica di tutti gli eventi di {name}",
+      "myShifts": "I miei turni",
+      "myShiftsSubtitle": "I tuoi impegni e le conferme",
+      "openMyShifts": "Apri i miei turni",
+      "profile": "Il mio profilo e contatti",
+      "profileSubtitle": "{name} · Dati, notifiche, sicurezza",
+      "help": "Apri il centro assistenza",
+      "helpSubtitle": "Guide per volontari, comitati e {lead}",
+      "newTab": "Apri in una nuova scheda",
+      "status": "Verifica lo stato del sistema",
+      "statusSubtitle": "Disponibilità di servizi, database e server e-mail",
+      "dark": "Tema: attiva la modalità scura",
+      "darkSubtitle": "Colori scuri (vista notturna)",
+      "light": "Tema: attiva la modalità chiara",
+      "lightSubtitle": "Colori chiari (vista diurna)",
+      "system": "Tema: segui il sistema",
+      "systemSubtitle": "Si adatta automaticamente al dispositivo",
+      "logout": "Esci",
+      "logoutSubtitle": "Disconnetti {name}",
+      "login": "Accedi",
+      "loginWith": "Accedi con {provider} o e-mail/password",
+      "loginEmail": "Accedi con e-mail/password"
+    }
+  },
+  "statsReport": {
+    "attendedOnly": "Solo presenze confermate",
+    "allSignups": "Tutti i turni assegnati",
+    "withSetup": "allestimento e smontaggio inclusi",
+    "withoutSetup": "senza allestimento/smontaggio",
+    "csv": {
+      "filePrefix": "ore-volontari",
+      "allYearsSlug": "tutti-anni",
+      "title": "{org} - Analisi annuale {dept}",
+      "year": "Anno: {year}",
+      "allYears": "Tutti gli anni registrati",
+      "asOf": "Stato al: {date}",
+      "filter": "Filtro: {signups}, {setup}",
+      "totalHours": "Ore totali (h)",
+      "timeWorked": "Tempo prestato",
+      "activeHelpers": "Volontari attivi",
+      "eventCount": "Numero di eventi",
+      "shiftCount": "Numero di turni",
+      "fillRate": "Tasso di copertura (%)",
+      "attendedRate": "Tasso di presenza confermata (%)",
+      "avgHours": "Ø ore per volontario",
+      "helpersSection": "--- ALBO D’ONORE E ORE ---",
+      "rank": "Posizione",
+      "name": "Nome",
+      "levels": "Unità",
+      "shiftsTotal": "Turni totali",
+      "confirmedShifts": "Turni confermati",
+      "hoursDecimal": "Ore (decimali)",
+      "guest": "Ospite/esterno",
+      "noLevel": "Senza unità",
+      "yes": "Sì",
+      "no": "No",
+      "eventsSection": "--- EVENTI DELL’ANNO ---",
+      "event": "Evento",
+      "dateStart": "Data di inizio",
+      "dateEnd": "Data di fine",
+      "helpers": "Volontari",
+      "shifts": "Turni",
+      "filledSlots": "Posti coperti",
+      "requiredSlots": "Posti necessari",
+      "eventHours": "Ore evento (h)",
+      "setupHours": "Allestimento/smontaggio (h)",
+      "confirmedHours": "Ore confermate (h)",
+      "attendanceRate": "Tasso di presenza (%)",
+      "levelsSection": "--- RIPARTIZIONE PER UNITÀ ---",
+      "level": "Unità",
+      "shareTotal": "Quota sul totale (%)"
+    },
+    "hoursShort": "{hours} h"
+  },
+  "perm": {
+    "providerFallback": "movimento",
+    "custom": "Diritti personalizzati",
+    "member": "Membro",
+    "guest": "Ospite",
+    "DEPARTMENT_SETTINGS": {
+      "label": "Modifica la sezione",
+      "description": "Nome, logo, colore, persona di contatto e «pagina iniziale solo per i membri»."
+    },
+    "STUFEN_MANAGE": {
+      "label": "Gestire le unità",
+      "description": "Creare, rinominare, collegare a {provider} ed eliminare unità."
+    },
+    "PEOPLE_VIEW": {
+      "label": "Vedere le persone",
+      "description": "Elenco delle persone della sezione con unità e diritti."
+    },
+    "PEOPLE_MANAGE": {
+      "label": "Gestire persone e diritti",
+      "description": "Assegnare unità, rimuovere persone dalla sezione e concedere diritti, ma meno dei propri. Vede il registro."
+    },
+    "TEMPLATES_MANAGE": {
+      "label": "Gestire i modelli",
+      "description": "Salvare eventi come modelli ed eliminare modelli."
+    },
+    "EVENTS_VIEW_ALL": {
+      "label": "Vedere tutti gli eventi",
+      "description": "Anche bozze e area comitato di tutti gli eventi, inclusi i contatti dei volontari."
+    },
+    "EVENTS_CREATE": {
+      "label": "Creare eventi",
+      "description": "Creare nuovi eventi, anche da modelli. Le impostazioni le modifica poi la direzione del comitato."
+    },
+    "EVENTS_EDIT_SETTINGS": {
+      "label": "Modificare gli eventi",
+      "description": "Modificare le impostazioni di tutti gli eventi (come la direzione del comitato), spostare eventi."
+    },
+    "SHIFTS_MANAGE": {
+      "label": "Pianificare i turni",
+      "description": "Turni, mansioni e responsabili del giorno in tutti gli eventi."
+    },
+    "HELPERS_MANAGE": {
+      "label": "Assegnare i volontari",
+      "description": "Iscrivere e disiscrivere volontari, gestire disdette e link di accesso in tutti gli eventi."
+    },
+    "MESSAGES_SEND": {
+      "label": "Inviare messaggi",
+      "description": "E-mail ai volontari di tutti gli eventi."
+    },
+    "ATTENDANCE_MANAGE": {
+      "label": "Registrare le presenze",
+      "description": "Tenere il registro presenze e scaricare il codice QR per il check-in."
+    },
+    "EXPORT": {
+      "label": "Esportare",
+      "description": "Scaricare elenchi, piano dei turni in PDF e ore di volontariato."
+    },
+    "ORGANIZERS_MANAGE": {
+      "label": "Nominare il comitato",
+      "description": "Nominare e rimuovere direzione e membri del comitato di tutti gli eventi."
+    },
+    "EVENTS_DELETE": {
+      "label": "Eliminare eventi",
+      "description": "Eliminare definitivamente eventi con tutti i turni e le iscrizioni."
+    },
+    "preset": {
+      "ADMINISTRATION": {
+        "label": "Amministrazione",
+        "description": "Quasi tutto come {lead}. Concede diritti, ma meno dei propri."
+      },
+      "EVENT_COORDINATION": {
+        "label": "Coordinamento eventi",
+        "description": "Crea eventi e collabora alla pianificazione di tutti. L’ex ruolo «Pianificazione»."
+      },
+      "EVENT_EDITING": {
+        "label": "Modificare gli eventi",
+        "description": "Modifica tutti gli eventi esistenti come la direzione del comitato, ma non ne crea di nuovi."
+      },
+      "EVENT_CREATION": {
+        "label": "Creare eventi",
+        "description": "Crea nuovi eventi. Pianificazione e impostazioni poi tramite il comitato."
+      }
+    }
+  },
+  "csv": {
+    "day": "Giorno",
+    "start": "Inizio",
+    "end": "Fine",
+    "shift": "Turno",
+    "task": "Mansione",
+    "category": "Categoria",
+    "slots": "Posti",
+    "filled": "Coperti",
+    "assigned": "Assegnati",
+    "name": "Nome",
+    "age": "Età",
+    "guestEmail": "E-mail (ospite)",
+    "guestPhone": "Telefono (ospite)",
+    "firstName": "Nome",
+    "lastName": "Cognome",
+    "level": "Unità",
+    "ageAtEvent": "Età all’evento",
+    "shifts": "Turni",
+    "targetMet": "Obiettivo raggiunto",
+    "deregistered": "Disiscritto/a",
+    "reason": "Motivo",
+    "yes": "sì",
+    "no": "no",
+    "unit": "Sezione",
+    "type": "Tipo",
+    "email": "E-mail",
+    "phone": "Telefono",
+    "shiftCount": "Numero di turni",
+    "hoursDecimal": "Ore totali (decimali)",
+    "totalTime": "Tempo totale",
+    "eventHours": "Ore evento",
+    "setupHours": "Ore di allestimento",
+    "assignedShifts": "Turni assegnati",
+    "guest": "Ospite",
+    "account": "Account",
+    "totalSummary": "TOTALE / RIEPILOGO",
+    "activeHelpers": "{count} volontari attivi",
+    "average": "Media: {hours} h/persona",
+    "rank": "Posizione",
+    "levelGroup": "Unità / gruppo",
+    "helperPeople": "Volontari",
+    "share": "Quota (%)",
+    "shiftAssignments": "Impegni",
+    "avgPerPerson": "Media (h/persona)",
+    "helpersWithHours": "Volontari (con ore)",
+    "total": "TOTALE",
+    "noLevel": "Senza unità / ospiti",
+    "file": {
+      "plan": "piano-turni",
+      "assignments": "assegnazione",
+      "helpers": "volontari",
+      "hours": "ore-volontari",
+      "ranking": "classifica-unita"
+    },
+    "layout": {
+      "plan": {
+        "label": "Panoramica",
+        "text": "Compatto: tutti i turni per giorno con copertura e nomi."
+      },
+      "aushang": {
+        "label": "Da appendere",
+        "text": "Caratteri grandi, una riga per posto. Posti liberi da compilare a mano."
+      },
+      "personen": {
+        "label": "Per persona",
+        "text": "Chi aiuta quando e dove, in ordine di nome. Da distribuire o consultare."
+      }
+    }
+  },
+  "meta": {
+    "slotsAllFull": "Tutti i turni sono coperti",
+    "slotsShiftFull": "Il turno è al completo",
+    "slotsFree": "{count, plural, one {Ancora # posto libero} other {Ancora # posti liberi}}",
+    "replacementWanted": "Cercasi sostituto",
+    "shiftTitleReplacement": "Cercasi sostituto: {shift} – {event}",
+    "shiftReplacementDesc": "{when}. Si cerca un sostituto per questo turno. Lo prendi tu? ({where})",
+    "signUpAt": "{where}: iscriviti ora.",
+    "pickAndSignUp": "Scegli un turno e iscriviti.",
+    "pickSignUpDone": "Scegli un turno, iscriviti, fatto.",
+    "deptDescription": "Tutti gli eventi e i turni liberi in un unico posto. Scegli, iscriviti, fatto.",
+    "orgDescription": "Turni per sagre, campi ed eventi {orgName}: guarda, iscriviti, fatto.",
+    "manifestDeptDescription": "Eventi e turni di {name}: guarda, iscriviti, fatto.",
+    "myShifts": "I miei turni",
+    "myShiftsShortcut": "I tuoi turni prenotati e gli orari",
+    "myShiftsDescription": "Panoramica dei tuoi turni, con esportazione nel calendario.",
+    "eventsShortcut": "Eventi e turni",
+    "eventsShortcutShort": "Eventi",
+    "eventsShortcutDesc": "Tutti gli eventi e i turni liberi",
+    "eventFallbackTitle": "Evento",
+    "eventFallbackDesc": "Guarda i turni dell’evento e iscriviti.",
+    "checkinDescription": "Registrati al tuo turno.",
+    "loginTitle": "Accedi",
+    "loginDescription": "Accedi per iscriverti ai turni.",
+    "scanAndSignUp": "Scansiona e iscriviti"
+  },
+  "eventText": {
+    "access": {
+      "PUBLIC": {
+        "label": "Pubblico",
+        "short": "Pubblico",
+        "description": "Tutti quelli con il link. Basta un profilo {nickname} senza password."
+      },
+      "CEVIDB_ALL": {
+        "label": "{org, select, verein {Tutti gli account registrati} jubla {{provider}, tutti i {units}} other {{provider}, tutte le {units}}}",
+        "short": "{org, select, verein {Account} other {{provider}}}",
+        "description": "{org, select, verein {Tutti quelli con un account confermato.} other {Tutti quelli con login {provider}, di qualsiasi {unit}. Per eventi regionali e corsi.}}"
+      },
+      "DEPARTMENT": {
+        "label": "{org, select, verein {Interno all’associazione} jubla {Interno al gruppo} other {Interno alla sezione}}",
+        "short": "Interno",
+        "description": "{org, select, verein {Tutti quelli che al login hanno indicato questa associazione.} jubla {Tutti quelli che al login hanno indicato questo {unit}.} other {Tutti quelli che al login hanno indicato questa {unit}.}}"
+      },
+      "DEPARTMENT_CEVIDB": {
+        "label": "{org, select, verein {Interno all’associazione} jubla {Interno al gruppo, {provider}} other {Interno alla sezione, {provider}}}",
+        "short": "{org, select, verein {Interno} other {Interno · {provider}}}",
+        "description": "{org, select, verein {Solo membri confermati di questa associazione.} jubla {Solo con login {provider} e in questo {unit}.} other {Solo con login {provider} e in questa {unit}.}}"
+      },
+      "WHITELIST": {
+        "label": "Più {units}",
+        "short": "Lista bianca",
+        "description": "{org, select, jubla {Come interno, con accesso anche per altri {units}.} other {Come interno, con accesso anche per altre {units}.}}"
+      },
+      "WHITELIST_CEVIDB": {
+        "label": "{org, select, verein {Più {units}} other {Più {units}, {provider}}}",
+        "short": "{org, select, verein {Lista bianca} other {Lista bianca · {provider}}}",
+        "description": "{org, select, verein {Come interno, con accesso anche per altre {units}.} jubla {Come interno con {provider}, con accesso anche per altri {units}.} other {Come interno con {provider}, con accesso anche per altre {units}.}}"
+      }
+    },
+    "profileField": {
+      "PHONE": "Numero di cellulare",
+      "EMAIL": "E-mail",
+      "BIRTH_DATE": "Data di nascita",
+      "FULL_NAME": "Nome e cognome"
+    },
+    "questionType": {
+      "TEXT": "Testo libero",
+      "YES_NO": "Sì / no",
+      "CHOICE": "Scelta"
+    },
+    "category": {
+      "c0": "Cucina e ristorazione",
+      "c1": "Griglia e distribuzione pasti",
+      "c2": "Bar e bevande",
+      "c3": "Cassa e buoni",
+      "c4": "Allestimento e preparazione",
+      "c5": "Smontaggio e pulizia",
+      "c6": "Attività e postazioni",
+      "c7": "Jolly e tuttofare"
+    }
   }
 }

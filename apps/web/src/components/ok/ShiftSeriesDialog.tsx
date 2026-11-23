@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
+import { useEventText } from '@/lib/eventText';
 import {
   CalendarDays,
   Clock,
@@ -14,7 +15,6 @@ import {
   Users,
 } from 'lucide-react';
 import {
-  DEFAULT_SHIFT_CATEGORIES,
   calculateShiftSeriesIntervals,
   helpUrl,
   toZurichInput,
@@ -36,20 +36,20 @@ import { fmtShortWeekday, fmtTimeRange } from '@/lib/format';
 import type { EventDetails } from '@/lib/types';
 
 const DURATION_PRESETS = [
-  { label: '1 Std.', minutes: 60 },
-  { label: '1.5 Std.', minutes: 90 },
-  { label: '2 Std.', minutes: 120 },
-  { label: '2.5 Std.', minutes: 150 },
-  { label: '3 Std.', minutes: 180 },
-  { label: '4 Std.', minutes: 240 },
+  { minutes: 60 },
+  { minutes: 90 },
+  { minutes: 120 },
+  { minutes: 150 },
+  { minutes: 180 },
+  { minutes: 240 },
 ];
 
 const OVERLAP_PRESETS = [
-  { label: '0 Min. (keine)', minutes: 0 },
-  { label: '10 Min.', minutes: 10 },
-  { label: '15 Min.', minutes: 15 },
-  { label: '20 Min.', minutes: 20 },
-  { label: '30 Min.', minutes: 30 },
+  { minutes: 0 },
+  { minutes: 10 },
+  { minutes: 15 },
+  { minutes: 20 },
+  { minutes: 30 },
 ];
 
 interface SeriesTaskItem {
@@ -73,6 +73,7 @@ export function ShiftSeriesDialog({
   onCreated: () => void;
 }) {
   const t = useTranslations('web.ok.series');
+  const eventText = useEventText();
   const tShifts = useTranslations('web.ok.shifts');
   const tLayout = useTranslations('web.ok.layout');
   const toast = useToast();
@@ -365,11 +366,10 @@ export function ShiftSeriesDialog({
           <div className="text-xs text-fg-muted">
             {intervals.length > 0 ? (
               <span className="font-semibold text-fg">
-                {intervals.length} Schichten · je {totalSlotsPerShift} {totalSlotsPerShift === 1 ? 'Platz' : 'Plätze'} ={' '}
-                {intervals.length * totalSlotsPerShift} Plätze total
+                {t('x.footerSummary', { shifts: intervals.length, slots: totalSlotsPerShift, total: intervals.length * totalSlotsPerShift })}
               </span>
             ) : (
-              <span className="text-warning-ink">Keine Schichten generiert</span>
+              <span className="text-warning-ink">{t('x.noneGenerated')}</span>
             )}
           </div>
           <div className="flex gap-2 justify-end">
@@ -383,7 +383,7 @@ export function ShiftSeriesDialog({
               disabled={intervals.length === 0}
             >
               <Sparkles className="size-4" />
-              {intervals.length > 0 ? `${intervals.length} Schichten erstellen` : 'Erstellen'}
+              {intervals.length > 0 ? t('x.createCount', { count: intervals.length }) : t('x.create')}
             </Button>
           </div>
         </div>
@@ -393,26 +393,26 @@ export function ShiftSeriesDialog({
         {/* Stand / Schichttitel & Kategorie */}
         <div className="grid gap-4 sm:grid-cols-2">
           <Field
-            label="Stand / Schichttitel (optional)"
-            hint="z. B. Grillstand, Kasse, Bar oder leer lassen, wenn nur die Arbeiten zählen"
+            label={t('x.titleLabel')}
+            hint={t('x.titleHint')}
           >
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="z. B. Grillstand (optional)"
+              placeholder={t('x.titlePlaceholder')}
             />
           </Field>
 
-          <Field label="Kategorie (optional)" hint="Zur Gruppierung nach Ressort/Stand">
+          <Field label={t('x.categoryLabel')} hint={t('x.categoryHint')}>
             <Input
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              placeholder="z. B. Stände, Küche"
+              placeholder={t('x.categoryPlaceholder')}
               list="series-categories"
             />
           </Field>
           <datalist id="series-categories">
-            {DEFAULT_SHIFT_CATEGORIES.map((cat) => (
+            {eventText.shiftCategories.map((cat) => (
               <option key={cat} value={cat} />
             ))}
           </datalist>
@@ -427,18 +427,18 @@ export function ShiftSeriesDialog({
               onChange={(e) => setIsSetupTeardown(e.target.checked)}
               className="size-4 rounded border-line text-accent focus:ring-accent"
             />
-            <span className="text-sm font-medium text-fg">Auf- oder Abbau-Schichten</span>
+            <span className="text-sm font-medium text-fg">{t('x.setupTeardown')}</span>
           </label>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs text-fg-muted font-medium">Mindestalter für gesamte Schicht:</span>
+            <span className="text-xs text-fg-muted font-medium">{t('x.minAgeAll')}</span>
             <Input
               type="number"
               min={0}
               max={99}
               value={minAge}
               onChange={(e) => setMinAge(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
-              placeholder="Keins"
+              placeholder={t('x.none')}
               className="w-24 text-xs h-8"
             />
           </div>
@@ -450,15 +450,14 @@ export function ShiftSeriesDialog({
             <div>
               <h4 className="text-sm font-bold text-fg flex items-center gap-2">
                 <Users className="size-4 text-accent" />
-                Arbeiten &amp; Plätze pro Schicht
+                {t('x.tasksTitle')}
               </h4>
               <p className="text-xs text-fg-muted">
-                Lege fest, welche Aufgaben und wie viele Personen pro Schicht eingeteilt werden ({totalSlotsPerShift}{' '}
-                {totalSlotsPerShift === 1 ? 'Platz' : 'Plätze'} pro Schicht).
+                {t('x.tasksText', { count: totalSlotsPerShift })}
               </p>
             </div>
             <Button type="button" size="sm" variant="secondary" onClick={addTask}>
-              <Plus className="size-3.5" /> Arbeit hinzufügen
+              <Plus className="size-3.5" /> {t('x.addTask')}
             </Button>
           </div>
 
@@ -466,7 +465,7 @@ export function ShiftSeriesDialog({
           {availableTasks.length > 0 && (
             <div className="rounded-lg border border-line/70 bg-surface-2/60 p-3">
               <span className="mb-2 block text-2xs font-bold uppercase tracking-wider text-fg-subtle">
-                Aus Arbeiten-Katalog hinzufügen:
+                {t('x.fromCatalog')}
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {availableTasks.map((catItem) => {
@@ -511,15 +510,15 @@ export function ShiftSeriesDialog({
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-bold text-fg-muted uppercase tracking-wider text-[11px]">
-                    Arbeit #{idx + 1}
+                    {t('x.taskNumber', { number: idx + 1 })}
                   </span>
                   {tasks.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeTask(idx)}
                       className="rounded-full p-1 text-fg-subtle transition hover:bg-danger/10 hover:text-danger-ink"
-                      title="Arbeit entfernen"
-                      aria-label="Arbeit entfernen"
+                      title={t('x.removeTask')}
+                      aria-label={t('x.removeTask')}
                     >
                       <Trash2 className="size-3.5" />
                     </button>
@@ -527,22 +526,22 @@ export function ShiftSeriesDialog({
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
-                  <Field label="Name der Arbeit *" hint="z. B. Grillieren, Kasse, Springer">
+                  <Field label={t('x.taskName')} hint={t('x.taskNameHint')}>
                     <Input
                       value={task.title}
-                      placeholder="z. B. Grillieren"
+                      placeholder={t('x.taskNamePlaceholder')}
                       onChange={(e) => updateTask(idx, { title: e.target.value })}
                     />
                   </Field>
 
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[12px] font-semibold text-fg">Plätze</span>
+                    <span className="text-[12px] font-semibold text-fg">{t('x.slots')}</span>
                     <div className="flex h-10 items-center justify-between rounded-field border border-line bg-surface px-1">
                       <Button
                         size="icon-sm"
                         variant="ghost"
                         type="button"
-                        aria-label="Weniger"
+                        aria-label={t('x.less')}
                         onClick={() => updateTask(idx, { requiredSlots: Math.max(1, task.requiredSlots - 1) })}
                       >
                         <Minus className="size-3.5" />
@@ -552,7 +551,7 @@ export function ShiftSeriesDialog({
                         size="icon-sm"
                         variant="ghost"
                         type="button"
-                        aria-label="Mehr"
+                        aria-label={t('x.more')}
                         onClick={() => updateTask(idx, { requiredSlots: Math.min(50, task.requiredSlots + 1) })}
                       >
                         <Plus className="size-3.5" />
@@ -561,7 +560,7 @@ export function ShiftSeriesDialog({
                   </div>
 
                   <div className="flex flex-col gap-1.5 w-24">
-                    <span className="text-[12px] font-semibold text-fg">Mindestalter</span>
+                    <span className="text-[12px] font-semibold text-fg">{t('x.minAge')}</span>
                     <Input
                       type="number"
                       min={0}
@@ -572,7 +571,7 @@ export function ShiftSeriesDialog({
                           minAge: e.target.value === '' ? '' : parseInt(e.target.value, 10),
                         })
                       }
-                      placeholder="Keins"
+                      placeholder={t('x.none')}
                       className="h-10 text-xs"
                     />
                   </div>
@@ -582,7 +581,7 @@ export function ShiftSeriesDialog({
                   <Input
                     value={task.description}
                     onChange={(e) => updateTask(idx, { description: e.target.value })}
-                    placeholder="Notiz oder Aufgabenbeschreibung für diese Arbeit (optional)"
+                    placeholder={t('x.taskNote')}
                     className="text-xs h-8"
                   />
                 </div>
@@ -596,15 +595,15 @@ export function ShiftSeriesDialog({
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-semibold text-fg flex items-center gap-2">
               <CalendarDays className="size-4 text-accent" />
-              Gesamter Betriebs-Zeitraum
+              {t('x.operatingPeriod')}
             </h4>
             {totalOperatingHours > 0 && (
-              <Badge tone="neutral">{totalOperatingHours} Stunden Gesamtdauer</Badge>
+              <Badge tone="neutral">{t('x.totalHours', { hours: totalOperatingHours })}</Badge>
             )}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Betriebsbeginn *">
+            <Field label={t('x.start')}>
               <Input
                 type="datetime-local"
                 required
@@ -613,7 +612,7 @@ export function ShiftSeriesDialog({
               />
             </Field>
 
-            <Field label="Betriebsende *">
+            <Field label={t('x.end')}>
               <Input
                 type="datetime-local"
                 required
@@ -627,10 +626,10 @@ export function ShiftSeriesDialog({
           <div className="space-y-1.5 pt-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-fg-muted uppercase tracking-wider">
-                Schichtdauer pro Einsatz
+                {t('x.duration')}
               </span>
               <span className="text-xs font-medium text-fg">
-                {durationMinutes} Minuten ({Math.round(durationMinutes / 6) / 10} Std.)
+                {t('x.durationValue', { minutes: durationMinutes, hours: Math.round(durationMinutes / 6) / 10 })}
               </span>
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -646,7 +645,7 @@ export function ShiftSeriesDialog({
                       : 'border-line bg-surface-elevated text-fg-muted hover:text-fg'
                   )}
                 >
-                  {preset.label}
+                  {t('x.hoursPreset', { hours: preset.minutes / 60 })}
                 </button>
               ))}
             </div>
@@ -656,10 +655,10 @@ export function ShiftSeriesDialog({
           <div className="space-y-1.5 pt-2 border-t border-line/60">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-fg-muted uppercase tracking-wider">
-                Übergabe-Überlappung
+                {t('x.overlap')}
               </span>
               <span className="text-xs font-medium text-fg">
-                {overlapMinutes === 0 ? 'Keine' : `${overlapMinutes} Min. Vorlauf`}
+                {overlapMinutes === 0 ? t('x.overlapNone') : t('x.overlapLead', { minutes: overlapMinutes })}
               </span>
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -675,7 +674,7 @@ export function ShiftSeriesDialog({
                       : 'border-line bg-surface-elevated text-fg-muted hover:text-fg'
                   )}
                 >
-                  {preset.label}
+                  {preset.minutes === 0 ? t('x.overlapNonePreset') : t('x.minutesShort', { minutes: preset.minutes })}
                 </button>
               ))}
             </div>
@@ -683,8 +682,7 @@ export function ShiftSeriesDialog({
             {overlapMinutes > 0 && (
               <div className="pt-2 flex flex-col gap-2">
                 <Callout tone="info">
-                  Jede Ablösung beginnt <strong>{overlapMinutes} Minuten vor Ende der vorherigen Schicht</strong> für
-                  die Übergabe.
+                  {t.rich('x.overlapInfo', { minutes: overlapMinutes, strong: (chunks) => <strong>{chunks}</strong> })}
                 </Callout>
 
                 <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-fg-muted">
@@ -694,7 +692,7 @@ export function ShiftSeriesDialog({
                     onChange={(e) => setFirstShiftIncludesOverlap(e.target.checked)}
                     className="size-3.5 rounded border-line text-accent focus:ring-accent"
                   />
-                  <span>Auch 1. Schicht {overlapMinutes} Min. früher beginnen (z. B. für Standaufbau vor Öffnung)</span>
+                  <span>{t('x.firstEarlier', { minutes: overlapMinutes })}</span>
                 </label>
               </div>
             )}
@@ -706,18 +704,18 @@ export function ShiftSeriesDialog({
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-fg-muted flex items-center gap-1.5">
               <Clock className="size-3.5 text-accent" />
-              Live-Vorschau ({intervals.length} Schichten)
+              {t('x.preview', { count: intervals.length })}
             </span>
             {intervals.length > 0 && (
               <span className="text-xs text-fg-muted font-medium">
-                {intervals.length * totalSlotsPerShift} Helfende benötigt
+                {t('x.helpersNeeded', { count: intervals.length * totalSlotsPerShift })}
               </span>
             )}
           </div>
 
           {intervals.length === 0 ? (
             <div className="p-4 text-center text-xs text-fg-subtle border border-dashed border-line rounded-lg">
-              Keine Schichten generiert. Bitte überprüfe Start- und Endzeit.
+              {t('x.noneGeneratedHint')}
             </div>
           ) : (
             <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
@@ -761,7 +759,7 @@ export function ShiftSeriesDialog({
                               </span>
                             ))
                           ) : (
-                            <span className="text-fg-subtle italic">1 Platz ({title.trim() || 'Schicht'})</span>
+                            <span className="text-fg-subtle italic">{t('x.oneSlot', { title: title.trim() || t('x.shift') })}</span>
                           )}
                         </div>
                       </div>
@@ -770,7 +768,7 @@ export function ShiftSeriesDialog({
                     <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
                       {hasOverlap && (
                         <span className="rounded bg-accent-soft px-1.5 py-0.5 text-[10px] font-medium text-accent-ink">
-                          +{overlapMinutes}m Übergabe
+                          {t('x.handoverBadge', { minutes: overlapMinutes })}
                         </span>
                       )}
                       <span className="font-mono text-fg-subtle">

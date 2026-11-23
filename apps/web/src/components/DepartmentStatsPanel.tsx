@@ -17,7 +17,7 @@ import {
   ShieldCheck,
   Users,
 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   formatZurichDate,
   zurichDayKey,
@@ -32,6 +32,8 @@ import { usePortal } from '@/lib/portal';
 
 export function DepartmentStatsPanel() {
   const t = useTranslations('web.department.stats');
+  const tReport = useTranslations('web.statsReport');
+  const intlLocale = useLocale();
   const { department } = usePortal();
   const toast = useToast();
 
@@ -99,46 +101,47 @@ export function DepartmentStatsPanel() {
     if (!data) return;
 
     const deptSlug = department?.slug || 'abteilung';
-    const yearLabel = data.year === 'ALL' ? 'alle-jahre' : String(data.year);
-    const filename = `${org.slug}-helferstunden-${deptSlug}-${yearLabel}.csv`;
+    const yearLabel = data.year === 'ALL' ? tReport('csv.allYearsSlug') : String(data.year);
+    const filename = `${org.slug}-${tReport('csv.filePrefix')}-${deptSlug}-${yearLabel}.csv`;
 
     const rows: (string | number | null | undefined)[][] = [];
 
     // Titelzeilen
-    rows.push([`${org.name} - Jahresauswertung ${department?.name ?? ''}`]);
-    rows.push([`Jahr: ${data.year === 'ALL' ? 'Alle erfassten Jahre' : data.year}`]);
-    rows.push([`Stand: ${formatZurichDate(new Date())}`]);
+    rows.push([tReport('csv.title', { org: org.name, dept: department?.name ?? '' })]);
+    rows.push([tReport('csv.year', { year: data.year === 'ALL' ? tReport('csv.allYears') : String(data.year) })]);
+    rows.push([tReport('csv.asOf', { date: formatZurichDate(new Date()) })]);
     rows.push([
-      `Filter: ${countAttendedOnly ? 'Nur bestätigte Anwesenheiten' : 'Alle eingetragenen Schichten'}, ${
-        includeSetupTeardown ? 'inkl. Auf-/Abbau' : 'ohne Auf-/Abbau'
-      }`,
+      tReport('csv.filter', {
+        signups: countAttendedOnly ? tReport('attendedOnly') : tReport('allSignups'),
+        setup: includeSetupTeardown ? tReport('withSetup') : tReport('withoutSetup'),
+      }),
     ]);
     rows.push([]);
 
     // Kennzahlen
-    rows.push(['Gesamtstunden (h)', data.summary.totalHours]);
-    rows.push(['Geleistete Zeit', data.summary.formattedTime]);
-    rows.push(['Aktive Helfende', data.summary.totalHelpers]);
-    rows.push(['Anzahl Anlässe', data.summary.totalEvents]);
-    rows.push(['Anzahl Schichten', data.summary.totalShifts]);
-    rows.push(['Besetzungsgrad (%)', `${data.summary.fillRatePct}%`]);
-    rows.push(['Bestätigte Anwesenheitsrate (%)', `${data.summary.attendedRatePct}%`]);
-    rows.push(['Ø Stunden pro Helfer*in', data.summary.averageHoursPerHelper]);
+    rows.push([tReport('csv.totalHours'), data.summary.totalHours]);
+    rows.push([tReport('csv.timeWorked'), data.summary.formattedTime]);
+    rows.push([tReport('csv.activeHelpers'), data.summary.totalHelpers]);
+    rows.push([tReport('csv.eventCount'), data.summary.totalEvents]);
+    rows.push([tReport('csv.shiftCount'), data.summary.totalShifts]);
+    rows.push([tReport('csv.fillRate'), `${data.summary.fillRatePct}%`]);
+    rows.push([tReport('csv.attendedRate'), `${data.summary.attendedRatePct}%`]);
+    rows.push([tReport('csv.avgHours'), data.summary.averageHoursPerHelper]);
     rows.push([]);
 
     // Helferliste
-    rows.push(['--- HELFER-EHRENTAFEL & STUNDEN ---']);
+    rows.push([tReport('csv.helpersSection')]);
     rows.push([
-      'Rang',
-      'Name',
+      tReport('csv.rank'),
+      tReport('csv.name'),
       org.nicknameTerm,
-      'Stufen',
-      'Anzahl Anlässe',
-      'Schichten gesamt',
-      'Bestätigte Schichten',
-      'Stunden (Dezimal)',
-      'Geleistete Zeit',
-      'Gast/Extern',
+      tReport('csv.levels'),
+      tReport('csv.eventCount'),
+      tReport('csv.shiftsTotal'),
+      tReport('csv.confirmedShifts'),
+      tReport('csv.hoursDecimal'),
+      tReport('csv.timeWorked'),
+      tReport('csv.guest'),
     ]);
 
     data.topHelpers.forEach((h, idx) => {
@@ -146,34 +149,34 @@ export function DepartmentStatsPanel() {
         idx + 1,
         `${h.firstName || h.displayName} ${h.lastName || ''}`.trim(),
         h.nickname || h.ceviName || '',
-        h.stufen.join(', ') || 'Ohne Stufe',
+        h.stufen.join(', ') || tReport('csv.noLevel'),
         h.eventCount,
         h.shiftCount,
         h.attendedShiftCount,
         h.hours,
         h.formattedTime,
-        h.isGuest ? 'Ja' : 'Nein',
+        h.isGuest ? tReport('csv.yes') : tReport('csv.no'),
       ]);
     });
 
     rows.push([]);
 
     // Anlässe
-    rows.push(['--- ANLÄSSE DES JAHRES ---']);
+    rows.push([tReport('csv.eventsSection')]);
     rows.push([
-      'Anlass',
-      'Datum Start',
-      'Datum Ende',
-      'Helfende',
-      'Schichten',
-      'Besetzte Slots',
-      'Benötigte Slots',
-      'Besetzungsgrad (%)',
-      'Gesamtstunden (h)',
-      'Anlass-Stunden (h)',
-      'Auf-/Abbau (h)',
-      'Bestätigte Stunden (h)',
-      'Anwesenheitsrate (%)',
+      tReport('csv.event'),
+      tReport('csv.dateStart'),
+      tReport('csv.dateEnd'),
+      tReport('csv.helpers'),
+      tReport('csv.shifts'),
+      tReport('csv.filledSlots'),
+      tReport('csv.requiredSlots'),
+      tReport('csv.fillRate'),
+      tReport('csv.totalHours'),
+      tReport('csv.eventHours'),
+      tReport('csv.setupHours'),
+      tReport('csv.confirmedHours'),
+      tReport('csv.attendanceRate'),
     ]);
 
     data.events.forEach((ev) => {
@@ -197,8 +200,8 @@ export function DepartmentStatsPanel() {
     rows.push([]);
 
     // Stufen
-    rows.push(['--- STUFEN-VERTEILUNG ---']);
-    rows.push(['Stufe', 'Helfende', 'Schichten', 'Gesamtstunden (h)', 'Anteil an Gesamt (%)']);
+    rows.push([tReport('csv.levelsSection')]);
+    rows.push([tReport('csv.level'), tReport('csv.helpers'), tReport('csv.shifts'), tReport('csv.totalHours'), tReport('csv.shareTotal')]);
     data.stufen.forEach((st) => {
       rows.push([st.name, st.helpersCount, st.totalShifts, st.totalHours, `${st.percentageOfTotal}%`]);
     });
@@ -214,7 +217,7 @@ export function DepartmentStatsPanel() {
   const getPdfBlob = async () => {
     if (!data) return null;
     const { renderDepartmentStatsPdf } = await import('./DepartmentStatsPdf');
-    return renderDepartmentStatsPdf(data, department, '/fonts/pdf');
+    return renderDepartmentStatsPdf(data, department, { locale: intlLocale, nicknameTerm: org.nicknameTerm }, '/fonts/pdf');
   };
 
   const handlePrintPdf = async () => {
@@ -779,7 +782,7 @@ export function DepartmentStatsPanel() {
 
                     <div className="flex items-center justify-between text-xs text-fg-muted pt-1">
                       <span>{t('stufenHelpersCount', { helpers: st.helpersCount, shifts: st.totalShifts })}</span>
-                      <span className="font-bold text-fg font-mono text-sm">{st.totalHours} Std.</span>
+                      <span className="font-bold text-fg font-mono text-sm">{tReport('hoursShort', { hours: st.totalHours })}</span>
                     </div>
                   </div>
                 ))}

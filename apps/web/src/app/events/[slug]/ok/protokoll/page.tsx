@@ -13,7 +13,9 @@ import { fmtWeekday, fmtTimeRange } from '@/lib/format';
 
 type Action = 'ALL' | 'SIGNUP' | 'SIGNOFF' | 'REPLACE' | 'ATTENDANCE';
 
-const stampFmt = zurichDateTimeFormat({
+/** Beim Aufruf holen, damit die aktive Sprache gilt */
+const stampFmt = () =>
+  zurichDateTimeFormat({
   day: '2-digit',
   month: '2-digit',
   year: 'numeric',
@@ -200,7 +202,7 @@ export default function LogPage() {
                   </div>
                 </div>
                 <span className="shrink-0 pl-11 font-mono text-2xs text-fg-subtle tabular sm:pl-0">
-                  {stampFmt.format(new Date(item.createdAt))}
+                  {stampFmt().format(new Date(item.createdAt))}
                 </span>
               </div>
             );

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { formatZurichDateRange, formatZurichShiftWhen, getOrganization } from '@schichtplan/shared';
 import { getRequestOrigin, ogImage } from '@schichtplan/ui/og';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { getDepartmentPreview, getEventPreview, openSlotsLabel } from '@/lib/og';
 import { eventOgResponse, isReplacementPreview, warmOgImage } from '@/lib/ogRender';
 
@@ -27,6 +28,8 @@ export async function eventPreviewMetadata(
 
   const org = getOrganization(host);
   const where = department?.name ?? org.name;
+  const t = await getTranslations('web.meta');
+  const ogLocale = (await getLocale()).replace('-', '_');
   const eventUrl = `${origin}/events/${encodeURIComponent(event.slug)}`;
   // ?v= ändert sich mit allem, was im Bild steht
   const version = [
@@ -44,11 +47,11 @@ export async function eventPreviewMetadata(
   if (shift) {
     const replacement = isReplacementPreview(event, wantsReplacement);
     const when = formatZurichShiftWhen(shift.startTime, shift.endTime);
-    const title = replacement ? `Ersatz gesucht: ${shift.title} – ${event.title}` : `${shift.title} – ${event.title}`;
-    const slots = openSlotsLabel(shift.openSlots, 'Schicht ist besetzt');
+    const title = replacement ? t('shiftTitleReplacement', { shift: shift.title, event: event.title }) : `${shift.title} – ${event.title}`;
+    const slots = openSlotsLabel(shift.openSlots, 'shift', t);
     const description = replacement
-      ? `${when}. Für diese Schicht wird Ersatz gesucht. Übernimmst du? (${where})`
-      : [`${when}.`, slots ? `${slots}.` : null, `${where}: jetzt eintragen.`].filter(Boolean).join(' ');
+      ? t('shiftReplacementDesc', { when, where })
+      : [`${when}.`, slots ? `${slots}.` : null, t('signUpAt', { where })].filter(Boolean).join(' ');
     const query = `schicht=${shift.id}${replacement ? '&ersatz=1' : ''}`;
     const image = ogImage(
       `${eventUrl}/og?${query}`,
@@ -63,20 +66,20 @@ export async function eventPreviewMetadata(
     return {
       title,
       description,
-      openGraph: { type: 'website', siteName: org.name, locale: 'de_CH', title, description, url: `${eventUrl}?${query}`, images: [image] },
+      openGraph: { type: 'website', siteName: org.name, locale: ogLocale, title, description, url: `${eventUrl}?${query}`, images: [image] },
       twitter: { card: 'summary_large_image', title, description, images: [image] },
     };
   }
 
   const dates = formatZurichDateRange(event.startDate, event.endDate, event.dayCutoffTime);
-  const slots = openSlotsLabel(event.openSlots);
+  const slots = openSlotsLabel(event.openSlots, 'all', t);
   const title = `${event.title} – ${where}`;
-  const description = [`${dates}.`, slots ? `${slots}.` : null, 'Schicht aussuchen und eintragen.'].filter(Boolean).join(' ');
+  const description = [`${dates}.`, slots ? `${slots}.` : null, t('pickAndSignUp')].filter(Boolean).join(' ');
   const image = ogImage(`${eventUrl}/og`, title, ...version);
   return {
     title: event.title,
     description,
-    openGraph: { type: 'website', siteName: org.name, locale: 'de_CH', title, description, url: eventUrl, images: [image] },
+    openGraph: { type: 'website', siteName: org.name, locale: ogLocale, title, description, url: eventUrl, images: [image] },
     twitter: { card: 'summary_large_image', title, description, images: [image] },
   };
 }

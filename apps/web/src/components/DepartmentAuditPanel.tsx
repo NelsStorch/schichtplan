@@ -3,22 +3,25 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
-  DEPARTMENT_PERMISSIONS,
   formatZurichTime,
-  isDepartmentPermission,
   type DepartmentAuditEntryDto,
   type OrganizationConfig,
 } from '@schichtplan/shared';
 import { Button, EmptyState, Skeleton, useOrganization, useToast } from '@schichtplan/ui';
 import { api, errorMessage } from '@/lib/api';
+import { usePermissionText } from '@/lib/permissionText';
 import { fmtShortDate } from '@/lib/format';
 
 const list = (value: unknown): string[] => (Array.isArray(value) ? value.filter((v) => typeof v === 'string') : []);
-const permLabel = (p: string) => (isDepartmentPermission(p) ? DEPARTMENT_PERMISSIONS[p].label : p);
 const time = (iso: string) => formatZurichTime(iso);
 
 /** Was sich geändert hat, in Worten: «+ Anlässe erstellen · − Anlässe löschen» */
-function changeText(entry: DepartmentAuditEntryDto, org: OrganizationConfig, t: ReturnType<typeof useTranslations<'web.department.audit'>>): string | null {
+function changeText(
+  entry: DepartmentAuditEntryDto,
+  org: OrganizationConfig,
+  t: ReturnType<typeof useTranslations<'web.department.audit'>>,
+  permLabel: (p: string) => string
+): string | null {
   const d = entry.details ?? {};
   if (entry.action === 'PERMISSIONS_SET' || entry.action === 'STUFEN_SET') {
     const before = list(d.before);
@@ -41,6 +44,7 @@ function changeText(entry: DepartmentAuditEntryDto, org: OrganizationConfig, t: 
 /** Protokoll der Abteilung: wer wem welche Rechte gegeben hat, Abteilungsleitung, Stufen */
 export function DepartmentAuditPanel() {
   const t = useTranslations('web.department.audit');
+  const perm = usePermissionText();
   const toast = useToast();
   const org = useOrganization();
   const [items, setItems] = useState<DepartmentAuditEntryDto[] | null>(null);
@@ -89,7 +93,7 @@ export function DepartmentAuditPanel() {
     <div className="space-y-3">
       <ul className="max-h-[28rem] divide-y divide-line overflow-y-auto rounded-card border border-line">
         {items.map((entry) => {
-          const change = changeText(entry, org, t);
+          const change = changeText(entry, org, t, perm.anyLabel);
           return (
             <li key={entry.id} className="px-4 py-3">
               <p className="text-sm text-fg">

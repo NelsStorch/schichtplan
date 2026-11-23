@@ -29,7 +29,6 @@ import {
   useOrganization,
 } from '@schichtplan/ui';
 import {
-  departmentRoleLabel,
   getLandingUrl,
   getRootDomain,
   helpUrl,
@@ -41,6 +40,7 @@ import {
 import { LocaleSwitcher } from '@schichtplan/ui/i18n';
 import { useTranslations } from 'next-intl';
 import { api, useDepartmentSetupHref, useLoginHref } from '@/lib/api';
+import { usePermissionText } from '@/lib/permissionText';
 import { displayName, usePortal } from '@/lib/portal';
 import { useInstallPrompt } from '@/lib/offline';
 import { usePushHint } from '@/lib/pushHint';
@@ -92,7 +92,7 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
             </span>
           </Link>
 
-          <nav aria-label="Hauptnavigation" className="ml-6 hidden items-center gap-1 md:flex">
+          <nav aria-label={tShell('x.mainNav')} className="ml-6 hidden items-center gap-1 md:flex">
             {nav.map((item) => {
               const active = item.match(pathname);
               return (
@@ -190,7 +190,7 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
 
       {/* Mobile Tab-Leiste: Daumen-Zone statt Hamburger-Menü */}
       <nav
-        aria-label="Hauptnavigation"
+        aria-label={tShell('x.mainNav')}
         className="fixed inset-x-0 bottom-0 z-header border-t border-line/70 bg-canvas/85 pb-safe-b backdrop-blur-xl backdrop-saturate-150 md:hidden"
       >
         <div className="grid h-16 grid-cols-3">
@@ -264,6 +264,7 @@ function HintDot() {
  */
 function AccountSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const tShell = useTranslations('web.shell');
+  const perm = usePermissionText();
   const { user, setUser, department, logout } = usePortal();
   const org = useOrganization();
   const { canInstall, install } = useInstallPrompt();
@@ -295,7 +296,7 @@ function AccountSheet({ open, onClose }: { open: boolean; onClose: () => void })
   const role =
     user.isGlobalAdmin && user.departmentRole !== 'ADMIN'
       ? tShell('rolePlatformAdmin')
-      : departmentRoleLabel({
+      : perm.roleLabel({
           isLeader: user.departmentRole === 'ADMIN',
           permissions: user.departmentPermissions ?? [],
           isHomeDepartment:

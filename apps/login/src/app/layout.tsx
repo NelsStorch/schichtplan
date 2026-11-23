@@ -5,15 +5,17 @@ import { fontVariables } from '@schichtplan/ui/fonts';
 import { LocaleSettingsProvider } from '@schichtplan/ui/i18n';
 import { getRequestLocale } from '@schichtplan/ui/i18n/server';
 import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { getRequestOrigin, ogImage } from '@schichtplan/ui/og';
 import { getOrganization, getOrganizationSlugFromHost } from '@schichtplan/shared';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { origin, host } = await getRequestOrigin();
-  const org = getOrganization(host);
-  const title = `Anmelden · ${org.name}`;
-  const description = `Zentrales Login für Leiter*innen und Helfer*innen des ${org.name}s`;
-  const image = ogImage(`${origin}/og`, `Anmelden beim ${org.name}`);
+  const [t, locale] = await Promise.all([getTranslations('login.meta'), getLocale()]);
+  const org = getOrganization(host, locale);
+  const title = t('rootTitle', { name: org.name });
+  const description = t('rootDescription', { name: org.name });
+  const image = ogImage(`${origin}/og`, t('rootImageTitle', { name: org.name }));
   return {
     metadataBase: new URL(origin),
     title: { default: title, template: `%s · ${org.name}` },
@@ -23,7 +25,7 @@ export async function generateMetadata(): Promise<Metadata> {
       // PNG, denn iOS kann kein SVG als Homescreen-Icon
       apple: { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
     },
-    openGraph: { type: 'website', siteName: org.name, locale: 'de_CH', title, description, url: '/', images: [image] },
+    openGraph: { type: 'website', siteName: org.name, locale: locale.replace('-', '_'), title, description, url: '/', images: [image] },
     twitter: { card: 'summary_large_image', title, description, images: [image] },
   };
 }

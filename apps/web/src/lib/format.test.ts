@@ -34,7 +34,7 @@ describe('Zeitanzeige in Schweizer Zeit', () => {
 
 describe('Tage eines Anlasses', () => {
   it('fasst einen Anlass über mehrere Tage zusammen', () => {
-    expect(fmtDateRange('2026-10-16T16:00:00Z', '2026-10-18T12:00:00Z')).toBe('16.10. bis 18. Oktober 2026');
+    expect(fmtDateRange('2026-10-16T16:00:00Z', '2026-10-18T12:00:00Z')).toBe('16.–18. Oktober 2026');
   });
 
   it('zeigt einen eintägigen Anlass nur einmal', () => {

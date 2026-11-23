@@ -2,13 +2,14 @@
 
 import { Building2, Globe2, Network, ShieldCheck, Users, UsersRound, type LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useEventText } from '@/lib/eventText';
 import {
   EVENT_ACCESS_TYPES,
   getEventAccessTypeConfig,
   type EventAccessType,
   type OrganizationConfig,
 } from '@schichtplan/shared';
-import { Badge, type BadgeTone, useOrganization } from '@schichtplan/ui';
+import { Badge, type BadgeTone, } from '@schichtplan/ui';
 
 /** Icon pro Zugangs-Typ. Neuer Typ in EVENT_ACCESS_TYPES -> hier ein Icon ergänzen. */
 const ACCESS_TYPE_ICONS: Record<EventAccessType, LucideIcon> = {
@@ -50,8 +51,7 @@ export function AccessTypeBadge({
   tone?: BadgeTone;
 }) {
   const t = useTranslations('web.eventMeta');
-  const org = useOrganization();
-  const info = getEventAccessTypeConfig(type, org);
+  const info = useEventText().accessType(type);
   const Icon = accessTypeIcon(type);
   return (
     <Badge tone={tone}>
@@ -66,11 +66,12 @@ export function AccessTypeBadge({
   );
 }
 
+/** Bildvorlagen für Anlässe; Bezeichnungen im Katalog `web.eventForm.banners.<id>` */
 export const BANNER_PRESETS = [
-  { name: 'Chilbi & Festzelt', url: '/images/banners/chilbi.svg' },
-  { name: 'Sommerlager', url: '/images/banners/sola.svg' },
-  { name: 'Lagerfeuer & Wald', url: '/images/banners/lagerfeuer.svg' },
-  { name: 'Grill & Festwirtschaft', url: '/images/banners/grill.svg' },
-  { name: 'Hütte & Berge', url: '/images/banners/huette.svg' },
-  { name: 'Waldweihnacht & Winter', url: '/images/banners/weihnachten.svg' },
-];
+  { id: 'chilbi', url: '/images/banners/chilbi.svg' },
+  { id: 'sola', url: '/images/banners/sola.svg' },
+  { id: 'lagerfeuer', url: '/images/banners/lagerfeuer.svg' },
+  { id: 'grill', url: '/images/banners/grill.svg' },
+  { id: 'huette', url: '/images/banners/huette.svg' },
+  { id: 'weihnachten', url: '/images/banners/weihnachten.svg' },
+] as const;

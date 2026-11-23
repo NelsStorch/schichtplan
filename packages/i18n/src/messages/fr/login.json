@@ -339,5 +339,47 @@
     "roleLeader": "Responsable",
     "roleNotLeader": "pas de fonction de direction",
     "wrongRoleHint": "Si un rôle est incorrect, l'administration des membres de {authProviderShort} peut le modifier. Ensuite, déconnectez-vous et reconnectez-vous. {rulesLink}"
+  },
+  "meta": {
+    "abteilung": {
+      "title": "{org, select, other {Choisir : {unit}}}",
+      "description": "{org, select, verein {Choisis ton association pour {name}.} other {Choisis ta {unit} et tes unités pour {name}.}}",
+      "subtitle": "{org, select, verein {Choisir ton association.} other {Choisir {unit} et unités.}}"
+    },
+    "abteilung_erstellen": {
+      "title": "{org, select, other {Créer : {unit}}}",
+      "description": "{org, select, verein {Crée un planning propre avec sous-domaine pour ton association.} other {Crée un planning propre avec sous-domaine pour ton groupe {orgName} ({unit}).}}",
+      "subtitle": "{org, select, other {Ton propre planning ({unit}). Gratuit.}}"
+    },
+    "konto_verknuepfen": {
+      "title": "Lier le compte",
+      "description": "Relier {authShort} à ton compte existant.",
+      "subtitle": "Relier {authShort} à ton compte."
+    },
+    "verify_email": {
+      "title": "Confirmer l’e-mail",
+      "description": "Confirme ton adresse e-mail pour activer ton compte {name}.",
+      "subtitle": "Encore un clic et ton compte est actif."
+    },
+    "passwort_vergessen": {
+      "title": "Mot de passe oublié",
+      "description": "Demander un lien pour réinitialiser ton mot de passe.",
+      "subtitle": "Demander un lien de réinitialisation."
+    },
+    "passwort_zuruecksetzen": {
+      "title": "Nouveau mot de passe",
+      "description": "Définir un nouveau mot de passe pour ton compte.",
+      "subtitle": "Définir un nouveau mot de passe pour ton compte."
+    },
+    "zwei_faktor": {
+      "title": "Code à deux facteurs",
+      "description": "Confirmer la connexion avec le code de ton application d’authentification.",
+      "subtitle": "Confirmer la connexion avec le code."
+    },
+    "rootTitle": "Connexion · {name}",
+    "rootDescription": "Connexion centrale pour responsables et bénévoles de {name}",
+    "rootImageTitle": "Se connecter à {name}",
+    "ogTitle": "Se connecter",
+    "ogSubtitle": "Une connexion pour toutes les {units}."
   }
 }

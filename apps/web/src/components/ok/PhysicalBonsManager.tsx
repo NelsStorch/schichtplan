@@ -132,14 +132,14 @@ export function PhysicalBonsManager({
           </div>
           {helperCount !== null && (
             <Badge tone="neutral" className="text-xs">
-              👥 {helperCount} Helfende angemeldet
+              👥 {t('x.helpersSignedUp', { count: helperCount })}
             </Badge>
           )}
         </div>
 
         {/* Modus: Kombi-Bon vs Einzel-Bons */}
         <div className="space-y-1.5">
-          <span className="text-xs font-semibold text-fg">Bon-Typ &amp; Format</span>
+          <span className="text-xs font-semibold text-fg">{t('x.typeFormat')}</span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <button
               type="button"
@@ -157,11 +157,10 @@ export function PhysicalBonsManager({
                   {mode === 'COMBI' && <CheckCircle2 className="size-3.5 text-accent-ink" />}
                 </div>
                 <p className="text-[11px] text-fg-muted mt-1 leading-snug">
-                  1 gedruckter Zettel enthält alle Gutscheine der Schicht (z. B.{' '}
-                  {items.slice(0, 2).join(' & ')}). Am Stand flexibel einzeln oder zusammen entwertbar.
+                  {t('x.combiText', { items: items.slice(0, 2).join(' & ') })}
                 </p>
               </div>
-              <span className="mt-2 text-[10px] font-semibold text-accent-ink">Empfohlen für Festbetriebe</span>
+              <span className="mt-2 text-[10px] font-semibold text-accent-ink">{t('x.recommended')}</span>
             </button>
 
             <button
@@ -180,11 +179,10 @@ export function PhysicalBonsManager({
                   {mode === 'SINGLE' && <CheckCircle2 className="size-3.5 text-accent-ink" />}
                 </div>
                 <p className="text-[11px] text-fg-muted mt-1 leading-snug">
-                  Separater Zettel pro Artikel (z. B. 1 Zettel für {items[0] || 'Essen'}, 1 Zettel für{' '}
-                  {items[1] || 'Trinken'}).
+                  {t('x.singleText', { first: items[0] || t('x.food'), second: items[1] || t('x.drinks') })}
                 </p>
               </div>
-              <span className="mt-2 text-[10px] text-fg-muted">Klassische Abreiss-Bons</span>
+              <span className="mt-2 text-[10px] text-fg-muted">{t('x.classic')}</span>
             </button>
           </div>
         </div>
@@ -215,15 +213,15 @@ export function PhysicalBonsManager({
                   onClick={() => setCardCount(helperCount)}
                   className="text-[11px] text-accent-ink hover:underline font-semibold flex items-center gap-1"
                 >
-                  <Sparkles className="size-3" /> Exakt für alle {helperCount} Helfenden setzen
+                  <Sparkles className="size-3" /> {t('x.setExact', { count: helperCount })}
                 </button>
               )}
             </div>
           </Field>
 
-          <Field label="Optionaler Tranchen-Name" hint="z. B. «Reservekarten Grillstand» oder «Hauptdruck»">
+          <Field label={t('x.batchName')} hint={t('x.batchNameHint')}>
             <Input
-              placeholder={`z. B. Tranche ${(batches[0]?.batchNumber ?? 0) + 1}`}
+              placeholder={t('x.batchPlaceholder', { number: (batches[0]?.batchNumber ?? 0) + 1 })}
               value={customTitle}
               onChange={(e) => setCustomTitle(e.target.value)}
             />
@@ -248,7 +246,7 @@ export function PhysicalBonsManager({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h4 className="font-display text-xs font-bold uppercase tracking-wider text-fg-subtle">
-            Bisherige Druck-Tranchen ({batches.length})
+            {t('x.previousBatches', { count: batches.length })}
           </h4>
           <button
             type="button"
@@ -256,7 +254,7 @@ export function PhysicalBonsManager({
             disabled={loading}
             className="text-xs text-accent-ink hover:underline font-medium inline-flex items-center gap-1"
           >
-            <RefreshCw className={cn('size-3', loading && 'animate-spin')} /> Aktualisieren
+            <RefreshCw className={cn('size-3', loading && 'animate-spin')} /> {t('x.refresh')}
           </button>
         </div>
 
@@ -285,7 +283,7 @@ export function PhysicalBonsManager({
                   </div>
                   <p className="text-xs text-fg-muted mt-0.5">
                     {t('cardsCount', { count: batch.cardCount })} ({t('totalBonsCount', { count: batch.tokenCount })}) ·{' '}
-                    <span className="font-medium text-fg">{batch.redeemedTokensCount} bereits eingelöst</span> ·{' '}
+                    <span className="font-medium text-fg">{t('x.alreadyRedeemed', { count: batch.redeemedTokensCount })}</span> ·{' '}
                     {zurichDateTimeFormat({ day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(
                       new Date(batch.createdAt)
                     )}
@@ -300,7 +298,7 @@ export function PhysicalBonsManager({
                     onClick={() =>
                       window.open(`/api/events/${eventSlug}/catering-batches/${batch.id}/pdf`, '_blank')
                     }
-                    title="A4-Druckbogen als PDF herunterladen"
+                    title={t('x.downloadTitle')}
                   >
                     <Download className="size-3.5 mr-1" /> {t('downloadPdfBtn')}
                   </Button>

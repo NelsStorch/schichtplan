@@ -1,5 +1,11 @@
 import { Document, Font, Image, Page, StyleSheet, Text, View, pdf } from '@react-pdf/renderer';
 import { formatZurichDate, type DepartmentDto, type DepartmentStatsResponseDto } from '@schichtplan/shared';
+import { INTL_LOCALES, getTranslator, parseLocale } from '@schichtplan/i18n';
+
+/** Texte aus dem PDF-Katalog `pdf.stats` (wie `getPlanLabels` beim Schichtplan-PDF) */
+function statsTranslator(locale?: string | null) {
+  return getTranslator(parseLocale(locale) ?? 'de', { namespace: 'pdf.stats' });
+}
 
 const INK = '#0f172a';
 const MUTED = '#64748b';
@@ -280,18 +286,23 @@ export interface DepartmentStatsPdfProps {
   data: DepartmentStatsResponseDto;
   department: DepartmentDto | null;
   logoUrl?: string | null;
+  /** Sprache des Dokuments (de, fr-CH …) */
+  locale?: string | null;
+  nicknameTerm: string;
 }
 
-export function DepartmentStatsPdf({ data, department, logoUrl }: DepartmentStatsPdfProps) {
+export function DepartmentStatsPdf({ data, department, logoUrl, locale, nicknameTerm }: DepartmentStatsPdfProps) {
+  const t = statsTranslator(locale);
+  const lang = INTL_LOCALES[parseLocale(locale) ?? 'de'];
   const accent = department?.primaryColor || '#e11d48';
-  const yearText = data.year === 'ALL' ? 'Gesamte Auswertung (Alle Jahre)' : `Jahresbericht ${data.year}`;
-  const deptName = department?.name || 'Cevi Abteilung';
+  const yearText = data.year === 'ALL' ? t('yearAll') : t('yearReport', { year: String(data.year) });
+  const deptName = department?.name || t('deptFallback');
   const filterDesc = [
-    data.filter.countAttendedOnly ? 'Nur bestätigte Anwesenheiten' : 'Alle eingetragenen Schichten',
-    data.filter.includeSetupTeardown ? 'inkl. Auf- & Abbau' : 'ohne Auf-/Abbau',
+    data.filter.countAttendedOnly ? t('attendedOnly') : t('allSignups'),
+    data.filter.includeSetupTeardown ? t('withSetup') : t('withoutSetup'),
   ].join(' · ');
 
-  const footerText = `${deptName} · Helferstatistik ${yearText} · Stand ${formatZurichDate(new Date())}`;
+  const footerText = t('footer', { dept: deptName, year: yearText, date: formatZurichDate(new Date()) });
 
   // Top 3 für das Podest
   const top3 = data.topHelpers.slice(0, 3);
@@ -299,17 +310,17 @@ export function DepartmentStatsPdf({ data, department, logoUrl }: DepartmentStat
 
   return (
     <Document
-      title={`Helferstatistik – ${deptName} – ${yearText}`}
+      title={t('docTitle', { dept: deptName, year: yearText })}
       author={deptName}
       creator="Cevi Schichtplan"
-      language="de-CH"
+      language={lang}
     >
       <Page size="A4" orientation="portrait" style={s.page}>
         {/* Seitennummerierung */}
         <Text
           fixed
           style={{ ...s.pageNumber, top: 841.89 - 24 }}
-          render={({ pageNumber, totalPages }) => `Seite ${pageNumber} von ${totalPages}`}
+          render={({ pageNumber, totalPages }) => t('page', { page: pageNumber, total: totalPages })}
         />
 
         {/* Wiederkehrende Kopfzeile ab Seite 2 */}
@@ -322,7 +333,7 @@ export function DepartmentStatsPdf({ data, department, logoUrl }: DepartmentStat
                 <Text style={s.runningText}>
                   {deptName} · {yearText}
                 </Text>
-                <Text style={s.runningText}>Helferstunden & Jahresbericht</Text>
+                <Text style={s.runningText}>{t('running')}</Text>
               </>
             ) : null
           }
@@ -341,16 +352,16 @@ export function DepartmentStatsPdf({ data, department, logoUrl }: DepartmentStat
           <View style={s.titleGroup}>
             <Text style={s.title}>{deptName}</Text>
             <Text style={s.subtitle}>
-              Jahresbericht & Helferstatistik {data.year === 'ALL' ? 'aller Anlässe' : data.year}
+              {data.year === 'ALL' ? t('subtitleAll') : t('subtitleYear', { year: String(data.year) })}
             </Text>
             <Text style={[s.subtitle, { fontSize: 7, color: MUTED }]}>
               {filterDesc}
             </Text>
           </View>
           <View style={s.metaRight}>
-            <Text style={s.metaLabel}>Stand</Text>
+            <Text style={s.metaLabel}>{t('asOf')}</Text>
             <Text style={s.metaValue}>{formatZurichDate(new Date())}</Text>
-            <Text style={[s.metaLabel, { marginTop: 3 }]}>Anlässe</Text>
+            <Text style={[s.metaLabel, { marginTop: 3 }]}>{t('events')}</Text>
             <Text style={s.metaValue}>{data.summary.totalEvents}</Text>
           </View>
         </View>
@@ -361,76 +372,76 @@ export function DepartmentStatsPdf({ data, department, logoUrl }: DepartmentStat
         {/* KPI Kacheln */}
         <View style={s.kpiRow}>
           <View style={s.kpiCard}>
-            <Text style={s.kpiLabel}>Helferstunden</Text>
+            <Text style={s.kpiLabel}>{t('hours')}</Text>
             <Text style={s.kpiValue}>{data.summary.totalHours} h</Text>
             <Text style={s.kpiSub}>{data.summary.formattedTime}</Text>
-            <Text style={s.kpiDetail}>{data.summary.eventHours}h Anlass / {data.summary.setupHours}h Auf-/Abbau</Text>
+            <Text style={s.kpiDetail}>{t('hoursSplit', { event: data.summary.eventHours, setup: data.summary.setupHours })}</Text>
           </View>
 
           <View style={s.kpiCard}>
-            <Text style={s.kpiLabel}>Aktive Helfende</Text>
+            <Text style={s.kpiLabel}>{t('activeHelpers')}</Text>
             <Text style={s.kpiValue}>{data.summary.totalHelpers}</Text>
-            <Text style={s.kpiSub}>Ø {data.summary.averageHoursPerHelper} h pro Person</Text>
-            <Text style={s.kpiDetail}>in {data.summary.totalEvents} {data.summary.totalEvents === 1 ? 'Anlass' : 'Anlässen'}</Text>
+            <Text style={s.kpiSub}>{t('perPerson', { hours: data.summary.averageHoursPerHelper })}</Text>
+            <Text style={s.kpiDetail}>{t('inEvents', { count: data.summary.totalEvents })}</Text>
           </View>
 
           <View style={s.kpiCard}>
-            <Text style={s.kpiLabel}>Besetzungsgrad</Text>
+            <Text style={s.kpiLabel}>{t('fillRate')}</Text>
             <Text style={s.kpiValue}>{data.summary.fillRatePct} %</Text>
-            <Text style={s.kpiSub}>{data.summary.totalFilledSlots} von {data.summary.totalRequiredSlots} besetzt</Text>
-            <Text style={s.kpiDetail}>{data.summary.totalShifts} Schichten gesamt</Text>
+            <Text style={s.kpiSub}>{t('filledOf', { filled: data.summary.totalFilledSlots, total: data.summary.totalRequiredSlots })}</Text>
+            <Text style={s.kpiDetail}>{t('shiftsTotal', { count: data.summary.totalShifts })}</Text>
           </View>
 
           <View style={[s.kpiCard, s.kpiCardLast]}>
-            <Text style={s.kpiLabel}>Anwesenheit</Text>
+            <Text style={s.kpiLabel}>{t('attendance')}</Text>
             <Text style={s.kpiValue}>{data.summary.attendedRatePct} %</Text>
-            <Text style={s.kpiSub}>{data.summary.attendedHours} h bestätigt</Text>
-            <Text style={s.kpiDetail}>{data.filter.countAttendedOnly ? 'Filter aktiv' : 'Präsenzquote'}</Text>
+            <Text style={s.kpiSub}>{t('hoursConfirmed', { hours: data.summary.attendedHours })}</Text>
+            <Text style={s.kpiDetail}>{data.filter.countAttendedOnly ? t('filterActive') : t('attendanceRate')}</Text>
           </View>
         </View>
 
         {/* Podest für die GV */}
         {top3.length === 3 && (
           <View wrap={false} style={{ marginBottom: 10 }}>
-            <Text style={s.sectionTitle}>Ehrentafel für die Generalversammlung (GV)</Text>
+            <Text style={s.sectionTitle}>{t('honourTitle')}</Text>
             <Text style={s.sectionSubtitle}>
-              Besonderer Dank an die fleissigsten Helfenden des Jahres für ihren grossartigen Einsatz!
+              {t('honourText')}
             </Text>
 
             <View style={s.podestRow}>
               {/* 2. Platz */}
               <View style={[s.podestCard, s.podestCard2]}>
-                <Text style={[s.podestBadge, { color: '#64748b' }]}>2. Rang (Silber)</Text>
+                <Text style={[s.podestBadge, { color: '#64748b' }]}>{t('rank2')}</Text>
                 <Text style={s.podestName}>{top3[1].ceviName || top3[1].displayName}</Text>
                 {top3[1].ceviName && top3[1].firstName && (
                   <Text style={s.podestRealName}>{top3[1].firstName} {top3[1].lastName || ''}</Text>
                 )}
                 <Text style={[s.podestHours, { color: '#475569' }]}>
-                  {top3[1].hours} h ({top3[1].shiftCount} Schichten)
+                  {t('hoursShifts', { hours: top3[1].hours, count: top3[1].shiftCount })}
                 </Text>
               </View>
 
               {/* 1. Platz */}
               <View style={[s.podestCard, s.podestCard1]}>
-                <Text style={[s.podestBadge, { color: '#b45309' }]}>1. Rang (Gold) 🏆</Text>
+                <Text style={[s.podestBadge, { color: '#b45309' }]}>{t('rank1')}</Text>
                 <Text style={[s.podestName, { fontSize: 11 }]}>{top3[0].ceviName || top3[0].displayName}</Text>
                 {top3[0].ceviName && top3[0].firstName && (
                   <Text style={s.podestRealName}>{top3[0].firstName} {top3[0].lastName || ''}</Text>
                 )}
                 <Text style={[s.podestHours, { color: '#b45309' }]}>
-                  {top3[0].hours} h ({top3[0].shiftCount} Schichten)
+                  {t('hoursShifts', { hours: top3[0].hours, count: top3[0].shiftCount })}
                 </Text>
               </View>
 
               {/* 3. Platz */}
               <View style={[s.podestCard, s.podestCard3]}>
-                <Text style={[s.podestBadge, { color: '#c2410c' }]}>3. Rang (Bronze)</Text>
+                <Text style={[s.podestBadge, { color: '#c2410c' }]}>{t('rank3')}</Text>
                 <Text style={s.podestName}>{top3[2].ceviName || top3[2].displayName}</Text>
                 {top3[2].ceviName && top3[2].firstName && (
                   <Text style={s.podestRealName}>{top3[2].firstName} {top3[2].lastName || ''}</Text>
                 )}
                 <Text style={[s.podestHours, { color: '#c2410c' }]}>
-                  {top3[2].hours} h ({top3[2].shiftCount} Schichten)
+                  {t('hoursShifts', { hours: top3[2].hours, count: top3[2].shiftCount })}
                 </Text>
               </View>
             </View>
@@ -439,16 +450,16 @@ export function DepartmentStatsPdf({ data, department, logoUrl }: DepartmentStat
 
         {/* Rangliste der Helfenden */}
         <View wrap={false} style={{ marginBottom: 12 }}>
-          <Text style={s.sectionTitle}>Rangliste & geleistete Stunden</Text>
+          <Text style={s.sectionTitle}>{t('rankingTitle')}</Text>
           <View style={s.table}>
             <View style={s.thRow}>
               <Text style={[s.thCell, { width: 22, textAlign: 'center' }]}>#</Text>
-              <Text style={[s.thCell, { flex: 1 }]}>Name / Cevi-Name</Text>
-              <Text style={[s.thCell, { width: 110 }]}>Stufen</Text>
-              <Text style={[s.thCell, { width: 44, textAlign: 'right' }]}>Anlässe</Text>
-              <Text style={[s.thCell, { width: 44, textAlign: 'right' }]}>Schichten</Text>
-              <Text style={[s.thCell, { width: 44, textAlign: 'right' }]}>Bestätigt</Text>
-              <Text style={[s.thCell, { width: 55, textAlign: 'right' }]}>Stunden</Text>
+              <Text style={[s.thCell, { flex: 1 }]}>{t('colName', { nickname: nicknameTerm })}</Text>
+              <Text style={[s.thCell, { width: 110 }]}>{t('colLevels')}</Text>
+              <Text style={[s.thCell, { width: 44, textAlign: 'right' }]}>{t('colEvents')}</Text>
+              <Text style={[s.thCell, { width: 44, textAlign: 'right' }]}>{t('colShifts')}</Text>
+              <Text style={[s.thCell, { width: 44, textAlign: 'right' }]}>{t('colConfirmed')}</Text>
+              <Text style={[s.thCell, { width: 55, textAlign: 'right' }]}>{t('colHours')}</Text>
             </View>
 
             {helpersList.map((h, i) => (
@@ -469,7 +480,7 @@ export function DepartmentStatsPdf({ data, department, logoUrl }: DepartmentStat
                   ) : (
                     <Text style={[s.td, { fontWeight: 600 }]}>{h.displayName}</Text>
                   )}
-                  {h.isGuest && <Text style={[s.badge, { marginLeft: 3 }]}>Gast</Text>}
+                  {h.isGuest && <Text style={[s.badge, { marginLeft: 3 }]}>{t('guest')}</Text>}
                 </View>
 
                 <View style={{ width: 110, flexDirection: 'row', flexWrap: 'wrap' }}>
@@ -500,15 +511,15 @@ export function DepartmentStatsPdf({ data, department, logoUrl }: DepartmentStat
 
         {/* Anlässe & Stufen */}
         <View wrap={false} style={{ marginBottom: 10 }}>
-          <Text style={s.sectionTitle}>Anlässe des Jahres</Text>
+          <Text style={s.sectionTitle}>{t('eventsTitle')}</Text>
           <View style={s.table}>
             <View style={s.thRow}>
-              <Text style={[s.thCell, { flex: 1 }]}>Anlass</Text>
-              <Text style={[s.thCell, { width: 70 }]}>Datum</Text>
-              <Text style={[s.thCell, { width: 48, textAlign: 'right' }]}>Helfende</Text>
-              <Text style={[s.thCell, { width: 48, textAlign: 'right' }]}>Schichten</Text>
-              <Text style={[s.thCell, { width: 60, textAlign: 'right' }]}>Besetzung</Text>
-              <Text style={[s.thCell, { width: 55, textAlign: 'right' }]}>Stunden</Text>
+              <Text style={[s.thCell, { flex: 1 }]}>{t('colEvent')}</Text>
+              <Text style={[s.thCell, { width: 70 }]}>{t('colDate')}</Text>
+              <Text style={[s.thCell, { width: 48, textAlign: 'right' }]}>{t('colHelpers')}</Text>
+              <Text style={[s.thCell, { width: 48, textAlign: 'right' }]}>{t('colShifts')}</Text>
+              <Text style={[s.thCell, { width: 60, textAlign: 'right' }]}>{t('colStaffing')}</Text>
+              <Text style={[s.thCell, { width: 55, textAlign: 'right' }]}>{t('colHours')}</Text>
             </View>
 
             {data.events.map((ev, i) => (
@@ -536,14 +547,14 @@ export function DepartmentStatsPdf({ data, department, logoUrl }: DepartmentStat
         {/* Stufen-Verteilung */}
         {data.stufen.length > 0 && (
           <View wrap={false}>
-            <Text style={s.sectionTitle}>Stufen-Beteiligung</Text>
+            <Text style={s.sectionTitle}>{t('levelsTitle')}</Text>
             <View style={s.table}>
               <View style={s.thRow}>
-                <Text style={[s.thCell, { flex: 1 }]}>Stufe / Gruppe</Text>
-                <Text style={[s.thCell, { width: 60, textAlign: 'right' }]}>Helfende</Text>
-                <Text style={[s.thCell, { width: 60, textAlign: 'right' }]}>Schichten</Text>
-                <Text style={[s.thCell, { width: 65, textAlign: 'right' }]}>Anteil (%)</Text>
-                <Text style={[s.thCell, { width: 65, textAlign: 'right' }]}>Stunden</Text>
+                <Text style={[s.thCell, { flex: 1 }]}>{t('colLevel')}</Text>
+                <Text style={[s.thCell, { width: 60, textAlign: 'right' }]}>{t('colHelpers')}</Text>
+                <Text style={[s.thCell, { width: 60, textAlign: 'right' }]}>{t('colShifts')}</Text>
+                <Text style={[s.thCell, { width: 65, textAlign: 'right' }]}>{t('colShare')}</Text>
+                <Text style={[s.thCell, { width: 65, textAlign: 'right' }]}>{t('colHours')}</Text>
               </View>
 
               {data.stufen.map((st, i) => (
@@ -569,6 +580,7 @@ export function DepartmentStatsPdf({ data, department, logoUrl }: DepartmentStat
 export async function renderDepartmentStatsPdf(
   data: DepartmentStatsResponseDto,
   department: DepartmentDto | null,
+  labels: { locale?: string | null; nicknameTerm: string },
   fontBase = '/fonts/pdf'
 ): Promise<Blob> {
   registerPdfFonts(fontBase);
@@ -577,6 +589,7 @@ export async function renderDepartmentStatsPdf(
       data={data}
       department={department}
       logoUrl={department?.logoUrl}
+      {...labels}
     />
   ).toBlob();
 }

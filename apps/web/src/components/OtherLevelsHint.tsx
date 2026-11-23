@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ArrowUpRight, X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { getLoginUrl, type DepartmentCreationEligibilityDto } from '@schichtplan/shared';
 import { Callout, buttonClasses, useOrganization } from '@schichtplan/ui';
 import { api } from '@/lib/api';
@@ -26,6 +26,7 @@ function readDismissed(): string[] {
  */
 export function OtherLevelsHint() {
   const t = useTranslations('web.shell');
+  const intlLocale = useLocale();
   const { user } = usePortal();
   const org = useOrganization();
   const [open, setOpen] = useState<{ id: number; name: string }[]>([]);
@@ -61,7 +62,7 @@ export function OtherLevelsHint() {
   };
 
   const names = open.map((o) => o.name);
-  const label = names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} und ${names[names.length - 1]}`;
+  const label = new Intl.ListFormat(intlLocale, { type: 'conjunction' }).format(names);
 
   return (
     <Callout tone="info" className="mt-6 max-w-xl" title={t('otherLevelsTitle', { label })}>

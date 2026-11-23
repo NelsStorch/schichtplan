@@ -130,9 +130,9 @@ export default function OkCateringPage() {
 
   const handleResetToken = async (tokenId: string, title: string, helperName: string) => {
     const ok = await confirm({
-      title: 'Bon wieder freigeben?',
-      description: `«${title}» von ${helperName} wird wieder auf «Offen / Einlösbar» zurückgesetzt (z. B. nach versehentlichem Wischen).`,
-      confirmLabel: 'Zurücksetzen',
+      title: t('x.resetConfirmTitle'),
+      description: t('x.resetConfirmDesc', { item: title, name: helperName }),
+      confirmLabel: t('x.reset'),
       tone: 'danger',
     });
     if (!ok) return;
@@ -143,13 +143,13 @@ export default function OkCateringPage() {
         method: 'POST',
       });
       toast({
-        title: 'Bon zurückgesetzt',
-        description: `${title} (${helperName}) kann wieder eingelöst werden.`,
+        title: t('x.resetDone'),
+        description: t('x.resetDoneDesc', { item: title, name: helperName }),
       });
       await loadOverview();
     } catch (err) {
       toast({
-        title: 'Zurücksetzen fehlgeschlagen',
+        title: t('x.resetFailed'),
         description: errorMessage(err),
         tone: 'error',
       });
@@ -161,16 +161,16 @@ export default function OkCateringPage() {
   const exportCsv = () => {
     if (!data) return;
     const rows = [
-      ['Person', 'Rolle', 'Bon', 'Status', 'Eingelöst am', 'Schicht', 'Schichtbeginn', 'Schichtende'],
-      ...(data.tokens ?? []).map((t) => [
-        t.helperName,
-        t.isResponsible ? 'Schichtleitung' : 'Helfende',
-        t.title,
-        t.status === 'REDEEMED' ? 'Eingelöst' : 'Offen',
-        t.redeemedAt ? `${fmtDayMonth(t.redeemedAt)} ${fmtTime(t.redeemedAt)}` : '',
-        t.shiftTitle || 'Schicht',
-        `${fmtDayMonth(t.shiftStartTime)} ${fmtTime(t.shiftStartTime)}`,
-        `${fmtDayMonth(t.shiftEndTime)} ${fmtTime(t.shiftEndTime)}`,
+      [t('x.csvPerson'), t('x.csvRole'), t('x.csvVoucher'), t('x.csvStatus'), t('x.csvRedeemedAt'), t('x.csvShift'), t('x.csvShiftStart'), t('x.csvShiftEnd')],
+      ...(data.tokens ?? []).map((tok) => [
+        tok.helperName,
+        tok.isResponsible ? t('x.csvLeader') : t('x.csvHelper'),
+        tok.title,
+        tok.status === 'REDEEMED' ? t('x.csvRedeemed') : t('x.csvOpen'),
+        tok.redeemedAt ? `${fmtDayMonth(tok.redeemedAt)} ${fmtTime(tok.redeemedAt)}` : '',
+        tok.shiftTitle || t('x.shift'),
+        `${fmtDayMonth(tok.shiftStartTime)} ${fmtTime(tok.shiftStartTime)}`,
+        `${fmtDayMonth(tok.shiftEndTime)} ${fmtTime(tok.shiftEndTime)}`,
       ]),
     ];
     const csvContent =
@@ -182,7 +182,7 @@ export default function OkCateringPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `verpflegungs-bons-${event.slug}.csv`;
+    a.download = `${t('x.csvFilePrefix')}-${event.slug}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -196,11 +196,11 @@ export default function OkCateringPage() {
         />
         <EmptyState
           icon={<UtensilsCrossed />}
-          title="Verpflegungs-Bons sind nicht aktiviert"
-          description="Aktiviere die digitalen Verpflegungs- und Getränke-Tokens in den Anlass-Einstellungen, damit Helfende und Schichtleitungen pro Schicht automatisch ihre Bons erhalten."
+          title={t('x.disabledTitle')}
+          description={t('x.disabledDesc')}
           action={
             <Link href={`/events/${event.slug}/ok/einstellungen`} className={buttonClasses()}>
-              <Settings className="size-4" /> In den Einstellungen aktivieren
+              <Settings className="size-4" /> {t('x.enableInSettings')}
             </Link>
           }
         />
@@ -211,10 +211,10 @@ export default function OkCateringPage() {
   const earlyHoursLabel =
     data?.earlyHours !== undefined
       ? data.earlyHours < 0
-        ? 'Immer gültig (ohne Zeitfenster)'
+        ? t('x.validAlways')
         : data.earlyHours === 0
-          ? 'Ab Schichtbeginn oder Check-in'
-          : `Ab ${data.earlyHours} ${data.earlyHours === 1 ? 'Stunde' : 'Stunden'} vor Schichtbeginn (oder Check-in)`
+          ? t('x.validFromStart')
+          : t('x.validEarly', { count: data.earlyHours })
       : '';
 
   return (
@@ -224,13 +224,13 @@ export default function OkCateringPage() {
         description={
           <span>
             {t('pageDesc')}{' '}
-            {earlyHoursLabel && <span className="font-semibold text-fg">Gültigkeit: {earlyHoursLabel}.</span>}
+            {earlyHoursLabel && <span className="font-semibold text-fg">{t('x.validity', { label: earlyHoursLabel })}</span>}
           </span>
         }
         actions={
           <>
             <Button variant="secondary" size="sm" onClick={() => void loadOverview()} disabled={loading}>
-              <RefreshCw className={cn('size-4', loading && 'animate-spin')} /> Aktualisieren
+              <RefreshCw className={cn('size-4', loading && 'animate-spin')} /> {t('x.refresh')}
             </Button>
             <Button
               variant="secondary"
@@ -238,13 +238,13 @@ export default function OkCateringPage() {
               onClick={exportCsv}
               disabled={!data || data.totalTokens === 0}
             >
-              <Download className="size-4" /> CSV-Export
+              <Download className="size-4" /> {t('x.csvExport')}
             </Button>
             <Link
               href={`/events/${event.slug}/ok/einstellungen`}
               className={buttonClasses({ variant: 'ghost', size: 'sm' })}
             >
-              <Settings className="size-4" /> Konfigurieren
+              <Settings className="size-4" /> {t('x.configure')}
             </Link>
           </>
         }
@@ -282,12 +282,12 @@ export default function OkCateringPage() {
         <PhysicalBonsManager
           eventSlug={event.slug}
           eventTitle={event.title}
-          items={event.cateringTokenItems ?? ['1x Helfermenü', '1x Getränk']}
+          items={event.cateringTokenItems ?? [t('defaultItemMeal'), t('defaultItemDrink')]}
         />
       ) : loading && !data ? (
         <div className="py-16 text-center text-fg-muted flex flex-col items-center justify-center gap-2">
           <Loader2 className="size-6 animate-spin text-accent-ink" />
-          <p className="text-sm">Bons und Statistiken werden geladen…</p>
+          <p className="text-sm">{t('x.loading')}</p>
         </div>
       ) : data ? (
         <>
@@ -296,7 +296,7 @@ export default function OkCateringPage() {
             <Card className="p-4 sm:p-5">
               <p className="text-xs font-bold uppercase tracking-wider text-fg-subtle">{t('kpiIssued')}</p>
               <p className="mt-1 font-display text-3xl font-extrabold text-fg tabular">{data.totalTokens}</p>
-              <p className="mt-1 text-xs text-fg-muted">Inkl. Helfende &amp; Schichtleitung</p>
+              <p className="mt-1 text-xs text-fg-muted">{t('x.inclLeaders')}</p>
             </Card>
             <Card className="p-4 sm:p-5 border-success/30 bg-success/5">
               <div className="flex items-baseline justify-between gap-2">
@@ -308,12 +308,12 @@ export default function OkCateringPage() {
               <p className="mt-1 font-display text-3xl font-extrabold text-success-ink tabular">
                 {data.redeemedTokens}
               </p>
-              <p className="mt-1 text-xs text-fg-muted">Am Stand bezogen</p>
+              <p className="mt-1 text-xs text-fg-muted">{t('x.collected')}</p>
             </Card>
             <Card className="p-4 sm:p-5">
               <p className="text-xs font-bold uppercase tracking-wider text-fg-subtle">{t('kpiAvailable')}</p>
               <p className="mt-1 font-display text-3xl font-extrabold text-fg tabular">{data.availableTokens}</p>
-              <p className="mt-1 text-xs text-fg-muted">Noch nicht eingelöst</p>
+              <p className="mt-1 text-xs text-fg-muted">{t('x.notRedeemed')}</p>
             </Card>
           </div>
 
@@ -321,14 +321,14 @@ export default function OkCateringPage() {
           {data.byItem.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="font-display text-base font-bold text-fg">Kassensturz nach Bon-Typ</h3>
+                <h3 className="font-display text-base font-bold text-fg">{t('x.byItemTitle')}</h3>
                 {itemFilter !== 'ALL' && (
                   <button
                     type="button"
                     onClick={() => setItemFilter('ALL')}
                     className="text-xs font-semibold text-accent-ink hover:underline"
                   >
-                    Filter zurücksetzen
+                    {t('x.resetFilter')}
                   </button>
                 )}
               </div>
@@ -351,7 +351,7 @@ export default function OkCateringPage() {
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-bold text-sm text-fg truncate">{item.title}</span>
                         <Badge tone={item.redeemed > 0 ? 'accent' : 'neutral'} size="sm">
-                          {pct}% eingelöst
+                          {t('x.pctRedeemed', { pct })}
                         </Badge>
                       </div>
                       <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface-2">
@@ -362,10 +362,10 @@ export default function OkCateringPage() {
                       </div>
                       <div className="mt-2 flex items-center justify-between text-xs text-fg-muted tabular">
                         <span>
-                          <strong className="text-fg">{item.redeemed}</strong> eingelöst
+                          {t.rich('x.redeemedCount', { count: item.redeemed, strong: (chunks) => <strong className="text-fg">{chunks}</strong> })}
                         </span>
                         <span>
-                          {item.available} offen (von {item.total})
+                          {t('x.openOf', { open: item.available, total: item.total })}
                         </span>
                       </div>
                     </button>
@@ -380,11 +380,12 @@ export default function OkCateringPage() {
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <h3 className="font-display text-base font-bold text-fg">
-                  Alle Bons ({filteredTokens.length}
-                  {filteredTokens.length !== (data.tokens?.length ?? 0) ? ` von ${data.tokens?.length ?? 0}` : ''})
+                  {filteredTokens.length !== (data.tokens?.length ?? 0)
+                    ? t('x.allTokensFiltered', { shown: filteredTokens.length, total: data.tokens?.length ?? 0 })
+                    : t('x.allTokens', { count: filteredTokens.length })}
                 </h3>
                 <p className="text-xs text-fg-muted">
-                  Für Helfende ohne Smartphone kannst du Bons hier direkt suchen und manuell entwerten – oder versehentlich eingelöste Bons zurücksetzen.
+                  {t('x.allTokensHint')}
                 </p>
               </div>
             </div>
@@ -403,7 +404,7 @@ export default function OkCateringPage() {
               <Select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-                aria-label="Nach Status filtern"
+                aria-label={t('x.filterStatus')}
               >
                 <option value="ALL">{t('statusFilterAll')} ({data.totalTokens})</option>
                 <option value="AVAILABLE">{t('statusFilterAvailable')} ({data.availableTokens})</option>
@@ -414,7 +415,7 @@ export default function OkCateringPage() {
               <Select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value as RoleFilter)}
-                aria-label="Nach Rolle filtern"
+                aria-label={t('x.filterRole')}
               >
                 <option value="ALL">{t('roleFilterAll')}</option>
                 <option value="HELPER">{t('roleFilterHelper')}</option>
@@ -424,7 +425,7 @@ export default function OkCateringPage() {
               <Select
                 value={itemFilter}
                 onChange={(e) => setItemFilter(e.target.value)}
-                aria-label="Nach Bon-Typ filtern"
+                aria-label={t('x.filterItem')}
               >
                 <option value="ALL">{t('itemFilterAll')}</option>
                 {data.byItem.map((i) => (
@@ -467,7 +468,7 @@ export default function OkCateringPage() {
                             </Badge>
                           </div>
                           <p className="text-xs text-fg-muted">
-                            {tRow.shiftTitle || 'Schicht'}
+                            {tRow.shiftTitle || t('x.shift')}
                             {tRow.taskTitle && !tRow.isResponsible ? ` (${tRow.taskTitle})` : ''} ·{' '}
                             {fmtWeekday(tRow.shiftStartTime)}, {fmtDayMonth(tRow.shiftStartTime)},{' '}
                             {fmtTimeRange(tRow.shiftStartTime, tRow.shiftEndTime)}
@@ -486,9 +487,9 @@ export default function OkCateringPage() {
                                 size="sm"
                                 loading={busyId === tRow.id}
                                 onClick={() => void handleResetToken(tRow.id, tRow.title, tRow.helperName)}
-                                title="Bon zurücksetzen, falls versehentlich eingelöst"
+                                title={t('x.resetTitle')}
                               >
-                                <RotateCcw className="size-3.5" /> Zurücksetzen
+                                <RotateCcw className="size-3.5" /> {t('x.reset')}
                               </Button>
                             </>
                           ) : (
@@ -499,7 +500,7 @@ export default function OkCateringPage() {
                                 </Badge>
                               ) : (
                                 <Badge tone="neutral" size="sm">
-                                  <Clock className="size-3" /> Ab {fmtTime(tRow.availableFrom)} Uhr
+                                  <Clock className="size-3" /> {t('x.availableFrom', { time: fmtTime(tRow.availableFrom) })}
                                 </Badge>
                               )}
                               <Button
@@ -524,7 +525,7 @@ export default function OkCateringPage() {
           {/* 4. Letzte Einlösungen */}
           {data.recentRedemptions.length > 0 && (
             <section className="space-y-3">
-              <h3 className="font-display text-base font-bold text-fg">Letzte Einlösungen am Stand</h3>
+              <h3 className="font-display text-base font-bold text-fg">{t('x.recentTitle')}</h3>
               <div className="rounded-card border border-line bg-surface divide-y divide-line">
                 {data.recentRedemptions.slice(0, 15).map((r) => (
                   <div key={r.id} className="flex items-center justify-between gap-3 px-4 py-2.5 text-xs">
@@ -535,7 +536,7 @@ export default function OkCateringPage() {
                       {r.shiftTitle && <span className="text-fg-subtle truncate hidden sm:inline">({r.shiftTitle})</span>}
                     </div>
                     <span className="font-mono text-fg-muted shrink-0 tabular">
-                      {fmtTime(r.redeemedAt)} Uhr
+                      {t('x.timeOClock', { time: fmtTime(r.redeemedAt) })}
                     </span>
                   </div>
                 ))}

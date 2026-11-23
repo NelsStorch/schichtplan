@@ -238,7 +238,7 @@ export function DepartmentBrandingPreview({
           ) : (
             <div className="flex flex-col items-center justify-center text-fg-subtle gap-1">
               <QrCodeIcon className="size-8" />
-              <span className="text-[10px]">Vorschau lädt...</span>
+              <span className="text-[10px]">{t('x.loading')}</span>
             </div>
           )}
           <span className="text-[11px] font-medium text-fg-subtle text-center mt-1">

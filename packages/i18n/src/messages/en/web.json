@@ -81,7 +81,19 @@
     "leaderRole": "Leadership",
     "okContactRole": "Organizer contact",
     "teamWithYou": "On your team: <bold>{helpers}</bold>",
-    "teamNoneYet": "No other helpers signed up yet"
+    "teamNoneYet": "No other helpers signed up yet",
+    "calendar": {
+      "lead": "Lead",
+      "role": "Role: {role}",
+      "task": "Task: {task}",
+      "category": "Category: {category}",
+      "leaders": "Shift/day leads: {names}",
+      "coHelpers": "Assigned with you: {names}",
+      "event": "Event: {event}",
+      "unit": "Department: {name}",
+      "file": "my-shifts",
+      "shiftFile": "shift"
+    }
   },
   "replacementDialog": {
     "titleSelf": "Find replacement",
@@ -335,7 +347,15 @@
       "linkTakenBadge": "Link claimed",
       "unlockAccessAction": "Unlock access",
       "notUnlockedForYou": "Not unlocked for you",
-      "signupForTaskAction": "Sign up for this task"
+      "signupForTaskAction": "Sign up for this task",
+      "x": {
+        "shift": "Shift",
+        "shareFree": "{count, plural, one {# spot left.} other {# spots left.}}",
+        "signedUpAria": "Signed-up volunteers",
+        "replacementAria": "Replacement wanted",
+        "shareReplacement": "Replacement wanted: {shift} at {event} ({when}). Can you take it?",
+        "shareShift": "{shift} at {event} ({when}).{need} Will you sign up?"
+      }
     },
     "ticket": {
       "ariaLabel": "Shift {title}, {from} to {to}, {status}",
@@ -506,7 +526,15 @@
       "directHandover": "{minutes} min handover",
       "breakTime": "{duration} break",
       "blockedReasonSignupClosed": "Sign-up is closed.",
-      "thisDepartment": "this department"
+      "thisDepartment": "this department",
+      "x": {
+        "committeeAria": "Organising committee"
+      }
+    },
+    "x": {
+      "collision": "Clashes with one of your shifts",
+      "tasksAria": "Tasks",
+      "filledAria": "{filled} of {total} spots filled"
     }
   },
   "ok": {
@@ -548,7 +576,8 @@
       "noPermissionArea": "You lack permission for “{area}” in this event. Ask the organisers or group leaders.",
       "noPermissionGeneral": "The organiser area is for the event team, group leaders, and users permitted to view all events.",
       "toShiftPlan": "To shift plan",
-      "helpGuide": "Help centre guide"
+      "helpGuide": "Help centre guide",
+      "sectionsAria": "Sections"
     },
     "overview": {
       "title": "Overview",
@@ -821,7 +850,56 @@
       "createdSuccessDesc": "Created {shifts} shifts for “{title}” ({slots} slots).",
       "createdSuccessDescNoTitle": "Created {shifts} shifts ({slots} slots).",
       "createFailed": "Creation failed",
-      "slotsIncreased": "{title}: slots increased to {count}"
+      "slotsIncreased": "{title}: slots increased to {count}",
+      "x": {
+        "hoursPreset": "{hours} h",
+        "overlapNonePreset": "0 min (none)",
+        "minutesShort": "{minutes} min",
+        "footerSummary": "{shifts, plural, one {# shift} other {# shifts}} · {slots, plural, one {# spot} other {# spots}} each = {total} spots in total",
+        "noneGenerated": "No shifts generated",
+        "createCount": "{count, plural, one {Create # shift} other {Create # shifts}}",
+        "create": "Create",
+        "titleLabel": "Stand / shift title (optional)",
+        "titleHint": "e.g. grill, till, bar – or leave empty if only the tasks matter",
+        "titlePlaceholder": "e.g. grill stand (optional)",
+        "categoryLabel": "Category (optional)",
+        "categoryHint": "To group by area/stand",
+        "categoryPlaceholder": "e.g. stands, kitchen",
+        "setupTeardown": "Setup or teardown shifts",
+        "minAgeAll": "Minimum age for the whole shift:",
+        "none": "None",
+        "tasksTitle": "Tasks & spots per shift",
+        "tasksText": "Set which tasks and how many people are needed per shift ({count, plural, one {# spot} other {# spots}} per shift).",
+        "addTask": "Add task",
+        "fromCatalog": "Add from task catalogue:",
+        "taskNumber": "Task #{number}",
+        "removeTask": "Remove task",
+        "taskName": "Task name *",
+        "taskNameHint": "e.g. grilling, till, floater",
+        "taskNamePlaceholder": "e.g. grilling",
+        "slots": "Spots",
+        "less": "Fewer",
+        "more": "More",
+        "minAge": "Minimum age",
+        "taskNote": "Note or description for this task (optional)",
+        "operatingPeriod": "Total operating period",
+        "totalHours": "{hours} hours in total",
+        "start": "Start *",
+        "end": "End *",
+        "duration": "Shift length",
+        "durationValue": "{minutes} minutes ({hours} h)",
+        "overlap": "Handover overlap",
+        "overlapNone": "None",
+        "overlapLead": "{minutes} min lead time",
+        "overlapInfo": "Each relief starts <strong>{minutes} minutes before the previous shift ends</strong> for the handover.",
+        "firstEarlier": "Start the 1st shift {minutes} min earlier too (e.g. to set up before opening)",
+        "preview": "Live preview ({count, plural, one {# shift} other {# shifts}})",
+        "helpersNeeded": "{count} volunteers needed",
+        "noneGeneratedHint": "No shifts generated. Please check the start and end time.",
+        "oneSlot": "1 spot ({title})",
+        "shift": "Shift",
+        "handoverBadge": "+{minutes} min handover"
+      }
     },
     "tasks": {
       "pageTitle": "Task catalogue",
@@ -1011,7 +1089,20 @@
         "submit": "Assign ({count})",
         "submitSingle": "Assign",
         "successToast": "{name} assigned",
-        "failToast": "Assignment failed"
+        "failToast": "Assignment failed",
+        "x": {
+          "pair": "«{a}» and «{b}»",
+          "soFar": "{count}{target} {count, plural, one {shift} other {shifts}} so far",
+          "age": "{age} years",
+          "multiHint": "you can pick several shifts",
+          "selectedCount": "Selected: {count, plural, one {# shift} other {# shifts}}",
+          "after": "then {after}/{target}",
+          "targetMet": "target met",
+          "shift": "Shift",
+          "taskFor": "Task for {shift}",
+          "deselect": "Deselect {shift}",
+          "overlap": "The selected shifts {pair} overlap."
+        }
       },
       "history": {
         "loadError": "Could not load history: {error}",
@@ -1024,7 +1115,12 @@
         "deregisteredNoReason": "Deregistered",
         "attendance": "Attendance: {status}",
         "messageSent": "Received message: “{subject}”",
-        "emptyHistory": "No history entries yet."
+        "emptyHistory": "No history entries yet.",
+        "x": {
+          "title": "History",
+          "lastMessaged": "last messaged {date}",
+          "notMessaged": "not yet messaged by the committee"
+        }
       },
       "hours": {
         "title": "Helper hours statistics",
@@ -1043,7 +1139,56 @@
         "summaryTotalHours": "Total hours",
         "summaryAvgHours": "Avg hours per helper",
         "configTitle": "Calculation settings",
-        "configIncludeUnconfirmed": "Count unconfirmed shifts as well"
+        "configIncludeUnconfirmed": "Count unconfirmed shifts as well",
+        "x": {
+          "helpLink": "Guide in the help centre",
+          "hours": "{hours} h",
+          "footerSummary": "across all {helpers} active volunteers in {levels} age groups ({shifts} shifts)",
+          "close": "Close",
+          "hoursUnit": "h",
+          "hoursSplit": "{event} h event · {setup} h setup",
+          "signups": "Shift sign-ups",
+          "rankingCalculated": "Ranking calculated",
+          "includeSetup": "Include setup and teardown",
+          "colEvent": "Event",
+          "colSetup": "Setup",
+          "noHelpers": "No volunteers found.",
+          "guest": "Guest",
+          "noLevels": "No age groups with volunteer hours found.",
+          "pctOfAll": "{pct}% of all hours",
+          "levelSummary": "{people, plural, one {# person} other {# people}} · {shifts, plural, one {# shift} other {# shifts}} · Ø {avg} h/person",
+          "showHelpers": "Show volunteers",
+          "involved": "People involved ({count}):"
+        }
+      },
+      "x": {
+        "csvName": "Name",
+        "csvFullName": "Full name",
+        "csvLevels": "Age groups",
+        "csvAge": "Age",
+        "csvType": "Type",
+        "csvShifts": "Shifts",
+        "csvTarget": "Target",
+        "csvMissing": "Missing",
+        "csvHours": "Hours",
+        "csvStatus": "Status",
+        "csvAssignedShifts": "Assigned shifts",
+        "guest": "Guest",
+        "account": "Account",
+        "deregistered": "Deregistered",
+        "csvFilePrefix": "volunteers",
+        "levelAria": "Age group",
+        "countFilterAria": "Filter by number of shifts",
+        "countAria": "Number of shifts",
+        "dayAria": "Day",
+        "personTypeAria": "Person type",
+        "bucketTitle": "{people} with {count, plural, one {# shift} other {# shifts}}",
+        "selected": "{people} selected",
+        "exportTitle": "Filtered list as CSV (Excel)",
+        "selectAria": "Select {name}",
+        "guestNoMessages": "Guests without an account don’t receive messages",
+        "openShift": "Open shift in plan",
+        "shift": "Shift"
       }
     },
     "attendance": {
@@ -1078,7 +1223,40 @@
       "statusPresent": "Present",
       "statusExcused": "Excused",
       "statusNoShow": "Absent",
-      "statusOpen": "Open"
+      "statusOpen": "Open",
+      "statusLong": {
+        "PRESENT": "Present",
+        "EXCUSED": "Excused",
+        "NO_SHOW": "No-show"
+      },
+      "x": {
+        "colDay": "Day",
+        "colTime": "Time",
+        "colShift": "Shift",
+        "colTask": "Task",
+        "colName": "Name",
+        "colAttendance": "Attendance",
+        "colRecorded": "Recorded",
+        "colPresent": "Here",
+        "colStatus": "Status",
+        "csvFilePrefix": "attendance",
+        "printBlocked": "Print view blocked",
+        "printBlockedDesc": "Please allow pop-ups for this page.",
+        "printTitle": "Attendance: {event}",
+        "offTitle": "Attendance list is turned off",
+        "offDesc": "Turn it on under «Settings». There you also choose whether only the committee ticks people off or volunteers can also check in themselves via QR code.",
+        "qrAlt": "QR code for self check-in",
+        "copyLink": "Copy link",
+        "qrNote": "Created with the {name} QR generator. The link contains a secret code: anyone who knows it can check in from anywhere. Renew it if needed.",
+        "allDays": "All days",
+        "clearSearch": "Clear search",
+        "noQrTitle": "No QR code yet",
+        "noQrText": "Save the settings once more to create a check-in code.",
+        "running": "running",
+        "presentOf": "{present} / {total} present",
+        "attendanceOf": "Attendance of {name}",
+        "statusSelected": "{status} (click again = open)"
+      }
     },
     "access": {
       "closedBadge": "Registration closed",
@@ -1106,7 +1284,50 @@
       "colEmail": "Email",
       "colPhone": "Phone",
       "colSignedUpAt": "Registered on",
-      "colShifts": "Shifts"
+      "colShifts": "Shifts",
+      "x": {
+        "deleteTitle": "Delete link «{label}»?",
+        "deleteLoseAccess": "{count, plural, one {# person loses access.} other {# people lose access.}} Existing sign-ups remain.",
+        "deleteNoLonger": "The link will stop working.",
+        "noLinksDesc": "A personal link is for one person, a group link for everyone who has it (e.g. parents’ chat).",
+        "kindGroup": "Group",
+        "kindPersonal": "Personal",
+        "expired": "Expired",
+        "notRedeemed": "Not redeemed yet",
+        "nobodyYet": "Nobody yet",
+        "redeemedBy": "Redeemed by {names}",
+        "deadline": "Redeem by: {date}",
+        "deleteAria": "Delete link {label}",
+        "kindPersonalText": "Only valid for the first account that redeems it.",
+        "kindGroupText": "Valid for everyone who has the link, e.g. in the group chat.",
+        "createTitle": "Create access link",
+        "forWhom": "For whom?",
+        "forWhomHint": "Only visible to you, e.g. «Sam’s mum» or «Cubs parents’ chat».",
+        "kindAria": "Link type",
+        "expiresLabel": "Redeem by (optional)",
+        "expiresHint": "Until when the link can be redeemed. People already unlocked keep their access.",
+        "cancel": "Cancel",
+        "createAndCopy": "Create and copy",
+        "csvName": "Name",
+        "csvFirstName": "First name",
+        "csvLastName": "Last name",
+        "csvEmail": "Email",
+        "csvMobile": "Mobile",
+        "csvBirthDate": "Date of birth",
+        "csvUnit": "Department",
+        "csvShifts": "Shifts",
+        "nobodySignedUp": "Nobody signed up yet",
+        "searchAria": "Search volunteers and answers",
+        "clearSearch": "Clear search",
+        "resetFilter": "Reset filter",
+        "noMatches": "No matching entries",
+        "noMatchesDesc": "Adjust the search or the answer filter.",
+        "colPerson": "Person",
+        "colContact": "Contact",
+        "noUnit": "no department",
+        "viaLink": "via link",
+        "born": "born {date}"
+      }
     },
     "catering": {
       "pageTitle": "Catering & Vouchers",
@@ -1152,7 +1373,60 @@
       "overviewRecentTitle": "Recent redemptions at food stand",
       "overviewRecentTime": "{time}",
       "overviewRefreshBtn": "Refresh",
-      "overviewCloseBtn": "Close"
+      "overviewCloseBtn": "Close",
+      "x": {
+        "resetConfirmTitle": "Release voucher again?",
+        "resetConfirmDesc": "«{item}» of {name} is set back to «Open / redeemable» (e.g. after an accidental swipe).",
+        "reset": "Reset",
+        "resetDone": "Voucher reset",
+        "resetDoneDesc": "{item} ({name}) can be redeemed again.",
+        "resetFailed": "Reset failed",
+        "csvPerson": "Person",
+        "csvRole": "Role",
+        "csvVoucher": "Voucher",
+        "csvStatus": "Status",
+        "csvRedeemedAt": "Redeemed at",
+        "csvShift": "Shift",
+        "csvShiftStart": "Shift start",
+        "csvShiftEnd": "Shift end",
+        "csvLeader": "Shift lead",
+        "csvHelper": "Volunteer",
+        "csvRedeemed": "Redeemed",
+        "csvOpen": "Open",
+        "shift": "Shift",
+        "csvFilePrefix": "meal-vouchers",
+        "disabledTitle": "Meal vouchers are not enabled",
+        "disabledDesc": "Turn on digital meal and drink vouchers in the event settings so volunteers and shift leads automatically get their vouchers per shift.",
+        "enableInSettings": "Enable in settings",
+        "validAlways": "Always valid (no time window)",
+        "validFromStart": "From shift start or check-in",
+        "validEarly": "{count, plural, one {From # hour before shift start (or check-in)} other {From # hours before shift start (or check-in)}}",
+        "validity": "Validity: {label}.",
+        "refresh": "Refresh",
+        "csvExport": "CSV export",
+        "configure": "Configure",
+        "loading": "Loading vouchers and statistics…",
+        "inclLeaders": "Incl. volunteers & shift leads",
+        "collected": "Collected at the stand",
+        "notRedeemed": "Not yet redeemed",
+        "byItemTitle": "Tally by voucher type",
+        "resetFilter": "Reset filter",
+        "pctRedeemed": "{pct}% redeemed",
+        "redeemedCount": "<strong>{count}</strong> redeemed",
+        "openOf": "{open} open (of {total})",
+        "allTokens": "All vouchers ({count})",
+        "allTokensFiltered": "All vouchers ({shown} of {total})",
+        "allTokensHint": "For volunteers without a smartphone you can look up vouchers here and redeem them manually – or reset vouchers redeemed by mistake.",
+        "filterStatus": "Filter by status",
+        "filterRole": "Filter by role",
+        "filterItem": "Filter by voucher type",
+        "resetTitle": "Reset voucher if redeemed by mistake",
+        "availableFrom": "From {time}",
+        "recentTitle": "Latest redemptions at the stand",
+        "timeOClock": "{time}"
+      },
+      "defaultItemMeal": "1x volunteer meal",
+      "defaultItemDrink": "1x drink"
     },
     "physicalBons": {
       "createTitle": "Print new voucher batch",
@@ -1169,7 +1443,25 @@
       "batchCombiTitle": "Combo sheets #{id}",
       "batchSingleTitle": "Individual vouchers #{id}",
       "cardsCount": "{count, plural, one {# card} other {# cards}}",
-      "totalBonsCount": "{count, plural, one {# voucher} other {# vouchers}}"
+      "totalBonsCount": "{count, plural, one {# voucher} other {# vouchers}}",
+      "x": {
+        "helpersSignedUp": "{count} volunteers signed up",
+        "typeFormat": "Voucher type & format",
+        "combiText": "One printed slip holds all vouchers for the shift (e.g. {items}). Can be redeemed at the stand one by one or together.",
+        "recommended": "Recommended for festivals",
+        "singleText": "Separate slip per item (e.g. 1 slip for {first}, 1 slip for {second}).",
+        "food": "food",
+        "drinks": "drinks",
+        "classic": "Classic tear-off vouchers",
+        "setExact": "Set exactly for all {count} volunteers",
+        "batchName": "Batch name (optional)",
+        "batchNameHint": "e.g. «Spare cards grill stand» or «Main print»",
+        "batchPlaceholder": "e.g. batch {number}",
+        "previousBatches": "Previous print batches ({count})",
+        "refresh": "Refresh",
+        "alreadyRedeemed": "{count} already redeemed",
+        "downloadTitle": "Download A4 print sheet as PDF"
+      }
     },
     "questions": {
       "pageTitle": "Questions",
@@ -1207,7 +1499,25 @@
       "sensitiveDesc": "(e.g. allergies, medication). Helpers must give explicit consent, and answers are always deleted after a retention period.",
       "optionsPlaceholder": "One option per line, e.g.\nS\nM\nL",
       "optionsAria": "Options",
-      "customQuestionBtn": "Custom question"
+      "customQuestionBtn": "Custom question",
+      "presets": {
+        "ADDRESS": {
+          "label": "Address (street, postcode, town)",
+          "hint": "e.g. for shipping or insurance"
+        },
+        "DIET": {
+          "label": "Allergies / diet",
+          "hint": "e.g. vegetarian, lactose-free, nuts"
+        },
+        "TSHIRT": {
+          "label": "T-shirt size",
+          "hint": "Choice from XS to XXL"
+        },
+        "EMERGENCY": {
+          "label": "Emergency contact (name and phone)",
+          "hint": "Who the committee calls in an emergency"
+        }
+      }
     },
     "settings": {
       "pageTitle": "Settings",
@@ -1312,6 +1622,12 @@
       "onlyOpenDesc": "For notices when additional helpers are needed.",
       "pdfError": "PDF could not be generated",
       "exportFailed": "Export failed"
+    },
+    "roles": {
+      "okLead": "Committee lead",
+      "okMember": "Committee member",
+      "platformAdmin": "Platform admin",
+      "notFound": "Event not found"
     }
   },
   "home": {
@@ -1373,7 +1689,10 @@
     "otherLevelsDismissBtn": "Do not show again",
     "offlineStatus": "Offline mode:",
     "offlineAsOf": "As of: {stand}. ",
-    "offlineReadOnlyNotice": "Read-only view (signing up or cancelling requires an internet connection)."
+    "offlineReadOnlyNotice": "Read-only view (signing up or cancelling requires an internet connection).",
+    "x": {
+      "mainNav": "Main navigation"
+    }
   },
   "tile": {
     "statusLive": "Happening now",
@@ -1447,7 +1766,10 @@
       "secondaryColorLabel": "Department secondary color",
       "customSecondaryColorTitle": "Choose custom secondary color",
       "qrStyleCornersTwoToneDesc": "Position corners in secondary color (optimal for scanners)",
-      "qrStyleGradientTwoToneDesc": "Diagonal transition from primary to secondary color"
+      "qrStyleGradientTwoToneDesc": "Diagonal transition from primary to secondary color",
+      "x": {
+        "sectionsAria": "Sections"
+      }
     },
     "stufen": {
       "newStufePlaceholder": "New level, e.g. Beavers",
@@ -1467,7 +1789,17 @@
       "emptyTitleOrg": "No levels yet",
       "emptyDescVerein": "Create the groups or teams of your club, e.g. active squad, juniors, board.",
       "emptyDescOrg": "Create the levels of your {unitTerm}, e.g. {examples}.",
-      "groupIdHint": "{provider} ID optional: group number in {dbHost}. Levels from {provider} are created and linked automatically."
+      "groupIdHint": "{provider} ID optional: group number in {dbHost}. Levels from {provider} are created and linked automatically.",
+      "x": {
+        "personCount": "{count} ppl",
+        "nameAria": "Name of age group {name}",
+        "linked": "Linked to {provider} group",
+        "deleteAria": "Delete age group {name}",
+        "newGroupPlaceholder": "New group, e.g. seniors",
+        "newGroupAria": "Name of the new group",
+        "newLevelPlaceholder": "New age group, e.g. {org, select, pfadi {Cubs} jubla {Juniors} other {Juniors}}",
+        "newLevelAria": "Name of the new age group"
+      }
     },
     "invite": {
       "title": "Invite people & invitation link",
@@ -1482,7 +1814,14 @@
       "emailPlaceholder": "Enter email addresses (comma-separated or one per line)…",
       "sendBtn": "Invite",
       "sendingBtn": "Sending…",
-      "sentSuccess": "{count, plural, one {# invitation sent} other {# invitations sent}}"
+      "sentSuccess": "{count, plural, one {# invitation sent} other {# invitations sent}}",
+      "x": {
+        "emailsAria": "Email addresses to invite",
+        "roleAria": "Role / permissions on invite",
+        "asMember": "As member (no extra permissions)",
+        "withRight": "With permission: {label}",
+        "emailsFound": "{count, plural, one {# email address found} other {# email addresses found}}"
+      }
     },
     "audit": {
       "loadFailedToast": "Could not load audit log",
@@ -1562,7 +1901,15 @@
       "unconfirmHome": "Revoke confirmation",
       "cancel": "Cancel",
       "save": "Save",
-      "personSavedToast": "{name} saved"
+      "personSavedToast": "{name} saved",
+      "x": {
+        "viewAria": "View",
+        "confirmAria": "Confirm {name}",
+        "colPerson": "Person",
+        "levels": "Age groups",
+        "yes": "{label}: yes",
+        "no": "{label}: no"
+      }
     },
     "permissions": {
       "presetLegend": "Preset",
@@ -1571,7 +1918,8 @@
       "presetCustom": "Custom permissions",
       "groupDepartment": "Group",
       "groupEvents": "Events (applies to all events in this group)",
-      "grantableHint": "You can only grant permissions that you hold yourself, and overall fewer than you have yourself."
+      "grantableHint": "You can only grant permissions that you hold yourself, and overall fewer than you have yourself.",
+      "memberNoRights": "Member without special permissions"
     },
     "stats": {
       "loadFailedToast": "Could not load statistics",
@@ -1812,7 +2160,10 @@
       "functionLabel": "Department / Function",
       "functionPlaceholder": "Construction & Grill",
       "saveBtn": "Save",
-      "addBtn": "Add to committee"
+      "addBtn": "Add to committee",
+      "x": {
+        "whoLabel": "{nickname} or email"
+      }
     },
     "dayResponsibles": {
       "title": "Day leads",
@@ -1909,7 +2260,10 @@
     "contrastSuccessSingle": "The color meets all contrast requirements for posters and screens.",
     "qrPreviewAria": "QR code preview",
     "qrPrimary": "QR primary: {ratio}:1",
-    "qrSecondary": "QR secondary: {ratio}:1"
+    "qrSecondary": "QR secondary: {ratio}:1",
+    "x": {
+      "loading": "Loading preview …"
+    }
   },
   "eventMeta": {
     "leaders": "Leaders"
@@ -2149,7 +2503,15 @@
     "countdownWaiting": "Safety countdown: confirmation available in {seconds} seconds…",
     "countdownDone": "Countdown finished. You can now confirm the change.",
     "slugWaitBtn": "Please wait ({seconds}s)",
-    "slugConfirmBtn": "Change & save anyway"
+    "slugConfirmBtn": "Change & save anyway",
+    "banners": {
+      "chilbi": "Fair & festival tent",
+      "sola": "Summer camp",
+      "lagerfeuer": "Campfire & forest",
+      "grill": "Grill & food stand",
+      "huette": "Hut & mountains",
+      "weihnachten": "Forest Christmas & winter"
+    }
   },
   "command": {
     "back": "Back",
@@ -2204,6 +2566,551 @@
     "copiedToast": "{title} copied",
     "copyFailedToast": "Copy failed",
     "icsDownloadedToast": "Calendar file downloaded",
-    "icsDownloadedDesc": "«{slug}.ics» was saved."
+    "icsDownloadedDesc": "«{slug}.ics» was saved.",
+    "wa": {
+      "shiftHeading": "*Volunteers wanted for «{event}»!* 🙋",
+      "shiftLine": "Shift: *{shift}*",
+      "time": "⏰ Time: {time}",
+      "area": "📍 Area: {area}",
+      "freeSlots": "👥 {count, plural, one {# spot left!} other {# spots left!}}",
+      "viewAndSignUp": "👉 View and sign up here:",
+      "callLabel": "WhatsApp call",
+      "eventHeading": "*Call for volunteers for «{event}»!* ⛺",
+      "date": "📅 Date: {date}",
+      "missingHands": "{count, plural, one {We still need # helping hand for these shifts:} other {We still need # helping hands for these shifts:}}",
+      "gapLine": "• *{shift}* ({time}): {count, plural, one {# spot left} other {# spots left}}",
+      "moreShifts": "… and {count, plural, one {one more shift} other {# more shifts}}.",
+      "openAndSignUp": "👉 Open the shift plan and sign up now:",
+      "eventCallLabel": "WhatsApp call ({count, plural, one {# open spot} other {# open spots}})"
+    },
+    "text": {
+      "planHeading": "📋 Shift plan: {event} ({date})",
+      "totalShifts": "Total shifts: {count}",
+      "noHelpers": "No volunteers assigned",
+      "planLabel": "Shift plan as text",
+      "noEmails": "No email addresses on file",
+      "helperEmails": "{count, plural, one {# volunteer email address} other {# volunteer email addresses}}",
+      "phoneHeading": "📞 Volunteer phone list: {event}",
+      "noPhone": "No phone number",
+      "phoneLabel": "Phone list"
+    },
+    "toast": {
+      "greetingName": "Hi {name}! ",
+      "greeting": "Hi! ",
+      "signedUp": "Signed up!",
+      "signedUpDesc": "You are now assigned to «{shift}».",
+      "signUpFailed": "Sign-up failed",
+      "cancelled": "Shift cancelled",
+      "cancelledDesc": "Your sign-up for «{shift}» was removed.",
+      "cancelFailed": "Cancellation failed",
+      "replacementWithdrawn": "«Replacement wanted» withdrawn",
+      "replacementWithdrawnDesc": "You are taking the shift again as usual.",
+      "replacementNote": "Replacement wanted (reported via command menu)",
+      "replacementOffered": "«Replacement wanted» posted",
+      "replacementOfferedDesc": "Your shift is now offered to other volunteers.",
+      "actionFailed": "Action failed",
+      "checkedIn": "{name} checked in",
+      "attendanceReset": "Attendance reset",
+      "markedPresent": "Marked as present",
+      "statusReset": "Status was reset",
+      "checkInFailed": "Check-in failed",
+      "checkInFailedDesc": "Attendance could not be updated.",
+      "allCheckedIn": "All volunteers checked in",
+      "peopleUpdated": "{count, plural, one {# person updated} other {# people updated}}",
+      "updateFailed": "Update failed",
+      "darkOn": "Dark mode on",
+      "lightOn": "Light mode on",
+      "systemOn": "System theme active"
+    },
+    "help": {
+      "keyboardTitle": "Keyboard navigation & shortcuts",
+      "keyboardSubtitle": "↑ / ↓ to navigate · ↵ to run · ⇥ Tab for sub-actions · Esc to close",
+      "open": "Open",
+      "openKeys": "⌘K or Ctrl+K",
+      "mainAction": "Main action",
+      "subActions": "Sub-actions",
+      "backClose": "Back / close",
+      "instantActions": "Instant actions",
+      "instantValue": "⚡ Right here, no page change",
+      "prefixPeopleTitle": "Prefix @ for people",
+      "prefixPeopleSubtitle": "Type «@name» to quickly search volunteers and contacts",
+      "prefixEventsTitle": "Prefix # or > for events",
+      "prefixEventsSubtitle": "Type «#autumn» or «>camp» to search events only",
+      "prefixShiftsTitle": "Prefix : or ! for shifts",
+      "prefixShiftsSubtitle": "Type «:kitchen» or «!free» to find open shifts"
+    },
+    "ctx": {
+      "helperView": "Switch to volunteer view",
+      "helperViewSubtitle": "Open {event} as volunteers see it",
+      "copyEventLink": "Copy event link",
+      "area": "Area",
+      "helperViewValue": "Volunteer view",
+      "okArea": "Switch to committee area",
+      "okAreaSubtitle": "Manage planning, shifts and volunteers for {event}",
+      "toShifts": "Go to shifts",
+      "toHelpers": "Go to volunteers",
+      "okCentral": "Committee hub",
+      "role": "Role",
+      "okPlanning": "Committee planning",
+      "gapFinder": "Gap finder: {count, plural, one {# open spot} other {# open spots}}",
+      "gapFinderSubtitle": "{count, plural, one {# shift still needs help} other {# shifts still need help}}",
+      "openCount": "{count} open",
+      "copyWaCall": "Copy WhatsApp call",
+      "copyWaCallSubtitle": "Ready-made message with all open shifts for the chat",
+      "copySignupLink": "Copy sign-up link",
+      "signupLinkLabel": "Sign-up link",
+      "openSpots": "Open spots",
+      "helpersWanted": "{count} volunteers wanted",
+      "affectedShifts": "Affected shifts",
+      "copyLink": "Copy link",
+      "copyWaCallSubtitle2": "Ready-made text for group chats with date, gaps and link",
+      "copyPlanText": "Copy shift plan as text",
+      "copyPlanTextSubtitle": "Full overview of all shifts and volunteers for email or chat",
+      "copyEmails": "Copy volunteer email list",
+      "copyEmailsSubtitle": "Addresses of all assigned volunteers for group emails",
+      "copyPhones": "Copy volunteer phone list",
+      "copyPhonesSubtitle": "Name, phone and shifts for emergencies and coordination",
+      "downloadIcs": "Download calendar entry (.ics)",
+      "downloadIcsSubtitle": "Import straight into Apple Calendar, Outlook or your phone calendar",
+      "addGoogle": "Add to Google Calendar",
+      "addGoogleSubtitle": "Opens Google Calendar with a pre-filled entry",
+      "newShift": "Create shift",
+      "newShiftSubtitle": "Add another shift to «{event}»",
+      "assignHelper": "Assign volunteer manually",
+      "assignHelperSubtitle": "Assign a person to a shift in «{event}»",
+      "checkin": "Volunteer check-in & QR code",
+      "checkinSubtitle": "Check attendance on site",
+      "print": "Print shift plan / PDF",
+      "printSubtitle": "Create a print version or PDF of «{event}»"
+    },
+    "shift": {
+      "freeBadge": "{count} open",
+      "signUpNow": "⚡ Sign up now (as {name})",
+      "signUpNowSubtitle": "Take the shift right away without leaving the page",
+      "cancelMine": "⚡ Cancel my shift",
+      "cancelMineSubtitle": "Leave this shift right away",
+      "withdrawReplacement": "Withdraw «replacement wanted»",
+      "offerReplacement": "Post «replacement wanted»",
+      "withdrawReplacementSubtitle": "You take the shift again as usual",
+      "offerReplacementSubtitle": "Offer the shift to other volunteers",
+      "resetAttendance": "Reset attendance for shift ({count})",
+      "checkInAll": "Check in all volunteers of this shift ({count})",
+      "markAllOpen": "Mark all as open",
+      "markAllPresent": "Mark all assigned volunteers as present",
+      "checkOut": "Check out {name}",
+      "checkIn": "Check in {name}",
+      "markOpen": "Mark as open",
+      "confirmPresent": "Confirm present",
+      "waTo": "Message {name} on WhatsApp",
+      "enterPhoneAndChat": "Enter number & start chat",
+      "copyWaCall": "Copy WhatsApp call for this shift",
+      "copyWaCallSubtitle": "Ready-made template with time, area and link",
+      "copyDetails": "Copy shift details as text",
+      "general": "General",
+      "nobody": "Nobody assigned",
+      "detailShift": "📋 Shift: {shift}",
+      "detailEvent": "Event: {event}",
+      "detailTime": "Time: {time}",
+      "detailArea": "Area: {area}",
+      "detailStaffing": "Staffing: {filled} of {total} ({free} open)",
+      "detailHelpers": "Volunteers: {names}",
+      "detailNotes": "Notes: {notes}",
+      "detailsLabel": "Shift details",
+      "copyDirectLink": "Copy direct link to shift",
+      "jumpTo": "Jump to it in the shift plan",
+      "editInOk": "Edit in committee area",
+      "signUpQuick": "Sign up now",
+      "cancelQuick": "Cancel shift",
+      "copy": "Copy",
+      "assigned": "Assigned",
+      "myShift": "My shift",
+      "time": "Time",
+      "category": "Category",
+      "freeOf": "{free} of {total}"
+    },
+    "person": {
+      "phonePrompt": "Mobile number for {name} (e.g. 079 123 45 67):",
+      "presentAll": "Present ({count})",
+      "presentPartial": "{present}/{total} present",
+      "shiftCount": "{count, plural, one {# shift} other {# shifts}}",
+      "more": "(+{count} more)",
+      "noShiftsIn": "No shifts in «{event}»",
+      "member": "Member",
+      "resetAttendance": "Reset attendance for {name}",
+      "checkInAll": "Check in as present ({shifts})",
+      "checkedInOf": "{present} of {total} shifts checked in",
+      "shiftTitle": "Shift: {shift}",
+      "stillOpen": "Still open",
+      "resetShiftAttendance": "Reset attendance for «{shift}»",
+      "markShiftPresent": "Mark present for «{shift}»",
+      "waTo": "Send WhatsApp to {name}",
+      "directChat": "Open chat with {phone}",
+      "call": "Call ({phone})",
+      "sms": "Send SMS ({phone})",
+      "copyPhone": "Copy phone number",
+      "phoneLabel": "Phone number",
+      "noMobile": "No mobile number on file (click to enter one)",
+      "emailTo": "Email {email}",
+      "copyEmail": "Copy email address",
+      "assign": "Assign to a shift",
+      "assignSubtitle": "Manually assign the person to a shift in «{event}»",
+      "eventFallback": "Event",
+      "openInOk": "Open in volunteers (committee area)",
+      "openInOkSubtitle": "Filters the volunteer table for «{name}»",
+      "callShort": "Call",
+      "assignedCount": "{count, plural, one {# shift assigned} other {# shifts assigned}}",
+      "name": "Name",
+      "phone": "Phone",
+      "shifts": "Shifts",
+      "noShifts": "No shifts"
+    },
+    "admin": {
+      "newEvent": "Create event",
+      "newEventSubtitle": "Add a camp, festival or event",
+      "editUnit": "Edit {unit}",
+      "editUnitSubtitle": "Name, logo, accent colour and homepage settings",
+      "levels": "Manage age groups",
+      "levelsSubtitle": "Create, link with {provider} or edit age groups",
+      "association": "Association",
+      "people": "Manage people and permissions",
+      "peopleSubtitle": "Maintain permissions, roles and members",
+      "stats": "Statistics & annual review (AGM)",
+      "statsSubtitle": "Volunteer hours, age group breakdown and honour roll for the annual report",
+      "copyMemberEmails": "Copy email list of all members",
+      "copyMemberEmailsSubtitle": "Addresses of {count, plural, one {# person} other {# people}}, de-duplicated, to the clipboard",
+      "memberEmails": "{count, plural, one {# email address} other {# email addresses}}",
+      "waDirect": "Send WhatsApp to a phone number",
+      "waDirectSubtitle": "Open a chat (enter number)",
+      "waDirectPrompt": "Mobile number for WhatsApp chat (e.g. 079 123 45 67):"
+    },
+    "event": {
+      "past": "Past",
+      "live": "Happening now",
+      "upcoming": "Upcoming",
+      "calendarIcs": "Calendar (.ics)",
+      "googleCalendar": "Google Calendar",
+      "goTo": "Go to event",
+      "goToSubtitle": "Open shift plan and details",
+      "downloadIcs": "Download calendar file (.ics)",
+      "downloadIcsSubtitle": "Import into Apple/Outlook/phone",
+      "addGoogleSubtitle": "Add a new entry to Google Calendar",
+      "openOk": "Open committee area",
+      "openOkSubtitle": "Manage planning, shifts and volunteers",
+      "export": "Print & export (PDF/Excel)",
+      "exportSubtitle": "Export notices and tables",
+      "checkinSubtitle": "Record attendance at the event",
+      "date": "Date",
+      "status": "Status"
+    },
+    "nav": {
+      "home": "Events & home",
+      "homeSubtitle": "Overview of all events of {name}",
+      "myShifts": "My shifts",
+      "myShiftsSubtitle": "Your sign-ups and confirmations",
+      "openMyShifts": "Open my shifts",
+      "profile": "My profile & contact details",
+      "profileSubtitle": "{name} · Details, notifications, security and data",
+      "help": "Open help centre",
+      "helpSubtitle": "Guides for volunteers, committees and {lead}",
+      "newTab": "Open in new tab",
+      "status": "Check system status",
+      "statusSubtitle": "Availability of services, database and mail server",
+      "dark": "Theme: turn on dark mode",
+      "darkSubtitle": "Dark colours (night view)",
+      "light": "Theme: turn on light mode",
+      "lightSubtitle": "Light colours (day view)",
+      "system": "Theme: follow system",
+      "systemSubtitle": "Adapts automatically to your device",
+      "logout": "Log out",
+      "logoutSubtitle": "Log out as {name}",
+      "login": "Log in",
+      "loginWith": "Log in with {provider} or email/password",
+      "loginEmail": "Log in with email/password"
+    }
+  },
+  "statsReport": {
+    "attendedOnly": "Confirmed attendance only",
+    "allSignups": "All signed-up shifts",
+    "withSetup": "incl. setup & teardown",
+    "withoutSetup": "excl. setup/teardown",
+    "csv": {
+      "filePrefix": "volunteer-hours",
+      "allYearsSlug": "all-years",
+      "title": "{org} - Annual report {dept}",
+      "year": "Year: {year}",
+      "allYears": "All recorded years",
+      "asOf": "As of: {date}",
+      "filter": "Filter: {signups}, {setup}",
+      "totalHours": "Total hours (h)",
+      "timeWorked": "Time worked",
+      "activeHelpers": "Active volunteers",
+      "eventCount": "Number of events",
+      "shiftCount": "Number of shifts",
+      "fillRate": "Staffing rate (%)",
+      "attendedRate": "Confirmed attendance rate (%)",
+      "avgHours": "Ø hours per volunteer",
+      "helpersSection": "--- HONOUR ROLL & HOURS ---",
+      "rank": "Rank",
+      "name": "Name",
+      "levels": "Age groups",
+      "shiftsTotal": "Shifts in total",
+      "confirmedShifts": "Confirmed shifts",
+      "hoursDecimal": "Hours (decimal)",
+      "guest": "Guest/external",
+      "noLevel": "No age group",
+      "yes": "Yes",
+      "no": "No",
+      "eventsSection": "--- EVENTS OF THE YEAR ---",
+      "event": "Event",
+      "dateStart": "Start date",
+      "dateEnd": "End date",
+      "helpers": "Volunteers",
+      "shifts": "Shifts",
+      "filledSlots": "Filled spots",
+      "requiredSlots": "Required spots",
+      "eventHours": "Event hours (h)",
+      "setupHours": "Setup/teardown (h)",
+      "confirmedHours": "Confirmed hours (h)",
+      "attendanceRate": "Attendance rate (%)",
+      "levelsSection": "--- BREAKDOWN BY AGE GROUP ---",
+      "level": "Age group",
+      "shareTotal": "Share of total (%)"
+    },
+    "hoursShort": "{hours} h"
+  },
+  "perm": {
+    "providerFallback": "association",
+    "custom": "Custom permissions",
+    "member": "Member",
+    "guest": "Guest",
+    "DEPARTMENT_SETTINGS": {
+      "label": "Edit department",
+      "description": "Name, logo, colour, contact person and «homepage for members only»."
+    },
+    "STUFEN_MANAGE": {
+      "label": "Manage age groups",
+      "description": "Create, rename, link with {provider} and delete age groups."
+    },
+    "PEOPLE_VIEW": {
+      "label": "View people",
+      "description": "List of the department’s people with age groups and permissions."
+    },
+    "PEOPLE_MANAGE": {
+      "label": "Manage people and permissions",
+      "description": "Set people’s age groups, remove people from the department and grant permissions, but fewer than one has. Sees the log."
+    },
+    "TEMPLATES_MANAGE": {
+      "label": "Manage templates",
+      "description": "Save events as templates and delete templates."
+    },
+    "EVENTS_VIEW_ALL": {
+      "label": "View all events",
+      "description": "Also drafts and the committee area of all events, incl. volunteers’ contact details."
+    },
+    "EVENTS_CREATE": {
+      "label": "Create events",
+      "description": "Create new events, also from templates. The committee lead changes the settings afterwards."
+    },
+    "EVENTS_EDIT_SETTINGS": {
+      "label": "Edit events",
+      "description": "Change the settings of all events (like the committee lead), move events."
+    },
+    "SHIFTS_MANAGE": {
+      "label": "Plan shifts",
+      "description": "Shifts, tasks and day leads in all events."
+    },
+    "HELPERS_MANAGE": {
+      "label": "Assign volunteers",
+      "description": "Sign volunteers up and off, manage deregistrations and access links in all events."
+    },
+    "MESSAGES_SEND": {
+      "label": "Send messages",
+      "description": "Emails to volunteers of all events."
+    },
+    "ATTENDANCE_MANAGE": {
+      "label": "Record attendance",
+      "description": "Keep the attendance list and download the check-in QR code."
+    },
+    "EXPORT": {
+      "label": "Export",
+      "description": "Download lists, shift plan PDF and volunteer hours."
+    },
+    "ORGANIZERS_MANAGE": {
+      "label": "Appoint committee",
+      "description": "Appoint and remove committee leads and members of all events."
+    },
+    "EVENTS_DELETE": {
+      "label": "Delete events",
+      "description": "Permanently delete events with all shifts and sign-ups."
+    },
+    "preset": {
+      "ADMINISTRATION": {
+        "label": "Administration",
+        "description": "Almost everything the {lead} can do. Grants permissions, but fewer than it has."
+      },
+      "EVENT_COORDINATION": {
+        "label": "Event coordination",
+        "description": "Creates events and helps plan all of them. The former «Planning» role."
+      },
+      "EVENT_EDITING": {
+        "label": "Edit events",
+        "description": "Edits all existing events like the committee lead, but creates no new ones."
+      },
+      "EVENT_CREATION": {
+        "label": "Create events",
+        "description": "Creates new events. Planning and settings are then done by the committee."
+      }
+    }
+  },
+  "csv": {
+    "day": "Day",
+    "start": "Start",
+    "end": "End",
+    "shift": "Shift",
+    "task": "Task",
+    "category": "Category",
+    "slots": "Spots",
+    "filled": "Filled",
+    "assigned": "Assigned",
+    "name": "Name",
+    "age": "Age",
+    "guestEmail": "Email (guest)",
+    "guestPhone": "Phone (guest)",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "level": "Age group",
+    "ageAtEvent": "Age at event",
+    "shifts": "Shifts",
+    "targetMet": "Target met",
+    "deregistered": "Deregistered",
+    "reason": "Reason",
+    "yes": "yes",
+    "no": "no",
+    "unit": "Department",
+    "type": "Type",
+    "email": "Email",
+    "phone": "Phone",
+    "shiftCount": "Number of shifts",
+    "hoursDecimal": "Total hours (decimal)",
+    "totalTime": "Total time",
+    "eventHours": "Event hours",
+    "setupHours": "Setup hours",
+    "assignedShifts": "Assigned shifts",
+    "guest": "Guest",
+    "account": "Account",
+    "totalSummary": "TOTAL / SUMMARY",
+    "activeHelpers": "{count} active volunteers",
+    "average": "Average: {hours} h/person",
+    "rank": "Rank",
+    "levelGroup": "Age group / group",
+    "helperPeople": "Volunteers",
+    "share": "Share (%)",
+    "shiftAssignments": "Shift assignments",
+    "avgPerPerson": "Average (h/person)",
+    "helpersWithHours": "Volunteers (with hours)",
+    "total": "TOTAL",
+    "noLevel": "No age group / guests",
+    "file": {
+      "plan": "shift-plan",
+      "assignments": "assignments",
+      "helpers": "volunteers",
+      "hours": "volunteer-hours",
+      "ranking": "age-group-ranking"
+    },
+    "layout": {
+      "plan": {
+        "label": "Overview",
+        "text": "Compact: all shifts per day with staffing and names."
+      },
+      "aushang": {
+        "label": "For posting",
+        "text": "Large print, one line per spot. Open spots to fill in by hand."
+      },
+      "personen": {
+        "label": "Per person",
+        "text": "Who helps when and where, sorted by name. To hand out or look up."
+      }
+    }
+  },
+  "meta": {
+    "slotsAllFull": "All shifts filled",
+    "slotsShiftFull": "Shift is full",
+    "slotsFree": "{count, plural, one {# spot left} other {# spots left}}",
+    "replacementWanted": "Replacement wanted",
+    "shiftTitleReplacement": "Replacement wanted: {shift} – {event}",
+    "shiftReplacementDesc": "{when}. A replacement is wanted for this shift. Can you take it? ({where})",
+    "signUpAt": "{where}: sign up now.",
+    "pickAndSignUp": "Pick a shift and sign up.",
+    "pickSignUpDone": "Pick a shift, sign up, done.",
+    "deptDescription": "All events and open shifts in one place. Pick a shift, sign up, done.",
+    "orgDescription": "Shifts for fairs, camps and {orgName} events: look, sign up, done.",
+    "manifestDeptDescription": "Events and shifts of {name}: look, sign up, done.",
+    "myShifts": "My shifts",
+    "myShiftsShortcut": "Your booked shifts and times",
+    "myShiftsDescription": "Overview of your shifts, with calendar export.",
+    "eventsShortcut": "Events & shifts",
+    "eventsShortcutShort": "Events",
+    "eventsShortcutDesc": "All events and open shifts",
+    "eventFallbackTitle": "Event",
+    "eventFallbackDesc": "See the event’s shifts and sign up.",
+    "checkinDescription": "Check in to your shift.",
+    "loginTitle": "Log in",
+    "loginDescription": "Log in to sign up for shifts.",
+    "scanAndSignUp": "Scan & sign up"
+  },
+  "eventText": {
+    "access": {
+      "PUBLIC": {
+        "label": "Public",
+        "short": "Public",
+        "description": "Everyone with the link. A {nickname} profile without a password is enough."
+      },
+      "CEVIDB_ALL": {
+        "label": "{org, select, verein {All registered accounts} other {{provider}, all {units}}}",
+        "short": "{org, select, verein {Account} other {{provider}}}",
+        "description": "{org, select, verein {Everyone with a confirmed account.} other {Everyone with a {provider} login, from any {unit}. For regional events and courses.}}"
+      },
+      "DEPARTMENT": {
+        "label": "{org, select, verein {Club only} pfadi {Group only} jubla {Group only} other {Department only}}",
+        "short": "Internal",
+        "description": "{org, select, verein {Everyone who chose this club when logging in.} other {Everyone who chose this {unit} when logging in.}}"
+      },
+      "DEPARTMENT_CEVIDB": {
+        "label": "{org, select, verein {Club only} pfadi {Group only, {provider}} jubla {Group only, {provider}} other {Department only, {provider}}}",
+        "short": "{org, select, verein {Internal} other {Internal · {provider}}}",
+        "description": "{org, select, verein {Only confirmed members of this club.} other {Only with a {provider} login and in this {unit}.}}"
+      },
+      "WHITELIST": {
+        "label": "Several {units}",
+        "short": "Allow list",
+        "description": "{org, select, other {Like internal, plus other unlocked {units}.}}"
+      },
+      "WHITELIST_CEVIDB": {
+        "label": "{org, select, verein {Several {units}} other {Several {units}, {provider}}}",
+        "short": "{org, select, verein {Allow list} other {Allow list · {provider}}}",
+        "description": "{org, select, verein {Like internal, plus other unlocked {units}.} other {Like internal with {provider}, plus other unlocked {units}.}}"
+      }
+    },
+    "profileField": {
+      "PHONE": "Mobile number",
+      "EMAIL": "Email",
+      "BIRTH_DATE": "Date of birth",
+      "FULL_NAME": "First and last name"
+    },
+    "questionType": {
+      "TEXT": "Free text",
+      "YES_NO": "Yes / no",
+      "CHOICE": "Choice"
+    },
+    "category": {
+      "c0": "Kitchen & catering",
+      "c1": "Grill & food serving",
+      "c2": "Bar & drinks",
+      "c3": "Till & vouchers",
+      "c4": "Setup & preparation",
+      "c5": "Teardown & tidying",
+      "c6": "Activity & posts",
+      "c7": "Floaters & all-rounders"
+    }
   }
 }

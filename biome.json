@@ -1,6 +1,9 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.6.8/schema.json",
 	"root": true,
+	"plugins": [
+		"./biome-plugins/no-german-jsx-text.grit"
+	],
 	"files": {
 		"includes": [
 			"apps/*/src/**/*.{ts,tsx}",

@@ -1,10 +1,12 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { ApiError, api, errorMessage } from '@/lib/api';
+import { usePermissionText } from '@/lib/permissionText';
 import { usePortal } from '@/lib/portal';
 import type { EventDetails } from '@/lib/types';
-import { EVENT_CAPABILITIES, departmentRoleLabel, type EventCapability } from '@schichtplan/shared';
+import { EVENT_CAPABILITIES, type EventCapability } from '@schichtplan/shared';
 
 /** Auswahl, die von «Helfende» oder «Schichten» an «Nachrichten» übergeben wird */
 export type MessageDraft =
@@ -66,6 +68,8 @@ export function computeStats(event: EventDetails | null): OkStats {
 /** Lädt den Anlass einmal für alle Seiten des OK-Bereichs */
 export function OkProvider({ slug, children }: { slug: string; children: ReactNode }) {
   const { user, isDeptAdmin, permissions: departmentPermissions, loading: portalLoading } = usePortal();
+  const tRoles = useTranslations('web.ok.roles');
+  const perm = usePermissionText();
   const [event, setEvent] = useState<EventDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,11 +81,11 @@ export function OkProvider({ slug, children }: { slug: string; children: ReactNo
       setEvent(data);
       setError(null);
     } catch (err) {
-      setError(err instanceof ApiError && err.status === 404 ? 'Anlass nicht gefunden' : errorMessage(err));
+      setError(err instanceof ApiError && err.status === 404 ? tRoles('notFound') : errorMessage(err));
     } finally {
       setLoading(false);
     }
-  }, [slug]);
+  }, [slug, tRoles]);
 
   useEffect(() => {
     reload();
@@ -93,12 +97,12 @@ export function OkProvider({ slug, children }: { slug: string; children: ReactNo
     const organizer = user ? event?.organizers?.find((o) => o.userId === user.id) : undefined;
     const roleLabel = organizer
       ? organizer.role === 'OK_LEAD'
-        ? 'OK-Leitung'
-        : 'OK-Mitglied'
+        ? tRoles('okLead')
+        : tRoles('okMember')
       : user?.isGlobalAdmin && user.departmentRole !== 'ADMIN'
-        ? 'Plattform-Admin'
+        ? tRoles('platformAdmin')
         : user
-          ? departmentRoleLabel({
+          ? perm.roleLabel({
               isLeader: isDeptAdmin,
               permissions: [...departmentPermissions],
               isHomeDepartment: true,
@@ -111,7 +115,7 @@ export function OkProvider({ slug, children }: { slug: string; children: ReactNo
       can,
       roleLabel,
     };
-  }, [user, event, isDeptAdmin, departmentPermissions]);
+  }, [user, event, isDeptAdmin, departmentPermissions, tRoles, perm.roleLabel]);
 
   const stats = useMemo(() => computeStats(event), [event]);
 

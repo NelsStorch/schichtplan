@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { useEventText } from '@/lib/eventText';
 import { Copy, FileText, Plus, Trash2 } from 'lucide-react';
 import type { EventTemplateDto } from '@schichtplan/shared';
-import { EVENT_ACCESS_TYPES } from '@schichtplan/shared';
 import { Button, Callout, Card, EmptyState, Skeleton, buttonClasses, useConfirm, useToast } from '@schichtplan/ui';
 import { useOkEvent } from '@/components/ok/OkContext';
 import { OkPageHeader } from '@/components/ok/OkLayout';
@@ -14,6 +14,7 @@ import { api, errorMessage } from '@/lib/api';
 
 export default function TemplatesPage() {
   const t = useTranslations('web.ok.templates');
+  const eventText = useEventText();
   const { event } = useOkEvent();
   const toast = useToast();
   const confirm = useConfirm();
@@ -94,7 +95,7 @@ export default function TemplatesPage() {
                     <p className="mt-0.5 text-xs text-fg-muted">
                       {t('shiftsInfo', {
                         count: tpl.shiftCount,
-                        access: EVENT_ACCESS_TYPES[tpl.accessType]?.short ?? t('publicAccess'),
+                        access: tpl.accessType ? eventText.accessType(tpl.accessType).short : t('publicAccess'),
                       })}
                     </p>
                   </div>

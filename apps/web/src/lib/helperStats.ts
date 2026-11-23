@@ -2,6 +2,10 @@ import type { AttendanceStatus, EventRosterResponseDto } from '@schichtplan/shar
 import { downloadCsv } from '@/lib/exportFile';
 import { fmtShortWeekday, fmtTimeRange, shiftName } from '@/lib/format';
 import type { EventDetails } from '@/lib/types';
+import type { useTranslations } from 'next-intl';
+
+/** Übersetzer für CSV-Spalten (Katalog `web.csv`) */
+export type CsvT = ReturnType<typeof useTranslations<'web.csv'>>;
 
 export interface HelperShiftInfo {
   shiftId: string;
@@ -327,7 +331,8 @@ export function computeHelperStats(
 /** Berechnet die Stufen-Rangliste für einen Anlass */
 export function computeStufenStats(
   helpers: HelperPersonStat[],
-  summary: HelperStatsSummary
+  summary: HelperStatsSummary,
+  noLevelName = 'Ohne Stufe / Gäste'
 ): HelperStufenStat[] {
   const map = new Map<
     string,
@@ -343,7 +348,7 @@ export function computeStufenStats(
     if (h.totalMinutes <= 0) continue;
 
     // Wenn Person keine Stufe hat: unter "Ohne Stufe / Gäste" erfassen
-    const stufenNames = h.stufen.length > 0 ? h.stufen : ['Ohne Stufe / Gäste'];
+    const stufenNames = h.stufen.length > 0 ? h.stufen : [noLevelName];
 
     for (const stufe of stufenNames) {
       let entry = map.get(stufe);
@@ -407,26 +412,28 @@ export function computeStufenStats(
 export function exportHelperHoursCsv(
   eventSlug: string,
   helpers: HelperPersonStat[],
-  summary: HelperStatsSummary
+  summary: HelperStatsSummary,
+  t: CsvT,
+  labels: { nickname: string; unit: string }
 ) {
   const rows: (string | number)[][] = [
     [
-      'Name',
-      'Vorname',
-      'Nachname',
-      'Cevi-Name',
-      'Abteilung',
-      'Stufe',
-      'Alter',
-      'Typ',
-      'E-Mail',
-      'Telefon',
-      'Anzahl Schichten',
-      'Gesamtstunden (Dezimal)',
-      'Gesamtzeit',
-      'Anlass-Stunden',
-      'Auf-/Abbau-Stunden',
-      'Eingeteilte Schichten',
+      t('name'),
+      t('firstName'),
+      t('lastName'),
+      labels.nickname,
+      labels.unit,
+      t('level'),
+      t('age'),
+      t('type'),
+      t('email'),
+      t('phone'),
+      t('shiftCount'),
+      t('hoursDecimal'),
+      t('totalTime'),
+      t('eventHours'),
+      t('setupHours'),
+      t('assignedShifts'),
     ],
   ];
 
@@ -446,7 +453,7 @@ export function exportHelperHoursCsv(
       h.departmentName ?? '',
       h.stufen.join(', '),
       h.age ?? '',
-      h.isGuest ? 'Gast' : 'Konto',
+      h.isGuest ? t('guest') : t('account'),
       h.guestEmail ?? '',
       h.guestPhone ?? '',
       h.shiftCount,
@@ -461,14 +468,14 @@ export function exportHelperHoursCsv(
   // Leerzeile + Zusammenfassungszeile
   rows.push([]);
   rows.push([
-    'TOTAL / ZUSAMMENFASSUNG',
+    t('totalSummary'),
     '',
     '',
     '',
     '',
     '',
     '',
-    `${summary.activeHelpers} aktive Helfende`,
+    t('activeHelpers', { count: summary.activeHelpers }),
     '',
     '',
     summary.totalShifts,
@@ -476,29 +483,30 @@ export function exportHelperHoursCsv(
     formatMinutes(summary.totalMinutes),
     summary.totalEventHours,
     summary.totalSetupHours,
-    `Durchschnitt: ${summary.avgHoursPerHelper} Std./Person`,
+    t('average', { hours: summary.avgHoursPerHelper }),
   ]);
 
-  downloadCsv(`helferstunden-${eventSlug}.csv`, rows);
+  downloadCsv(`${t('file.hours')}-${eventSlug}.csv`, rows);
 }
 
 /** Exportiert die Stufen-Rangliste als Excel-CSV */
 export function exportStufenRankingCsv(
   eventSlug: string,
   stufen: HelperStufenStat[],
-  summary: HelperStatsSummary
+  summary: HelperStatsSummary,
+  t: CsvT
 ) {
   const rows: (string | number)[][] = [
     [
-      'Rang',
-      'Stufe / Gruppe',
-      'Helfende Personen',
-      'Gesamtstunden (Dezimal)',
-      'Gesamtzeit',
-      'Anteil (%)',
-      'Schicht-Einsätze',
-      'Durchschnitt (Std./Person)',
-      'Helfende (mit Stunden)',
+      t('rank'),
+      t('levelGroup'),
+      t('helperPeople'),
+      t('hoursDecimal'),
+      t('totalTime'),
+      t('share'),
+      t('shiftAssignments'),
+      t('avgPerPerson'),
+      t('helpersWithHours'),
     ],
   ];
 
@@ -522,7 +530,7 @@ export function exportStufenRankingCsv(
 
   rows.push([]);
   rows.push([
-    'TOTAL',
+    t('total'),
     '',
     summary.activeHelpers,
     summary.totalHours,
@@ -533,5 +541,5 @@ export function exportStufenRankingCsv(
     '',
   ]);
 
-  downloadCsv(`stufen-rangliste-${eventSlug}.csv`, rows);
+  downloadCsv(`${t('file.ranking')}-${eventSlug}.csv`, rows);
 }

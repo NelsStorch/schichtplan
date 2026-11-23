@@ -448,9 +448,9 @@ function HelpersPage() {
   const plural = (n: number) => t('pluralPeople', { count: n });
 
   const exportFiltered = () => {
-    const header = ['Name', 'Vollständiger Name', org.unitTerm, 'Stufen', 'Alter', 'Typ', 'Schichten'];
-    if (minShifts) header.push('Soll', 'Fehlend');
-    header.push('Stunden', 'Status', 'Eingeteilte Schichten');
+    const header = [t('x.csvName'), t('x.csvFullName'), org.unitTerm, t('x.csvLevels'), t('x.csvAge'), t('x.csvType'), t('x.csvShifts')];
+    if (minShifts) header.push(t('x.csvTarget'), t('x.csvMissing'));
+    header.push(t('x.csvHours'), t('x.csvStatus'), t('x.csvAssignedShifts'));
     const lines = filtered.map((r) => {
       const line: (string | number)[] = [
         r.name,
@@ -458,13 +458,13 @@ function HelpersPage() {
         r.departmentName ?? '',
         r.stufen.map((s) => s.name).join(', '),
         r.age ?? '',
-        r.isGuest ? 'Gast' : 'Konto',
+        r.isGuest ? t('x.guest') : t('x.account'),
         r.shifts.length,
       ];
       if (minShifts) line.push(r.isGuest ? '' : minShifts, r.isGuest ? '' : Math.max(0, minShifts - r.shifts.length));
       line.push(
         Math.round((r.minutes / 60) * 10) / 10,
-        r.isDeregistered ? `Abgemeldet${r.deregistrationReason ? ` (${r.deregistrationReason})` : ''}` : '',
+        r.isDeregistered ? `${t('x.deregistered')}${r.deregistrationReason ? ` (${r.deregistrationReason})` : ''}` : '',
         [...r.shifts]
           .sort((a, b) => a.startTime.localeCompare(b.startTime))
           .map((s) => `${shiftName(s)}${s.taskTitle ? ` (${s.taskTitle})` : ''} ${fmtShortWeekday(s.startTime)} ${fmtTimeRange(s.startTime, s.endTime)}`)
@@ -472,7 +472,7 @@ function HelpersPage() {
       );
       return line;
     });
-    downloadCsv(`helfende-${event.slug}.csv`, [header, ...lines]);
+    downloadCsv(`${t('x.csvFilePrefix')}-${event.slug}.csv`, [header, ...lines]);
   };
 
   const getSortLabel = (k: SortKey) => {
@@ -562,7 +562,7 @@ function HelpersPage() {
             />
           </div>
           {stufen.length > 1 && (
-            <Select className="h-10 w-auto text-sm" value={stufe} onChange={(e) => setStufe(e.target.value)} aria-label="Stufe">
+            <Select className="h-10 w-auto text-sm" value={stufe} onChange={(e) => setStufe(e.target.value)} aria-label={t('x.levelAria')}>
               <option value="ALL">{t('allStufen')}</option>
               {stufen.map(([id, name]) => (
                 <option key={id} value={id}>
@@ -593,7 +593,7 @@ function HelpersPage() {
               className="h-10 w-auto text-sm"
               value={countOp}
               onChange={(e) => setCountOp(e.target.value as CountOp)}
-              aria-label="Anzahl Schichten filtern"
+              aria-label={t('x.countFilterAria')}
             >
               <option value="ANY">{t('allCount')}</option>
               <option value="LT">{t('countLt')}</option>
@@ -610,14 +610,14 @@ function HelpersPage() {
                   className="h-10 w-16 text-center text-sm"
                   value={countN}
                   onChange={(e) => setCountN(Math.min(99, Math.max(0, parseInt(e.target.value, 10) || 0)))}
-                  aria-label="Anzahl Schichten"
+                  aria-label={t('x.countAria')}
                 />
                 <span className="text-sm text-fg-muted">{t('countSuffix', { count: countN })}</span>
               </>
             )}
           </div>
           {eventDays.length > 1 && (
-            <Select className="h-10 w-auto text-sm" value={day} onChange={(e) => setDay(e.target.value)} aria-label="Tag">
+            <Select className="h-10 w-auto text-sm" value={day} onChange={(e) => setDay(e.target.value)} aria-label={t('x.dayAria')}>
               <option value="ALL">{t('allDays')}</option>
               <optgroup label={t('freeOnDayGroup')}>
                 {eventDays.map((k) => (
@@ -640,7 +640,7 @@ function HelpersPage() {
               className="h-10 w-auto text-sm"
               value={personType}
               onChange={(e) => setPersonType(e.target.value as PersonType)}
-              aria-label="Personentyp"
+              aria-label={t('x.personTypeAria')}
             >
               <option value="ALL">{t('allTypes')}</option>
               <option value="MEMBER">{t('typeMembers')}</option>
@@ -698,7 +698,7 @@ function HelpersPage() {
                       }
                     }}
                     aria-pressed={isActive}
-                    title={`${plural(b.count)} mit ${b.n} Schicht${b.n === 1 ? '' : 'en'}`}
+                    title={t('x.bucketTitle', { people: plural(b.count), count: b.n })}
                     className={cn(
                       'group flex min-w-[2.5rem] flex-1 flex-col items-center gap-1 rounded-field px-1 pt-1 transition',
                       isActive ? 'bg-accent/10' : 'hover:bg-surface-2'
@@ -751,7 +751,7 @@ function HelpersPage() {
               <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>
                 {t('unselect')}
               </Button>
-              <Button size="sm" onClick={() => writeMessage([...selected], `${plural(selected.size)} ausgewählt`)}>
+              <Button size="sm" onClick={() => writeMessage([...selected], t('x.selected', { people: plural(selected.size) }))}>
                 <Mail className="size-4" /> {t('messageSelection')}
               </Button>
             </>
@@ -775,7 +775,7 @@ function HelpersPage() {
             )
           )}
           {filtered.length > 0 && (
-            <Button size="sm" variant="ghost" onClick={exportFiltered} title="Gefilterte Liste als CSV (Excel)">
+            <Button size="sm" variant="ghost" onClick={exportFiltered} title={t('x.exportTitle')}>
               <Download className="size-4" /> {t('exportCsv')}
             </Button>
           )}
@@ -812,8 +812,8 @@ function HelpersPage() {
                     checked={row.userId ? selected.has(row.userId) : false}
                     disabled={!row.userId}
                     onChange={() => row.userId && toggle(row.userId)}
-                    aria-label={`${row.name} auswählen`}
-                    title={row.userId ? undefined : 'Gäste ohne Konto bekommen keine Nachrichten'}
+                    aria-label={t('x.selectAria', { name: row.name })}
+                    title={row.userId ? undefined : t('x.guestNoMessages')}
                   />
                   <Avatar name={row.name} size="sm" />
                   <button
@@ -882,9 +882,9 @@ function HelpersPage() {
                               <Link
                                 href={`${base}/schichten?suche=${encodeURIComponent(s.title || s.taskTitle || '')}`}
                                 className="min-w-0 truncate text-fg hover:underline"
-                                title="Schicht im Plan öffnen"
+                                title={t('x.openShift')}
                               >
-                                <strong>{s.title || s.taskTitle || 'Schicht'}</strong>
+                                <strong>{s.title || s.taskTitle || t('x.shift')}</strong>
                                 {s.taskTitle && s.title && s.taskTitle !== s.title ? ` (${s.taskTitle})` : ''}
                                 <span className="text-fg-muted">
                                   {' '}

@@ -359,7 +359,13 @@ export function EventForm({
   const toast = useToast();
   const org = useOrganization();
   const { user } = usePortal();
-  const [form, setForm] = useState<EventFormValues>({ ...EMPTY, ...initial });
+  const tCatering = useTranslations('web.ok.catering');
+  const [form, setForm] = useState<EventFormValues>(() => ({
+    ...EMPTY,
+    // Standard-Bons in der Sprache der Person, die den Anlass anlegt
+    cateringTokenItems: [tCatering('defaultItemMeal'), tCatering('defaultItemDrink')],
+    ...initial,
+  }));
   const [saving, setSaving] = useState(false);
   const [newCateringItem, setNewCateringItem] = useState('');
   const addCateringItem = () => {
@@ -697,7 +703,8 @@ export function EventForm({
   const needsManualSave = isDirty && !titleMissing && (slugChanged || Boolean(error));
 
   const contactName = deptMembers.find((m) => m.userId === form.contactUserId)?.displayName;
-  const bannerName = BANNER_PRESETS.find((p) => p.url === form.bannerUrl)?.name ?? (form.bannerUrl ? t('customImageText') : t('noBannerText'));
+  const bannerPreset = BANNER_PRESETS.find((p) => p.url === form.bannerUrl);
+  const bannerName = bannerPreset ? t(`banners.${bannerPreset.id}`) : form.bannerUrl ? t('customImageText') : t('noBannerText');
 
   return (
     <form onSubmit={submit} className={layout === 'page' ? 'space-y-6' : 'space-y-7'}>
@@ -1514,9 +1521,9 @@ export function EventForm({
                     )}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={preset.url} alt={preset.name} className="size-full object-cover transition duration-500 group-hover:scale-105" />
+                    <img src={preset.url} alt={t(`banners.${preset.id}`)} className="size-full object-cover transition duration-500 group-hover:scale-105" />
                     <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2.5 pb-2 pt-6 text-left text-xs font-semibold text-white">
-                      {preset.name}
+                      {t(`banners.${preset.id}`)}
                     </span>
                   </button>
                 );

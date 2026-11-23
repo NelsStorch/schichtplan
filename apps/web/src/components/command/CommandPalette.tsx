@@ -425,7 +425,7 @@ export function CommandPalette() {
                               setTimeout(() => setQuery(''), 10);
                             }}
                             className="flex items-center gap-1 text-[11px] font-medium text-fg-subtle hover:text-danger-ink"
-                            title="Verlauf leeren"
+                            title={t('clearHistory')}
                           >
                             <Trash2 className="size-3" /> {t('clearHistory')}
                           </button>
@@ -542,7 +542,7 @@ export function CommandPalette() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent-ink">
-                      {previewTargetItem.section}
+                      {groupedSections.find((g) => g.section === previewTargetItem.section)?.label ?? previewTargetItem.section}
                     </span>
                     {previewTargetItem.badge && (
                       <Badge tone={previewTargetItem.badgeTone || 'neutral'} size="sm">
@@ -680,8 +680,8 @@ export function CommandPalette() {
                               )}
                             >
                               {previewTargetItem.preview.eventStats.freeSlots > 0
-                                ? `${previewTargetItem.preview.eventStats.freeSlots} freie Plätze`
-                                : 'Voll besetzt'}
+                                ? t('freeSlotsCount', { count: previewTargetItem.preview.eventStats.freeSlots })
+                                : t('fullyStaffed')}
                             </span>
                           </div>
                         </div>

@@ -81,7 +81,19 @@
     "leaderRole": "Leitung",
     "okContactRole": "OK-Kontakt",
     "teamWithYou": "Mit dir dabei: <bold>{helpers}</bold>",
-    "teamNoneYet": "Noch niemand weiteres eingetragen"
+    "teamNoneYet": "Noch niemand weiteres eingetragen",
+    "calendar": {
+      "lead": "Leitung",
+      "role": "Rolle: {role}",
+      "task": "Arbeit: {task}",
+      "category": "Kategorie: {category}",
+      "leaders": "Schicht-/Tagesleitung: {names}",
+      "coHelpers": "Mit dir eingeteilt: {names}",
+      "event": "Anlass: {event}",
+      "unit": "Abteilung: {name}",
+      "file": "meine-schichten",
+      "shiftFile": "schicht"
+    }
   },
   "replacementDialog": {
     "titleSelf": "Ersatz suchen",
@@ -335,7 +347,15 @@
       "linkTakenBadge": "Link vergeben",
       "unlockAccessAction": "Zugang freischalten",
       "notUnlockedForYou": "Für dich nicht freigeschaltet",
-      "signupForTaskAction": "Für diese Arbeit eintragen"
+      "signupForTaskAction": "Für diese Arbeit eintragen",
+      "x": {
+        "shift": "Schicht",
+        "shareFree": "{count, plural, one {Noch # Platz frei.} other {Noch # Plätze frei.}}",
+        "signedUpAria": "Eingetragene Helfende",
+        "replacementAria": "Ersatz gesucht",
+        "shareReplacement": "Ersatz gesucht: {shift} am {event} ({when}). Übernimmst du?",
+        "shareShift": "{shift} am {event} ({when}).{need} Trägst du dich ein?"
+      }
     },
     "ticket": {
       "ariaLabel": "Schicht {title}, {from} bis {to}, {status}",
@@ -506,7 +526,15 @@
       "directHandover": "{minutes} Min. Übergabe",
       "breakTime": "{duration} Pause",
       "blockedReasonSignupClosed": "Das Eintragen ist geschlossen.",
-      "thisDepartment": "dieser Abteilung"
+      "thisDepartment": "dieser Abteilung",
+      "x": {
+        "committeeAria": "Organisationskomitee"
+      }
+    },
+    "x": {
+      "collision": "Zeitkollision mit einer deiner Schichten",
+      "tasksAria": "Arbeiten",
+      "filledAria": "{filled} von {total} Plätzen besetzt"
     }
   },
   "ok": {
@@ -548,7 +576,8 @@
       "noPermissionArea": "Für «{area}» fehlt dir in diesem Anlass das Recht. Frag die OK-Leitung oder die Abteilungsleitung.",
       "noPermissionGeneral": "Der OK-Bereich ist für das OK dieses Anlasses, die Abteilungsleitung und wer «Alle Anlässe sehen» darf.",
       "toShiftPlan": "Zum Schichtplan",
-      "helpGuide": "Anleitung im Hilfe-Center"
+      "helpGuide": "Anleitung im Hilfe-Center",
+      "sectionsAria": "Abschnitte"
     },
     "overview": {
       "title": "Übersicht",
@@ -821,7 +850,56 @@
       "createdSuccessDesc": "Es wurden {shifts} Schichten für «{title}» erstellt ({slots} Plätze).",
       "createdSuccessDescNoTitle": "Es wurden {shifts} Schichten erstellt ({slots} Plätze).",
       "createFailed": "Erstellen fehlgeschlagen",
-      "slotsIncreased": "{title}: Plätze auf {count} erhöht"
+      "slotsIncreased": "{title}: Plätze auf {count} erhöht",
+      "x": {
+        "hoursPreset": "{hours} Std.",
+        "overlapNonePreset": "0 Min. (keine)",
+        "minutesShort": "{minutes} Min.",
+        "footerSummary": "{shifts, plural, one {# Schicht} other {# Schichten}} · je {slots, plural, one {# Platz} other {# Plätze}} = {total} Plätze total",
+        "noneGenerated": "Keine Schichten generiert",
+        "createCount": "{count, plural, one {# Schicht erstellen} other {# Schichten erstellen}}",
+        "create": "Erstellen",
+        "titleLabel": "Stand / Schichttitel (optional)",
+        "titleHint": "z. B. Grillstand, Kasse, Bar oder leer lassen, wenn nur die Arbeiten zählen",
+        "titlePlaceholder": "z. B. Grillstand (optional)",
+        "categoryLabel": "Kategorie (optional)",
+        "categoryHint": "Zur Gruppierung nach Ressort/Stand",
+        "categoryPlaceholder": "z. B. Stände, Küche",
+        "setupTeardown": "Auf- oder Abbau-Schichten",
+        "minAgeAll": "Mindestalter für gesamte Schicht:",
+        "none": "Keins",
+        "tasksTitle": "Arbeiten & Plätze pro Schicht",
+        "tasksText": "Lege fest, welche Aufgaben und wie viele Personen pro Schicht eingeteilt werden ({count, plural, one {# Platz} other {# Plätze}} pro Schicht).",
+        "addTask": "Arbeit hinzufügen",
+        "fromCatalog": "Aus Arbeiten-Katalog hinzufügen:",
+        "taskNumber": "Arbeit #{number}",
+        "removeTask": "Arbeit entfernen",
+        "taskName": "Name der Arbeit *",
+        "taskNameHint": "z. B. Grillieren, Kasse, Springer",
+        "taskNamePlaceholder": "z. B. Grillieren",
+        "slots": "Plätze",
+        "less": "Weniger",
+        "more": "Mehr",
+        "minAge": "Mindestalter",
+        "taskNote": "Notiz oder Aufgabenbeschreibung für diese Arbeit (optional)",
+        "operatingPeriod": "Gesamter Betriebs-Zeitraum",
+        "totalHours": "{hours} Stunden Gesamtdauer",
+        "start": "Betriebsbeginn *",
+        "end": "Betriebsende *",
+        "duration": "Schichtdauer pro Einsatz",
+        "durationValue": "{minutes} Minuten ({hours} Std.)",
+        "overlap": "Übergabe-Überlappung",
+        "overlapNone": "Keine",
+        "overlapLead": "{minutes} Min. Vorlauf",
+        "overlapInfo": "Jede Ablösung beginnt <strong>{minutes} Minuten vor Ende der vorherigen Schicht</strong> für die Übergabe.",
+        "firstEarlier": "Auch 1. Schicht {minutes} Min. früher beginnen (z. B. für Standaufbau vor Öffnung)",
+        "preview": "Live-Vorschau ({count, plural, one {# Schicht} other {# Schichten}})",
+        "helpersNeeded": "{count} Helfende benötigt",
+        "noneGeneratedHint": "Keine Schichten generiert. Bitte überprüfe Start- und Endzeit.",
+        "oneSlot": "1 Platz ({title})",
+        "shift": "Schicht",
+        "handoverBadge": "+{minutes} Min. Übergabe"
+      }
     },
     "tasks": {
       "pageTitle": "Arbeiten-Katalog",
@@ -1011,7 +1089,20 @@
         "submit": "Einteilen ({count})",
         "submitSingle": "Einteilen",
         "successToast": "{name} eingeteilt",
-        "failToast": "Einteilung fehlgeschlagen"
+        "failToast": "Einteilung fehlgeschlagen",
+        "x": {
+          "pair": "«{a}» und «{b}»",
+          "soFar": "{count}{target} {count, plural, one {Schicht} other {Schichten}} bisher",
+          "age": "{age} Jahre",
+          "multiHint": "du kannst mehrere Schichten auswählen",
+          "selectedCount": "Ausgewählt: {count, plural, one {# Schicht} other {# Schichten}}",
+          "after": "danach {after}/{target}",
+          "targetMet": "Soll erfüllt",
+          "shift": "Schicht",
+          "taskFor": "Arbeit für {shift}",
+          "deselect": "{shift} abwählen",
+          "overlap": "Die gewählten Schichten {pair} überschneiden sich."
+        }
       },
       "history": {
         "loadError": "Verlauf konnte nicht geladen werden: {error}",
@@ -1024,7 +1115,12 @@
         "deregisteredNoReason": "Abgemeldet",
         "attendance": "Anwesenheit: {status}",
         "messageSent": "Nachricht erhalten: «{subject}»",
-        "emptyHistory": "Noch keine Einträge im Verlauf."
+        "emptyHistory": "Noch keine Einträge im Verlauf.",
+        "x": {
+          "title": "Verlauf",
+          "lastMessaged": "zuletzt angeschrieben {date}",
+          "notMessaged": "noch nicht vom OK angeschrieben"
+        }
       },
       "hours": {
         "title": "Helferstunden-Statistik",
@@ -1043,7 +1139,56 @@
         "summaryTotalHours": "Geleistete Stunden",
         "summaryAvgHours": "Ø Stunden pro Person",
         "configTitle": "Berechnungs-Einstellungen",
-        "configIncludeUnconfirmed": "Auch unbestätigte Schichten zählen"
+        "configIncludeUnconfirmed": "Auch unbestätigte Schichten zählen",
+        "x": {
+          "helpLink": "Anleitung im Hilfe-Center",
+          "hours": "{hours} Std.",
+          "footerSummary": "über alle {helpers} aktiven Helfenden in {levels} Stufen ({shifts} Einsätze)",
+          "close": "Schliessen",
+          "hoursUnit": "Std.",
+          "hoursSplit": "{event} h Anlass · {setup} h Auf-/Abbau",
+          "signups": "Schicht-Eintragungen",
+          "rankingCalculated": "Rangliste berechnet",
+          "includeSetup": "Auf- und Abbau einbeziehen",
+          "colEvent": "Anlass",
+          "colSetup": "Auf-/Abbau",
+          "noHelpers": "Keine Helfenden gefunden.",
+          "guest": "Gast",
+          "noLevels": "Keine Stufen mit Helferstunden gefunden.",
+          "pctOfAll": "{pct} % aller Stunden",
+          "levelSummary": "{people, plural, one {# Person} other {# Personen}} · {shifts, plural, one {# Einsatz} other {# Einsätze}} · Ø {avg} Std./Person",
+          "showHelpers": "Helfende anzeigen",
+          "involved": "Beteiligte Personen ({count}):"
+        }
+      },
+      "x": {
+        "csvName": "Name",
+        "csvFullName": "Vollständiger Name",
+        "csvLevels": "Stufen",
+        "csvAge": "Alter",
+        "csvType": "Typ",
+        "csvShifts": "Schichten",
+        "csvTarget": "Soll",
+        "csvMissing": "Fehlend",
+        "csvHours": "Stunden",
+        "csvStatus": "Status",
+        "csvAssignedShifts": "Eingeteilte Schichten",
+        "guest": "Gast",
+        "account": "Konto",
+        "deregistered": "Abgemeldet",
+        "csvFilePrefix": "helfende",
+        "levelAria": "Stufe",
+        "countFilterAria": "Anzahl Schichten filtern",
+        "countAria": "Anzahl Schichten",
+        "dayAria": "Tag",
+        "personTypeAria": "Personentyp",
+        "bucketTitle": "{people} mit {count, plural, one {# Schicht} other {# Schichten}}",
+        "selected": "{people} ausgewählt",
+        "exportTitle": "Gefilterte Liste als CSV (Excel)",
+        "selectAria": "{name} auswählen",
+        "guestNoMessages": "Gäste ohne Konto bekommen keine Nachrichten",
+        "openShift": "Schicht im Plan öffnen",
+        "shift": "Schicht"
       }
     },
     "attendance": {
@@ -1078,7 +1223,40 @@
       "statusPresent": "Da",
       "statusExcused": "Entschuldigt",
       "statusNoShow": "Fehlt",
-      "statusOpen": "Offen"
+      "statusOpen": "Offen",
+      "statusLong": {
+        "PRESENT": "Anwesend",
+        "EXCUSED": "Entschuldigt",
+        "NO_SHOW": "Nicht erschienen"
+      },
+      "x": {
+        "colDay": "Tag",
+        "colTime": "Zeit",
+        "colShift": "Schicht",
+        "colTask": "Arbeit",
+        "colName": "Name",
+        "colAttendance": "Anwesenheit",
+        "colRecorded": "Erfasst",
+        "colPresent": "Da",
+        "colStatus": "Status",
+        "csvFilePrefix": "anwesenheit",
+        "printBlocked": "Druckansicht blockiert",
+        "printBlockedDesc": "Bitte Pop-ups für diese Seite erlauben.",
+        "printTitle": "Anwesenheit: {event}",
+        "offTitle": "Anwesenheitsliste ist ausgeschaltet",
+        "offDesc": "Schalte sie unter «Einstellungen» ein. Dort wählst du auch, ob nur das OK abhakt oder ob sich die Helfenden zusätzlich per QR-Code selbst einchecken.",
+        "qrAlt": "QR-Code für den Selbst-Check-in",
+        "copyLink": "Link kopieren",
+        "qrNote": "Erstellt mit dem {name}-QR-Generator. Der Link enthält einen geheimen Code: Wer ihn kennt, kann sich von überall einchecken. Bei Bedarf erneuern.",
+        "allDays": "Alle Tage",
+        "clearSearch": "Suche leeren",
+        "noQrTitle": "Kein QR-Code vorhanden",
+        "noQrText": "Speichere die Einstellungen einmal neu, damit ein Check-in-Code erstellt wird.",
+        "running": "läuft",
+        "presentOf": "{present} / {total} anwesend",
+        "attendanceOf": "Anwesenheit {name}",
+        "statusSelected": "{status} (nochmals klicken = offen)"
+      }
     },
     "access": {
       "closedBadge": "Eintragen geschlossen",
@@ -1106,7 +1284,50 @@
       "colEmail": "E-Mail",
       "colPhone": "Telefon",
       "colSignedUpAt": "Eingetragen am",
-      "colShifts": "Schichten"
+      "colShifts": "Schichten",
+      "x": {
+        "deleteTitle": "Link «{label}» löschen?",
+        "deleteLoseAccess": "{count, plural, one {# Person verliert den Zugang.} other {# Personen verlieren den Zugang.}} Bestehende Eintragungen bleiben.",
+        "deleteNoLonger": "Der Link funktioniert danach nicht mehr.",
+        "noLinksDesc": "Ein persönlicher Link gilt für eine Person, ein Gruppen-Link für alle, die ihn haben (z. B. Elternchat).",
+        "kindGroup": "Gruppe",
+        "kindPersonal": "Persönlich",
+        "expired": "Abgelaufen",
+        "notRedeemed": "Noch nicht eingelöst",
+        "nobodyYet": "Noch niemand",
+        "redeemedBy": "Eingelöst von {names}",
+        "deadline": "Einlösefrist: {date}",
+        "deleteAria": "Link {label} löschen",
+        "kindPersonalText": "Gilt nur für das erste Konto, das ihn einlöst.",
+        "kindGroupText": "Gilt für alle, die den Link haben, z. B. im Gruppenchat.",
+        "createTitle": "Zugangs-Link erstellen",
+        "forWhom": "Für wen?",
+        "forWhomHint": "Nur für dich sichtbar, z. B. «Mami von Falk» oder «Elternchat Hiskia».",
+        "kindAria": "Art des Links",
+        "expiresLabel": "Einlösefrist (optional)",
+        "expiresHint": "Bis wann der Link neu eingelöst werden kann. Bereits freigeschaltete Personen behalten ihren Zugang.",
+        "cancel": "Abbrechen",
+        "createAndCopy": "Erstellen und kopieren",
+        "csvName": "Name",
+        "csvFirstName": "Vorname",
+        "csvLastName": "Nachname",
+        "csvEmail": "E-Mail",
+        "csvMobile": "Handy",
+        "csvBirthDate": "Geburtsdatum",
+        "csvUnit": "Abteilung",
+        "csvShifts": "Schichten",
+        "nobodySignedUp": "Noch niemand eingetragen",
+        "searchAria": "Helfende und Antworten durchsuchen",
+        "clearSearch": "Suche leeren",
+        "resetFilter": "Filter zurücksetzen",
+        "noMatches": "Keine passenden Einträge",
+        "noMatchesDesc": "Passe die Suche oder den Antwort-Filter an.",
+        "colPerson": "Person",
+        "colContact": "Kontakt",
+        "noUnit": "ohne Abteilung",
+        "viaLink": "über Link",
+        "born": "geb. {date}"
+      }
     },
     "catering": {
       "pageTitle": "Verpflegung & Bons",
@@ -1152,7 +1373,60 @@
       "overviewRecentTitle": "Letzte Entwertungen am Stand",
       "overviewRecentTime": "{time} Uhr",
       "overviewRefreshBtn": "Aktualisieren",
-      "overviewCloseBtn": "Schliessen"
+      "overviewCloseBtn": "Schliessen",
+      "x": {
+        "resetConfirmTitle": "Bon wieder freigeben?",
+        "resetConfirmDesc": "«{item}» von {name} wird wieder auf «Offen / Einlösbar» zurückgesetzt (z. B. nach versehentlichem Wischen).",
+        "reset": "Zurücksetzen",
+        "resetDone": "Bon zurückgesetzt",
+        "resetDoneDesc": "{item} ({name}) kann wieder eingelöst werden.",
+        "resetFailed": "Zurücksetzen fehlgeschlagen",
+        "csvPerson": "Person",
+        "csvRole": "Rolle",
+        "csvVoucher": "Bon",
+        "csvStatus": "Status",
+        "csvRedeemedAt": "Eingelöst am",
+        "csvShift": "Schicht",
+        "csvShiftStart": "Schichtbeginn",
+        "csvShiftEnd": "Schichtende",
+        "csvLeader": "Schichtleitung",
+        "csvHelper": "Helfende",
+        "csvRedeemed": "Eingelöst",
+        "csvOpen": "Offen",
+        "shift": "Schicht",
+        "csvFilePrefix": "verpflegungs-bons",
+        "disabledTitle": "Verpflegungs-Bons sind nicht aktiviert",
+        "disabledDesc": "Aktiviere die digitalen Verpflegungs- und Getränke-Tokens in den Anlass-Einstellungen, damit Helfende und Schichtleitungen pro Schicht automatisch ihre Bons erhalten.",
+        "enableInSettings": "In den Einstellungen aktivieren",
+        "validAlways": "Immer gültig (ohne Zeitfenster)",
+        "validFromStart": "Ab Schichtbeginn oder Check-in",
+        "validEarly": "{count, plural, one {Ab # Stunde vor Schichtbeginn (oder Check-in)} other {Ab # Stunden vor Schichtbeginn (oder Check-in)}}",
+        "validity": "Gültigkeit: {label}.",
+        "refresh": "Aktualisieren",
+        "csvExport": "CSV-Export",
+        "configure": "Konfigurieren",
+        "loading": "Bons und Statistiken werden geladen…",
+        "inclLeaders": "Inkl. Helfende & Schichtleitung",
+        "collected": "Am Stand bezogen",
+        "notRedeemed": "Noch nicht eingelöst",
+        "byItemTitle": "Kassensturz nach Bon-Typ",
+        "resetFilter": "Filter zurücksetzen",
+        "pctRedeemed": "{pct} % eingelöst",
+        "redeemedCount": "<strong>{count}</strong> eingelöst",
+        "openOf": "{open} offen (von {total})",
+        "allTokens": "Alle Bons ({count})",
+        "allTokensFiltered": "Alle Bons ({shown} von {total})",
+        "allTokensHint": "Für Helfende ohne Smartphone kannst du Bons hier direkt suchen und manuell entwerten – oder versehentlich eingelöste Bons zurücksetzen.",
+        "filterStatus": "Nach Status filtern",
+        "filterRole": "Nach Rolle filtern",
+        "filterItem": "Nach Bon-Typ filtern",
+        "resetTitle": "Bon zurücksetzen, falls versehentlich eingelöst",
+        "availableFrom": "Ab {time} Uhr",
+        "recentTitle": "Letzte Einlösungen am Stand",
+        "timeOClock": "{time} Uhr"
+      },
+      "defaultItemMeal": "1x Helfermenü",
+      "defaultItemDrink": "1x Getränk"
     },
     "physicalBons": {
       "createTitle": "Neue Bon-Tranche drucken",
@@ -1169,7 +1443,25 @@
       "batchCombiTitle": "Kombi-Bögen #{id}",
       "batchSingleTitle": "Einzel-Bons #{id}",
       "cardsCount": "{count, plural, one {# Karte} other {# Karten}}",
-      "totalBonsCount": "{count, plural, one {# Bon} other {# Bons}}"
+      "totalBonsCount": "{count, plural, one {# Bon} other {# Bons}}",
+      "x": {
+        "helpersSignedUp": "{count} Helfende angemeldet",
+        "typeFormat": "Bon-Typ & Format",
+        "combiText": "1 gedruckter Zettel enthält alle Gutscheine der Schicht (z. B. {items}). Am Stand flexibel einzeln oder zusammen entwertbar.",
+        "recommended": "Empfohlen für Festbetriebe",
+        "singleText": "Separater Zettel pro Artikel (z. B. 1 Zettel für {first}, 1 Zettel für {second}).",
+        "food": "Essen",
+        "drinks": "Trinken",
+        "classic": "Klassische Abreiss-Bons",
+        "setExact": "Exakt für alle {count} Helfenden setzen",
+        "batchName": "Optionaler Tranchen-Name",
+        "batchNameHint": "z. B. «Reservekarten Grillstand» oder «Hauptdruck»",
+        "batchPlaceholder": "z. B. Tranche {number}",
+        "previousBatches": "Bisherige Druck-Tranchen ({count})",
+        "refresh": "Aktualisieren",
+        "alreadyRedeemed": "{count} bereits eingelöst",
+        "downloadTitle": "A4-Druckbogen als PDF herunterladen"
+      }
     },
     "questions": {
       "pageTitle": "Fragen",
@@ -1207,7 +1499,25 @@
       "sensitiveDesc": "(z. B. Allergien, Medikamente). Helfende müssen ausdrücklich einwilligen, und die Antworten werden immer nach einer Frist gelöscht.",
       "optionsPlaceholder": "Eine Antwort pro Zeile, z. B.\nS\nM\nL",
       "optionsAria": "Antwortmöglichkeiten",
-      "customQuestionBtn": "Eigene Frage"
+      "customQuestionBtn": "Eigene Frage",
+      "presets": {
+        "ADDRESS": {
+          "label": "Adresse (Strasse, PLZ, Ort)",
+          "hint": "z. B. für Versand oder Versicherung"
+        },
+        "DIET": {
+          "label": "Allergien / Ernährung",
+          "hint": "z. B. vegetarisch, laktosefrei, Nüsse"
+        },
+        "TSHIRT": {
+          "label": "T-Shirt-Grösse",
+          "hint": "Auswahl XS bis XXL"
+        },
+        "EMERGENCY": {
+          "label": "Notfallkontakt (Name und Telefon)",
+          "hint": "Wen das OK im Notfall anruft"
+        }
+      }
     },
     "settings": {
       "pageTitle": "Einstellungen",
@@ -1312,6 +1622,12 @@
       "onlyOpenDesc": "Zum Aufhängen, wenn noch Helfende gesucht werden.",
       "pdfError": "PDF konnte nicht erstellt werden",
       "exportFailed": "Export fehlgeschlagen"
+    },
+    "roles": {
+      "okLead": "OK-Leitung",
+      "okMember": "OK-Mitglied",
+      "platformAdmin": "Plattform-Admin",
+      "notFound": "Anlass nicht gefunden"
     }
   },
   "home": {
@@ -1373,7 +1689,10 @@
     "otherLevelsDismissBtn": "Nicht mehr anzeigen",
     "offlineStatus": "Offline-Modus:",
     "offlineAsOf": "Stand: {stand}. ",
-    "offlineReadOnlyNotice": "Nur Leseansicht (Eintragen und Austragen erfordert Internet)."
+    "offlineReadOnlyNotice": "Nur Leseansicht (Eintragen und Austragen erfordert Internet).",
+    "x": {
+      "mainNav": "Hauptnavigation"
+    }
   },
   "tile": {
     "statusLive": "Läuft gerade",
@@ -1447,7 +1766,10 @@
       "secondaryColorLabel": "Zweitfarbe der Abteilung",
       "customSecondaryColorTitle": "Eigene Zweitfarbe wählen",
       "qrStyleCornersTwoToneDesc": "Positions-Ecken in Zweitfarbe (optimal für Scanner)",
-      "qrStyleGradientTwoToneDesc": "Diagonaler Übergang von Haupt- zu Zweitfarbe"
+      "qrStyleGradientTwoToneDesc": "Diagonaler Übergang von Haupt- zu Zweitfarbe",
+      "x": {
+        "sectionsAria": "Bereiche"
+      }
     },
     "stufen": {
       "newStufePlaceholder": "Neue Stufe, z. B. Fröschli",
@@ -1467,7 +1789,17 @@
       "emptyTitleOrg": "Noch keine Stufen",
       "emptyDescVerein": "Lege die Gruppen oder Teams deines Vereins an, z. B. Aktivriege, Junioren, Vorstand.",
       "emptyDescOrg": "Lege die Stufen deiner {unitTerm} an, z. B. {examples}.",
-      "groupIdHint": "{provider}-ID optional: die Nummer der Stufen-Gruppe in {dbHost}. Stufen aus {provider} werden automatisch angelegt und verknüpft."
+      "groupIdHint": "{provider}-ID optional: die Nummer der Stufen-Gruppe in {dbHost}. Stufen aus {provider} werden automatisch angelegt und verknüpft.",
+      "x": {
+        "personCount": "{count} Pers.",
+        "nameAria": "Name der Stufe {name}",
+        "linked": "Mit {provider}-Gruppe verknüpft",
+        "deleteAria": "Stufe {name} löschen",
+        "newGroupPlaceholder": "Neue Gruppe, z. B. Aktivriege",
+        "newGroupAria": "Name der neuen Gruppe",
+        "newLevelPlaceholder": "Neue Stufe, z. B. {org, select, pfadi {Wölfe} jubla {Schar} other {Hiskia}}",
+        "newLevelAria": "Name der neuen Stufe"
+      }
     },
     "invite": {
       "title": "Personen einladen & Einladungs-Link",
@@ -1482,7 +1814,14 @@
       "emailPlaceholder": "E-Mail-Adressen eingeben (kommagetrennt oder eine pro Zeile)…",
       "sendBtn": "Einladen",
       "sendingBtn": "Wird gesendet…",
-      "sentSuccess": "{count, plural, one {# Einladung verschickt} other {# Einladungen verschickt}}"
+      "sentSuccess": "{count, plural, one {# Einladung verschickt} other {# Einladungen verschickt}}",
+      "x": {
+        "emailsAria": "E-Mail-Adressen für Einladung",
+        "roleAria": "Rolle / Rechte bei Einladung",
+        "asMember": "Als Mitglied (ohne Zusatzrechte)",
+        "withRight": "Mit Recht: {label}",
+        "emailsFound": "{count, plural, one {# E-Mail-Adresse erkannt} other {# E-Mail-Adressen erkannt}}"
+      }
     },
     "audit": {
       "loadFailedToast": "Protokoll konnte nicht geladen werden",
@@ -1562,7 +1901,15 @@
       "unconfirmHome": "Bestätigung aufheben",
       "cancel": "Abbrechen",
       "save": "Speichern",
-      "personSavedToast": "{name} gespeichert"
+      "personSavedToast": "{name} gespeichert",
+      "x": {
+        "viewAria": "Ansicht",
+        "confirmAria": "{name} bestätigen",
+        "colPerson": "Person",
+        "levels": "Stufen",
+        "yes": "{label}: ja",
+        "no": "{label}: nein"
+      }
     },
     "permissions": {
       "presetLegend": "Vorlage",
@@ -1571,7 +1918,8 @@
       "presetCustom": "Eigene Rechte",
       "groupDepartment": "Abteilung",
       "groupEvents": "Anlässe (gilt für alle Anlässe der Abteilung)",
-      "grantableHint": "Du kannst nur Rechte vergeben, die du selbst hast, und insgesamt weniger, als du selbst hast."
+      "grantableHint": "Du kannst nur Rechte vergeben, die du selbst hast, und insgesamt weniger, als du selbst hast.",
+      "memberNoRights": "Mitglied ohne besondere Rechte"
     },
     "stats": {
       "loadFailedToast": "Statistik konnte nicht geladen werden",
@@ -1812,7 +2160,10 @@
       "functionLabel": "Ressort / Funktion",
       "functionPlaceholder": "Bau & Grill",
       "saveBtn": "Speichern",
-      "addBtn": "Ins OK aufnehmen"
+      "addBtn": "Ins OK aufnehmen",
+      "x": {
+        "whoLabel": "{nickname} oder E-Mail"
+      }
     },
     "dayResponsibles": {
       "title": "Tages-Verantwortliche",
@@ -1909,7 +2260,10 @@
     "contrastSuccessSingle": "Die Farbe erfüllt alle Kontrastanforderungen für Plakate und Bildschirme.",
     "qrPreviewAria": "QR-Code Vorschau",
     "qrPrimary": "QR-Haupt: {ratio}:1",
-    "qrSecondary": "QR-Zweit: {ratio}:1"
+    "qrSecondary": "QR-Zweit: {ratio}:1",
+    "x": {
+      "loading": "Vorschau lädt …"
+    }
   },
   "eventMeta": {
     "leaders": "Leitende"
@@ -2149,7 +2503,15 @@
     "countdownWaiting": "Sicherheits-Countdown: Bestätigung erst in {seconds} Sekunden möglich…",
     "countdownDone": "Countdown abgelaufen. Du kannst die Änderung jetzt bestätigen.",
     "slugWaitBtn": "Bitte warten ({seconds}s)",
-    "slugConfirmBtn": "Trotzdem ändern & speichern"
+    "slugConfirmBtn": "Trotzdem ändern & speichern",
+    "banners": {
+      "chilbi": "Chilbi & Festzelt",
+      "sola": "Sommerlager",
+      "lagerfeuer": "Lagerfeuer & Wald",
+      "grill": "Grill & Festwirtschaft",
+      "huette": "Hütte & Berge",
+      "weihnachten": "Waldweihnacht & Winter"
+    }
   },
   "command": {
     "back": "Zurück",
@@ -2204,6 +2566,551 @@
     "copiedToast": "{title} kopiert",
     "copyFailedToast": "Kopieren fehlgeschlagen",
     "icsDownloadedToast": "Kalenderdatei heruntergeladen",
-    "icsDownloadedDesc": "«{slug}.ics» wurde gespeichert."
+    "icsDownloadedDesc": "«{slug}.ics» wurde gespeichert.",
+    "wa": {
+      "shiftHeading": "*Helfer gesucht für «{event}»!* 🙋",
+      "shiftLine": "Schicht: *{shift}*",
+      "time": "⏰ Zeit: {time}",
+      "area": "📍 Bereich: {area}",
+      "freeSlots": "👥 {count, plural, one {Noch # freier Platz!} other {Noch # freie Plätze!}}",
+      "viewAndSignUp": "👉 Hier direkt ansehen & eintragen:",
+      "callLabel": "WhatsApp-Aufruf",
+      "eventHeading": "*Helferaufruf für «{event}»!* ⛺",
+      "date": "📅 Datum: {date}",
+      "missingHands": "{count, plural, one {Wir suchen noch # helfende Hand für folgende Schichten:} other {Wir suchen noch # helfende Hände für folgende Schichten:}}",
+      "gapLine": "• *{shift}* ({time}): {count, plural, one {noch # Platz} other {noch # Plätze}}",
+      "moreShifts": "… und {count, plural, one {eine weitere Schicht} other {# weitere Schichten}}.",
+      "openAndSignUp": "👉 Jetzt Schichtplan öffnen & direkt eintragen:",
+      "eventCallLabel": "WhatsApp-Helferaufruf ({count, plural, one {# offener Platz} other {# offene Plätze}})"
+    },
+    "text": {
+      "planHeading": "📋 Schichtplan: {event} ({date})",
+      "totalShifts": "Total Schichten: {count}",
+      "noHelpers": "Keine Helfenden eingeteilt",
+      "planLabel": "Schichtplan als Text",
+      "noEmails": "Keine E-Mail-Adressen hinterlegt",
+      "helperEmails": "{count, plural, one {# Helfer-E-Mail-Adresse} other {# Helfer-E-Mail-Adressen}}",
+      "phoneHeading": "📞 Helfer-Telefonliste: {event}",
+      "noPhone": "Keine Telefonnummer",
+      "phoneLabel": "Telefonliste"
+    },
+    "toast": {
+      "greetingName": "Hallo {name}! ",
+      "greeting": "Hallo! ",
+      "signedUp": "Erfolgreich eingetragen!",
+      "signedUpDesc": "Du bist jetzt für «{shift}» eingeteilt.",
+      "signUpFailed": "Eintragen fehlgeschlagen",
+      "cancelled": "Einsatz storniert",
+      "cancelledDesc": "Eintragung für «{shift}» wurde erfolgreich entfernt.",
+      "cancelFailed": "Stornieren fehlgeschlagen",
+      "replacementWithdrawn": "«Ersatz gesucht» zurückgezogen",
+      "replacementWithdrawnDesc": "Du übernimmst die Schicht wieder regulär.",
+      "replacementNote": "Ersatz gesucht (aus Befehlsmenü gemeldet)",
+      "replacementOffered": "«Ersatz gesucht» gemeldet",
+      "replacementOfferedDesc": "Deine Schicht wurde zur Übernahme durch andere Helfer ausgeschrieben.",
+      "actionFailed": "Aktion fehlgeschlagen",
+      "checkedIn": "{name} eingecheckt",
+      "attendanceReset": "Anwesenheit zurückgesetzt",
+      "markedPresent": "Erfolgreich als anwesend markiert",
+      "statusReset": "Status wurde zurückgesetzt",
+      "checkInFailed": "Check-in fehlgeschlagen",
+      "checkInFailedDesc": "Die Anwesenheit konnte nicht aktualisiert werden.",
+      "allCheckedIn": "Alle Helfenden eingecheckt",
+      "peopleUpdated": "{count, plural, one {# Person aktualisiert} other {# Personen aktualisiert}}",
+      "updateFailed": "Aktualisierung fehlgeschlagen",
+      "darkOn": "Dunkelmodus aktiviert",
+      "lightOn": "Hellmodus aktiviert",
+      "systemOn": "System-Farbschema aktiv"
+    },
+    "help": {
+      "keyboardTitle": "Tastatur-Navigation & Schnellbedienung",
+      "keyboardSubtitle": "↑ / ↓ zum Navigieren · ↵ zum Ausführen · ⇥ Tab für Unteraktionen · Esc zum Schliessen",
+      "open": "Öffnen",
+      "openKeys": "⌘K oder Strg+K",
+      "mainAction": "Hauptaktion",
+      "subActions": "Unteraktionen",
+      "backClose": "Zurück / Schliessen",
+      "instantActions": "Sofortaktionen",
+      "instantValue": "⚡ Direkt ohne Seitenwechsel",
+      "prefixPeopleTitle": "Präfix @ für Personen",
+      "prefixPeopleSubtitle": "Tippe «@name», um blitzschnell nach Helfenden und Kontakten zu suchen",
+      "prefixEventsTitle": "Präfix # oder > für Anlässe",
+      "prefixEventsSubtitle": "Tippe «#herbst» oder «>lager», um ausschliesslich Anlässe zu durchsuchen",
+      "prefixShiftsTitle": "Präfix : oder ! für Schichten",
+      "prefixShiftsSubtitle": "Tippe «:kueche» oder «!frei», um direkt freie Schichten zu finden"
+    },
+    "ctx": {
+      "helperView": "Zur Helfer-Ansicht wechseln",
+      "helperViewSubtitle": "{event} aus Sicht der Helfenden öffnen",
+      "copyEventLink": "Anlass-Link kopieren",
+      "area": "Bereich",
+      "helperViewValue": "Helfer-Ansicht",
+      "okArea": "Zum OK-Bereich wechseln",
+      "okAreaSubtitle": "Planung, Schichten und Helfende für {event} verwalten",
+      "toShifts": "Direkt zu Schichten",
+      "toHelpers": "Direkt zu Helfenden",
+      "okCentral": "OK-Zentrale",
+      "role": "Rolle",
+      "okPlanning": "OK-Planung",
+      "gapFinder": "Lücken-Finder: {count, plural, one {# offener Platz} other {# offene Plätze}}",
+      "gapFinderSubtitle": "{count, plural, one {# Schicht benötigt noch Unterstützung} other {# Schichten benötigen noch Unterstützung}}",
+      "openCount": "{count} offen",
+      "copyWaCall": "WhatsApp-Helferaufruf kopieren",
+      "copyWaCallSubtitle": "Fertige Nachricht mit allen offenen Schichten für den Chat",
+      "copySignupLink": "Anlass-Link zum Eintragen kopieren",
+      "signupLinkLabel": "Link zum Eintragen",
+      "openSpots": "Offene Plätze",
+      "helpersWanted": "{count} Helfer gesucht",
+      "affectedShifts": "Betroffene Schichten",
+      "copyLink": "Link kopieren",
+      "copyWaCallSubtitle2": "Fertiger Text für Gruppenchats mit Datum, Lücken und Link",
+      "copyPlanText": "Schichtplan als Text kopieren",
+      "copyPlanTextSubtitle": "Vollständige Übersicht aller Schichten und Helfer für E-Mail oder Chat",
+      "copyEmails": "E-Mail-Verteiler aller Helfenden kopieren",
+      "copyEmailsSubtitle": "Adressen aller eingeteilten Helfer für Rundmails",
+      "copyPhones": "Helfer-Telefonliste kopieren",
+      "copyPhonesSubtitle": "Name, Telefonnummer und Schichten für Notfälle und Koordination",
+      "downloadIcs": "Kalendereintrag (.ics) herunterladen",
+      "downloadIcsSubtitle": "Direkt in Apple Kalender, Outlook oder Handy-Kalender importieren",
+      "addGoogle": "Zu Google Kalender hinzufügen",
+      "addGoogleSubtitle": "Öffnet Google Kalender mit vorausgefülltem Eintrag",
+      "newShift": "Neue Schicht anlegen",
+      "newShiftSubtitle": "In «{event}» eine weitere Schicht erfassen",
+      "assignHelper": "Helfer manuell zuteilen",
+      "assignHelperSubtitle": "Person für eine Schicht in «{event}» einteilen",
+      "checkin": "Helfer-Check-in & QR-Code",
+      "checkinSubtitle": "Anwesenheit vor Ort am Anlass prüfen",
+      "print": "Schichtplan drucken / PDF",
+      "printSubtitle": "Druckversion oder PDF für «{event}» erstellen"
+    },
+    "shift": {
+      "freeBadge": "{count} frei",
+      "signUpNow": "⚡ Direkt eintragen (als {name})",
+      "signUpNowSubtitle": "Schicht sofort übernehmen, ohne die Seite zu wechseln",
+      "cancelMine": "⚡ Meinen Einsatz stornieren",
+      "cancelMineSubtitle": "Sofort aus dieser Schicht austragen",
+      "withdrawReplacement": "«Ersatz gesucht» zurückziehen",
+      "offerReplacement": "«Ersatz gesucht» ausschreiben",
+      "withdrawReplacementSubtitle": "Du übernimmst die Schicht wieder regulär",
+      "offerReplacementSubtitle": "Schicht zur Übernahme für andere Helfer anbieten",
+      "resetAttendance": "Anwesenheit für Schicht zurücksetzen ({count})",
+      "checkInAll": "Alle Helfenden dieser Schicht einchecken ({count})",
+      "markAllOpen": "Alle als offen markieren",
+      "markAllPresent": "Alle eingeteilten Helfer als anwesend markieren",
+      "checkOut": "{name} abmelden",
+      "checkIn": "{name} einchecken",
+      "markOpen": "Als offen markieren",
+      "confirmPresent": "Als anwesend bestätigen",
+      "waTo": "WhatsApp an {name} schreiben",
+      "enterPhoneAndChat": "Handynummer eingeben & Direktchat starten",
+      "copyWaCall": "WhatsApp-Helferaufruf für diese Schicht kopieren",
+      "copyWaCallSubtitle": "Fertige Vorlage mit Zeit, Bereich und Link",
+      "copyDetails": "Schichtdetails als Text kopieren",
+      "general": "Allgemein",
+      "nobody": "Niemand eingeteilt",
+      "detailShift": "📋 Schicht: {shift}",
+      "detailEvent": "Anlass: {event}",
+      "detailTime": "Zeit: {time}",
+      "detailArea": "Bereich: {area}",
+      "detailStaffing": "Besetzung: {filled} von {total} ({free} frei)",
+      "detailHelpers": "Helfende: {names}",
+      "detailNotes": "Hinweise: {notes}",
+      "detailsLabel": "Schichtdetails",
+      "copyDirectLink": "Direktlink zur Schicht kopieren",
+      "jumpTo": "Im Schichtplan anspringen",
+      "editInOk": "Im OK-Bereich bearbeiten",
+      "signUpQuick": "Jetzt eintragen",
+      "cancelQuick": "Einsatz stornieren",
+      "copy": "Kopieren",
+      "assigned": "Eingeteilt",
+      "myShift": "Mein Einsatz",
+      "time": "Uhrzeit",
+      "category": "Kategorie",
+      "freeOf": "{free} von {total}"
+    },
+    "person": {
+      "phonePrompt": "Handynummer für {name} eingeben (z. B. 079 123 45 67):",
+      "presentAll": "Anwesend ({count})",
+      "presentPartial": "{present}/{total} anwesend",
+      "shiftCount": "{count, plural, one {# Schicht} other {# Schichten}}",
+      "more": "(+{count} weitere)",
+      "noShiftsIn": "Keine Schichten in «{event}»",
+      "member": "Mitglied",
+      "resetAttendance": "Anwesenheit für {name} zurücksetzen",
+      "checkInAll": "Als anwesend einchecken ({shifts})",
+      "checkedInOf": "{present} von {total} Schichten eingecheckt",
+      "shiftTitle": "Schicht: {shift}",
+      "stillOpen": "Noch offen",
+      "resetShiftAttendance": "Anwesenheit für «{shift}» zurücksetzen",
+      "markShiftPresent": "Für «{shift}» als anwesend markieren",
+      "waTo": "WhatsApp-Nachricht an {name} senden",
+      "directChat": "Direktchat mit {phone} öffnen",
+      "call": "Anrufen ({phone})",
+      "sms": "SMS senden ({phone})",
+      "copyPhone": "Telefonnummer kopieren",
+      "phoneLabel": "Telefonnummer",
+      "noMobile": "Keine Handynummer hinterlegt (klicken für Direkteingabe)",
+      "emailTo": "E-Mail an {email} schreiben",
+      "copyEmail": "E-Mail-Adresse kopieren",
+      "assign": "Für eine Schicht einteilen",
+      "assignSubtitle": "Person manuell einer Schicht von «{event}» zuweisen",
+      "eventFallback": "Anlass",
+      "openInOk": "Im OK-Bereich bei Helfenden öffnen",
+      "openInOkSubtitle": "Filtert die Helfer-Tabelle nach «{name}»",
+      "callShort": "Anrufen",
+      "assignedCount": "{count, plural, one {# Schicht eingeteilt} other {# Schichten eingeteilt}}",
+      "name": "Name",
+      "phone": "Telefon",
+      "shifts": "Einsätze",
+      "noShifts": "Keine Einsätze"
+    },
+    "admin": {
+      "newEvent": "Neuen Anlass erstellen",
+      "newEventSubtitle": "Neues Lager, Fest oder Veranstaltung erfassen",
+      "editUnit": "{unit} bearbeiten",
+      "editUnitSubtitle": "Name, Logo, Akzentfarbe und Startseiten-Einstellungen",
+      "levels": "Stufen verwalten",
+      "levelsSubtitle": "Stufen erfassen, {provider} verknüpfen oder bearbeiten",
+      "association": "Verband",
+      "people": "Personen und Rechte verwalten",
+      "peopleSubtitle": "Berechtigungen, Rollen und Abteilungsmitglieder pflegen",
+      "stats": "Statistik & Jahresrückblick (GV)",
+      "statsSubtitle": "Helferstunden, Stufenauswertung und Ehrentafel für den GV-Jahresbericht",
+      "copyMemberEmails": "E-Mail-Verteiler aller Mitglieder kopieren",
+      "copyMemberEmailsSubtitle": "Adressen von {count, plural, one {# Person} other {# Personen}} ohne Doppelte in die Zwischenablage",
+      "memberEmails": "{count, plural, one {# E-Mail-Adresse} other {# E-Mail-Adressen}}",
+      "waDirect": "WhatsApp-Nachricht an Handynummer senden",
+      "waDirectSubtitle": "Direktchat öffnen (Handynummer eingeben)",
+      "waDirectPrompt": "Handynummer für WhatsApp-Direktchat eingeben (z. B. 079 123 45 67):"
+    },
+    "event": {
+      "past": "Vergangen",
+      "live": "Findet statt",
+      "upcoming": "Demnächst",
+      "calendarIcs": "Kalender (.ics)",
+      "googleCalendar": "Google Kalender",
+      "goTo": "Zum Anlass gehen",
+      "goToSubtitle": "Schichtplan und Details öffnen",
+      "downloadIcs": "Kalenderdatei (.ics) herunterladen",
+      "downloadIcsSubtitle": "Direkt in Apple/Outlook/Handy importieren",
+      "addGoogleSubtitle": "Neuen Termin in Google Kalender eintragen",
+      "openOk": "OK-Bereich öffnen",
+      "openOkSubtitle": "Planung, Schichten und Helfende verwalten",
+      "export": "Drucken & Export (PDF/Excel)",
+      "exportSubtitle": "Aushänge und Tabellen exportieren",
+      "checkinSubtitle": "Präsenz am Anlass erfassen",
+      "date": "Datum",
+      "status": "Status"
+    },
+    "nav": {
+      "home": "Anlässe & Startseite",
+      "homeSubtitle": "Übersicht aller Anlässe von {name}",
+      "myShifts": "Meine Schichten",
+      "myShiftsSubtitle": "Deine angemeldeten Einsätze und Bestätigungen",
+      "openMyShifts": "Meine Schichten öffnen",
+      "profile": "Mein Profil & Kontaktdaten",
+      "profileSubtitle": "{name} · Angaben, Benachrichtigungen, Sicherheit und Daten",
+      "help": "Hilfe-Center öffnen",
+      "helpSubtitle": "Anleitungen für Helfende, OK-Teams und {lead}",
+      "newTab": "In neuem Tab öffnen",
+      "status": "System-Status prüfen",
+      "statusSubtitle": "Verfügbarkeit der Dienste, DB und Mailserver",
+      "dark": "Design: Dunkelmodus aktivieren",
+      "darkSubtitle": "Dunkles Farbschema (Nachtansicht)",
+      "light": "Design: Hellmodus aktivieren",
+      "lightSubtitle": "Helles Farbschema (Tagesansicht)",
+      "system": "Design: System-Standard folgen",
+      "systemSubtitle": "Automatisch an Geräte-Einstellung anpassen",
+      "logout": "Abmelden",
+      "logoutSubtitle": "Als {name} abmelden",
+      "login": "Anmelden",
+      "loginWith": "Mit {provider} oder E-Mail/Passwort anmelden",
+      "loginEmail": "Mit E-Mail/Passwort anmelden"
+    }
+  },
+  "statsReport": {
+    "attendedOnly": "Nur bestätigte Anwesenheiten",
+    "allSignups": "Alle eingetragenen Schichten",
+    "withSetup": "inkl. Auf- & Abbau",
+    "withoutSetup": "ohne Auf-/Abbau",
+    "csv": {
+      "filePrefix": "helferstunden",
+      "allYearsSlug": "alle-jahre",
+      "title": "{org} - Jahresauswertung {dept}",
+      "year": "Jahr: {year}",
+      "allYears": "Alle erfassten Jahre",
+      "asOf": "Stand: {date}",
+      "filter": "Filter: {signups}, {setup}",
+      "totalHours": "Gesamtstunden (h)",
+      "timeWorked": "Geleistete Zeit",
+      "activeHelpers": "Aktive Helfende",
+      "eventCount": "Anzahl Anlässe",
+      "shiftCount": "Anzahl Schichten",
+      "fillRate": "Besetzungsgrad (%)",
+      "attendedRate": "Bestätigte Anwesenheitsrate (%)",
+      "avgHours": "Ø Stunden pro Helfer*in",
+      "helpersSection": "--- HELFER-EHRENTAFEL & STUNDEN ---",
+      "rank": "Rang",
+      "name": "Name",
+      "levels": "Stufen",
+      "shiftsTotal": "Schichten gesamt",
+      "confirmedShifts": "Bestätigte Schichten",
+      "hoursDecimal": "Stunden (Dezimal)",
+      "guest": "Gast/Extern",
+      "noLevel": "Ohne Stufe",
+      "yes": "Ja",
+      "no": "Nein",
+      "eventsSection": "--- ANLÄSSE DES JAHRES ---",
+      "event": "Anlass",
+      "dateStart": "Datum Start",
+      "dateEnd": "Datum Ende",
+      "helpers": "Helfende",
+      "shifts": "Schichten",
+      "filledSlots": "Besetzte Slots",
+      "requiredSlots": "Benötigte Slots",
+      "eventHours": "Anlass-Stunden (h)",
+      "setupHours": "Auf-/Abbau (h)",
+      "confirmedHours": "Bestätigte Stunden (h)",
+      "attendanceRate": "Anwesenheitsrate (%)",
+      "levelsSection": "--- STUFEN-VERTEILUNG ---",
+      "level": "Stufe",
+      "shareTotal": "Anteil an Gesamt (%)"
+    },
+    "hoursShort": "{hours} Std."
+  },
+  "perm": {
+    "providerFallback": "Verband",
+    "custom": "Eigene Rechte",
+    "member": "Mitglied",
+    "guest": "Gast",
+    "DEPARTMENT_SETTINGS": {
+      "label": "Abteilung bearbeiten",
+      "description": "Name, Logo, Farbe, Kontaktperson und «Startseite nur für Mitglieder»."
+    },
+    "STUFEN_MANAGE": {
+      "label": "Stufen verwalten",
+      "description": "Stufen anlegen, umbenennen, mit {provider} verknüpfen und löschen."
+    },
+    "PEOPLE_VIEW": {
+      "label": "Personen sehen",
+      "description": "Liste der Personen der Abteilung mit Stufen und Rechten."
+    },
+    "PEOPLE_MANAGE": {
+      "label": "Personen und Rechte verwalten",
+      "description": "Stufen von Personen setzen, Personen aus der Abteilung entfernen und Rechte vergeben, aber nur weniger, als man selbst hat. Sieht das Protokoll."
+    },
+    "TEMPLATES_MANAGE": {
+      "label": "Vorlagen verwalten",
+      "description": "Anlässe als Vorlage speichern und Vorlagen löschen."
+    },
+    "EVENTS_VIEW_ALL": {
+      "label": "Alle Anlässe sehen",
+      "description": "Auch Entwürfe und den OK-Bereich aller Anlässe, inkl. Kontaktangaben der Helfenden."
+    },
+    "EVENTS_CREATE": {
+      "label": "Anlässe erstellen",
+      "description": "Neue Anlässe anlegen, auch aus Vorlagen. Die Einstellungen danach ändert die OK-Leitung."
+    },
+    "EVENTS_EDIT_SETTINGS": {
+      "label": "Anlässe bearbeiten",
+      "description": "Einstellungen aller Anlässe ändern (wie die OK-Leitung), Anlässe verschieben."
+    },
+    "SHIFTS_MANAGE": {
+      "label": "Schichten planen",
+      "description": "Schichten, Arbeiten und Tagesverantwortliche in allen Anlässen."
+    },
+    "HELPERS_MANAGE": {
+      "label": "Helfende einteilen",
+      "description": "Helfende ein- und austragen, Abmeldungen und Zugangs-Links in allen Anlässen."
+    },
+    "MESSAGES_SEND": {
+      "label": "Nachrichten senden",
+      "description": "E-Mails an Helfende aller Anlässe."
+    },
+    "ATTENDANCE_MANAGE": {
+      "label": "Anwesenheit erfassen",
+      "description": "Anwesenheitsliste führen und den QR-Code für den Check-in herunterladen."
+    },
+    "EXPORT": {
+      "label": "Exportieren",
+      "description": "Listen, Schichtplan-PDF und Helferstunden herunterladen."
+    },
+    "ORGANIZERS_MANAGE": {
+      "label": "OK ernennen",
+      "description": "OK-Leitung und OK-Mitglieder aller Anlässe ernennen und entfernen."
+    },
+    "EVENTS_DELETE": {
+      "label": "Anlässe löschen",
+      "description": "Anlässe mit allen Schichten und Eintragungen endgültig löschen."
+    },
+    "preset": {
+      "ADMINISTRATION": {
+        "label": "Administration",
+        "description": "Fast alles wie die {lead}. Vergibt Rechte, aber nur weniger, als sie selbst hat."
+      },
+      "EVENT_COORDINATION": {
+        "label": "Anlass-Koordination",
+        "description": "Erstellt Anlässe und plant in allen Anlässen mit. Die frühere Rolle «Planung»."
+      },
+      "EVENT_EDITING": {
+        "label": "Anlässe bearbeiten",
+        "description": "Bearbeitet alle bestehenden Anlässe wie die OK-Leitung, erstellt aber keine neuen."
+      },
+      "EVENT_CREATION": {
+        "label": "Anlässe erstellen",
+        "description": "Legt neue Anlässe an. Planen und Einstellungen danach über das OK."
+      }
+    }
+  },
+  "csv": {
+    "day": "Tag",
+    "start": "Beginn",
+    "end": "Ende",
+    "shift": "Schicht",
+    "task": "Arbeit",
+    "category": "Kategorie",
+    "slots": "Plätze",
+    "filled": "Besetzt",
+    "assigned": "Eingeteilt",
+    "name": "Name",
+    "age": "Alter",
+    "guestEmail": "E-Mail (Gast)",
+    "guestPhone": "Telefon (Gast)",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "level": "Stufe",
+    "ageAtEvent": "Alter am Anlass",
+    "shifts": "Schichten",
+    "targetMet": "Soll erfüllt",
+    "deregistered": "Abgemeldet",
+    "reason": "Grund",
+    "yes": "ja",
+    "no": "nein",
+    "unit": "Abteilung",
+    "type": "Typ",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "shiftCount": "Anzahl Schichten",
+    "hoursDecimal": "Gesamtstunden (Dezimal)",
+    "totalTime": "Gesamtzeit",
+    "eventHours": "Anlass-Stunden",
+    "setupHours": "Auf-/Abbau-Stunden",
+    "assignedShifts": "Eingeteilte Schichten",
+    "guest": "Gast",
+    "account": "Konto",
+    "totalSummary": "TOTAL / ZUSAMMENFASSUNG",
+    "activeHelpers": "{count} aktive Helfende",
+    "average": "Durchschnitt: {hours} Std./Person",
+    "rank": "Rang",
+    "levelGroup": "Stufe / Gruppe",
+    "helperPeople": "Helfende Personen",
+    "share": "Anteil (%)",
+    "shiftAssignments": "Schicht-Einsätze",
+    "avgPerPerson": "Durchschnitt (Std./Person)",
+    "helpersWithHours": "Helfende (mit Stunden)",
+    "total": "TOTAL",
+    "noLevel": "Ohne Stufe / Gäste",
+    "file": {
+      "plan": "schichtplan",
+      "assignments": "einteilung",
+      "helpers": "helfende",
+      "hours": "helferstunden",
+      "ranking": "stufen-rangliste"
+    },
+    "layout": {
+      "plan": {
+        "label": "Übersicht",
+        "text": "Kompakt: alle Schichten pro Tag mit Besetzung und Namen."
+      },
+      "aushang": {
+        "label": "Zum Aufhängen",
+        "text": "Grosse Schrift, jeder Platz eine Zeile. Freie Plätze zum Eintragen von Hand."
+      },
+      "personen": {
+        "label": "Pro Person",
+        "text": "Wer wann wo hilft, nach Namen sortiert. Zum Verteilen oder Nachschauen."
+      }
+    }
+  },
+  "meta": {
+    "slotsAllFull": "Alle Schichten besetzt",
+    "slotsShiftFull": "Schicht ist besetzt",
+    "slotsFree": "{count, plural, one {Noch # Platz frei} other {Noch # Plätze frei}}",
+    "replacementWanted": "Ersatz gesucht",
+    "shiftTitleReplacement": "Ersatz gesucht: {shift} – {event}",
+    "shiftReplacementDesc": "{when}. Für diese Schicht wird Ersatz gesucht. Übernimmst du? ({where})",
+    "signUpAt": "{where}: jetzt eintragen.",
+    "pickAndSignUp": "Schicht aussuchen und eintragen.",
+    "pickSignUpDone": "Schicht aussuchen, eintragen, fertig.",
+    "deptDescription": "Alle Anlässe und offenen Schichten an einem Ort. Schicht aussuchen, eintragen, fertig.",
+    "orgDescription": "Schichten für Chilbi, Lager und {orgName}-Anlässe: anschauen, eintragen, fertig.",
+    "manifestDeptDescription": "Anlässe und Schichten von {name}: anschauen, eintragen, fertig.",
+    "myShifts": "Meine Schichten",
+    "myShiftsShortcut": "Deine gebuchten Schichten und Zeiten",
+    "myShiftsDescription": "Deine eingetragenen Schichten im Überblick, mit Kalender-Export.",
+    "eventsShortcut": "Anlässe & Schichten",
+    "eventsShortcutShort": "Anlässe",
+    "eventsShortcutDesc": "Alle Anlässe und offenen Schichten",
+    "eventFallbackTitle": "Anlass",
+    "eventFallbackDesc": "Schichten des Anlasses ansehen und dich eintragen.",
+    "checkinDescription": "Bei deiner Schicht einchecken.",
+    "loginTitle": "Anmelden",
+    "loginDescription": "Melde dich an, um dich für Schichten einzutragen.",
+    "scanAndSignUp": "Scannen & eintragen"
+  },
+  "eventText": {
+    "access": {
+      "PUBLIC": {
+        "label": "Öffentlich",
+        "short": "Öffentlich",
+        "description": "Alle mit dem Link. Ein {nickname}-Profil ohne Passwort reicht."
+      },
+      "CEVIDB_ALL": {
+        "label": "{org, select, verein {Alle registrierten Konten} other {{provider}, alle {units}}}",
+        "short": "{org, select, verein {Konto} other {{provider}}}",
+        "description": "{org, select, verein {Alle mit einem bestätigten Konto.} other {Alle mit {provider}-Login, egal aus welcher {unit}. Für regionale Anlässe und Kurse.}}"
+      },
+      "DEPARTMENT": {
+        "label": "{org, select, verein {Vereins-intern} jubla {Schar-intern} other {Abteilungs-intern}}",
+        "short": "Intern",
+        "description": "{org, select, verein {Alle, die beim Login diesen Verein angegeben haben.} other {Alle, die beim Login diese {unit} angegeben haben.}}"
+      },
+      "DEPARTMENT_CEVIDB": {
+        "label": "{org, select, verein {Vereins-intern} jubla {Schar-intern, {provider}} other {Abteilungs-intern, {provider}}}",
+        "short": "{org, select, verein {Intern} other {Intern · {provider}}}",
+        "description": "{org, select, verein {Nur bestätigte Mitglieder in diesem Verein.} other {Nur mit {provider}-Login und dort in dieser {unit}.}}"
+      },
+      "WHITELIST": {
+        "label": "Mehrere {units}",
+        "short": "Whitelist",
+        "description": "{org, select, verein {Wie vereins-intern, dazu weitere freigeschaltete {units}.} jubla {Wie schar-intern, dazu weitere freigeschaltete {units}.} other {Wie abteilungs-intern, dazu weitere freigeschaltete {units}.}}"
+      },
+      "WHITELIST_CEVIDB": {
+        "label": "{org, select, verein {Mehrere {units}} other {Mehrere {units}, {provider}}}",
+        "short": "{org, select, verein {Whitelist} other {Whitelist · {provider}}}",
+        "description": "{org, select, verein {Wie vereins-intern, dazu weitere freigeschaltete {units}.} jubla {Wie schar-intern mit {provider}, dazu weitere freigeschaltete {units}.} other {Wie abteilungs-intern mit {provider}, dazu weitere freigeschaltete {units}.}}"
+      }
+    },
+    "profileField": {
+      "PHONE": "Handynummer",
+      "EMAIL": "E-Mail",
+      "BIRTH_DATE": "Geburtsdatum",
+      "FULL_NAME": "Vor- und Nachname"
+    },
+    "questionType": {
+      "TEXT": "Freitext",
+      "YES_NO": "Ja / Nein",
+      "CHOICE": "Auswahl"
+    },
+    "category": {
+      "c0": "Küche & Verpflegung",
+      "c1": "Grill & Essensausgabe",
+      "c2": "Bar & Getränke",
+      "c3": "Kasse & Bons",
+      "c4": "Aufbau & Vorbereitung",
+      "c5": "Abbau & Aufräumen",
+      "c6": "Aktivität & Posten",
+      "c7": "Springer & Allrounder"
+    }
   }
 }

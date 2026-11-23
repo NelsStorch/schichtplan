@@ -60,22 +60,25 @@ interface CalendarTokenData {
   resetNotice?: boolean;
 }
 
-const toCalendar = (s: MyShift): CalendarEntry => {
-  const rolePrefix = s.isResponsible ? `[${s.responsibleRole || 'Leitung'}] ` : '';
+type CalendarT = ReturnType<typeof useTranslations<'web.myShifts'>>;
+
+/** Kalendereintrag einer Schicht in der Sprache der Person */
+const calendarEntry = (s: MyShift, t: CalendarT): CalendarEntry => {
+  const rolePrefix = s.isResponsible ? `[${s.responsibleRole || t('calendar.lead')}] ` : '';
   const taskSuffix = s.taskTitle && s.taskTitle !== s.title ? ` (${s.taskTitle})` : '';
   const leaders = s.responsibles?.map((r) => r.displayName).join(', ');
   return {
     uid: s.signupId,
     title: `${rolePrefix}${s.title?.trim() || s.taskTitle || shiftName(s)}${s.title?.trim() ? taskSuffix : ''} (${s.eventTitle})`,
     description: [
-      s.isResponsible ? `Rolle: ${s.responsibleRole || 'Leitung'}` : null,
-      s.taskTitle && s.taskTitle !== s.title ? `Arbeit: ${s.taskTitle}` : null,
-      s.category ? `Kategorie: ${s.category}` : null,
-      leaders ? `Schicht-/Tagesleitung: ${leaders}` : null,
-      s.coHelpers?.length ? `Mit dir eingeteilt: ${s.coHelpers.join(', ')}` : null,
+      s.isResponsible ? t('calendar.role', { role: s.responsibleRole || t('calendar.lead') }) : null,
+      s.taskTitle && s.taskTitle !== s.title ? t('calendar.task', { task: s.taskTitle }) : null,
+      s.category ? t('calendar.category', { category: s.category }) : null,
+      leaders ? t('calendar.leaders', { names: leaders }) : null,
+      s.coHelpers?.length ? t('calendar.coHelpers', { names: s.coHelpers.join(', ') }) : null,
       s.description,
-      `Anlass: ${s.eventTitle}`,
-      `Abteilung: ${s.departmentName}`,
+      t('calendar.event', { event: s.eventTitle }),
+      t('calendar.unit', { name: s.departmentName }),
     ]
       .filter(Boolean)
       .join('\n'),
@@ -97,6 +100,7 @@ function hasBriefingDetails(s: MyShift): boolean {
 
 export default function MyShiftsPage() {
   const t = useTranslations('web.myShifts');
+  const toCalendar = (s: MyShift) => calendarEntry(s, t);
   const { user, department, loading: sessionLoading } = usePortal();
   const toast = useToast();
   const confirm = useConfirm();
@@ -436,7 +440,7 @@ export default function MyShiftsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => downloadIcs(`schicht-${next.shiftId.slice(0, 8)}.ics`, [toCalendar(next)])}
+                      onClick={() => downloadIcs(`${t('calendar.shiftFile')}-${next.shiftId.slice(0, 8)}.ics`, [toCalendar(next)])}
                       title={t('icsDownloadTitle')}
                     >
                       <Download className="size-4" /> {t('icsDownloadAction')}
@@ -462,7 +466,7 @@ export default function MyShiftsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => downloadIcs('meine-schichten.ics', upcoming.map(toCalendar))}
+                      onClick={() => downloadIcs(`${t('calendar.file')}.ics`, upcoming.map(toCalendar))}
                       title={t('exportAllIcsTitle')}
                     >
                       <Download className="size-4" /> {t('exportAllIcsAction')}
@@ -727,6 +731,7 @@ function Timeline({
   onOpenCatering?: (slug: string, title: string) => void;
 }) {
   const t = useTranslations('web.myShifts');
+  const toCalendar = (s: MyShift) => calendarEntry(s, t);
   const { department } = usePortal();
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
 
@@ -905,7 +910,7 @@ function Timeline({
                           <Button
                             variant="ghost"
                             size="icon-sm"
-                            onClick={() => downloadIcs(`schicht-${s.shiftId.slice(0, 8)}.ics`, [toCalendar(s)])}
+                            onClick={() => downloadIcs(`${t('calendar.shiftFile')}-${s.shiftId.slice(0, 8)}.ics`, [toCalendar(s)])}
                             title={t('icsDownloadTitle')}
                           >
                             <Download className="size-4" />

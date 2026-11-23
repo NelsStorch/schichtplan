@@ -19,11 +19,8 @@ export interface PrintPlanOptions {
   locale?: Locale | string | null;
 }
 
-export const PRINT_LAYOUTS: { value: PrintLayout; label: string; text: string }[] = [
-  { value: 'plan', label: 'Übersicht', text: 'Kompakt: alle Schichten pro Tag mit Besetzung und Namen.' },
-  { value: 'aushang', label: 'Zum Aufhängen', text: 'Grosse Schrift, jeder Platz eine Zeile. Freie Plätze zum Eintragen von Hand.' },
-  { value: 'personen', label: 'Pro Person', text: 'Wer wann wo hilft, nach Namen sortiert. Zum Verteilen oder Nachschauen.' },
-];
+/** Texte: Katalog `web.csv.layout.<value>` */
+export const PRINT_LAYOUTS: { value: PrintLayout }[] = [{ value: 'plan' }, { value: 'aushang' }, { value: 'personen' }];
 
 export interface PlanTask {
   /** null, wenn die Schicht nur eine gleichnamige Arbeit hat */
@@ -78,6 +75,11 @@ export interface PlanLabels {
   colAssigned: string;
   colNames: string;
   free: string;
+  peopleEmpty: string;
+  colName: string;
+  colDay: string;
+  colShiftTask: string;
+  personShifts: (count: number) => string;
 }
 
 export function getPlanLabels(locale?: Locale | string | null): PlanLabels {
@@ -102,6 +104,11 @@ export function getPlanLabels(locale?: Locale | string | null): PlanLabels {
     colAssigned: t('colAssigned'),
     colNames: t('colNames'),
     free: t('free'),
+    peopleEmpty: t('peopleEmpty'),
+    colName: t('colName'),
+    colDay: t('colDay'),
+    colShiftTask: t('colShiftTask'),
+    personShifts: (count) => t('personShifts', { count }),
   };
 }
 

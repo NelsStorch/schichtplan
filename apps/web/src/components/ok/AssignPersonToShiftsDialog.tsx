@@ -134,12 +134,12 @@ export function AssignPersonToShiftsDialog({
         const a = selectedShifts[i];
         const b = selectedShifts[j];
         if (Date.parse(a.startTime) < Date.parse(b.endTime) && Date.parse(b.startTime) < Date.parse(a.endTime)) {
-          pairs.push(`«${shiftName(a)}» und «${shiftName(b)}»`);
+          pairs.push(t('x.pair', { a: shiftName(a), b: shiftName(b) }));
         }
       }
     }
     return pairs;
-  }, [selectedShifts]);
+  }, [selectedShifts, t]);
   const collisionMessages = selectedShifts
     .map((s) => collisions[s.id])
     .filter((c): c is ShiftCollisionCheckResult => Boolean(c?.hasCollision))
@@ -231,9 +231,13 @@ export function AssignPersonToShiftsDialog({
       title={person ? t('title', { name: person.name }) : ''}
       description={
         person
-          ? `${currentCount}${minShifts && !person.isGuest ? `/${minShifts}` : ''} Schicht${currentCount === 1 ? '' : 'en'} bisher${
-              person.age !== null ? ` · ${person.age} Jahre` : ''
-            } · du kannst mehrere Schichten auswählen`
+          ? [
+              t('x.soFar', { count: currentCount, target: minShifts && !person.isGuest ? `/${minShifts}` : '' }),
+              person.age !== null ? t('x.age', { age: person.age }) : null,
+              t('x.multiHint'),
+            ]
+              .filter(Boolean)
+              .join(' · ')
           : ''
       }
       size="lg"
@@ -337,7 +341,7 @@ export function AssignPersonToShiftsDialog({
         {selectedShifts.length > 0 && (
           <div className="space-y-2">
             <p className="text-2xs font-bold uppercase tracking-wider text-fg-subtle">
-              Ausgewählt: {selectedShifts.length} Schicht{selectedShifts.length === 1 ? '' : 'en'} ·{' '}
+              {t('x.selectedCount', { count: selectedShifts.length })} ·{' '}
               {formatMinutes(selectedMinutes)}
               {minShifts && person && !person.isGuest && (
                 <span
@@ -346,8 +350,8 @@ export function AssignPersonToShiftsDialog({
                     afterCount >= minShifts ? 'text-success-ink' : 'text-fg-muted'
                   )}
                 >
-                  danach {afterCount}/{minShifts}
-                  {afterCount >= minShifts ? ', Soll erfüllt' : ''}
+                  {t('x.after', { after: afterCount, target: minShifts })}
+                  {afterCount >= minShifts ? `, ${t('x.targetMet')}` : ''}
                 </span>
               )}
             </p>
@@ -360,7 +364,7 @@ export function AssignPersonToShiftsDialog({
                     className="flex flex-wrap items-center gap-2 rounded-field border border-line bg-surface px-3 py-1.5 text-xs"
                   >
                     <span className="min-w-0 flex-1 truncate">
-                      <strong className="text-fg">{s.title || 'Schicht'}</strong>
+                      <strong className="text-fg">{s.title || t('x.shift')}</strong>
                       <span className="text-fg-muted">
                         {' '}
                         · {fmtShortWeekday(s.startTime)} {fmtTimeRange(s.startTime, s.endTime)}
@@ -371,7 +375,7 @@ export function AssignPersonToShiftsDialog({
                         className="h-8 w-auto text-xs"
                         value={taskByShift[s.id] ?? ''}
                         onChange={(e) => setTaskByShift((prev) => ({ ...prev, [s.id]: e.target.value }))}
-                        aria-label={`Arbeit für ${shiftName(s)}`}
+                        aria-label={t('x.taskFor', { shift: shiftName(s) })}
                       >
                         {tasks.map((t) => (
                           <option key={t.id} value={t.id} disabled={t.filled >= t.requiredSlots}>
@@ -385,7 +389,7 @@ export function AssignPersonToShiftsDialog({
                       type="button"
                       onClick={() => toggleShift(s)}
                       className="rounded p-1 text-fg-subtle hover:bg-surface-2 hover:text-fg"
-                      aria-label={`${shiftName(s)} abwählen`}
+                      aria-label={t('x.deselect', { shift: shiftName(s) })}
                     >
                       <X className="size-3.5" />
                     </button>
@@ -408,7 +412,7 @@ export function AssignPersonToShiftsDialog({
                 ))}
                 {internalOverlaps.map((p) => (
                   <p key={p} className="font-semibold text-warning-ink">
-                    Die gewählten Schichten {p} überschneiden sich.
+                    {t('x.overlap', { pair: p })}
                   </p>
                 ))}
                 <label className="flex cursor-pointer items-center gap-2 pt-1 font-medium text-fg">

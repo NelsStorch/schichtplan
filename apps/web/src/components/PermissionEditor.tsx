@@ -2,6 +2,7 @@
 
 import { Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { usePermissionText } from '@/lib/permissionText';
 import {
   DEPARTMENT_PERMISSION_KEYS,
   DEPARTMENT_PERMISSION_PRESETS,
@@ -45,6 +46,7 @@ export function PermissionEditor({
   disabled?: boolean;
 }) {
   const t = useTranslations('web.department.permissions');
+  const perm = usePermissionText();
   const current = normalizePermissions(value);
   const preset = permissionPresetOf(current);
   const set = (next: DepartmentPermission[]) => {
@@ -57,7 +59,7 @@ export function PermissionEditor({
   const presets: { key: DepartmentPermissionPreset | null; label: string; permissions: readonly DepartmentPermission[] }[] = [
     { key: null, label: t('presetNone'), permissions: [] },
     ...(Object.entries(DEPARTMENT_PERMISSION_PRESETS) as [DepartmentPermissionPreset, (typeof DEPARTMENT_PERMISSION_PRESETS)[DepartmentPermissionPreset]][]).map(
-      ([key, p]) => ({ key, label: p.label, permissions: p.permissions })
+      ([key, p]) => ({ key, label: perm.presetLabel(key), permissions: p.permissions })
     ),
   ];
 
@@ -77,7 +79,7 @@ export function PermissionEditor({
                 role="radio"
                 aria-checked={active}
                 disabled={disabled || !canGrant(grantable, normalized)}
-                title={p.key ? DEPARTMENT_PERMISSION_PRESETS[p.key].description : 'Mitglied ohne besondere Rechte'}
+                title={p.key ? perm.presetDescription(p.key) : t('memberNoRights')}
                 onClick={() => set(normalized)}
                 className={cn(
                   'h-8 rounded-full border px-3 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-40',
@@ -94,7 +96,7 @@ export function PermissionEditor({
             </span>
           )}
         </div>
-        {preset && <p className="mt-2 text-xs text-fg-muted">{DEPARTMENT_PERMISSION_PRESETS[preset].description}</p>}
+        {preset && <p className="mt-2 text-xs text-fg-muted">{perm.presetDescription(preset)}</p>}
       </div>
 
       {GROUPS.map((group) => (
@@ -123,8 +125,8 @@ export function PermissionEditor({
                       className="mt-0.5 size-4 shrink-0 rounded border-line"
                     />
                     <span className="min-w-0">
-                      <span className="block text-sm font-semibold text-fg">{DEPARTMENT_PERMISSIONS[p].label}</span>
-                      <span className="block text-xs leading-snug text-fg-subtle">{DEPARTMENT_PERMISSIONS[p].description}</span>
+                      <span className="block text-sm font-semibold text-fg">{perm.label(p)}</span>
+                      <span className="block text-xs leading-snug text-fg-subtle">{perm.description(p)}</span>
                     </span>
                   </label>
                 </li>

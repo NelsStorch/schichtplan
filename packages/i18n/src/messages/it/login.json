@@ -339,5 +339,47 @@
     "roleLeader": "Responsabile",
     "roleNotLeader": "nessuna funzione di direzione",
     "wrongRoleHint": "Se un ruolo è errato, l'amministrazione membri in {authProviderShort} può correggerlo. Successivamente, esegui il logout e riaccedi. {rulesLink}"
+  },
+  "meta": {
+    "abteilung": {
+      "title": "{org, select, other {Scegli: {unit}}}",
+      "description": "{org, select, verein {Scegli la tua associazione per {name}.} other {Scegli {unit} e unità per {name}.}}",
+      "subtitle": "{org, select, verein {Scegli la tua associazione.} other {Scegli {unit} e unità.}}"
+    },
+    "abteilung_erstellen": {
+      "title": "{org, select, other {Crea: {unit}}}",
+      "description": "{org, select, verein {Crea un piano turni proprio con sottodominio per la tua associazione.} other {Crea un piano turni proprio con sottodominio per il tuo gruppo {orgName} ({unit}).}}",
+      "subtitle": "{org, select, other {Il tuo piano turni ({unit}). Gratuito.}}"
+    },
+    "konto_verknuepfen": {
+      "title": "Collega l’account",
+      "description": "Collega {authShort} al tuo account esistente.",
+      "subtitle": "Collega {authShort} al tuo account."
+    },
+    "verify_email": {
+      "title": "Conferma l’e-mail",
+      "description": "Conferma il tuo indirizzo e-mail per attivare il tuo account {name}.",
+      "subtitle": "Ancora un clic e il tuo account è attivo."
+    },
+    "passwort_vergessen": {
+      "title": "Password dimenticata",
+      "description": "Richiedi un link per reimpostare la password.",
+      "subtitle": "Richiedi un link di reimpostazione."
+    },
+    "passwort_zuruecksetzen": {
+      "title": "Nuova password",
+      "description": "Imposta una nuova password per il tuo account.",
+      "subtitle": "Imposta una nuova password per il tuo account."
+    },
+    "zwei_faktor": {
+      "title": "Codice a due fattori",
+      "description": "Conferma l’accesso con il codice della tua app di autenticazione.",
+      "subtitle": "Conferma l’accesso con il codice."
+    },
+    "rootTitle": "Accesso · {name}",
+    "rootDescription": "Accesso centrale per responsabili e volontari di {name}",
+    "rootImageTitle": "Accedi a {name}",
+    "ogTitle": "Accedi",
+    "ogSubtitle": "Un accesso per tutte le {units}."
   }
 }

@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ArrowUpRight, Building2, Check, Copy, Share2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type {
   DepartmentCreationEligibilityDto,
   DepartmentCreationOwnGroupDto,
@@ -40,9 +40,9 @@ const suggestedName = (e: DepartmentCreationEligibilityDto, org: OrganizationCon
 const slugFromName = (name: string, org: OrganizationConfig) =>
   slugify(name.replace(new RegExp(`^${org.orgName}\\s+`, 'i'), ''));
 
-/** «A», «A und B», «A, B und C» */
-const joinNames = (names: string[]) =>
-  names.length <= 1 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} und ${names[names.length - 1]}`;
+/** «A», «A und B», «A, B und C» in der jeweiligen Sprache */
+const joinNames = (names: string[], locale: string) =>
+  new Intl.ListFormat(locale, { type: 'conjunction' }).format(names);
 
 /** Eigene Gruppen (Scharen …) mit Status: Link zum Schichtplan oder «noch kein Schichtplan» */
 function OwnGroups({ groups, org }: { groups: DepartmentCreationOwnGroupDto[]; org: OrganizationConfig }) {
@@ -131,6 +131,7 @@ function MyRoles({ roles, org }: { roles: DepartmentCreationRoleDto[]; org: Orga
  */
 function CreateDepartment() {
   const t = useTranslations('login.createDepartment');
+  const intlLocale = useLocale();
   const searchParams = useSearchParams();
   const returnTo = cleanReturnTo(searchParams.get('return_to'));
 
@@ -195,7 +196,7 @@ function CreateDepartment() {
   const withPlan = ownGroups.filter((g) => g.existingDepartment !== null);
   const notLeader = eligibility?.reason === 'NOT_LEADER' && org.slug !== 'verein';
   const noPlanYet = notLeader && withoutPlan.length > 0;
-  const missingNames = joinNames(withoutPlan.map((g) => withOrgName(g.name, org)));
+  const missingNames = joinNames(withoutPlan.map((g) => withOrgName(g.name, org)), intlLocale);
 
   const knownGroupName = eligibility?.ortsgruppeName ?? (withoutPlan.length === 1 ? withoutPlan[0].name : null);
   const groupLabel = knownGroupName ? withOrgName(knownGroupName, org) : t('ourUnit', { unitTerm: org.unitTerm });

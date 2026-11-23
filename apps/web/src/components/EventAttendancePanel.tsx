@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   CheckCircle2,
   ClipboardCheck,
@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import {
   ATTENDANCE_MODES,
-  ATTENDANCE_STATUSES,
   type AttendanceStatus,
   type ShiftDto,
   type ShiftSignupDto,
@@ -34,7 +33,6 @@ import { CateringOverviewDialog } from './ok/CateringOverviewDialog';
 type AttendanceFields = Pick<ShiftSignupDto, 'attendance' | 'attendanceAt' | 'attendanceSource' | 'attendanceByName'>;
 type StatusFilter = 'ALL' | 'OPEN' | AttendanceStatus;
 
-const statusLabel = (status: AttendanceStatus | null | undefined) => (status ? ATTENDANCE_STATUSES[status] : 'Offen');
 
 /** «per QR-Code, 18:02» bzw. «Nels / Inferno (OK), 18:02» */
 function attendanceNote(a: AttendanceFields): string | null {
@@ -65,6 +63,9 @@ export function EventAttendancePanel({
 }) {
   const t = useTranslations('web.ok.attendance');
   const org = useOrganization();
+  const intlLocale = useLocale();
+  const statusLabel = (status: AttendanceStatus | null | undefined) =>
+    status ? t(`statusLong.${status}`) : t('statusOpen');
   const toast = useToast();
   const confirm = useConfirm();
   const mode = event.attendanceMode ?? 'OFF';
@@ -234,7 +235,7 @@ export function EventAttendancePanel({
     );
 
   const downloadCsv = () => {
-    const header = ['Tag', 'Zeit', 'Schicht', 'Arbeit', 'Name', 'Anwesenheit', 'Erfasst'];
+    const header = [t('x.colDay'), t('x.colTime'), t('x.colShift'), t('x.colTask'), t('x.colName'), t('x.colAttendance'), t('x.colRecorded')];
     const lines = [header, ...exportRows().map((r) => [r.date, r.time, r.shift, r.task, r.name, r.status, r.note])]
       .map((row) => row.map(csvCell).join(';'))
       .join('\r\n');
@@ -243,7 +244,7 @@ export function EventAttendancePanel({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `anwesenheit-${event.slug}.csv`;
+    link.download = `${t('x.csvFilePrefix')}-${event.slug}.csv`;
     link.click();
     URL.revokeObjectURL(url);
     trackUi('UI_CSV', 'ATTENDANCE');
@@ -252,7 +253,7 @@ export function EventAttendancePanel({
   const printList = () => {
     const win = window.open('', '_blank');
     if (!win) {
-      toast({ title: 'Druckansicht blockiert', description: 'Bitte Pop-ups für diese Seite erlauben.', tone: 'error' });
+      toast({ title: t('x.printBlocked'), description: t('x.printBlockedDesc'), tone: 'error' });
       return;
     }
     const body = shifts
@@ -260,7 +261,7 @@ export function EventAttendancePanel({
         (s) => `
         <h2>${escapeHtml(s.title || fmtTimeRange(s.startTime, s.endTime))} <small>${escapeHtml(fmtWeekday(s.startTime))}, ${fmtTimeRange(s.startTime, s.endTime)}</small></h2>
         <table>
-          <thead><tr><th scope="col" class="box">Da</th><th scope="col">Name</th><th scope="col">Arbeit</th><th scope="col">Status</th><th scope="col">Erfasst</th></tr></thead>
+          <thead><tr><th scope="col" class="box">${escapeHtml(t('x.colPresent'))}</th><th scope="col">${escapeHtml(t('x.colName'))}</th><th scope="col">${escapeHtml(t('x.colTask'))}</th><th scope="col">${escapeHtml(t('x.colStatus'))}</th><th scope="col">${escapeHtml(t('x.colRecorded'))}</th></tr></thead>
           <tbody>${s.signups
             .map(
               (su) => `<tr>
@@ -275,8 +276,8 @@ export function EventAttendancePanel({
         </table>`
       )
       .join('');
-    win.document.write(`<!doctype html><html lang="de"><head><meta charset="utf-8">
-      <title>Anwesenheit ${escapeHtml(event.title)}</title>
+    win.document.write(`<!doctype html><html lang="${escapeHtml(intlLocale)}"><head><meta charset="utf-8">
+      <title>${escapeHtml(t('x.printTitle', { event: event.title }))}</title>
       <style>
         body { font-family: system-ui, sans-serif; margin: 24px; color: #111; }
         h1 { font-size: 20px; margin: 0 0 16px; }
@@ -287,7 +288,7 @@ export function EventAttendancePanel({
         th { background: #eee; }
         .box { width: 32px; text-align: center; }
       </style></head><body>
-      <h1>Anwesenheit: ${escapeHtml(event.title)}</h1>${body}
+      <h1>${escapeHtml(t('x.printTitle', { event: event.title }))}</h1>${body}
       </body></html>`);
     win.document.close();
     win.focus();
@@ -300,8 +301,8 @@ export function EventAttendancePanel({
       <div>
         <EmptyState
           icon={<ClipboardCheck />}
-          title="Anwesenheitsliste ist ausgeschaltet"
-          description="Schalte sie unter «Einstellungen» ein. Dort wählst du auch, ob nur das OK abhakt oder ob sich die Helfenden zusätzlich per QR-Code selbst einchecken."
+          title={t('x.offTitle')}
+          description={t('x.offDesc')}
           action={
             canEditSettings ? (
               <Button size="sm" onClick={onOpenSettings}>
@@ -365,7 +366,7 @@ export function EventAttendancePanel({
           <img
             key={`${event.checkinToken}-${qrVersion}`}
             src={`/api/events/${event.slug}/checkin-qr?format=svg&v=${encodeURIComponent(event.checkinToken.slice(0, 6))}`}
-            alt="QR-Code für den Selbst-Check-in"
+            alt={t('x.qrAlt')}
             className="size-40 shrink-0 self-center rounded-tile border border-line bg-white p-2"
           />
           <div className="min-w-0 space-y-3">
@@ -387,7 +388,7 @@ export function EventAttendancePanel({
                 <Printer /> {t('qrPrintBtn')} (PDF)
               </a>
               <Button size="sm" variant="secondary" onClick={copyLink} disabled={!checkinLink}>
-                <Copy className="size-4" /> Link kopieren
+                <Copy className="size-4" /> {t('x.copyLink')}
               </Button>
               {canEditSettings && (
                 <Button size="sm" variant="ghost" loading={rotating} onClick={rotateCode}>
@@ -396,8 +397,7 @@ export function EventAttendancePanel({
               )}
             </div>
             <p className="text-[11px] text-fg-subtle">
-              Erstellt mit dem {org.name}-QR-Generator. Der Link enthält einen geheimen Code: Wer ihn kennt,
-              kann sich von überall einchecken. Bei Bedarf erneuern.
+              {t('x.qrNote', { name: org.name })}
             </p>
           </div>
         </Card>
@@ -415,7 +415,7 @@ export function EventAttendancePanel({
           <div className="space-y-3 rounded-card border border-line bg-surface p-4">
             <div className="flex flex-wrap items-center gap-1.5">
               <Chip selected={day === 'ALL'} onClick={() => setDay('ALL')}>
-                Alle Tage
+                {t('x.allDays')}
               </Chip>
               {days.map((d) => (
                 <Chip key={d.key} selected={day === d.key} onClick={() => setDay(d.key)}>
@@ -427,7 +427,7 @@ export function EventAttendancePanel({
               <div className="flex flex-wrap items-center gap-1.5">
                 {(
                   [
-                    ['ALL', `Alle (${counts.total})`],
+                    ['ALL', `${t('chips.all')} (${counts.total})`],
                     ['OPEN', `${t('chips.open')} (${counts.OPEN})`],
                     ['PRESENT', `${t('chips.present')} (${counts.PRESENT})`],
                     ['EXCUSED', `${t('chips.excused')} (${counts.EXCUSED})`],
@@ -450,7 +450,7 @@ export function EventAttendancePanel({
                 {search && (
                   <button
                     type="button"
-                    aria-label="Suche leeren"
+                    aria-label={t('x.clearSearch')}
                     onClick={() => setSearch('')}
                     className="absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-subtle hover:text-fg"
                   >
@@ -487,8 +487,8 @@ export function EventAttendancePanel({
       )}
 
       {mode === 'OK_AND_QR' && !event.checkinToken && (
-        <Callout tone="warning" title="Kein QR-Code vorhanden">
-          Speichere die Einstellungen einmal neu, damit ein Check-in-Code erstellt wird.
+        <Callout tone="warning" title={t('x.noQrTitle')}>
+          {t('x.noQrText')}
         </Callout>
       )}
 
@@ -538,7 +538,7 @@ function ShiftAttendanceCard({
             {shift.title}{' '}
             {running && (
               <Badge tone="accent" size="sm">
-                läuft
+                {t('x.running')}
               </Badge>
             )}
           </p>
@@ -559,7 +559,7 @@ function ShiftAttendanceCard({
             </Button>
           )}
           <Badge tone={present === allSignups.length ? 'success' : 'neutral'}>
-            {present} / {allSignups.length} anwesend
+            {t('x.presentOf', { present, total: allSignups.length })}
           </Badge>
         </div>
       </div>
@@ -571,10 +571,10 @@ function ShiftAttendanceCard({
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-fg">{su.displayName}</p>
                 <p className="text-xs text-fg-muted">
-                  {[su.taskTitle, note].filter(Boolean).join(' · ') || 'Offen'}
+                  {[su.taskTitle, note].filter(Boolean).join(' · ') || t('statusOpen')}
                 </p>
               </div>
-              <fieldset className="flex shrink-0 items-center gap-1.5 border-0 p-0 m-0" aria-label={`Anwesenheit ${su.displayName}`}>
+              <fieldset className="flex shrink-0 items-center gap-1.5 border-0 p-0 m-0" aria-label={t('x.attendanceOf', { name: su.displayName })}>
                 {statusButtons.map(({ status, short, icon: Icon, active }) => {
                   const selected = su.attendance === status;
                   return (
@@ -583,7 +583,7 @@ function ShiftAttendanceCard({
                       type="button"
                       disabled={saving === su.id}
                       aria-pressed={selected}
-                      title={selected ? `${ATTENDANCE_STATUSES[status]} (nochmals klicken = offen)` : ATTENDANCE_STATUSES[status]}
+                      title={selected ? t('x.statusSelected', { status: t(`statusLong.${status}`) }) : t(`statusLong.${status}`)}
                       onClick={() => onSet(su, selected ? null : status)}
                       className={cn(
                         'inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition disabled:opacity-50',

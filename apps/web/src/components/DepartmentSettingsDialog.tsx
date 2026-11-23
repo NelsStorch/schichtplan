@@ -82,7 +82,7 @@ export function DepartmentSettingsDialog({
       title={t('title')}
       description={t('desc')}
     >
-      <div role="tablist" aria-label="Bereiche" className="-mt-1 mb-6 flex gap-1 rounded-full bg-surface-2 p-1 overflow-x-auto">
+      <div role="tablist" aria-label={t('x.sectionsAria')} className="-mt-1 mb-6 flex gap-1 rounded-full bg-surface-2 p-1 overflow-x-auto">
         {tabs.map((tabItem) => (
           <button
             key={tabItem.key}

@@ -13,7 +13,9 @@ import { dayKeyToIso, fmtDayMonth, fmtShortWeekday, groupByBusinessDay, fmtTimeR
 
 const MAX_BODY = 5000;
 
-const stampFmt = zurichDateTimeFormat({
+/** Beim Aufruf holen, damit die aktive Sprache gilt */
+const stampFmt = () =>
+  zurichDateTimeFormat({
   weekday: 'short',
   day: '2-digit',
   month: '2-digit',
@@ -301,7 +303,7 @@ export default function MessagesPage() {
                       )}
                     </div>
                     <p className="mt-0.5 text-2xs text-fg-muted">
-                      {stampFmt.format(new Date(m.createdAt))} · {m.sentByName} · {m.targetLabel} ({m.recipientCount})
+                      {stampFmt().format(new Date(m.createdAt))} · {m.sentByName} · {m.targetLabel} ({m.recipientCount})
                     </p>
                     <p className={cn('mt-2 whitespace-pre-line text-xs text-fg-muted', !isExpanded && 'line-clamp-3')}>
                       {m.body}

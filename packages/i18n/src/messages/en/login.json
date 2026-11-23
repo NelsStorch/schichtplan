@@ -339,5 +339,47 @@
     "roleLeader": "Leader",
     "roleNotLeader": "not a leader",
     "wrongRoleHint": "If a role is incorrect, the membership administration in {authProviderShort} can change it. Afterwards, log out and back in once. {rulesLink}"
+  },
+  "meta": {
+    "abteilung": {
+      "title": "{org, select, other {Choose {unit}}}",
+      "description": "{org, select, verein {Choose your club for {name}.} other {Choose your {unit} and age groups for {name}.}}",
+      "subtitle": "{org, select, verein {Choose your club.} other {Choose your {unit} and age groups.}}"
+    },
+    "abteilung_erstellen": {
+      "title": "{org, select, other {Create {unit}}}",
+      "description": "{org, select, verein {Create your own shift plan with a subdomain for your club.} other {Create your own shift plan with a subdomain for your {orgName} {unit}.}}",
+      "subtitle": "{org, select, other {Your own shift plan for your {unit}. Free.}}"
+    },
+    "konto_verknuepfen": {
+      "title": "Link account",
+      "description": "Connect {authShort} to your existing account.",
+      "subtitle": "Connect {authShort} to your account."
+    },
+    "verify_email": {
+      "title": "Confirm email",
+      "description": "Confirm your email address to activate your {name} account.",
+      "subtitle": "One more click and your account is active."
+    },
+    "passwort_vergessen": {
+      "title": "Forgot password",
+      "description": "Request a link to reset your password.",
+      "subtitle": "Request a reset link."
+    },
+    "passwort_zuruecksetzen": {
+      "title": "New password",
+      "description": "Set a new password for your account.",
+      "subtitle": "Set a new password for your account."
+    },
+    "zwei_faktor": {
+      "title": "Two-factor code",
+      "description": "Confirm sign-in with the code from your authenticator app.",
+      "subtitle": "Confirm sign-in with the code."
+    },
+    "rootTitle": "Log in · {name}",
+    "rootDescription": "Central login for leaders and volunteers of {name}",
+    "rootImageTitle": "Log in to {name}",
+    "ogTitle": "Log in",
+    "ogSubtitle": "One login for all {units}."
   }
 }

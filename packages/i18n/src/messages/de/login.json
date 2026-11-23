@@ -339,5 +339,47 @@
     "roleLeader": "Leitung",
     "roleNotLeader": "keine Leitung",
     "wrongRoleHint": "Stimmt eine Rolle nicht, ändert sie die Mitgliederverwaltung in {authProviderShort}. Danach einmal ab- und wieder anmelden. {rulesLink}"
+  },
+  "meta": {
+    "abteilung": {
+      "title": "{org, select, verein {Verein wählen} other {{unit} wählen}}",
+      "description": "{org, select, verein {Wähle deinen Verein für den {name}.} other {Wähle deine {unit} und Stufen für den {name}.}}",
+      "subtitle": "{org, select, verein {Deinen Verein auswählen.} other {Deine {unit} und Stufen auswählen.}}"
+    },
+    "abteilung_erstellen": {
+      "title": "{org, select, other {{unit} anlegen}}",
+      "description": "{org, select, verein {Lege für deinen Verein einen eigenen Schichtplan mit Subdomain an.} other {Lege für deine {orgName}-{unit} einen eigenen Schichtplan mit Subdomain an.}}",
+      "subtitle": "{org, select, verein {Eigener Schichtplan für deinen Verein. Kostenlos.} other {Eigener Schichtplan für deine {unit}. Kostenlos.}}"
+    },
+    "konto_verknuepfen": {
+      "title": "Konto verknüpfen",
+      "description": "{authShort} mit deinem bestehenden Konto verbinden.",
+      "subtitle": "{authShort} mit deinem Konto verbinden."
+    },
+    "verify_email": {
+      "title": "E-Mail bestätigen",
+      "description": "Bestätige deine E-Mail-Adresse, um dein Konto im {name} zu aktivieren.",
+      "subtitle": "Noch ein Klick, dann ist dein Konto aktiv."
+    },
+    "passwort_vergessen": {
+      "title": "Passwort vergessen",
+      "description": "Link zum Zurücksetzen deines Passworts anfordern.",
+      "subtitle": "Link zum Zurücksetzen anfordern."
+    },
+    "passwort_zuruecksetzen": {
+      "title": "Neues Passwort",
+      "description": "Ein neues Passwort für dein Konto setzen.",
+      "subtitle": "Ein neues Passwort für dein Konto setzen."
+    },
+    "zwei_faktor": {
+      "title": "Zwei-Faktor-Code",
+      "description": "Anmeldung mit dem Code aus deiner Authenticator-App bestätigen.",
+      "subtitle": "Anmeldung mit dem Code bestätigen."
+    },
+    "rootTitle": "Anmelden · {name}",
+    "rootDescription": "Zentrales Login für Leiter*innen und Helfer*innen von {name}",
+    "rootImageTitle": "Anmelden beim {name}",
+    "ogTitle": "Anmelden",
+    "ogSubtitle": "Ein Login für alle {units}."
   }
 }

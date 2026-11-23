@@ -130,7 +130,7 @@ export function NeededShifts({
                     </span>
                   ) : actions.hasConflict?.(shift) ? (
                     <span
-                      title="Zeitkollision mit einer deiner Schichten"
+                      title={t('x.collision')}
                       className="flex size-9 items-center justify-center rounded-full bg-warning/15 text-warning-ink border border-warning/30"
                     >
                       <AlertCircle className="size-4 text-warning" />
@@ -270,7 +270,7 @@ export function ShiftRows({ shifts, actions }: { shifts: ShiftDto[]; actions: Sh
                 </div>
 
                 {showTasks && (
-                  <ul className="mt-1.5 flex flex-wrap gap-1.5" aria-label="Arbeiten">
+                  <ul className="mt-1.5 flex flex-wrap gap-1.5" aria-label={t('x.tasksAria')}>
                     {tasks.map((taskItem) => {
                       const full = taskItem.filled >= taskItem.requiredSlots;
                       return (
@@ -294,7 +294,7 @@ export function ShiftRows({ shifts, actions }: { shifts: ShiftDto[]; actions: Sh
                 <div
                   className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-surface-3"
                   role="img"
-                  aria-label={`${stats.filled} von ${stats.total} Plätzen besetzt`}
+                  aria-label={t('x.filledAria', { filled: stats.filled, total: stats.total })}
                 >
                   <div
                     className={cn('h-full rounded-full transition-[width] duration-500', style.bar)}
@@ -325,7 +325,7 @@ export function ShiftRows({ shifts, actions }: { shifts: ShiftDto[]; actions: Sh
                 {!stats.over && !mine && stats.free > 0 && actions.canSignup && (
                   actions.hasConflict?.(shift) ? (
                     <span
-                      title="Zeitkollision mit einer deiner Schichten"
+                      title={t('x.collision')}
                       className="inline-flex items-center gap-1 rounded-full border border-warning/30 bg-warning/15 px-2.5 py-1 text-xs font-semibold text-warning-ink"
                     >
                       <AlertCircle className="size-3.5 text-warning" />

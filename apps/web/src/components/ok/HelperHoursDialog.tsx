@@ -23,6 +23,7 @@ import {
   Input,
   cn,
   trackUi,
+  useOrganization,
 } from '@schichtplan/ui';
 import {
   DEFAULT_HELPER_STATS_CONFIG,
@@ -46,6 +47,8 @@ export function HelperHoursDialog({
   onClose: () => void;
 }) {
   const t = useTranslations('web.ok.helpers.hours');
+  const tCsv = useTranslations('web.csv');
+  const org = useOrganization();
   const [config, setConfig] = useState<HelperStatsConfig>(DEFAULT_HELPER_STATS_CONFIG);
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<'helpers' | 'stufen'>('helpers');
@@ -59,8 +62,8 @@ export function HelperHoursDialog({
 
   // Stufen-Rangliste berechnen
   const stufenStats = useMemo(
-    () => computeStufenStats(helpers, summary),
-    [helpers, summary]
+    () => computeStufenStats(helpers, summary, tCsv('noLevel')),
+    [helpers, summary, tCsv]
   );
 
   const filteredHelpers = useMemo(() => {
@@ -89,10 +92,10 @@ export function HelperHoursDialog({
 
   const handleExport = () => {
     if (viewMode === 'stufen') {
-      exportStufenRankingCsv(event.slug, stufenStats, summary);
+      exportStufenRankingCsv(event.slug, stufenStats, summary, tCsv);
       trackUi('UI_CSV', 'HOURS');
     } else {
-      exportHelperHoursCsv(event.slug, helpers, summary);
+      exportHelperHoursCsv(event.slug, helpers, summary, tCsv, { nickname: org.nicknameTerm, unit: org.unitTerm });
       trackUi('UI_CSV', 'HOURS');
     }
   };
@@ -114,7 +117,7 @@ export function HelperHoursDialog({
             rel="noreferrer"
             className="inline-flex items-center gap-1 font-semibold text-accent-ink hover:underline"
           >
-            <LifeBuoy className="size-3.5 inline" /> Anleitung im Hilfe-Center
+            <LifeBuoy className="size-3.5 inline" /> {t('x.helpLink')}
           </a>
         </span>
       }
@@ -123,13 +126,13 @@ export function HelperHoursDialog({
         <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-xs text-fg-muted">
             <span className="font-semibold text-fg">
-              {summary.totalHours} Std.
+              {t('x.hours', { hours: summary.totalHours })}
             </span>{' '}
-            über alle {summary.activeHelpers} aktiven Helfenden in {stufenStats.length} Stufen ({summary.totalShifts} Einsätze)
+            {t('x.footerSummary', { helpers: summary.activeHelpers, levels: stufenStats.length, shifts: summary.totalShifts })}
           </div>
           <div className="flex gap-2 justify-end">
             <Button variant="ghost" onClick={onClose}>
-              Schliessen
+              {t('x.close')}
             </Button>
             <Button onClick={handleExport} variant="secondary">
               <FileSpreadsheet className="size-4" />
@@ -148,10 +151,10 @@ export function HelperHoursDialog({
               {t('summaryTotalHours')}
             </div>
             <div className="text-2xl font-bold text-fg">
-              {summary.totalHours} <span className="text-sm font-normal text-fg-muted">Std.</span>
+              {summary.totalHours} <span className="text-sm font-normal text-fg-muted">{t('x.hoursUnit')}</span>
             </div>
             <div className="text-[11px] text-fg-subtle truncate">
-              {summary.totalEventHours}h Anlass · {summary.totalSetupHours}h Auf/Abbau
+              {t('x.hoursSplit', { event: summary.totalEventHours, setup: summary.totalSetupHours })}
             </div>
           </div>
 
@@ -164,7 +167,7 @@ export function HelperHoursDialog({
               {summary.activeHelpers}
             </div>
             <div className="text-[11px] text-fg-subtle truncate">
-              {t('summaryAvgHours')}: {summary.avgHoursPerHelper} Std.
+              {t('summaryAvgHours')}: {t('x.hours', { hours: summary.avgHoursPerHelper })}
             </div>
           </div>
 
@@ -177,7 +180,7 @@ export function HelperHoursDialog({
               {summary.totalShifts}
             </div>
             <div className="text-[11px] text-fg-subtle truncate">
-              Schicht-Eintragungen
+              {t('x.signups')}
             </div>
           </div>
 
@@ -190,7 +193,7 @@ export function HelperHoursDialog({
               {stufenStats.length}
             </div>
             <div className="text-[11px] text-fg-subtle truncate">
-              Rangliste berechnet
+              {t('x.rankingCalculated')}
             </div>
           </div>
         </div>
@@ -212,7 +215,7 @@ export function HelperHoursDialog({
                 }
                 className="size-4 rounded border-line text-accent focus:ring-accent"
               />
-              <span>Auf- und Abbau einbeziehen</span>
+              <span>{t('x.includeSetup')}</span>
             </label>
 
             {hasAttendanceTracking && (
@@ -283,8 +286,8 @@ export function HelperHoursDialog({
                     <th scope="col" className="py-2.5 px-3">{t('colName')}</th>
                     <th scope="col" className="py-2.5 px-3">{t('colUnit')} / {t('colStufen')}</th>
                     <th scope="col" className="py-2.5 px-3 text-center">{t('colShifts')}</th>
-                    <th scope="col" className="py-2.5 px-3 text-right">Anlass</th>
-                    <th scope="col" className="py-2.5 px-3 text-right">Auf-/Abbau</th>
+                    <th scope="col" className="py-2.5 px-3 text-right">{t('x.colEvent')}</th>
+                    <th scope="col" className="py-2.5 px-3 text-right">{t('x.colSetup')}</th>
                     <th scope="col" className="py-2.5 px-3 text-right">{t('colHours')}</th>
                   </tr>
                 </thead>
@@ -292,7 +295,7 @@ export function HelperHoursDialog({
                   {filteredHelpers.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="py-8 text-center text-fg-subtle">
-                        Keine Helfenden gefunden.
+                        {t('x.noHelpers')}
                       </td>
                     </tr>
                   ) : (
@@ -310,7 +313,7 @@ export function HelperHoursDialog({
                                 {h.displayName}
                                 {h.isGuest && (
                                   <span className="rounded bg-surface-elevated border border-line px-1.5 py-0.2 text-[9px] text-fg-subtle font-normal">
-                                    Gast
+                                    {t('x.guest')}
                                   </span>
                                 )}
                               </div>
@@ -353,7 +356,7 @@ export function HelperHoursDialog({
                             {h.formattedTime}
                           </div>
                           <div className="text-[10px] text-fg-subtle font-mono">
-                            {h.totalHours} Std.
+                            {t('x.hours', { hours: h.totalHours })}
                           </div>
                         </td>
                       </tr>
@@ -370,7 +373,7 @@ export function HelperHoursDialog({
           <div className="space-y-3">
             {filteredStufen.length === 0 ? (
               <div className="rounded-xl border border-line bg-surface p-8 text-center text-fg-subtle">
-                Keine Stufen mit Helferstunden gefunden.
+                {t('x.noLevels')}
               </div>
             ) : (
               <div className="grid gap-3 max-h-96 overflow-y-auto pr-1">
@@ -424,11 +427,11 @@ export function HelperHoursDialog({
                                 {s.name}
                               </h4>
                               <span className="text-[11px] font-medium text-fg-subtle rounded-full bg-surface-elevated px-2 py-0.5 border border-line">
-                                {s.percentageOfTotal}% aller Stunden
+                                {t('x.pctOfAll', { pct: s.percentageOfTotal })}
                               </span>
                             </div>
                             <p className="text-xs text-fg-muted mt-0.5">
-                              {s.helperCount} {s.helperCount === 1 ? 'Person' : 'Personen'} · {s.shiftCount} {s.shiftCount === 1 ? 'Einsatz' : 'Einsätze'} · Ø {s.avgHoursPerHelper} Std./Person
+                              {t('x.levelSummary', { people: s.helperCount, shifts: s.shiftCount, avg: s.avgHoursPerHelper })}
                             </p>
                           </div>
                         </div>
@@ -437,7 +440,7 @@ export function HelperHoursDialog({
                         <div className="flex items-center gap-3 shrink-0">
                           <div className="text-right">
                             <div className="font-mono text-base font-bold text-fg">
-                              {s.totalHours} <span className="text-xs font-normal text-fg-muted">Std.</span>
+                              {s.totalHours} <span className="text-xs font-normal text-fg-muted">{t('x.hoursUnit')}</span>
                             </div>
                             <div className="font-mono text-[10px] text-fg-subtle">
                               {s.formattedTime}
@@ -449,7 +452,7 @@ export function HelperHoursDialog({
                             size="sm"
                             className="size-8 p-0"
                             onClick={() => setExpandedStufe(isExpanded ? null : s.name)}
-                            aria-label="Helfende anzeigen"
+                            aria-label={t('x.showHelpers')}
                           >
                             {isExpanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
                           </Button>
@@ -477,7 +480,7 @@ export function HelperHoursDialog({
                       {isExpanded && (
                         <div className="mt-3 pt-3 border-t border-line/70">
                           <div className="text-[11px] font-semibold text-fg-muted uppercase tracking-wider mb-2">
-                            Beteiligte Personen ({s.helpers.length}):
+                            {t('x.involved', { count: s.helpers.length })}
                           </div>
                           <div className="flex flex-wrap gap-1.5">
                             {s.helpers.map((h) => (

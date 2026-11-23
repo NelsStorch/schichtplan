@@ -1,6 +1,7 @@
 import { headers } from 'next/headers';
 import { getRootDomain } from '@schichtplan/shared';
 import { trustedHost } from '@schichtplan/ui/og';
+import type { getTranslations } from 'next-intl/server';
 
 export interface DepartmentPreview {
   name: string;
@@ -118,11 +119,22 @@ export function previewTitle(departmentName: string | null | undefined, brandNam
 }
 
 /** «Noch 12 Plätze frei» / «Alle Schichten besetzt» für die Anlass-Vorschau (null: nichts anzeigen) */
-export function openSlotsLabel(openSlots: number | null, full = 'Alle Schichten besetzt'): string | null {
+export function openSlotsLabel(
+  openSlots: number | null,
+  full: 'all' | 'shift' = 'all',
+  t?: MetaT
+): string | null {
   if (openSlots === null) return null;
-  if (openSlots === 0) return full;
+  if (openSlots === 0) {
+    if (t) return t(full === 'shift' ? 'slotsShiftFull' : 'slotsAllFull');
+    return full === 'shift' ? 'Schicht ist besetzt' : 'Alle Schichten besetzt';
+  }
+  if (t) return t('slotsFree', { count: openSlots });
   return openSlots === 1 ? 'Noch 1 Platz frei' : `Noch ${openSlots} Plätze frei`;
 }
+
+/** Übersetzer für Link-Vorschauen (Katalog `web.meta`) */
+export type MetaT = Awaited<ReturnType<typeof getTranslations<'web.meta'>>>;
 
 /**
  * Name der installierten App: «Schichtplan – Jubla Greifensee-Nänikon». Die meisten haben nur eine Abteilung,
