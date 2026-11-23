@@ -6,7 +6,7 @@ import { getOrganizationTypeFromHost, isPageLoadRequest, reportPageLoad } from '
  * erledigt das Traefik, Requests auf /api erreichen Next.js dort gar nicht).
  * Das Login-Portal hat keinen Mandanten, darum ohne x-tenant-slug.
  */
-export function middleware(request: NextRequest, event: NextFetchEvent) {
+export function proxy(request: NextRequest, event: NextFetchEvent) {
   // Seitenaufrufe serverseitig zählen (nur Tagessumme pro Verband/App, siehe pageLoad.ts)
   if (!request.nextUrl.pathname.startsWith('/api/')) {
     if (isPageLoadRequest(request.method, request.nextUrl.pathname, request.headers)) {
