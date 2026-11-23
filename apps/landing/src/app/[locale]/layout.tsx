@@ -3,7 +3,7 @@ import { fontVariables } from '@schichtplan/ui/fonts';
 import { LocaleSettingsProvider } from '@schichtplan/ui/i18n';
 import { getRequestLocale } from '@schichtplan/ui/i18n/server';
 import { NextIntlClientProvider } from 'next-intl';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import {
   FeedbackProvider,
@@ -21,6 +21,7 @@ import { JsonLd } from '@/components/JsonLd';
 import { getOrganization, getOrganizationSlugFromHost } from '@schichtplan/shared';
 import { DEFAULT_LOCALE, type Locale } from '@schichtplan/i18n';
 import { routing } from '@/i18n/routing';
+import { landingVocab } from '@/lib/landingVocab';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -35,7 +36,8 @@ export async function generateMetadata({
   const locale = (routing.locales.includes(rawLocale as Locale) ? rawLocale : DEFAULT_LOCALE) as Locale;
   const { origin, host } = await getRequestOrigin();
   const org = getOrganization(host, locale);
-  const title = `${org.name} · Helferliste & Schichtplan für ${org.targetGroup}`;
+  const t = await getTranslations({ locale, namespace: 'landing.meta' });
+  const title = t('title', landingVocab(org, locale));
   const description = org.metaDescription;
 
   const image = ogImage(
@@ -156,7 +158,7 @@ export default async function RootLayout({
     >
       <head>
         <ThemeScript />
-        <JsonLd origin={origin} org={org} />
+        <JsonLd origin={origin} locale={locale} org={org} />
         <link rel="alternate" type="text/markdown" href="/llms.txt" title="LLM context" />
         <link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Full LLM context" />
       </head>

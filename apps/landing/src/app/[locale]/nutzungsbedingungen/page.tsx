@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { DEFAULT_LOCALE, type Locale } from "@schichtplan/i18n";
 import { setRequestLocale } from "next-intl/server";
@@ -18,7 +18,6 @@ export async function generateMetadata({
   const base = await landingPageMetadata("nutzungsbedingungen", locale);
   return {
     ...base,
-    alternates: { canonical: locale === DEFAULT_LOCALE ? "/nutzungsbedingungen" : `/${locale}/conditions-utilisation` },
     robots: LEGAL_ROBOTS,
   };
 }

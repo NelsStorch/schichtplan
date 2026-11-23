@@ -4,6 +4,7 @@ export {
   LocaleSettingsProvider,
   LocaleSwitcher,
   useAppLocale,
+  useIntlLocale,
   useLocaleSettings,
   useProfileLocaleSync,
   writeLocaleCookie,

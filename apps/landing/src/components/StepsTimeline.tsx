@@ -4,29 +4,34 @@ import { useEffect, useRef, useState } from 'react';
 import { CalendarPlus, Share2, UserCheck } from 'lucide-react';
 import { Reveal } from '@/components/Reveal';
 import type { OrganizationConfig } from '@schichtplan/shared';
+import { useOrganization } from '@schichtplan/ui';
+import { useAppLocale } from '@schichtplan/ui/i18n';
+import { useTranslations } from 'next-intl';
+import { landingVocab } from '@/lib/landingVocab';
 
 /** Die drei Schritte mit einer Linie, die sich beim Scrollen zeichnet (am Handy senkrecht) */
 export function StepsTimeline({ org }: { org?: OrganizationConfig } = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const unitTerm = org?.unitTerm ?? 'Abteilung';
-  const authProvider = org?.slug === 'verein' ? 'Konto' : (org?.authProviderShort ?? 'Cevi.DB');
+  const t = useTranslations('landing.steps');
+  const fallbackOrg = useOrganization();
+  const vocab = landingVocab(org ?? fallbackOrg, useAppLocale());
 
   const steps = [
     {
       icon: CalendarPlus,
-      title: 'Anlass erfassen',
-      text: 'Das OK legt Schichten an: wann, was zu tun ist und wie viele Leute es braucht. Mit einer Vorlage vom Vorjahr geht das in Minuten.',
+      title: t('createTitle'),
+      text: t('createText'),
     },
     {
       icon: Share2,
-      title: 'Link teilen',
-      text: `Den Link per WhatsApp, Mail oder Flyer verschicken. Ihr bestimmt, wer sich eintragen darf: alle, nur eure ${unitTerm} oder einzelne Stufen.`,
+      title: t('shareTitle'),
+      text: t('shareText', vocab),
     },
     {
       icon: UserCheck,
-      title: 'Alle tragen sich ein',
-      text: `Helfer*innen wählen ihre Schicht selbst, auch Eltern und Ehemalige ohne ${authProvider}. Das OK sieht sofort, wo noch Lücken sind.`,
+      title: t('signupTitle'),
+      text: t('signupText', vocab),
     },
   ];
 
@@ -86,7 +91,7 @@ export function StepsTimeline({ org }: { org?: OrganizationConfig } = {}) {
                 <span className="flex size-10 items-center justify-center rounded-full bg-accent/12 text-accent-ink">
                   <step.icon className="size-5" />
                 </span>
-                <span className="font-mono text-xs font-bold text-fg-subtle">Schritt {index + 1}</span>
+                <span className="font-mono text-xs font-bold text-fg-subtle">{t('step', { number: index + 1 })}</span>
               </div>
               <h3 className="mt-4 font-display text-xl font-bold text-fg">{step.title}</h3>
               <p className="mt-2 text-sm text-fg-muted leading-relaxed">{step.text}</p>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { DEFAULT_LOCALE, type Locale } from "@schichtplan/i18n";
 import { setRequestLocale } from "next-intl/server";
@@ -19,7 +19,6 @@ export async function generateMetadata({
   const base = await landingPageMetadata("impressum", locale);
   return {
     ...base,
-    alternates: { canonical: locale === DEFAULT_LOCALE ? "/impressum" : `/${locale}/mentions-legales` },
     robots: LEGAL_ROBOTS,
   };
 }

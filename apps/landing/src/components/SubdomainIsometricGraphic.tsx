@@ -1,5 +1,7 @@
 import { Lock, Calendar, Users } from 'lucide-react';
-import type { OrganizationConfig } from '@schichtplan/shared';
+import { useLocale, useTranslations } from 'next-intl';
+import { getOrganization, type OrganizationConfig } from '@schichtplan/shared';
+import { landingVocab } from '@/lib/landingVocab';
 import { BrandLogo } from './BrandLogo';
 
 export function SubdomainIsometricGraphic({
@@ -26,7 +28,9 @@ export function SubdomainIsometricGraphic({
       : org?.slug === 'verein'
       ? 'Turnverein Oberglatt'
       : 'Cevi Illnau-Effretikon';
-  const unitTerm = org?.unitTerm ?? 'Abteilung';
+  const locale = useLocale();
+  const t = useTranslations('landing.graphics');
+  const vocab = landingVocab(org ?? getOrganization(null, locale), locale);
   const logoUrl = org?.logoUrl ?? '/images/cevi-logo.svg';
 
   return (
@@ -56,28 +60,28 @@ export function SubdomainIsometricGraphic({
               <BrandLogo logoUrl={logoUrl} className="size-6 shrink-0" />
               <div>
                 <div className="font-display text-xs font-bold text-fg">{name}</div>
-                <div className="text-[10px] text-fg-subtle">Schichtplanung der {unitTerm}</div>
+                <div className="text-[10px] text-fg-subtle">{t('unitPlanning', vocab)}</div>
               </div>
             </div>
             <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[9px] font-bold text-accent-ink border border-accent/20">
-              Aktiv
+              {t('active')}
             </span>
           </div>
 
           {/* Mini Event Preview Cards */}
           <div className="grid grid-cols-2 gap-2 text-2xs">
             <div className="rounded-lg border border-line bg-surface-2/60 p-2">
-              <div className="font-semibold text-fg truncate">Chilbi 2026</div>
+              <div className="font-semibold text-fg truncate">{t('event1', vocab)}</div>
               <div className="text-[10px] text-fg-subtle mt-0.5 flex items-center gap-1">
                 <Calendar className="size-2.5" />
-                <span>28 Schichten</span>
+                <span>{t('shiftCount', { count: 28 })}</span>
               </div>
             </div>
             <div className="rounded-lg border border-line bg-surface-2/60 p-2">
-              <div className="font-semibold text-fg truncate">Sommerlager</div>
+              <div className="font-semibold text-fg truncate">{t('summerCamp')}</div>
               <div className="text-[10px] text-fg-subtle mt-0.5 flex items-center gap-1">
                 <Users className="size-2.5" />
-                <span>Küche &amp; Aufbau</span>
+                <span>{t('kitchenSetup')}</span>
               </div>
             </div>
           </div>

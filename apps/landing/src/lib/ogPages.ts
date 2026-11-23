@@ -1,6 +1,7 @@
 import { getOrganization } from '@schichtplan/shared';
 import { type OgSubpage, getRequestOrigin, ogSubpageMetadata } from '@schichtplan/ui/og';
 import type { Locale } from '@schichtplan/i18n';
+import { isInternalPathname, localeAlternates, localizedPath } from '@/i18n/routing';
 
 type Org = ReturnType<typeof getOrganization>;
 
@@ -156,8 +157,12 @@ export function landingPage(key: string | null | undefined, org: Org, locale?: L
 
 /** Metadaten samt eigenem Vorschaubild für eine Unterseite der Landingpage */
 export async function landingPageMetadata(key: LandingPageKey, locale: Locale = 'de') {
-  const { host } = await getRequestOrigin();
+  const { origin, host } = await getRequestOrigin();
   const org = getOrganization(host, locale);
   const page = landingPage(key, org, locale) ?? LANDING_PAGES[key](org, 'de');
-  return ogSubpageMetadata(key, `/${key}`, page, locale);
+  const internal = `/${key}`;
+  if (!isInternalPathname(internal)) return ogSubpageMetadata(key, internal, page, locale);
+  // Pfad in der Sprache der Seite (/fr/protection-des-donnees), dazu kanonische URL und hreflang aller Sprachen
+  const base = await ogSubpageMetadata(key, localizedPath(locale, internal), page, locale);
+  return { ...base, alternates: localeAlternates(origin, locale, internal) };
 }

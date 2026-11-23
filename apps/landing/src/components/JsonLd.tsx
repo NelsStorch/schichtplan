@@ -1,21 +1,27 @@
+import { useTranslations } from 'next-intl';
+import { INTL_LOCALES, type Locale } from '@schichtplan/i18n';
 import type { OrganizationConfig } from '@schichtplan/shared';
+import { localizedPath } from '@/i18n/routing';
 
 interface JsonLdProps {
   origin: string;
-  org?: OrganizationConfig;
+  locale: Locale;
+  org: OrganizationConfig;
 }
 
 /**
  * Strukturierte Daten als ein verknüpfter Graph (Organization → WebSite → WebApplication).
  * Bewusst ohne HowTo (keine Rich Results mehr seit 2023), ohne FAQPage.
  */
-export function JsonLd({ origin, org }: JsonLdProps) {
-  const home = `${origin}/`;
+export function JsonLd({ origin, locale, org }: JsonLdProps) {
+  const t = useTranslations('landing.structuredData');
+  const homePath = localizedPath(locale, '/');
+  const home = `${origin}${homePath === '/' ? '/' : homePath}`;
+  const inLanguage = INTL_LOCALES[locale];
   const organizationId = `${origin}/#organization`;
-  const name = org?.name ?? 'Cevi Schichtplan';
-  const orgName = org?.orgName ?? 'Cevi';
-  const targetGroup = org?.targetGroup ?? 'Cevi-Abteilungen';
-  const logoUrl = `${origin}${org?.logoUrl ?? '/images/cevi-logo.svg'}`;
+  const name = org.name;
+  const vocab = { orgName: org.orgName, target: org.targetGroup };
+  const logoUrl = `${origin}${org.logoUrl}`;
 
   const graph = {
     '@context': 'https://schema.org',
@@ -25,7 +31,7 @@ export function JsonLd({ origin, org }: JsonLdProps) {
         '@id': organizationId,
         name,
         url: home,
-        description: `Unabhängiges, ehrenamtliches Projekt für ${targetGroup}.`,
+        description: t('orgDescription', vocab),
         logo: {
           '@type': 'ImageObject',
           url: logoUrl,
@@ -37,14 +43,14 @@ export function JsonLd({ origin, org }: JsonLdProps) {
         '@id': `${origin}/#website`,
         url: home,
         name,
-        inLanguage: 'de-CH',
+        inLanguage,
         publisher: { '@id': organizationId },
       },
       {
         '@type': 'WebApplication',
         '@id': `${origin}/#webapp`,
         name,
-        alternateName: [`${orgName} Schichtplaner`, `Helferplanung ${orgName}`, 'Helferliste online'],
+        alternateName: [t('alternatePlanner', vocab), t('alternatePlanning', vocab), t('alternateList')],
         applicationCategory: 'BusinessApplication',
         operatingSystem: 'Web',
         browserRequirements: 'Requires JavaScript. Requires HTML5.',
@@ -52,9 +58,8 @@ export function JsonLd({ origin, org }: JsonLdProps) {
         url: home,
         image: logoUrl,
         screenshot: `${origin}/og`,
-        description:
-          `Kostenlose Helferliste und Schichtplanung für ${targetGroup}: Lager und Anlässe ohne Excel-Chaos. Eintragen können sich alle Helfer*innen per Link.`,
-        inLanguage: 'de-CH',
+        description: t('appDescription', vocab),
+        inLanguage,
         offers: {
           '@type': 'Offer',
           price: '0',

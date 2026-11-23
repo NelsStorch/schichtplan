@@ -36,6 +36,10 @@ import dePdf from './de/pdf.json' with { type: 'json' };
 import enPdf from './en/pdf.json' with { type: 'json' };
 import frPdf from './fr/pdf.json' with { type: 'json' };
 import itPdf from './it/pdf.json' with { type: 'json' };
+import deLanding from './de/landing.json' with { type: 'json' };
+import enLanding from './en/landing.json' with { type: 'json' };
+import frLanding from './fr/landing.json' with { type: 'json' };
+import itLanding from './it/landing.json' with { type: 'json' };
 import type { Locale } from '../config.js';
 
 /**
@@ -47,8 +51,9 @@ import type { Locale } from '../config.js';
  * - `emails`: Transaktionale E-Mail-Vorlagen und Layouts
  * - `push`: Web-Push-Benachrichtigungen
  * - `pdf`: Texte für Check-in-, Bon- und Schichtplan-PDFs
+ * - `landing`: Texte der Startseite (Landingpage) inkl. Rechtsseiten-Rahmen
  */
-export const NAMESPACES = ['common', 'ui', 'api', 'login', 'web', 'emails', 'push', 'pdf'] as const;
+export const NAMESPACES = ['common', 'ui', 'api', 'login', 'web', 'emails', 'push', 'pdf', 'landing'] as const;
 export type Namespace = (typeof NAMESPACES)[number];
 
 /** Struktur aller Texte, abgeleitet aus der deutschen Quelle */
@@ -61,14 +66,15 @@ export interface Messages {
   emails: typeof deEmails;
   push: typeof dePush;
   pdf: typeof dePdf;
+  landing: typeof deLanding;
 }
 
 type DeepPartial<T> = { [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K] };
 
 /** Rohkataloge ohne Fallback; `de` ist vollständig, die anderen Sprachen dürfen Lücken haben */
 export const CATALOGS: { de: Messages } & Record<Exclude<Locale, 'de'>, DeepPartial<Messages>> = {
-  de: { common: deCommon, ui: deUi, api: deApi, login: deLogin, web: deWeb, emails: deEmails, push: dePush, pdf: dePdf },
-  fr: { common: frCommon, ui: frUi, api: frApi, login: frLogin, web: frWeb, emails: frEmails, push: frPush, pdf: frPdf },
-  it: { common: itCommon, ui: itUi, api: itApi, login: itLogin, web: itWeb, emails: itEmails, push: itPush, pdf: itPdf },
-  en: { common: enCommon, ui: enUi, api: enApi, login: enLogin, web: enWeb, emails: enEmails, push: enPush, pdf: enPdf },
+  de: { common: deCommon, ui: deUi, api: deApi, login: deLogin, web: deWeb, emails: deEmails, push: dePush, pdf: dePdf, landing: deLanding },
+  fr: { common: frCommon, ui: frUi, api: frApi, login: frLogin, web: frWeb, emails: frEmails, push: frPush, pdf: frPdf, landing: frLanding },
+  it: { common: itCommon, ui: itUi, api: itApi, login: itLogin, web: itWeb, emails: itEmails, push: itPush, pdf: itPdf, landing: itLanding },
+  en: { common: enCommon, ui: enUi, api: enApi, login: enLogin, web: enWeb, emails: enEmails, push: enPush, pdf: enPdf, landing: enLanding },
 };

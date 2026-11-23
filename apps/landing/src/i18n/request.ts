@@ -14,8 +14,10 @@ export default getRequestConfig(async ({ requestLocale }) => {
       : undefined;
 
   return createRequestConfig({
-    namespaces: ['common', 'ui'],
+    namespaces: ['common', 'ui', 'landing'],
     locale,
     enabledLocales: routing.locales,
+    // next-intl braucht hier exakt die Routing-Sprache (fr), nicht fr-CH: sonst Links auf /fr-CH/… (404)
+    localeFormat: 'routing',
   });
 });

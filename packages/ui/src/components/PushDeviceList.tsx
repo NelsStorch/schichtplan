@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Smartphone, Trash2 } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
+import { useIntlLocale } from '../i18n/LocaleSwitcher';
 import { zurichDateTimeFormat, type PushDeviceDto } from '@schichtplan/shared';
 import { Badge } from './Badge';
 import { Button } from './Button';
@@ -27,7 +28,7 @@ export function PushDeviceList({ localEndpoint, refreshKey = 0, onRemoved }: Pus
   const confirm = useConfirm();
   const t = useTranslations('ui.push');
   const tActions = useTranslations('common.actions');
-  const intlLocale = useLocale();
+  const intlLocale = useIntlLocale();
   const toast = useToast();
   const [devices, setDevices] = useState<PushDeviceDto[] | null>(null);
   const [removing, setRemoving] = useState<string | null>(null);

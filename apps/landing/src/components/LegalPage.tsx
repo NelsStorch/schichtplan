@@ -4,50 +4,11 @@ import type { ReactNode } from 'react';
 import { AlertTriangle, ArrowLeft } from 'lucide-react';
 import type { OrganizationConfig } from '@schichtplan/shared';
 import { ThemeToggle } from '@schichtplan/ui';
-import { parseLocale, type Locale } from '@schichtplan/i18n';
-import { useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
+import { useAppLocale } from '@schichtplan/ui/i18n';
 import { BrandLogo } from '@/components/BrandLogo';
 import { LandingLocaleSwitcher } from './LandingLocaleSwitcher';
-import { Link } from '@/i18n/routing';
-
-const LEGAL_DISCLAIMER: Record<Locale, { title: string; text: string }> = {
-  de: { title: '', text: '' },
-  fr: {
-    title: 'Version en langue originale',
-    text: 'La version originale allemande fait foi. Cette page sera prochainement disponible avec une traduction juridique vérifiée.',
-  },
-  it: {
-    title: 'Versione in lingua originale',
-    text: 'Fa fede la versione originale in lingua tedesca. Questa pagina sarà presto disponibile con una traduzione giuridica verificata.',
-  },
-  en: {
-    title: 'Original language version',
-    text: 'The original German version is legally binding. This page will soon be available with a verified legal translation.',
-  },
-};
-
-const LEGAL_NAV_LABELS: Record<Locale, { datenschutz: string; nutzungsbedingungen: string; impressum: string }> = {
-  de: {
-    datenschutz: 'Datenschutzerklärung',
-    nutzungsbedingungen: 'Nutzungsbedingungen',
-    impressum: 'Impressum',
-  },
-  fr: {
-    datenschutz: 'Protection des données',
-    nutzungsbedingungen: "Conditions d'utilisation",
-    impressum: 'Mentions légales',
-  },
-  it: {
-    datenschutz: 'Protezione dei dati',
-    nutzungsbedingungen: 'Condizioni di utilizzo',
-    impressum: 'Note legali',
-  },
-  en: {
-    datenschutz: 'Privacy Policy',
-    nutzungsbedingungen: 'Terms of Service',
-    impressum: 'Legal Notice',
-  },
-};
+import { Link } from '@/i18n/navigation';
 
 /** Gemeinsamer Rahmen der Rechtsseiten (Datenschutz, Nutzungsbedingungen, Impressum) */
 export function LegalPage({
@@ -63,10 +24,8 @@ export function LegalPage({
   stand?: string;
   children: ReactNode;
 }) {
-  const rawLocale = useLocale();
-  const locale = (parseLocale(rawLocale) ?? 'de') as Locale;
-  const disclaimer = LEGAL_DISCLAIMER[locale];
-  const navLabels = LEGAL_NAV_LABELS[locale];
+  const t = useTranslations('landing.legal');
+  const locale = useAppLocale();
 
   return (
     <div className="min-h-[100dvh] bg-canvas text-fg">
@@ -93,35 +52,38 @@ export function LegalPage({
         id="inhalt"
         className="mx-auto w-full max-w-3xl space-y-10 px-4 pb-20 pt-4 text-[15px] leading-relaxed text-fg-muted sm:px-6 [&_a]:font-medium [&_a]:text-fg [&_a]:underline [&_a]:underline-offset-2 [&_strong]:text-fg"
       >
-        {locale !== 'de' && disclaimer.text && (
+        {locale !== 'de' && (
           <div className="rounded-card border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-fg flex items-start gap-3">
             <AlertTriangle className="size-5 text-amber-500 shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold text-amber-600 dark:text-amber-400">
-                {disclaimer.title}
+                {t('originalTitle')}
               </p>
               <p className="mt-0.5 text-fg-muted">
-                {disclaimer.text}
+                {t('originalText')}
               </p>
             </div>
           </div>
         )}
 
+        {/* Rechtstext nur auf Deutsch: Sprache auszeichnen (Screenreader, Übersetzungsfunktion des Browsers) */}
+        <div lang="de" className="space-y-10">
         <div className="space-y-3">
           <h1 className="font-display text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
             {title}
           </h1>
           {intro}
-          {stand && <p className="text-sm text-fg-subtle">Stand: {stand}</p>}
+          {stand && <p className="text-sm text-fg-subtle">{t('updated', { date: stand })}</p>}
         </div>
         {children}
+        </div>
         <nav
-          aria-label="Rechtliches"
+          aria-label={t('navLabel')}
           className="flex flex-wrap gap-x-5 gap-y-2 border-t border-line pt-6 text-sm"
         >
-          <Link href="/datenschutz">{navLabels.datenschutz}</Link>
-          <Link href="/nutzungsbedingungen">{navLabels.nutzungsbedingungen}</Link>
-          <Link href="/impressum">{navLabels.impressum}</Link>
+          <Link href="/datenschutz">{t('privacy')}</Link>
+          <Link href="/nutzungsbedingungen">{t('terms')}</Link>
+          <Link href="/impressum">{t('imprint')}</Link>
         </nav>
       </main>
     </div>

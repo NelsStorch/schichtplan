@@ -118,6 +118,8 @@ services:
       WATCHPACK_POLLING: "true"
       NEXT_PUBLIC_API_URL: http://localhost:4000
       INTERNAL_API_URL: http://backend:4000
+      # Sprachen zum Testen freischalten, z. B. I18N_ENABLED_LOCALES=de,fr,en (leer: Freischaltung aus @schichtplan/i18n)
+      I18N_ENABLED_LOCALES: ${I18N_ENABLED_LOCALES:-}
     ports:
       - "127.0.0.1:3001:3001"
     depends_on:

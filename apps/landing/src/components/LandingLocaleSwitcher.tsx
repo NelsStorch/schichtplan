@@ -10,7 +10,8 @@ import {
   type Locale,
 } from '@schichtplan/i18n';
 import { useLocaleSettings, writeLocaleCookie } from '@schichtplan/ui/i18n';
-import { routing, usePathname, useRouter } from '@/i18n/routing';
+import { usePathname, useRouter } from '@/i18n/navigation';
+import { routing } from '@/i18n/routing';
 
 export interface LandingLocaleSwitcherProps {
   className?: string;

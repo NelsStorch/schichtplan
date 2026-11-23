@@ -1,0 +1,247 @@
+{
+  "header": {
+    "tagline": "Helfereinsätze einfach planen",
+    "help": "Hilfe",
+    "createUnit": "{org, select, other {{unit} erfassen}}"
+  },
+  "hero": {
+    "badge": "Helferliste online • Schichtplan {highlight}",
+    "title": "Genug Helfer*innen für jede Schicht.",
+    "titleHighlight": "Ohne Excel- und WhatsApp-Chaos.",
+    "intro": "Die kostenlose Helferplanung für {target}: Schichten online erfassen, den Link zur Helferliste teilen und Helfer*innen tragen sich in Sekunden selbst ein. Das OK sieht jederzeit live alle Einteilungen. Eintragen können sich alle, auch Eltern, Ehemalige und Leute aus befreundeten Vereinen – ohne Konto und ohne mühsame Excel-Tabellen.",
+    "ctaLogin": "Schichtplan öffnen / Anmelden",
+    "howItWorks": "So funktioniert’s",
+    "protectedTitle": "Schichtpläne sind geschützt:",
+    "protectedText": "Um Helferdaten vor unbefugten Zugriffen zu schützen, sind Schichtpläne nicht öffentlich aufgelistet. Den Link zu deinem Anlass erhältst du direkt von deinem Leitungsteam per Mail oder WhatsApp.",
+    "leadQuestion": "{org, select, verein {Du leitest einen Verein?} other {Du leitest eine {orgName}-{unit}?}}",
+    "proofLink": "1 Link",
+    "proofLinkText": "für alle Helfer*innen",
+    "proofPhone": "Handy",
+    "proofPhoneText": "ohne App-Installation",
+    "proofFree": "0 CHF",
+    "proofFreeText": "für alle {target}"
+  },
+  "associations": {
+    "title": "Bei Cevi, Pfadi oder Jubla? Dafür gibt es eigene Versionen.",
+    "text": "Leitende melden sich dort direkt mit ihrem Verbandskonto an, Abteilung bzw. Schar und Leitungsrechte werden automatisch übernommen. Gleiche Funktionen, ebenfalls kostenlos.",
+    "for": "Für {target}",
+    "login": "Login mit {authShort}"
+  },
+  "steps": {
+    "title": "In drei Schritten zur vollen Helferliste.",
+    "step": "Schritt {number}",
+    "createTitle": "Anlass erfassen",
+    "createText": "Das OK legt Schichten an: wann, was zu tun ist und wie viele Leute es braucht. Mit einer Vorlage vom Vorjahr geht das in Minuten.",
+    "shareTitle": "Link teilen",
+    "shareText": "Den Link per WhatsApp, Mail oder Flyer verschicken. Ihr bestimmt, wer sich eintragen darf: alle, {org, select, verein {nur euer Verein} other {nur eure {unit}}} oder einzelne Stufen.",
+    "signupTitle": "Alle tragen sich ein",
+    "signupText": "Helfer*innen wählen ihre Schicht selbst, auch Eltern und Ehemalige {org, select, verein {ohne Konto} other {ohne {authShort}}}. Das OK sieht sofort, wo noch Lücken sind."
+  },
+  "comparison": {
+    "badge": "Direkter Vergleich",
+    "title": "Warum nicht einfach Excel oder WhatsApp?",
+    "intro": "Fast jedes Festkomitee und Leitungsteam startet mit einer geteilten Excel-Liste oder einem Gruppenchat – und stösst schnell an dieselben Frustgrenzen. Hier siehst du den Unterschied auf einen Blick.",
+    "feature": "Funktion / Kriterium",
+    "swipe": "← Wischen →",
+    "excel": "Excel / Sheets",
+    "chat": "WhatsApp / Doodle",
+    "rows": {
+      "noPassword": {
+        "title": "Eintragen ohne Passwort & ohne App",
+        "desc": "Helfer*innen klicken einfach auf den Link und tragen sich ein.",
+        "excel": "Konto oder Excel-App nötig",
+        "chat": "Unübersichtlich im Gruppenchat",
+        "app": "In 10 Sek. via Link (auch für Eltern)"
+      },
+      "sso": {
+        "title": "{authShort}-Anbindung für Leitende",
+        "desc": "Login mit den bestehenden {authShort}-Zugangsdaten.",
+        "excel": "Alles manuell abtippen",
+        "chat": "Keine Schnittstelle",
+        "app": "Name, {unit} & Stufen synchron"
+      },
+      "minAge": {
+        "title": "Automatische Mindestalter-Prüfung",
+        "desc": "Schichten mit Altersgrenze (z. B. Bar ab 16 oder 18 Jahren).",
+        "excel": "Manuell nachrechnen",
+        "chat": "Keine Kontrolle",
+        "app": "Automatische Prüfung vor Eintrag"
+      },
+      "calendar": {
+        "title": "Kalender-Sync & Erinnerungen",
+        "desc": "Einsatz direkt im eigenen Handy-Kalender.",
+        "excel": "Keine Erinnerung",
+        "chat": "Geht im Chatverlauf unter",
+        "app": "Automatischer Kalender-Eintrag"
+      },
+      "overview": {
+        "title": "Live-Übersicht für das OK",
+        "desc": "Sofort sehen, wo noch Schichten frei sind.",
+        "excel": "Mühsame manuelle Zählung",
+        "chat": "Niemand hat den Überblick",
+        "app": "Echtzeit-Balken pro Schicht"
+      },
+      "template": {
+        "title": "Vorlage fürs nächste Jahr",
+        "desc": "Lager- und Fest-Schichten einfach wiederverwenden.",
+        "excel": "Fehleranfälliges Copy-Paste",
+        "chat": "Jedes Mal von vorne anfangen",
+        "app": "1 Klick: Vom Vorjahr übernehmen"
+      },
+      "privacy": {
+        "title": "Datenschutz nach Schweizer nDSG",
+        "desc": "Nummern und E-Mails nur für das OK sichtbar.",
+        "excel": "Jeder sieht alle privaten Nummern",
+        "chat": "Daten öffentlich im Gruppenchat",
+        "app": "Kontaktdaten geschützt"
+      },
+      "vouchers": {
+        "title": "Verpflegungs-Bons digital einlösen",
+        "desc": "QR-Code für Helfer-Verpflegung am Stand scannen.",
+        "excel": "Papierschnipsel oder Listen",
+        "chat": "Keine Bon-Funktion",
+        "app": "Digitaler Bon mit 1-Klick-Scan"
+      }
+    }
+  },
+  "benefits": {
+    "badge": "Was es euch bringt",
+    "title": "{org, select, verein {Helferplanung, gebaut für den Vereinsalltag.} other {Helferplanung, gebaut für den {orgName}-Alltag.}}",
+    "text": "Ob du am Grill stehst, den Anlass organisierst oder {org, select, verein {den ganzen Verein} other {die ganze {unit}}} leitest – der Schichtplan nimmt euch die mühsame Organisation ab, von der Chilbi bis zum Sommerlager.",
+    "helpersLabel": "Für Helfer*innen",
+    "helpersTitle": "In 10 Sekunden eingetragen",
+    "helpersText": "Schicht direkt im Chat-Browser auswählen. Kein neues Passwort nötig und automatische Kalender-Erinnerung vor dem Einsatz.",
+    "committeeLabel": "Für das Anlass-OK",
+    "committeeTitle": "Immer wissen, wer noch fehlt",
+    "committeeText": "Live-Übersicht über alle Schichten, automatische Altersprüfung (z. B. Bar ab 18) und Vorlagen vom Vorjahr mit einem Klick.",
+    "leadLabel": "{org, select, verein {Für die Vereinsleitung} other {Für die {lead}}}",
+    "leadTitle": "Eigene Adresse, {authShort} synchron",
+    "leadText": "Feste Subdomain mit Logo und Farbe {org, select, verein {eures Vereins} other {eurer {unit}}}. Leitungsrechte werden direkt aus {authShort} übernommen.",
+    "leadLink": "{org, select, other {{unit} jetzt einrichten}}"
+  },
+  "features": {
+    "loginTitle": "Anmelden ohne neues Passwort",
+    "loginText": "Leitende melden sich mit ihrem gewohnten {authShort}-Konto an – Name, {unit} und Stufen sind sofort da. Eltern, Ehemalige und Helfer*innen tragen sich einfach mit {nickname} und Geburtsdatum ein.",
+    "loginWith": "Mit {authShort} oder {nickname}",
+    "loginOnce": "Einmal anmelden, überall drin",
+    "addressTitle": "Eure eigene Adresse",
+    "addressText": "{org, select, verein {Euer Verein bekommt} other {Eure {unit} bekommt}} eine feste Webadresse mit Logo und Farbe. Einmal teilen, alle Anlässe sind dort zu finden, Jahr für Jahr.",
+    "addressExample": "eure-{slug}",
+    "addressLink": "{org, select, other {{unit} einrichten}}",
+    "eventsTitle": "Alle Anlässe an einem Ort",
+    "eventsText": "Chilbi, PfiLa, Sommerlager oder Jubiläum gleichzeitig planen. Jedes OK hat Zugriff auf seinen Anlass, und fürs nächste Jahr startet ihr mit der Vorlage von heute.",
+    "eventsCount": "Beliebig viele Anlässe",
+    "eventsScope": "Jedes OK sieht seinen Bereich",
+    "mobileTitle": "Gemacht fürs Handy",
+    "mobileText": "Eintragen dauert wenige Sekunden, direkt aus dem Chat heraus. Und das OK teilt auch am Festzelt oder am Grill noch schnell jemanden ein. Auf iPhone und Android, ohne Installation.",
+    "mobileAge": "Mindestalter wird automatisch geprüft",
+    "mobileAgeExample": "z. B. Barbetrieb ab 18"
+  },
+  "final": {
+    "badge": "Bereit für den nächsten Anlass?",
+    "title": "Schluss mit Excel-Chaos und unbesetzten Schichten.",
+    "text": "Egal ob Chilbi, Sommerlager oder Jubiläum: Startet jetzt mit dem {name}. Fragen zur Bedienung oder Einrichtung beantwortet das Hilfe-Center Schritt für Schritt.",
+    "ctaLogin": "Jetzt anmelden",
+    "note": "Ein unabhängiges, ehrenamtliches Projekt · Kostenlos für alle {target}."
+  },
+  "footer": {
+    "copyright": "© {year} {name} · Unabhängiges, ehrenamtliches Projekt für {target}",
+    "llmsTitle": "Kontextdatei für KI-Agenten & Sprachmodelle",
+    "centralLogin": "Zentraler Login",
+    "alsoForAssociations": "Auch für Verbände:"
+  },
+  "account": {
+    "login": "Anmelden",
+    "profileLabel": "Dein Profil und Schichten",
+    "toUnit": "{org, select, verein {Zu deinem Verein ({name})} other {Zu deiner {unit} ({name})}}",
+    "toShifts": "Zu deinen Schichten ({name})",
+    "createUnit": "Schichtplan für {org, select, verein {deinen Verein} other {deine {unit}}} einrichten"
+  },
+  "demo": {
+    "badgeAuth": "{org, select, verein {Einfach mit E-Mail} other {Mit {authShort}}}",
+    "eventTitle": "{org, select, pfadi {Pfadi Sommerlager 2026} jubla {Jubla-Tag & Pfarreifest} verein {Dorfturnier 2026} other {Chilbi Illnau 2026}}",
+    "eventSubtitle": "{org, select, pfadi {Lagerküche & Posten • Pfadi St. Georg} jubla {Festzelt & Spiele • Jubla Wohlen} verein {Festwirtschaft & Bar • TV Oberglatt} other {Festzelt & Barbetrieb • Cevi Illnau}}",
+    "live": "LIVE",
+    "filled": "{filled}/{total} belegt",
+    "free": "{count, plural, one {# freier Platz} other {# freie Plätze}}",
+    "occupancy": "Live-Besetzung",
+    "grill": "Grill & Pommes",
+    "full": "{filled}/{total} voll",
+    "bar": "Barbetrieb & Cocktails",
+    "you": "Du!",
+    "oneFree": "1 Platz frei",
+    "joined": "Dabei!",
+    "signUp": "Eintragen",
+    "night": "Nachtwache & Zeltaufsicht",
+    "urgent": "Dringend",
+    "plusFree": "+ {count} frei",
+    "tryIt": "Klicke auf eine Schicht zum Ausprobieren",
+    "saved": "✓ Schicht gespeichert",
+    "interactive": "Interaktiv",
+    "toastTwo": "2 Schichten gesichert! Kalender-Sync aktiv",
+    "toastOne": "Schicht gesichert! Automatische Erinnerung aktiv"
+  },
+  "graphics": {
+    "forLeaders": "Für Leitende",
+    "leadersText": "Name, {unit} & Leitungsrolle automatisch verknüpft",
+    "oneClick": "1 Klick",
+    "nicknameBirth": "{nickname} & Geburtsdatum",
+    "forHelpers": "Für Helfer & Eltern",
+    "helpersText": "Kein Passwort, keine App, in 10 Sekunden eingetragen",
+    "noAccount": "Ohne Konto",
+    "unitPlanning": "{org, select, verein {Schichtplanung des Vereins} other {Schichtplanung der {unit}}}",
+    "active": "Aktiv",
+    "shiftCount": "{count} Schichten",
+    "shiftCountPercent": "{count} Schichten · {percent} %",
+    "summerCamp": "Sommerlager",
+    "kitchenSetup": "Küche & Aufbau",
+    "tasks": "Küche, Aufbau, Posten",
+    "event1": "{org, select, pfadi {SoLa 2026} jubla {Jubla-Tag 2026} verein {Dorfturnier 2026} other {Chilbi 2026}}",
+    "event2": "{org, select, jubla {Pfarreifest} verein {Vereinsfest} other {PfiLa 2026}}",
+    "event3": "{org, select, verein {🏆 Grümpelturnier aktiv} other {🏕️ Sommerlager aktiv}}",
+    "phoneEvent": "{org, select, pfadi {SoLa 2026} jubla {Jubla-Tag} verein {Dorfturnier} other {Chilbi Illnau}}",
+    "phoneFull": "VOLL",
+    "phoneBar": "Barbetrieb 16+",
+    "phoneJoined": "DABEI",
+    "phoneTeardown": "Abbau Sonntag",
+    "phoneOneFree": "1 FREI",
+    "confirmed": "Schicht bestätigt!",
+    "inCalendar": "Im Kalender eingetragen",
+    "noApp": "⚡ Ganz ohne App"
+  },
+  "legal": {
+    "updated": "Stand: {date}",
+    "navLabel": "Rechtliches",
+    "privacy": "Datenschutzerklärung",
+    "terms": "Nutzungsbedingungen",
+    "imprint": "Impressum",
+    "originalTitle": "Originalfassung",
+    "originalText": "Massgebend ist die deutsche Originalfassung."
+  },
+  "profile": {
+    "loadError": "Profil konnte nicht geladen werden.",
+    "backTo": "Zurück zu {name}"
+  },
+  "redirect": {
+    "login": "Weiterleitung zum zentralen Login …",
+    "createUnit": "{org, select, verein {Weiterleitung zur Einrichtung deines Vereins …} other {Weiterleitung zur Einrichtung deiner {unit} …}}",
+    "fallback": "Falls die Weiterleitung nicht automatisch startet:",
+    "clickHere": "Hier klicken",
+    "loading": "Laden …"
+  },
+  "errors": {
+    "home": "Zurück zur Startseite",
+    "helpCenter": "Hilfe-Center",
+    "centralLogin": "Zentrales Login"
+  },
+  "structuredData": {
+    "orgDescription": "Unabhängiges, ehrenamtliches Projekt für {target}.",
+    "appDescription": "Kostenlose Helferliste und Schichtplanung für {target}: Lager und Anlässe ohne Excel-Chaos. Eintragen können sich alle Helfer*innen per Link.",
+    "alternatePlanner": "{orgName} Schichtplaner",
+    "alternatePlanning": "Helferplanung {orgName}",
+    "alternateList": "Helferliste online"
+  },
+  "meta": {
+    "title": "{name} · Helferliste & Schichtplan für {target}"
+  }
+}

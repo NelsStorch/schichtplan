@@ -3,8 +3,11 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { ArrowRight, LogIn } from 'lucide-react';
 import { getDepartmentCreationUrl, getDepartmentUrl, getLandingUrl, type UserDto } from '@schichtplan/shared';
-import { Avatar, buttonClasses } from '@schichtplan/ui';
-import { Link } from '@/i18n/routing';
+import { Avatar, buttonClasses, useOrganization } from '@schichtplan/ui';
+import { useAppLocale } from '@schichtplan/ui/i18n';
+import { useTranslations } from 'next-intl';
+import { landingVocab } from '@/lib/landingVocab';
+import { Link } from '@/i18n/navigation';
 
 /**
  * Die Landingpage wird auf dem Server gerendert. Nur die Teile, die von der angemeldeten Person abhängen
@@ -28,6 +31,7 @@ export function MeProvider({ children }: { children: ReactNode }) {
 /** Kopfzeile: Name statt «Anmelden», sobald jemand angemeldet ist */
 export function HeaderAccount() {
   const me = useContext(MeContext);
+  const t = useTranslations('landing.account');
 
   if (!me) {
     return (
@@ -40,7 +44,7 @@ export function HeaderAccount() {
         })}
       >
         <LogIn className="size-3.5" />
-        <span>Anmelden</span>
+        <span>{t('login')}</span>
       </Link>
     );
   }
@@ -63,7 +67,7 @@ export function HeaderAccount() {
       <Link
         href="/profil"
         className="flex items-center gap-1.5 sm:gap-2 rounded-full py-1 pl-1 pr-2.5 sm:pr-3 text-xs font-semibold text-fg transition hover:bg-surface-2"
-        aria-label="Dein Profil und Schichten"
+        aria-label={t('profileLabel')}
       >
         <Avatar name={me.ceviName || me.firstName} size="sm" highlight className="size-7 text-[10px]" />
         <span className="max-w-20 sm:max-w-28 truncate">{me.ceviName || me.firstName}</span>
@@ -73,29 +77,16 @@ export function HeaderAccount() {
 }
 
 /** Hauptknopf: zur eigenen Abteilung, zu den eigenen Schichten oder zum Login */
-export function PrimaryCta({
-  loginLabel,
-  className,
-  unitTerm = 'Abteilung',
-}: {
-  loginLabel: string;
-  className: string;
-  unitTerm?: string;
-}) {
+export function PrimaryCta({ loginLabel, className }: { loginLabel: string; className: string }) {
   const me = useContext(MeContext);
+  const t = useTranslations('landing.account');
+  const vocab = landingVocab(useOrganization(), useAppLocale());
   const classes = buttonClasses({ variant: 'primary', size: 'md', className });
 
   if (me?.homeDepartment) {
-    const toUnitText =
-      unitTerm === 'Schar'
-        ? `Zu deiner Schar (${me.homeDepartment.name})`
-        : unitTerm === 'Verein'
-        ? `Zu deinem Verein (${me.homeDepartment.name})`
-        : `Zu deiner Abteilung (${me.homeDepartment.name})`;
-
     return (
       <a href={getDepartmentUrl(me.homeDepartment.slug, '/', me.homeDepartment.organization)} className={classes}>
-        <span>{toUnitText}</span>
+        <span>{t('toUnit', { ...vocab, name: me.homeDepartment.name })}</span>
         <ArrowRight className="size-4" />
       </a>
     );
@@ -104,7 +95,7 @@ export function PrimaryCta({
   if (me) {
     return (
       <Link href="/profil" className={classes}>
-        <span>Zu deinen Schichten ({me.ceviName || me.firstName})</span>
+        <span>{t('toShifts', { name: me.ceviName || me.firstName })}</span>
         <ArrowRight className="size-4" />
       </Link>
     );
@@ -119,15 +110,9 @@ export function PrimaryCta({
 }
 
 /** Abteilung/Schar anlegen passiert im Login-Portal (nur Leitung mit Verband-Login) */
-export function CreateDepartmentButton({
-  unitTerm = 'Abteilung',
-  className,
-  href,
-}: {
-  unitTerm?: string;
-  className?: string;
-  href?: string;
-}) {
+export function CreateDepartmentButton({ className, href }: { className?: string; href?: string }) {
+  const t = useTranslations('landing.account');
+  const vocab = landingVocab(useOrganization(), useAppLocale());
   const [targetHref, setTargetHref] = useState(href || '/abteilung-erstellen');
 
   useEffect(() => {
@@ -144,7 +129,7 @@ export function CreateDepartmentButton({
         'font-semibold text-accent hover:underline inline-flex items-center gap-1'
       }
     >
-      <span>Schichtplan für deine {unitTerm} einrichten</span>
+      <span>{t('createUnit', vocab)}</span>
       <ArrowRight className="size-3" />
     </a>
   );

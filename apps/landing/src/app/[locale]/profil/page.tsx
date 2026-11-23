@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Link } from '@/i18n/routing';
+import { Link } from '@/i18n/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { getLoginUrl, getRootDomain, type UserDto } from '@schichtplan/shared';
 import { Callout, ProfileView, ThemeToggle, useOrganization } from '@schichtplan/ui';
+import { useTranslations } from 'next-intl';
 import { BrandLogo } from '@/components/BrandLogo';
 
 /**
@@ -31,8 +32,9 @@ function readReturnTarget(): { href: string; label: string } | null {
 /** Profilseite auf der Startseite (cevi-schichtplan.ch/profil), gleicher Inhalt wie in den Abteilungs-Apps */
 export default function ProfilePage() {
   const org = useOrganization();
+  const t = useTranslations('landing.profile');
   const [user, setUser] = useState<UserDto | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(false);
   const [returnTarget, setReturnTarget] = useState<{ href: string; label: string } | null>(null);
 
   useEffect(() => {
@@ -48,7 +50,7 @@ export default function ProfilePage() {
       }
       if (!res.ok) throw new Error();
       setUser((await res.json()) as UserDto);
-    })().catch(() => setError('Profil konnte nicht geladen werden.'));
+    })().catch(() => setError(true));
   }, []);
 
   return (
@@ -60,7 +62,7 @@ export default function ProfilePage() {
             href={returnTarget.href}
             className="inline-flex min-w-0 items-center gap-2 text-sm font-semibold text-fg-muted transition hover:text-fg"
           >
-            <ArrowLeft className="size-4 shrink-0" /> <span className="truncate">Zurück zu {returnTarget.label}</span>
+            <ArrowLeft className="size-4 shrink-0" /> <span className="truncate">{t('backTo', { name: returnTarget.label })}</span>
           </a>
         ) : (
           <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-fg-muted transition hover:text-fg">
@@ -74,7 +76,7 @@ export default function ProfilePage() {
         {user ? (
           <ProfileView user={user} onUserChange={setUser} />
         ) : error ? (
-          <Callout tone="danger">{error}</Callout>
+          <Callout tone="danger">{t('loadError')}</Callout>
         ) : (
           <div className="h-40 animate-pulse rounded-card bg-surface-2" aria-busy />
         )}

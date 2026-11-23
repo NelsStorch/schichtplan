@@ -1,5 +1,7 @@
 import { ShieldCheck, UserCheck } from 'lucide-react';
-import type { OrganizationConfig } from '@schichtplan/shared';
+import { useLocale, useTranslations } from 'next-intl';
+import { getOrganization, type OrganizationConfig } from '@schichtplan/shared';
+import { landingVocab } from '@/lib/landingVocab';
 
 export function HitobitoIsometricGraphic({
   className = '',
@@ -8,9 +10,10 @@ export function HitobitoIsometricGraphic({
   className?: string;
   org?: OrganizationConfig;
 }) {
-  const authProvider = org?.authProviderName ?? 'Cevi.DB (Hitobito)';
-  const unitTerm = org?.unitTerm ?? 'Abteilung';
-  const nicknameTerm = org?.nicknameTerm ?? 'Cevi-Name';
+  const locale = useLocale();
+  const t = useTranslations('landing.graphics');
+  const vocab = landingVocab(org ?? getOrganization(null, locale), locale);
+  const authProvider = vocab.auth;
 
   return (
     <div className={`relative flex flex-col gap-3 select-none w-full max-w-md mx-auto py-2 ${className}`}>
@@ -24,17 +27,17 @@ export function HitobitoIsometricGraphic({
             <div className="flex items-center gap-2">
               <span className="font-semibold text-xs sm:text-sm text-fg">{authProvider}</span>
               <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-500">
-                Für Leitende
+                {t('forLeaders')}
               </span>
             </div>
             <p className="text-2xs text-fg-subtle truncate mt-0.5">
-              Name, {unitTerm} &amp; Leitungsrolle automatisch verknüpft
+              {t('leadersText', vocab)}
             </p>
           </div>
         </div>
         <div className="shrink-0 hidden xs:block sm:block">
           <span className="text-[11px] font-mono text-fg-subtle bg-surface-2 px-2 py-1 rounded-md border border-line">
-            1 Klick
+            {t('oneClick')}
           </span>
         </div>
       </div>
@@ -47,19 +50,19 @@ export function HitobitoIsometricGraphic({
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-xs sm:text-sm text-fg">{nicknameTerm} &amp; Geburtsdatum</span>
+              <span className="font-semibold text-xs sm:text-sm text-fg">{t('nicknameBirth', vocab)}</span>
               <span className="rounded-full bg-surface-3 px-2 py-0.5 text-[10px] font-bold text-fg-muted">
-                Für Helfer &amp; Eltern
+                {t('forHelpers')}
               </span>
             </div>
             <p className="text-2xs text-fg-subtle truncate mt-0.5">
-              Kein Passwort, keine App, in 10 Sekunden eingetragen
+              {t('helpersText')}
             </p>
           </div>
         </div>
         <div className="shrink-0 hidden xs:block sm:block">
           <span className="text-[11px] font-mono text-emerald-500 font-semibold bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20">
-            Ohne Konto
+            {t('noAccount')}
           </span>
         </div>
       </div>

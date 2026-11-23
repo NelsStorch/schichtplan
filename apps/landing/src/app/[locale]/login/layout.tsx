@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { routing } from '@/i18n/routing';
+import { getRequestOrigin } from '@schichtplan/ui/og';
+import { localeAlternates, routing } from '@/i18n/routing';
 import { DEFAULT_LOCALE, type Locale } from '@schichtplan/i18n';
 
 const LOGIN_META: Record<Locale, { title: string; description: string }> = {
@@ -29,9 +30,12 @@ export async function generateMetadata({
   const { locale: rawLocale } = await params;
   const locale = (routing.locales.includes(rawLocale as Locale) ? rawLocale : DEFAULT_LOCALE) as Locale;
   const meta = LOGIN_META[locale];
+  const { origin } = await getRequestOrigin();
   return {
     title: meta.title,
     description: meta.description,
+    // Eigene URL statt der geerbten der Startseite
+    alternates: localeAlternates(origin, locale, '/login'),
     robots: { index: false, follow: false },
   };
 }

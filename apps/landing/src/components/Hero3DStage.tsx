@@ -12,6 +12,10 @@ import {
   Flame,
 } from 'lucide-react';
 import type { OrganizationConfig } from '@schichtplan/shared';
+import { useOrganization } from '@schichtplan/ui';
+import { useAppLocale } from '@schichtplan/ui/i18n';
+import { useTranslations } from 'next-intl';
+import { landingVocab } from '@/lib/landingVocab';
 import { BrandLogo } from './BrandLogo';
 
 interface ConfettiPiece {
@@ -30,9 +34,10 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
   const isJubla = org?.slug === 'jubla';
   const isVerein = org?.slug === 'verein';
 
-  const badgeAuthText = isVerein
-    ? 'Einfach mit E-Mail'
-    : `Mit ${org?.authProviderShort ?? 'Cevi.DB'}`;
+  const t = useTranslations('landing.demo');
+  const fallbackOrg = useOrganization();
+  const vocab = landingVocab(org ?? fallbackOrg, useAppLocale());
+  const badgeAuthText = t('badgeAuth', vocab);
 
   const badgeUnitText = isPfadi
     ? 'St. Georg 2026'
@@ -44,21 +49,8 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
 
   const initials = isPfadi ? 'SG' : isJubla ? 'JW' : isVerein ? 'TV' : 'IL';
 
-  const eventTitle = isPfadi
-    ? 'Pfadi Sommerlager 2026'
-    : isJubla
-    ? 'Jubla-Tag & Pfarreifest'
-    : isVerein
-    ? 'Dorfturnier 2026'
-    : 'Chilbi Illnau 2026';
-
-  const eventSubtitle = isPfadi
-    ? 'Lagerküche & Posten • Pfadi St. Georg'
-    : isJubla
-    ? 'Festzelt & Spiele • Jubla Wohlen'
-    : isVerein
-    ? 'Festwirtschaft & Bar • TV Oberglatt'
-    : 'Festzelt & Barbetrieb • Cevi Illnau';
+  const eventTitle = t('eventTitle', vocab);
+  const eventSubtitle = t('eventSubtitle', vocab);
 
   const logoUrl = org?.logoUrl ?? '/images/cevi-logo.svg';
 
@@ -147,7 +139,7 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
                   </h3>
                   <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-semibold text-emerald-400">
                     <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    LIVE
+                    {t('live')}
                   </span>
                 </div>
                 <p className="text-2xs sm:text-xs text-fg-subtle truncate">
@@ -158,10 +150,10 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
 
             <div className="text-right shrink-0">
               <div className="font-mono text-xs font-bold text-fg tabular">
-                {totalFilled}/28 belegt
+                {t('filled', { filled: totalFilled, total: 28 })}
               </div>
               <div className="text-[10px] text-fg-subtle hidden xs:block sm:block">
-                {28 - totalFilled} freie Plätze
+                {t('free', { count: 28 - totalFilled })}
               </div>
             </div>
           </div>
@@ -171,7 +163,7 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
             <div className="flex items-center justify-between text-xs mb-1.5">
               <span className="font-semibold text-fg flex items-center gap-1.5">
                 <Users className="size-3.5 text-accent" />
-                Live-Besetzung
+                {t('occupancy')}
               </span>
               <span className="font-mono text-accent-ink font-bold tabular transition-all">
                 {percent}%
@@ -192,7 +184,7 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
               <div className="min-w-0 pr-1">
                 <div className="font-semibold text-fg truncate flex items-center gap-1.5">
                   <Flame className="size-3 text-amber-500 shrink-0" />
-                  <span>Grill &amp; Pommes</span>
+                  <span>{t('grill')}</span>
                 </div>
                 <div className="font-mono text-2xs text-fg-subtle flex items-center gap-1.5 mt-0.5 truncate">
                   <Clock className="size-3 shrink-0" />
@@ -202,7 +194,7 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
                 </div>
               </div>
               <span className="shrink-0 rounded-full bg-surface-3 px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-semibold text-fg-muted">
-                2/2 Voll
+                {t('full', { filled: 2, total: 2 })}
               </span>
             </div>
 
@@ -218,7 +210,7 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
             >
               <div className="min-w-0 pr-1">
                 <div className="font-semibold text-fg flex items-center gap-1.5 sm:gap-2">
-                  <span className="truncate">Barbetrieb &amp; Cocktails</span>
+                  <span className="truncate">{t('bar')}</span>
                   <span className="shrink-0 rounded bg-accent/20 text-accent-ink px-1.5 py-0.5 text-[10px] font-mono font-bold">
                     16+
                   </span>
@@ -232,12 +224,12 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
                       <span className="truncate">Falk, Remo,</span>
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.2 text-[10px] font-bold text-emerald-500 shrink-0">
                         <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        Du!
+                        {t('you')}
                       </span>
                     </span>
                   ) : (
                     <span className="font-medium text-accent truncate">
-                      1 Platz frei
+                      {t('oneFree')}
                     </span>
                   )}
                 </div>
@@ -247,12 +239,12 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
                 {barEnrolled ? (
                   <span className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-emerald-500/20 px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold text-emerald-400 border border-emerald-500/30 animate-fade-in">
                     <Check className="size-3 sm:size-3.5 stroke-[2.5]" />
-                    <span>Dabei!</span>
+                    <span>{t('joined')}</span>
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-accent px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold text-accent-fg shadow-glow hover:brightness-110 active:scale-95 transition-all">
                     <Plus className="size-3 sm:size-3.5 stroke-[2.5]" />
-                    <span>Eintragen</span>
+                    <span>{t('signUp')}</span>
                   </span>
                 )}
               </div>
@@ -271,9 +263,9 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
               <div className="min-w-0 pr-1">
                 <div className="font-semibold text-fg truncate flex items-center gap-1.5">
                   <Moon className="size-3 text-warning shrink-0" />
-                  <span>Nachtwache &amp; Zeltaufsicht</span>
+                  <span>{t('night')}</span>
                   <span className="shrink-0 rounded-full bg-warning/20 px-1.5 py-0.5 text-[9px] font-bold text-warning-ink">
-                    Dringend
+                    {t('urgent')}
                   </span>
                 </div>
                 <div className="font-mono text-2xs text-fg-subtle flex items-center gap-1.5 mt-0.5 truncate">
@@ -284,12 +276,12 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
                     <span className="flex items-center gap-1 min-w-0">
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.2 text-[10px] font-bold text-emerald-500 shrink-0">
                         <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        Du!
+                        {t('you')}
                       </span>
-                      <span className="text-fg-subtle truncate">+ 1 frei</span>
+                      <span className="text-fg-subtle truncate">{t('plusFree', { count: 1 })}</span>
                     </span>
                   ) : (
-                    <span className="text-warning-ink font-semibold truncate">0/2 belegt</span>
+                    <span className="text-warning-ink font-semibold truncate">{t('filled', { filled: 0, total: 2 })}</span>
                   )}
                 </div>
               </div>
@@ -298,11 +290,11 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
                 {nightEnrolled ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-bold text-emerald-400 border border-emerald-500/30">
                     <Check className="size-3 stroke-[2.5]" />
-                    <span>Dabei!</span>
+                    <span>{t('joined')}</span>
                   </span>
                 ) : (
                   <span className="shrink-0 rounded-full bg-warning/20 px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-bold text-warning-ink hover:bg-warning/30 transition">
-                    + Eintragen
+                    + {t('signUp')}
                   </span>
                 )}
               </div>
@@ -313,10 +305,10 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
           <div className="mt-4 pt-3 border-t border-line/60 flex items-center justify-between gap-1.5 text-2xs text-fg-subtle">
             <span className="flex items-center gap-1.5 text-accent font-medium">
               <Sparkles className="size-3 shrink-0" />
-              <span>Klicke auf eine Schicht zum Ausprobieren</span>
+              <span>{t('tryIt')}</span>
             </span>
             <span className="font-mono text-fg-subtle shrink-0">
-              {barEnrolled || nightEnrolled ? '✓ Schicht gespeichert' : 'Interaktiv'}
+              {barEnrolled || nightEnrolled ? t('saved') : t('interactive')}
             </span>
           </div>
 
@@ -349,8 +341,8 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
             </span>
             <span className="text-2xs font-bold text-fg truncate">
               {barEnrolled && nightEnrolled
-                ? '2 Schichten gesichert! Kalender-Sync aktiv'
-                : 'Schicht gesichert! Automatische Erinnerung aktiv'}
+                ? t('toastTwo')
+                : t('toastOne')}
             </span>
           </div>
         )}

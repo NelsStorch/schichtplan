@@ -20,7 +20,8 @@ import {
   Trash2,
   UserRound,
 } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
+import { useIntlLocale } from '../i18n/LocaleSwitcher';
 import {
   PLACEHOLDER_LAST_NAME,
   STUFE_ROLES,
@@ -274,7 +275,7 @@ function OverviewTab({
   const org = useOrganization();
   const toast = useToast();
   const tr = useTranslations('ui.profile');
-  const intlLocale = useLocale();
+  const intlLocale = useIntlLocale();
   const [shifts, setShifts] = useState<ProfileShift[] | null>(null);
   const [hours, setHours] = useState<MyHoursSummaryDto | null>(null);
   const [calData, setCalData] = useState<CalendarTokenData | null>(null);

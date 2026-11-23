@@ -1,9 +1,29 @@
 import { NextResponse, type NextFetchEvent, type NextRequest } from 'next/server';
 import createIntlMiddleware from 'next-intl/middleware';
+import { LOCALE_COOKIE, getEnabledLocales } from '@schichtplan/i18n';
 import { getOrganizationTypeFromHost, isPageLoadRequest, reportPageLoad } from '@schichtplan/shared';
-import { routing } from './i18n/routing';
+import { preferredLocalePath, routing } from './i18n/routing';
 
 const handleI18nRouting = createIntlMiddleware(routing);
+
+function requestHost(request: NextRequest): string {
+  return (request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? '').split(',')[0].trim();
+}
+
+/** Umleitung einer Seite ohne Sprach-Präfix auf die bevorzugte Sprache (Logik in `preferredLocalePath`) */
+export function preferredLocaleRedirect(request: NextRequest): URL | null {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return null;
+  const path = preferredLocalePath({
+    pathname: request.nextUrl.pathname,
+    cookie: request.cookies.get(LOCALE_COOKIE)?.value ?? null,
+    acceptLanguage: request.headers.get('accept-language'),
+    enabled: getEnabledLocales(getOrganizationTypeFromHost(requestHost(request)), process.env.I18N_ENABLED_LOCALES),
+  });
+  if (!path) return null;
+  const target = new URL(request.nextUrl);
+  target.pathname = path;
+  return target;
+}
 
 /**
  * Zählt Seitenaufrufe und steuert das Sprach-Routing (/fr, /en, lokalisierte Pfade via next-intl).
@@ -14,9 +34,16 @@ const handleI18nRouting = createIntlMiddleware(routing);
 export function proxy(request: NextRequest, event: NextFetchEvent) {
   // Seitenaufrufe serverseitig zählen (nur Tagessumme pro Verband/App, siehe pageLoad.ts)
   if (!request.nextUrl.pathname.startsWith('/api/')) {
+    const redirectTo = preferredLocaleRedirect(request);
+    if (redirectTo) {
+      // Kein Seitenaufruf zählen: das Ziel der Umleitung zählt
+      const response = NextResponse.redirect(redirectTo, 307);
+      // Antwort hängt von Cookie und Browsersprache ab: Caches dürfen sie nicht für alle wiederverwenden
+      response.headers.set('Vary', 'Cookie, Accept-Language');
+      return response;
+    }
     if (isPageLoadRequest(request.method, request.nextUrl.pathname, request.headers)) {
-      const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? '';
-      event.waitUntil(reportPageLoad('landing', host.split(',')[0].trim(), process.env.INTERNAL_API_URL));
+      event.waitUntil(reportPageLoad('landing', requestHost(request), process.env.INTERNAL_API_URL));
     }
     return handleI18nRouting(request);
   }

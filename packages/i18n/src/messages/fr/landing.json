@@ -1,0 +1,247 @@
+{
+  "header": {
+    "tagline": "Planifier les bénévoles, tout simplement",
+    "help": "Aide",
+    "createUnit": "{org, select, pfadi {Inscrire un {unit}} jubla {Inscrire un {unit}} other {Inscrire une {unit}}}"
+  },
+  "hero": {
+    "badge": "Liste de bénévoles en ligne • Planning {highlight}",
+    "title": "Assez de bénévoles pour chaque créneau.",
+    "titleHighlight": "Sans le chaos d’Excel et de WhatsApp.",
+    "intro": "La planification gratuite des bénévoles pour {target} : créez les créneaux en ligne, partagez le lien de la liste et les bénévoles s’inscrivent eux-mêmes en quelques secondes. Le comité voit toutes les répartitions en direct. Tout le monde peut s’inscrire, y compris les parents, les anciens et les membres d’associations amies – sans compte et sans tableaux Excel fastidieux.",
+    "ctaLogin": "Ouvrir le planning / Se connecter",
+    "howItWorks": "Comment ça marche",
+    "protectedTitle": "Les plannings sont protégés :",
+    "protectedText": "Pour protéger les données des bénévoles contre tout accès non autorisé, les plannings ne sont pas listés publiquement. Tu reçois le lien de ton événement directement de ton équipe de direction par e-mail ou WhatsApp.",
+    "leadQuestion": "{org, select, verein {Tu diriges une {unit} ?} pfadi {Tu diriges un {unit} scout ?} jubla {Tu diriges un {unit} Jubla ?} other {Tu diriges une {unit} {orgName} ?}}",
+    "proofLink": "1 lien",
+    "proofLinkText": "pour tous les bénévoles",
+    "proofPhone": "Mobile",
+    "proofPhoneText": "sans installer d’appli",
+    "proofFree": "0 CHF",
+    "proofFreeText": "pour {target}"
+  },
+  "associations": {
+    "title": "Chez Cevi, les scouts ou Jubla ? Il existe des versions dédiées.",
+    "text": "Les responsables s’y connectent directement avec le compte de leur mouvement ; section ou groupe et droits de direction sont repris automatiquement. Mêmes fonctions, également gratuites.",
+    "for": "Pour {target}",
+    "login": "Connexion avec {authShort}"
+  },
+  "steps": {
+    "title": "Une liste de bénévoles complète en trois étapes.",
+    "step": "Étape {number}",
+    "createTitle": "Créer l’événement",
+    "createText": "Le comité crée les créneaux : quand, quoi faire et combien de personnes il faut. Avec un modèle de l’année précédente, c’est fait en quelques minutes.",
+    "shareTitle": "Partager le lien",
+    "shareText": "{org, select, other {Envoyez le lien par WhatsApp, e-mail ou flyer. Vous décidez qui peut s’inscrire : tout le monde, seulement votre {unit} ou certaines unités.}}",
+    "signupTitle": "Tout le monde s’inscrit",
+    "signupText": "Les bénévoles choisissent eux-mêmes leur créneau, y compris les parents et les anciens {org, select, verein {sans compte} other {sans {authShort}}}. Le comité voit tout de suite où il manque du monde."
+  },
+  "comparison": {
+    "badge": "Comparaison directe",
+    "title": "Pourquoi pas simplement Excel ou WhatsApp ?",
+    "intro": "Presque chaque comité de fête et chaque équipe de direction commence avec une liste Excel partagée ou un chat de groupe – et se heurte vite aux mêmes frustrations. Voici la différence en un coup d’œil.",
+    "feature": "Fonction / critère",
+    "swipe": "← Glisser →",
+    "excel": "Excel / Sheets",
+    "chat": "WhatsApp / Doodle",
+    "rows": {
+      "noPassword": {
+        "title": "Inscription sans mot de passe ni appli",
+        "desc": "Les bénévoles cliquent simplement sur le lien et s’inscrivent.",
+        "excel": "Compte ou appli Excel nécessaire",
+        "chat": "Peu clair dans le chat de groupe",
+        "app": "En 10 s via le lien (aussi pour les parents)"
+      },
+      "sso": {
+        "title": "Connexion {authShort} pour les responsables",
+        "desc": "Connexion avec les identifiants {authShort} existants.",
+        "excel": "Tout recopier à la main",
+        "chat": "Aucune interface",
+        "app": "Nom, {unit} et unités synchronisés"
+      },
+      "minAge": {
+        "title": "Contrôle automatique de l’âge minimum",
+        "desc": "Créneaux avec limite d’âge (p. ex. bar dès 16 ou 18 ans).",
+        "excel": "Calculer à la main",
+        "chat": "Aucun contrôle",
+        "app": "Contrôle automatique avant l’inscription"
+      },
+      "calendar": {
+        "title": "Synchro calendrier et rappels",
+        "desc": "L’engagement directement dans le calendrier du téléphone.",
+        "excel": "Aucun rappel",
+        "chat": "Se perd dans le fil du chat",
+        "app": "Entrée automatique dans le calendrier"
+      },
+      "overview": {
+        "title": "Vue d’ensemble en direct pour le comité",
+        "desc": "Voir immédiatement quels créneaux sont encore libres.",
+        "excel": "Comptage manuel fastidieux",
+        "chat": "Personne n’a de vue d’ensemble",
+        "app": "Barre en temps réel par créneau"
+      },
+      "template": {
+        "title": "Modèle pour l’année suivante",
+        "desc": "Réutiliser facilement les créneaux de camp et de fête.",
+        "excel": "Copier-coller source d’erreurs",
+        "chat": "Tout recommencer à chaque fois",
+        "app": "1 clic : reprendre l’année précédente"
+      },
+      "privacy": {
+        "title": "Protection des données selon la nLPD suisse",
+        "desc": "Numéros et e-mails visibles uniquement par le comité.",
+        "excel": "Tout le monde voit tous les numéros privés",
+        "chat": "Données publiques dans le chat de groupe",
+        "app": "Coordonnées protégées"
+      },
+      "vouchers": {
+        "title": "Bons de repas numériques",
+        "desc": "Scanner le code QR des repas bénévoles au stand.",
+        "excel": "Bouts de papier ou listes",
+        "chat": "Pas de fonction bons",
+        "app": "Bon numérique avec scan en 1 clic"
+      }
+    }
+  },
+  "benefits": {
+    "badge": "Ce que ça vous apporte",
+    "title": "{org, select, verein {La planification des bénévoles, pensée pour la vie associative.} other {La planification des bénévoles, pensée pour le quotidien {orgName}.}}",
+    "text": "Que tu tiennes le grill, organises l’événement ou diriges {org, select, pfadi {tout le {unit}} jubla {tout le {unit}} other {toute la {unit}}} – le planning vous décharge de l’organisation fastidieuse, de la kermesse au camp d’été.",
+    "helpersLabel": "Pour les bénévoles",
+    "helpersTitle": "Inscrit·e en 10 secondes",
+    "helpersText": "Choisir son créneau directement dans le navigateur du chat. Pas de nouveau mot de passe et rappel automatique dans le calendrier avant l’engagement.",
+    "committeeLabel": "Pour le comité d’organisation",
+    "committeeTitle": "Toujours savoir qui manque",
+    "committeeText": "Vue d’ensemble en direct de tous les créneaux, contrôle automatique de l’âge (p. ex. bar dès 18 ans) et modèles de l’année précédente en un clic.",
+    "leadLabel": "{org, select, pfadi {Pour le {lead}} verein {Pour le {lead}} other {Pour la {lead}}}",
+    "leadTitle": "Adresse propre, synchro {authShort}",
+    "leadText": "{org, select, other {Sous-domaine fixe avec le logo et la couleur de votre {unit}. Les droits de direction sont repris directement de {authShort}.}}",
+    "leadLink": "{org, select, pfadi {Configurer le {unit}} jubla {Configurer le {unit}} verein {Configurer l’{unit}} other {Configurer la {unit}}}"
+  },
+  "features": {
+    "loginTitle": "Connexion sans nouveau mot de passe",
+    "loginText": "Les responsables se connectent avec leur compte {authShort} habituel – nom, {unit} et unités sont là immédiatement. Parents, anciens et bénévoles s’inscrivent simplement avec leur {nickname} et leur date de naissance.",
+    "loginWith": "Avec {authShort} ou {nickname}",
+    "loginOnce": "Une connexion, accès partout",
+    "addressTitle": "Votre propre adresse",
+    "addressText": "{org, select, other {Votre {unit} reçoit une adresse web fixe avec logo et couleur. Partagée une fois, tous les événements s’y trouvent, année après année.}}",
+    "addressExample": "votre-{slug}",
+    "addressLink": "{org, select, pfadi {Configurer le {unit}} jubla {Configurer le {unit}} verein {Configurer l’{unit}} other {Configurer la {unit}}}",
+    "eventsTitle": "Tous les événements au même endroit",
+    "eventsText": "Planifier en parallèle kermesse, camp de Pentecôte, camp d’été ou jubilé. Chaque comité accède à son événement, et l’année prochaine vous repartez du modèle d’aujourd’hui.",
+    "eventsCount": "Événements illimités",
+    "eventsScope": "Chaque comité voit son domaine",
+    "mobileTitle": "Fait pour le mobile",
+    "mobileText": "S’inscrire prend quelques secondes, directement depuis le chat. Et le comité peut encore affecter quelqu’un sous la tente de fête ou au grill. Sur iPhone et Android, sans installation.",
+    "mobileAge": "Âge minimum contrôlé automatiquement",
+    "mobileAgeExample": "p. ex. bar dès 18 ans"
+  },
+  "final": {
+    "badge": "Prêts pour le prochain événement ?",
+    "title": "Fini le chaos Excel et les créneaux vides.",
+    "text": "Kermesse, camp d’été ou jubilé : lancez-vous maintenant avec {name}. Le centre d’aide répond pas à pas aux questions d’utilisation et de configuration.",
+    "ctaLogin": "Se connecter",
+    "note": "Un projet indépendant et bénévole · Gratuit pour {target}."
+  },
+  "footer": {
+    "copyright": "© {year} {name} · Projet indépendant et bénévole pour {target}",
+    "llmsTitle": "Fichier de contexte pour agents IA et modèles de langage",
+    "centralLogin": "Connexion centrale",
+    "alsoForAssociations": "Aussi pour les mouvements :"
+  },
+  "account": {
+    "login": "Se connecter",
+    "profileLabel": "Ton profil et tes créneaux",
+    "toUnit": "{org, select, pfadi {Vers ton {unit} ({name})} jubla {Vers ton {unit} ({name})} verein {Vers ton {unit} ({name})} other {Vers ta {unit} ({name})}}",
+    "toShifts": "Vers tes créneaux ({name})",
+    "createUnit": "{org, select, pfadi {Configurer le planning de ton {unit}} jubla {Configurer le planning de ton {unit}} verein {Configurer le planning de ton {unit}} other {Configurer le planning de ta {unit}}}"
+  },
+  "demo": {
+    "badgeAuth": "{org, select, verein {Simplement par e-mail} other {Avec {authShort}}}",
+    "eventTitle": "{org, select, pfadi {Camp d’été scout 2026} jubla {Journée Jubla & fête paroissiale} verein {Tournoi villageois 2026} other {Kermesse Illnau 2026}}",
+    "eventSubtitle": "{org, select, pfadi {Cuisine de camp & postes • Pfadi St. Georg} jubla {Tente de fête & jeux • Jubla Wohlen} verein {Buvette & bar • TV Oberglatt} other {Tente de fête & bar • Cevi Illnau}}",
+    "live": "LIVE",
+    "filled": "{filled}/{total} occupés",
+    "free": "{count, plural, one {# place libre} other {# places libres}}",
+    "occupancy": "Occupation en direct",
+    "grill": "Grill & frites",
+    "full": "{filled}/{total} complet",
+    "bar": "Bar & cocktails",
+    "you": "Toi !",
+    "oneFree": "1 place libre",
+    "joined": "Inscrit·e !",
+    "signUp": "S’inscrire",
+    "night": "Veille de nuit & surveillance des tentes",
+    "urgent": "Urgent",
+    "plusFree": "+ {count} libre",
+    "tryIt": "Clique sur un créneau pour essayer",
+    "saved": "✓ Créneau enregistré",
+    "interactive": "Interactif",
+    "toastTwo": "2 créneaux réservés ! Synchro calendrier active",
+    "toastOne": "Créneau réservé ! Rappel automatique actif"
+  },
+  "graphics": {
+    "forLeaders": "Pour les responsables",
+    "leadersText": "Nom, {unit} et rôle de direction liés automatiquement",
+    "oneClick": "1 clic",
+    "nicknameBirth": "{nickname} & date de naissance",
+    "forHelpers": "Pour bénévoles & parents",
+    "helpersText": "Ni mot de passe ni appli, inscrit·e en 10 secondes",
+    "noAccount": "Sans compte",
+    "unitPlanning": "{org, select, pfadi {Planning du {unit}} jubla {Planning du {unit}} verein {Planning de l’{unit}} other {Planning de la {unit}}}",
+    "active": "Actif",
+    "shiftCount": "{count} créneaux",
+    "shiftCountPercent": "{count} créneaux · {percent} %",
+    "summerCamp": "Camp d’été",
+    "kitchenSetup": "Cuisine & montage",
+    "tasks": "Cuisine, montage, postes",
+    "event1": "{org, select, pfadi {Camp d’été 2026} jubla {Journée Jubla 2026} verein {Tournoi villageois 2026} other {Kermesse 2026}}",
+    "event2": "{org, select, jubla {Fête paroissiale} verein {Fête de l’association} other {Camp de Pentecôte 2026}}",
+    "event3": "{org, select, verein {🏆 Tournoi populaire actif} other {🏕️ Camp d’été actif}}",
+    "phoneEvent": "{org, select, pfadi {Camp d’été 2026} jubla {Journée Jubla} verein {Tournoi villageois} other {Kermesse Illnau}}",
+    "phoneFull": "COMPLET",
+    "phoneBar": "Bar 16+",
+    "phoneJoined": "INSCRIT",
+    "phoneTeardown": "Démontage dimanche",
+    "phoneOneFree": "1 LIBRE",
+    "confirmed": "Créneau confirmé !",
+    "inCalendar": "Ajouté au calendrier",
+    "noApp": "⚡ Sans aucune appli"
+  },
+  "legal": {
+    "updated": "État : {date}",
+    "navLabel": "Informations juridiques",
+    "privacy": "Protection des données",
+    "terms": "Conditions d’utilisation",
+    "imprint": "Mentions légales",
+    "originalTitle": "Version en langue originale",
+    "originalText": "La version originale allemande fait foi. Cette page sera prochainement disponible avec une traduction juridique vérifiée."
+  },
+  "profile": {
+    "loadError": "Impossible de charger le profil.",
+    "backTo": "Retour à {name}"
+  },
+  "redirect": {
+    "login": "Redirection vers la connexion centrale …",
+    "createUnit": "{org, select, pfadi {Redirection vers la configuration de ton {unit} …} jubla {Redirection vers la configuration de ton {unit} …} verein {Redirection vers la configuration de ton {unit} …} other {Redirection vers la configuration de ta {unit} …}}",
+    "fallback": "Si la redirection ne démarre pas automatiquement :",
+    "clickHere": "Clique ici",
+    "loading": "Chargement …"
+  },
+  "errors": {
+    "home": "Retour à l’accueil",
+    "helpCenter": "Centre d’aide",
+    "centralLogin": "Connexion centrale"
+  },
+  "structuredData": {
+    "orgDescription": "Projet indépendant et bénévole pour {target}.",
+    "appDescription": "Liste de bénévoles et planning gratuits pour {target} : camps et événements sans chaos Excel. Tous les bénévoles s’inscrivent par lien.",
+    "alternatePlanner": "Planning {orgName}",
+    "alternatePlanning": "Planification des bénévoles {orgName}",
+    "alternateList": "Liste de bénévoles en ligne"
+  },
+  "meta": {
+    "title": "{name} · Liste de bénévoles et planning pour {target}"
+  }
+}

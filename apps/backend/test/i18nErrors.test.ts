@@ -57,7 +57,7 @@ describe.skipIf(!hasTestDb)('Fehlermeldungen der API in der Sprache der Person',
     const res = await inject(app, { method: 'POST', url: `/api/shifts/${shift.id}/signup`, tenant: department.slug, payload: {} });
     expect(res.statusCode).toBe(401);
     expect(res.json()).toMatchObject({ requiresLogin: true, code: 'SIGNUP_ACCOUNT_REQUIRED' });
-    expect(res.json().error).toBe('Per iscriverti ti serve un account. Basta un Cevi-Name senza password.');
+    expect(res.json().error).toBe('Per iscriverti ti serve un account. Basta un Nome Cevi senza password.');
   });
 
   it('bestehende Codes bleiben erhalten (Zeitkollision)', async () => {

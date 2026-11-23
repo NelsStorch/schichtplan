@@ -75,6 +75,7 @@ export async function createRequestConfig({
   department,
   locale: explicitLocale,
   enabledLocales,
+  localeFormat = 'intl',
 }: {
   namespaces: readonly Namespace[];
   /** Standardsprache der Abteilung dieser Subdomain (z. B. aus /api/departments/current) */
@@ -83,6 +84,14 @@ export async function createRequestConfig({
   locale?: string | null;
   /** Für diese App freigeschaltete Sprachen (z. B. Routing-Locales der Landingpage) */
   enabledLocales?: readonly Locale[];
+  /**
+   * Welche Form next-intl als Sprache bekommt:
+   * - `intl` (Apps ohne Sprach-Routing): `de-CH`, `fr-CH` … – Swiss-Formate direkt aus `useLocale()`.
+   * - `routing` (Landingpage mit `/fr`, `/en` …): `de`, `fr` … – muss exakt einem Eintrag in `routing.locales`
+   *   entsprechen, sonst bauen `Link`, `usePathname` und `useRouter` Pfade wie `/fr-CH/…` (404) oder
+   *   `/en/fr/…` (doppelter Sprachcode). Für Datums-/Zahlenformate dann `useIntlLocale()` nutzen.
+   */
+  localeFormat?: 'intl' | 'routing';
 }) {
   const info = await getRequestLocale(department ?? null, explicitLocale, enabledLocales);
   let messages: Record<string, unknown> = pickMessages(info.locale, namespaces);
@@ -91,7 +100,7 @@ export async function createRequestConfig({
     messages = pseudoLocalizeMessages(messages);
   }
   return {
-    locale: info.intlLocale,
+    locale: localeFormat === 'routing' ? info.locale : info.intlLocale,
     messages,
     timeZone: I18N_TIME_ZONE,
     onError: createI18nErrorHandler(),

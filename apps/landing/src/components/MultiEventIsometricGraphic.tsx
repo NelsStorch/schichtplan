@@ -1,6 +1,8 @@
 
 
-import type { OrganizationConfig } from '@schichtplan/shared';
+import { useLocale, useTranslations } from 'next-intl';
+import { getOrganization, type OrganizationConfig } from '@schichtplan/shared';
+import { landingVocab } from '@/lib/landingVocab';
 
 export function MultiEventIsometricGraphic({
   className = '',
@@ -9,29 +11,12 @@ export function MultiEventIsometricGraphic({
   className?: string;
   org?: OrganizationConfig;
 }) {
-  const isPfadi = org?.slug === 'pfadi';
-  const isJubla = org?.slug === 'jubla';
-  const isVerein = org?.slug === 'verein';
-
-  const event1 = isPfadi
-    ? 'SoLa 2026'
-    : isJubla
-    ? 'Jubla-Tag 2026'
-    : isVerein
-    ? 'Dorfturnier 2026'
-    : 'Chilbi 2026';
-
-  const event2 = isPfadi
-    ? 'PfiLa 2026'
-    : isJubla
-    ? 'Pfarreifest'
-    : isVerein
-    ? 'Vereinsfest'
-    : 'PfiLa 2026';
-
-  const event3 = isVerein
-    ? '🏆 Grümpelturnier Aktiv'
-    : '🏕️ Sommerlager Aktiv';
+  const locale = useLocale();
+  const t = useTranslations('landing.graphics');
+  const vocab = landingVocab(org ?? getOrganization(null, locale), locale);
+  const event1 = t('event1', vocab);
+  const event2 = t('event2', vocab);
+  const event3 = t('event3', vocab);
 
   return (
     <div className={`relative flex items-center justify-center select-none ${className}`}>
@@ -127,7 +112,7 @@ export function MultiEventIsometricGraphic({
             {event1}
           </text>
           <text x="28" y="27" fill="#fb7185" fontSize="8.5" fontFamily="monospace">
-            28 Schichten · 86%
+            {t('shiftCountPercent', { count: 28, percent: 86 })}
           </text>
         </g>
 
@@ -140,7 +125,7 @@ export function MultiEventIsometricGraphic({
             {event2}
           </text>
           <text x="28" y="27" fill="#34d399" fontSize="8.5" fontFamily="monospace">
-            Küche, Aufbau, Posten
+            {t('tasks')}
           </text>
         </g>
 

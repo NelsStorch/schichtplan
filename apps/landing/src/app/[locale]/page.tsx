@@ -1,6 +1,6 @@
-import { Link } from '@/i18n/routing';
+import { Link } from '@/i18n/navigation';
 import { LandingLocaleSwitcher } from '@/components/LandingLocaleSwitcher';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { DEFAULT_LOCALE, type Locale } from '@schichtplan/i18n';
 import { routing } from '@/i18n/routing';
 import {
@@ -39,6 +39,7 @@ import { SubdomainIsometricGraphic } from '@/components/SubdomainIsometricGraphi
 import { MultiEventIsometricGraphic } from '@/components/MultiEventIsometricGraphic';
 import { MobilePwaIsometricGraphic } from '@/components/MobilePwaIsometricGraphic';
 import { CreateDepartmentButton, HeaderAccount, MeProvider, PrimaryCta } from '@/components/AccountArea';
+import { landingVocab, termInSentence } from '@/lib/landingVocab';
 
 const PRIMARY_CTA_CLASS = 'justify-center text-sm font-semibold h-12 px-6 gap-2 shadow-glow';
 
@@ -54,12 +55,15 @@ export default async function LandingPage({
 
   const { host } = await getRequestOrigin();
   const org = getOrganization(host, locale);
+  const t = await getTranslations({ locale, namespace: 'landing' });
+  const tFooter = await getTranslations({ locale, namespace: 'common.footer' });
+  const vocab = landingVocab(org, locale);
   const landingUrl = getLandingUrl('/', host);
   const createDepartmentUrl = getDepartmentCreationUrl(landingUrl, host);
   // Nur auf der neutralen Vereins-Seite: Verweis auf die Verbandsinstanzen mit eigenem Verbands-Login
   const verbandLinks =
     org.slug === 'verein'
-      ? VERBAND_ORGANIZATIONS.map((v) => ({ org: v, href: organizationSiteUrl(v, { host }) }))
+      ? VERBAND_ORGANIZATIONS.map((v) => ({ org: getOrganization(v.slug, locale), href: organizationSiteUrl(v, { host }) }))
       : [];
 
   return (
@@ -85,7 +89,7 @@ export default async function LandingPage({
                   {org.name}
                 </span>
                 <span className="hidden text-[11px] font-medium text-fg-subtle sm:block">
-                  Helfereinsätze einfach planen
+                  {t('header.tagline')}
                 </span>
               </div>
             </Link>
@@ -103,7 +107,7 @@ export default async function LandingPage({
                 })}
               >
                 <LifeBuoy className="size-3.5 text-fg-muted" />
-                <span>Hilfe</span>
+                <span>{t('header.help')}</span>
               </a>
 
               <a
@@ -115,7 +119,7 @@ export default async function LandingPage({
                 })}
               >
                 <Building2 className="size-3.5 text-accent" />
-                <span>{org.unitTerm} erfassen</span>
+                <span>{t('header.createUnit', vocab)}</span>
               </a>
 
               <HeaderAccount />
@@ -133,28 +137,24 @@ export default async function LandingPage({
                 <div className="lg:col-span-7 flex flex-col items-start text-left">
                   <div className="inline-flex items-center gap-2 rounded-full px-3.5 py-1 text-2xs font-bold uppercase tracking-[0.16em] bg-accent/12 text-accent-ink border border-accent/25 mb-6 shadow-sm">
                     <Flame className="size-3 text-accent animate-pulse" />
-                    <span>Helferliste online • Schichtplan {org.heroHeadlineHighlight}</span>
+                    <span>{t('hero.badge', vocab)}</span>
                   </div>
 
                   <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-fg leading-[1.08] text-balance">
-                    Genug Helfer*innen für jede Schicht.{' '}
+                    {t('hero.title')}{' '}
                     <span className="bg-gradient-to-r from-accent via-rose-500 to-amber-500 bg-clip-text text-transparent">
-                      Ohne Excel- und WhatsApp-Chaos.
+                      {t('hero.titleHighlight')}
                     </span>
                   </h1>
 
                   <p className="mt-5 text-base sm:text-lg text-fg-muted max-w-[54ch] leading-relaxed">
-                    Die kostenlose Helferplanung für {org.targetGroup}: Schichten online erfassen, den Link zur
-                    Helferliste teilen und Helfer*innen tragen sich in Sekunden selbst ein. Das OK sieht jederzeit
-                    live alle Einteilungen. Eintragen können sich alle, auch Eltern, Ehemalige und Leute aus
-                    befreundeten Vereinen – ohne Konto und ohne mühsame Excel-Tabellen.
+                    {t('hero.intro', vocab)}
                   </p>
 
                   {/* CTAs */}
                   <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                     <PrimaryCta
-                      loginLabel="Schichtplan öffnen / Anmelden"
-                      unitTerm={org.unitTerm}
+                      loginLabel={t('hero.ctaLogin')}
                       className={PRIMARY_CTA_CLASS}
                     />
 
@@ -166,7 +166,7 @@ export default async function LandingPage({
                         className: 'justify-center text-sm font-semibold h-12 gap-1.5',
                       })}
                     >
-                      <span>So funktioniert's</span>
+                      <span>{t('hero.howItWorks')}</span>
                       <ChevronDown className="size-4 text-fg-subtle" />
                     </a>
                   </div>
@@ -176,14 +176,13 @@ export default async function LandingPage({
                     <div className="flex items-start gap-2 text-fg-muted leading-relaxed">
                       <ShieldCheck className="size-4 text-emerald-500 shrink-0 mt-0.5" />
                       <span>
-                        <strong className="text-fg font-semibold">Schichtpläne sind geschützt:</strong> Um Helferdaten
-                        vor unbefugten Zugriffen zu schützen, sind Schichtpläne nicht öffentlich aufgelistet. Den Link zu deinem Anlass
-                        erhältst du direkt von deinem Leitungsteam per Mail oder WhatsApp.
+                        <strong className="text-fg font-semibold">{t('hero.protectedTitle')}</strong>{' '}
+                        {t('hero.protectedText')}
                       </span>
                     </div>
                     <div className="text-fg-subtle pt-1 flex items-center gap-1.5 flex-wrap">
-                      <span>{org.slug === 'verein' ? 'Du leitest einen Verein?' : `Du leitest eine ${org.orgName}-${org.unitTerm}?`}</span>{' '}
-                      <CreateDepartmentButton unitTerm={org.unitTerm} href={createDepartmentUrl} />
+                      <span>{t('hero.leadQuestion', vocab)}</span>{' '}
+                      <CreateDepartmentButton href={createDepartmentUrl} />
                     </div>
                   </div>
 
@@ -191,26 +190,26 @@ export default async function LandingPage({
                   <div className="mt-8 pt-6 border-t border-line/60 w-full grid grid-cols-3 gap-2 sm:gap-4 text-left">
                     <div>
                       <div className="font-display text-lg sm:text-xl md:text-2xl font-extrabold text-fg tabular">
-                        1 Link
+                        {t('hero.proofLink')}
                       </div>
                       <div className="text-[11px] sm:text-xs text-fg-subtle mt-0.5 leading-snug">
-                        für alle Helfer*innen
+                        {t('hero.proofLinkText')}
                       </div>
                     </div>
                     <div>
                       <div className="font-display text-lg sm:text-xl md:text-2xl font-extrabold text-fg">
-                        Handy
+                        {t('hero.proofPhone')}
                       </div>
                       <div className="text-[11px] sm:text-xs text-fg-subtle mt-0.5 leading-snug">
-                        ohne App-Installation
+                        {t('hero.proofPhoneText')}
                       </div>
                     </div>
                     <div>
                       <div className="font-display text-lg sm:text-xl md:text-2xl font-extrabold text-fg tabular">
-                        0 CHF
+                        {t('hero.proofFree')}
                       </div>
                       <div className="text-[11px] sm:text-xs text-fg-subtle mt-0.5 leading-snug">
-                        für alle {org.targetGroup}
+                        {t('hero.proofFreeText', vocab)}
                       </div>
                     </div>
                   </div>
@@ -233,11 +232,10 @@ export default async function LandingPage({
                     id="verbaende-heading"
                     className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-fg"
                   >
-                    Bei Cevi, Pfadi oder Jubla? Dafür gibt es eigene Versionen.
+                    {t('associations.title')}
                   </h2>
                   <p className="mt-3 text-base text-fg-muted leading-relaxed">
-                    Leitende melden sich dort direkt mit ihrem Verbandskonto an, Abteilung bzw. Schar und
-                    Leitungsrechte werden automatisch übernommen. Gleiche Funktionen, ebenfalls kostenlos.
+                    {t('associations.text')}
                   </p>
                 </Reveal>
                 <div className="mt-8 grid gap-3 sm:grid-cols-3">
@@ -252,8 +250,8 @@ export default async function LandingPage({
                           <span aria-hidden className="size-2.5 rounded-full" style={{ backgroundColor: v.org.primaryColor }} />
                           <span className="font-display text-lg font-bold text-fg">{v.org.name}</span>
                         </span>
-                        <span className="mt-1.5 block text-sm text-fg-muted">Für {v.org.targetGroup}</span>
-                        <span className="mt-0.5 block text-sm text-fg-subtle">Login mit {v.org.authProviderShort}</span>
+                        <span className="mt-1.5 block text-sm text-fg-muted">{t('associations.for', { target: termInSentence(v.org.targetGroup, locale, v.org.orgName) })}</span>
+                        <span className="mt-0.5 block text-sm text-fg-subtle">{t('associations.login', { authShort: v.org.authProviderShort })}</span>
                         <span className="mt-3 block font-mono text-xs text-fg-subtle">{v.org.domain}</span>
                       </span>
                       <ArrowUpRight className="size-5 shrink-0 text-fg-subtle transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-fg" />
@@ -269,7 +267,7 @@ export default async function LandingPage({
             <div className="mx-auto max-w-6xl px-4">
               <Reveal>
                 <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-fg">
-                  In drei Schritten zur vollen Helferliste.
+                  {t('steps.title')}
                 </h2>
               </Reveal>
               <StepsTimeline org={org} />
@@ -285,14 +283,13 @@ export default async function LandingPage({
               <Reveal className="max-w-2xl mb-12 sm:mb-16">
                 <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-0.5 text-2xs font-bold uppercase tracking-[0.16em] bg-surface-2 border border-line text-fg-subtle mb-3">
                   <Sparkles className="size-3 text-accent" />
-                  Was es euch bringt
+                  {t('benefits.badge')}
                 </div>
                 <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-fg">
-                  Helferplanung, gebaut für den {org.orgName}-Alltag.
+                  {t('benefits.title', vocab)}
                 </h2>
                 <p className="mt-3 text-base text-fg-muted leading-relaxed">
-                  Ob du am Grill stehst, den Anlass organisierst oder die ganze {org.unitTerm} leitest – der Schichtplan
-                  nimmt euch die mühsame Organisation ab, von der Chilbi bis zum Sommerlager.
+                  {t('benefits.text', vocab)}
                 </p>
               </Reveal>
 
@@ -301,26 +298,26 @@ export default async function LandingPage({
                 <Reveal className="rounded-2xl border border-line bg-surface/70 p-5 shadow-sm">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-accent">
                     <Heart className="size-3.5" />
-                    <span>Für Helfer*innen</span>
+                    <span>{t('benefits.helpersLabel')}</span>
                   </div>
                   <h3 className="font-display text-base font-bold text-fg mt-2">
-                    In 10 Sekunden eingetragen
+                    {t('benefits.helpersTitle')}
                   </h3>
                   <p className="mt-1.5 text-xs text-fg-muted leading-relaxed">
-                    Schicht direkt im Chat-Browser auswählen. Kein neues Passwort nötig und automatische Kalender-Erinnerung vor dem Einsatz.
+                    {t('benefits.helpersText')}
                   </p>
                 </Reveal>
 
                 <Reveal delay={100} className="rounded-2xl border border-line bg-surface/70 p-5 shadow-sm">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-500">
                     <Users className="size-3.5" />
-                    <span>Für das Anlass-OK</span>
+                    <span>{t('benefits.committeeLabel')}</span>
                   </div>
                   <h3 className="font-display text-base font-bold text-fg mt-2">
-                    Immer wissen, wer noch fehlt
+                    {t('benefits.committeeTitle')}
                   </h3>
                   <p className="mt-1.5 text-xs text-fg-muted leading-relaxed">
-                    Live-Übersicht über alle Schichten, automatische Altersprüfung (z.&nbsp;B. Bar ab 18) und Vorlagen vom Vorjahr mit einem Klick.
+                    {t('benefits.committeeText')}
                   </p>
                 </Reveal>
 
@@ -328,13 +325,13 @@ export default async function LandingPage({
                   <div>
                     <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-500">
                       <ShieldCheck className="size-3.5" />
-                      <span>Für die {org.unitTerm}sleitung</span>
+                      <span>{t('benefits.leadLabel', vocab)}</span>
                     </div>
                     <h3 className="font-display text-base font-bold text-fg mt-2">
-                      Eigene Adresse, {org.authProviderShort} synchron
+                      {t('benefits.leadTitle', vocab)}
                     </h3>
                     <p className="mt-1.5 text-xs text-fg-muted leading-relaxed">
-                      Feste Subdomain mit Logo und Farbe eurer {org.unitTerm}. Leitungsrechte werden direkt aus {org.authProviderShort} übernommen.
+                      {t('benefits.leadText', vocab)}
                     </p>
                   </div>
                   <div className="mt-3 pt-2.5 border-t border-line/60">
@@ -342,7 +339,7 @@ export default async function LandingPage({
                       href={createDepartmentUrl}
                       className="inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
                     >
-                      <span>{org.unitTerm} jetzt einrichten</span>
+                      <span>{t('benefits.leadLink', vocab)}</span>
                       <ArrowRight className="size-3" />
                     </a>
                   </div>
@@ -356,11 +353,10 @@ export default async function LandingPage({
                   <div className="h-full rounded-card border border-line/80 bg-surface p-6 sm:p-8 shadow-soft hover:shadow-lift hover:border-line-strong transition-all duration-200 flex flex-col justify-between">
                     <div>
                       <h3 className="font-display text-xl sm:text-2xl font-bold text-fg">
-                        Anmelden ohne neues Passwort
+                        {t('features.loginTitle')}
                       </h3>
                       <p className="mt-2 text-sm text-fg-muted leading-relaxed max-w-[50ch]">
-                        Leitende melden sich mit ihrem gewohnten {org.authProviderName}-Konto an – Name, {org.unitTerm} und Stufen sind sofort da.
-                        Eltern, Ehemalige und Helfer*innen tragen sich einfach mit {org.nicknameTerm} und Geburtsdatum ein.
+                        {t('features.loginText', vocab)}
                       </p>
                     </div>
 
@@ -372,9 +368,9 @@ export default async function LandingPage({
                     <div className="pt-4 border-t border-line/80 flex flex-wrap items-center justify-between gap-2 text-xs text-fg-muted">
                       <span className="text-2xs text-emerald-500 font-semibold flex items-center gap-1.5 shrink-0">
                         <span className="size-2 rounded-full bg-emerald-500" />
-                        Mit {org.authProviderShort} oder {org.nicknameTerm}
+                        {t('features.loginWith', vocab)}
                       </span>
-                      <span className="text-2xs text-fg-subtle">Einmal anmelden, auf allen Abteilungsseiten drin</span>
+                      <span className="text-2xs text-fg-subtle">{t('features.loginOnce')}</span>
                     </div>
                   </div>
                 </Reveal>
@@ -384,11 +380,10 @@ export default async function LandingPage({
                   <div className="h-full rounded-card border border-line/80 bg-surface p-6 sm:p-8 shadow-soft hover:shadow-lift hover:border-line-strong transition-all duration-200 flex flex-col justify-between">
                     <div>
                       <h3 className="font-display text-xl sm:text-2xl font-bold text-fg">
-                        Eure eigene Adresse
+                        {t('features.addressTitle')}
                       </h3>
                       <p className="mt-2 text-sm text-fg-muted leading-relaxed">
-                        Eure {org.unitTerm} bekommt eine feste Webadresse mit Logo und Farbe. Einmal teilen, alle
-                        Anlässe sind dort zu finden, Jahr für Jahr.
+                        {t('features.addressText', vocab)}
                       </p>
                     </div>
 
@@ -399,13 +394,13 @@ export default async function LandingPage({
 
                     <div className="pt-4 border-t border-line/80 flex flex-wrap items-center justify-between gap-2 text-xs text-fg-subtle">
                       <span className="font-mono text-accent font-bold break-all sm:break-normal text-2xs sm:text-xs">
-                        eure-{org.unitTerm.toLowerCase()}.{org.domain}
+                        {t('features.addressExample', { slug: vocab.unit.toLowerCase() })}.{org.domain}
                       </span>
                       <a
                         href={createDepartmentUrl}
                         className="inline-flex items-center gap-1 font-semibold text-accent hover:underline text-2xs sm:text-xs"
                       >
-                        <span>{org.unitTerm} einrichten</span>
+                        <span>{t('features.addressLink', vocab)}</span>
                         <ArrowRight className="size-3" />
                       </a>
                     </div>
@@ -417,11 +412,10 @@ export default async function LandingPage({
                   <div className="h-full rounded-card border border-line/80 bg-surface p-6 sm:p-8 shadow-soft hover:shadow-lift hover:border-line-strong transition-all duration-200 flex flex-col justify-between">
                     <div>
                       <h3 className="font-display text-xl sm:text-2xl font-bold text-fg">
-                        Alle Anlässe an einem Ort
+                        {t('features.eventsTitle')}
                       </h3>
                       <p className="mt-2 text-sm text-fg-muted leading-relaxed">
-                        Chilbi, PfiLa, Sommerlager oder Jubiläum gleichzeitig planen. Jedes OK hat Zugriff auf seinen Anlass,
-                        und fürs nächste Jahr startet ihr mit der Vorlage von heute.
+                        {t('features.eventsText')}
                       </p>
                     </div>
 
@@ -431,8 +425,8 @@ export default async function LandingPage({
                     </div>
 
                     <div className="pt-4 border-t border-line/80 flex flex-wrap items-center justify-between gap-2 text-xs text-fg-muted">
-                      <span className="font-semibold text-fg text-2xs sm:text-xs">Beliebig viele Anlässe</span>
-                      <span className="text-2xs text-fg-subtle">Jedes OK sieht seinen Bereich</span>
+                      <span className="font-semibold text-fg text-2xs sm:text-xs">{t('features.eventsCount')}</span>
+                      <span className="text-2xs text-fg-subtle">{t('features.eventsScope')}</span>
                     </div>
                   </div>
                 </Reveal>
@@ -442,11 +436,10 @@ export default async function LandingPage({
                   <div className="h-full rounded-card border border-line/80 bg-surface p-6 sm:p-8 shadow-soft hover:shadow-lift hover:border-line-strong transition-all duration-200 flex flex-col justify-between">
                     <div>
                       <h3 className="font-display text-xl sm:text-2xl font-bold text-fg">
-                        Gemacht fürs Handy
+                        {t('features.mobileTitle')}
                       </h3>
                       <p className="mt-2 text-sm text-fg-muted leading-relaxed max-w-[50ch]">
-                        Eintragen dauert wenige Sekunden, direkt aus dem Chat heraus. Und das OK teilt auch am
-                        Festzelt oder am Grill noch schnell jemanden ein. Auf iPhone und Android, ohne Installation.
+                        {t('features.mobileText')}
                       </p>
                     </div>
 
@@ -458,9 +451,9 @@ export default async function LandingPage({
                     <div className="pt-4 border-t border-line/80 flex flex-wrap items-center justify-between gap-2 text-xs text-fg-muted">
                       <span className="flex items-center gap-1.5 sm:gap-2 text-emerald-500 font-semibold text-2xs sm:text-xs">
                         <CheckCircle2 className="size-3.5 sm:size-4 shrink-0" />
-                        Mindestalter wird automatisch geprüft
+                        {t('features.mobileAge')}
                       </span>
-                      <span className="text-2xs text-fg-subtle">z. B. Barbetrieb ab 18</span>
+                      <span className="text-2xs text-fg-subtle">{t('features.mobileAgeExample')}</span>
                     </div>
                   </div>
                 </Reveal>
@@ -475,21 +468,19 @@ export default async function LandingPage({
                 <div className="max-w-2xl">
                   <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-2xs font-bold uppercase tracking-wider bg-accent/12 text-accent-ink border border-accent/25 mb-4">
                     <Flame className="size-3 text-accent" />
-                    <span>Bereit für den nächsten Anlass?</span>
+                    <span>{t('final.badge')}</span>
                   </div>
                   <h2 className="font-display text-2xl sm:text-4xl font-extrabold tracking-tight text-fg">
-                    Schluss mit Excel-Chaos und unbesetzten Schichten.
+                    {t('final.title')}
                   </h2>
                   <p className="mt-3 text-sm sm:text-base text-fg-muted leading-relaxed">
-                    Egal ob Chilbi, Sommerlager oder Jubiläum: Startet jetzt mit dem {org.name}.
-                    Fragen zur Bedienung oder Einrichtung beantwortet das Hilfe-Center Schritt für Schritt.
+                    {t('final.text', vocab)}
                   </p>
 
                   {/* Dynamic Bottom Button */}
                   <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     <PrimaryCta
-                      loginLabel="Jetzt anmelden"
-                      unitTerm={org.unitTerm}
+                      loginLabel={t('final.ctaLogin')}
                       className={PRIMARY_CTA_CLASS}
                     />
 
@@ -502,11 +493,11 @@ export default async function LandingPage({
                       })}
                     >
                       <Building2 className="size-4 text-accent" />
-                      <span>{org.unitTerm} erfassen</span>
+                      <span>{t('header.createUnit', vocab)}</span>
                     </a>
 
                     <a
-                      href={helpUrl('/', host)}
+                      href={helpUrl('/', host, locale)}
                       className={buttonClasses({
                         variant: 'ghost',
                         size: 'md',
@@ -514,13 +505,13 @@ export default async function LandingPage({
                       })}
                     >
                       <LifeBuoy className="size-4" />
-                      <span>Hilfe</span>
+                      <span>{t('header.help')}</span>
                       <ExternalLink className="size-3.5 text-fg-subtle" />
                     </a>
                   </div>
 
                   <p className="mt-4 text-xs text-fg-subtle">
-                    Ein unabhängiges, ehrenamtliches Projekt · Kostenlos für alle {org.targetGroup}.
+                    {t('final.note', vocab)}
                   </p>
                 </div>
               </Reveal>
@@ -534,7 +525,7 @@ export default async function LandingPage({
             <div className="flex items-center gap-3">
               <BrandLogo logoUrl={org.logoUrl} alt={org.name} className="size-7 shrink-0" />
               <span>
-                © {new Date().getFullYear()} {org.name} · Unabhängiges, ehrenamtliches Projekt für {org.targetGroup}
+                {t('footer.copyright', { ...vocab, year: String(new Date().getFullYear()) })}
                 {org.independentNotice && <> · {org.independentNotice}</>}
               </span>
             </div>
@@ -542,29 +533,29 @@ export default async function LandingPage({
             <div className="flex flex-wrap items-center justify-center sm:justify-end gap-4 sm:gap-5">
               <LandingLocaleSwitcher />
               <a href={createDepartmentUrl} className="hover:text-fg transition font-medium text-fg">
-                {org.unitTerm} erfassen
+                {t('header.createUnit', vocab)}
               </a>
               <a href={helpUrl('/', host, locale)} className="hover:text-fg transition">
-                Hilfe
+                {tFooter('help')}
               </a>
               <a href={statusUrl('/', host)} className="hover:text-fg transition">
-                Status
+                {tFooter('status')}
               </a>
               <Link href="/datenschutz" className="hover:text-fg transition">
-                Datenschutz
+                {tFooter('privacy')}
               </Link>
               <Link href="/nutzungsbedingungen" className="hover:text-fg transition">
-                Nutzungsbedingungen
+                {tFooter('terms')}
               </Link>
               <Link href="/impressum" className="hover:text-fg transition">
-                Impressum
+                {tFooter('imprint')}
               </Link>
               <a
                 href="/llms.txt"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-fg transition font-mono text-[11px]"
-                title="Kontextdatei für KI-Agenten & Sprachmodelle"
+                title={t('footer.llmsTitle')}
               >
                 llms.txt
               </a>
@@ -578,13 +569,13 @@ export default async function LandingPage({
                 <ExternalLink className="size-3" />
               </a>
               <Link href="/login" className="hover:text-fg transition">
-                Zentraler Login
+                {t('footer.centralLogin')}
               </Link>
             </div>
           </div>
           {verbandLinks.length > 0 && (
             <div className="mx-auto mt-6 max-w-6xl px-4 flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-2">
-              <span>Auch für Verbände:</span>
+              <span>{t('footer.alsoForAssociations')}</span>
               {verbandLinks.map((v) => (
                 <a key={v.org.slug} href={v.href} className="hover:text-fg transition">
                   {v.org.name}

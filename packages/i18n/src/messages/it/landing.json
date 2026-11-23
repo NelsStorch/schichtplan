@@ -1,0 +1,247 @@
+{
+  "header": {
+    "tagline": "Pianificare i volontari, semplicemente",
+    "help": "Aiuto",
+    "createUnit": "{org, select, jubla {Registra un {unit}} verein {Registra un’{unit}} other {Registra una {unit}}}"
+  },
+  "hero": {
+    "badge": "Lista volontari online • Turni {highlight}",
+    "title": "Abbastanza volontari per ogni turno.",
+    "titleHighlight": "Senza il caos di Excel e WhatsApp.",
+    "intro": "La pianificazione gratuita dei volontari per {target}: crea i turni online, condividi il link alla lista e i volontari si iscrivono da soli in pochi secondi. Il comitato vede in diretta tutte le assegnazioni. Possono iscriversi tutti, anche genitori, ex membri e persone di associazioni amiche – senza account e senza faticose tabelle Excel.",
+    "ctaLogin": "Apri i turni / Accedi",
+    "howItWorks": "Come funziona",
+    "protectedTitle": "I piani dei turni sono protetti:",
+    "protectedText": "Per proteggere i dati dei volontari da accessi non autorizzati, i piani dei turni non sono elencati pubblicamente. Ricevi il link al tuo evento direttamente dal tuo team di direzione via e-mail o WhatsApp.",
+    "leadQuestion": "{org, select, verein {Dirigi un’{unit}?} jubla {Dirigi un {unit} Jubla?} pfadi {Dirigi una {unit} scout?} other {Dirigi una {unit} {orgName}?}}",
+    "proofLink": "1 link",
+    "proofLinkText": "per tutti i volontari",
+    "proofPhone": "Cellulare",
+    "proofPhoneText": "senza installare app",
+    "proofFree": "0 CHF",
+    "proofFreeText": "per {target}"
+  },
+  "associations": {
+    "title": "Nel Cevi, negli scout o nella Jubla? Ci sono versioni dedicate.",
+    "text": "Lì i responsabili accedono direttamente con l’account del proprio movimento; sezione o gruppo e diritti di direzione vengono ripresi automaticamente. Stesse funzioni, anch’esse gratuite.",
+    "for": "Per {target}",
+    "login": "Accesso con {authShort}"
+  },
+  "steps": {
+    "title": "Una lista di volontari completa in tre passi.",
+    "step": "Passo {number}",
+    "createTitle": "Crea l’evento",
+    "createText": "Il comitato crea i turni: quando, cosa c’è da fare e quante persone servono. Con un modello dell’anno precedente bastano pochi minuti.",
+    "shareTitle": "Condividi il link",
+    "shareText": "Invia il link via WhatsApp, e-mail o volantino. Decidete voi chi può iscriversi: tutti, solo {org, select, jubla {il vostro {unit}} other {la vostra {unit}}} o singole unità.",
+    "signupTitle": "Tutti si iscrivono",
+    "signupText": "I volontari scelgono da soli il proprio turno, anche genitori ed ex membri {org, select, verein {senza account} other {senza {authShort}}}. Il comitato vede subito dove mancano persone."
+  },
+  "comparison": {
+    "badge": "Confronto diretto",
+    "title": "Perché non semplicemente Excel o WhatsApp?",
+    "intro": "Quasi ogni comitato e team di direzione inizia con una lista Excel condivisa o una chat di gruppo – e si scontra presto con le stesse frustrazioni. Qui vedi la differenza a colpo d’occhio.",
+    "feature": "Funzione / criterio",
+    "swipe": "← Scorri →",
+    "excel": "Excel / Sheets",
+    "chat": "WhatsApp / Doodle",
+    "rows": {
+      "noPassword": {
+        "title": "Iscrizione senza password né app",
+        "desc": "I volontari cliccano semplicemente sul link e si iscrivono.",
+        "excel": "Serve un account o l’app Excel",
+        "chat": "Confuso nella chat di gruppo",
+        "app": "In 10 s via link (anche per i genitori)"
+      },
+      "sso": {
+        "title": "Collegamento {authShort} per i responsabili",
+        "desc": "Accesso con le credenziali {authShort} esistenti.",
+        "excel": "Ricopiare tutto a mano",
+        "chat": "Nessuna interfaccia",
+        "app": "Nome, {unit} e unità sincronizzati"
+      },
+      "minAge": {
+        "title": "Controllo automatico dell’età minima",
+        "desc": "Turni con limite d’età (p. es. bar dai 16 o 18 anni).",
+        "excel": "Calcolare a mano",
+        "chat": "Nessun controllo",
+        "app": "Controllo automatico prima dell’iscrizione"
+      },
+      "calendar": {
+        "title": "Sincronizzazione calendario e promemoria",
+        "desc": "L’impegno direttamente nel calendario del telefono.",
+        "excel": "Nessun promemoria",
+        "chat": "Si perde nella cronologia della chat",
+        "app": "Voce automatica nel calendario"
+      },
+      "overview": {
+        "title": "Panoramica in diretta per il comitato",
+        "desc": "Vedere subito quali turni sono ancora liberi.",
+        "excel": "Conteggio manuale faticoso",
+        "chat": "Nessuno ha la panoramica",
+        "app": "Barra in tempo reale per turno"
+      },
+      "template": {
+        "title": "Modello per l’anno prossimo",
+        "desc": "Riutilizzare facilmente i turni di campi e feste.",
+        "excel": "Copia-incolla soggetto a errori",
+        "chat": "Ricominciare ogni volta da capo",
+        "app": "1 clic: riprendi l’anno precedente"
+      },
+      "privacy": {
+        "title": "Protezione dei dati secondo la nLPD svizzera",
+        "desc": "Numeri ed e-mail visibili solo al comitato.",
+        "excel": "Tutti vedono tutti i numeri privati",
+        "chat": "Dati pubblici nella chat di gruppo",
+        "app": "Dati di contatto protetti"
+      },
+      "vouchers": {
+        "title": "Buoni pasto digitali",
+        "desc": "Scansionare il codice QR per i pasti dei volontari allo stand.",
+        "excel": "Foglietti o liste",
+        "chat": "Nessuna funzione buoni",
+        "app": "Buono digitale con scansione in 1 clic"
+      }
+    }
+  },
+  "benefits": {
+    "badge": "Cosa vi offre",
+    "title": "{org, select, verein {Pianificazione dei volontari, pensata per la vita associativa.} other {Pianificazione dei volontari, pensata per la quotidianità {orgName}.}}",
+    "text": "Che tu stia alla griglia, organizzi l’evento o diriga {org, select, jubla {tutto il {unit}} verein {tutta l’{unit}} other {tutta la {unit}}} – il piano dei turni vi toglie l’organizzazione faticosa, dalla sagra al campo estivo.",
+    "helpersLabel": "Per i volontari",
+    "helpersTitle": "Iscritti in 10 secondi",
+    "helpersText": "Scegli il turno direttamente nel browser della chat. Nessuna nuova password e promemoria automatico nel calendario prima dell’impegno.",
+    "committeeLabel": "Per il comitato dell’evento",
+    "committeeTitle": "Sapere sempre chi manca",
+    "committeeText": "Panoramica in diretta di tutti i turni, controllo automatico dell’età (p. es. bar dai 18 anni) e modelli dell’anno precedente con un clic.",
+    "leadLabel": "{org, select, verein {Per il {lead}} other {Per la {lead}}}",
+    "leadTitle": "Indirizzo proprio, {authShort} sincronizzato",
+    "leadText": "Sottodominio fisso con logo e colore {org, select, jubla {del vostro {unit}} other {della vostra {unit}}}. I diritti di direzione vengono ripresi direttamente da {authShort}.",
+    "leadLink": "{org, select, jubla {Configura il {unit}} verein {Configura l’{unit}} other {Configura la {unit}}}"
+  },
+  "features": {
+    "loginTitle": "Accesso senza nuova password",
+    "loginText": "I responsabili accedono con il loro account {authShort} abituale – nome, {unit} e unità sono subito presenti. Genitori, ex membri e volontari si iscrivono semplicemente con {nickname} e data di nascita.",
+    "loginWith": "Con {authShort} o {nickname}",
+    "loginOnce": "Un accesso, dentro ovunque",
+    "addressTitle": "Il vostro indirizzo",
+    "addressText": "{org, select, jubla {Il vostro {unit} riceve} other {La vostra {unit} riceve}} un indirizzo web fisso con logo e colore. Condiviso una volta, tutti gli eventi si trovano lì, anno dopo anno.",
+    "addressExample": "vostra-{slug}",
+    "addressLink": "{org, select, jubla {Configura il {unit}} verein {Configura l’{unit}} other {Configura la {unit}}}",
+    "eventsTitle": "Tutti gli eventi in un unico posto",
+    "eventsText": "Pianificate in parallelo sagra, campo di Pentecoste, campo estivo o giubileo. Ogni comitato accede al proprio evento, e l’anno prossimo ripartite dal modello di oggi.",
+    "eventsCount": "Eventi illimitati",
+    "eventsScope": "Ogni comitato vede la propria area",
+    "mobileTitle": "Fatto per il cellulare",
+    "mobileText": "Iscriversi richiede pochi secondi, direttamente dalla chat. E il comitato può assegnare qualcuno anche sotto il tendone o alla griglia. Su iPhone e Android, senza installazione.",
+    "mobileAge": "Età minima verificata automaticamente",
+    "mobileAgeExample": "p. es. bar dai 18 anni"
+  },
+  "final": {
+    "badge": "Pronti per il prossimo evento?",
+    "title": "Basta caos di Excel e turni scoperti.",
+    "text": "Sagra, campo estivo o giubileo: iniziate ora con {name}. Il centro assistenza risponde passo dopo passo alle domande su uso e configurazione.",
+    "ctaLogin": "Accedi ora",
+    "note": "Un progetto indipendente e volontario · Gratuito per {target}."
+  },
+  "footer": {
+    "copyright": "© {year} {name} · Progetto indipendente e volontario per {target}",
+    "llmsTitle": "File di contesto per agenti IA e modelli linguistici",
+    "centralLogin": "Accesso centrale",
+    "alsoForAssociations": "Anche per i movimenti:"
+  },
+  "account": {
+    "login": "Accedi",
+    "profileLabel": "Il tuo profilo e i tuoi turni",
+    "toUnit": "{org, select, jubla {Al tuo {unit} ({name})} other {Alla tua {unit} ({name})}}",
+    "toShifts": "Ai tuoi turni ({name})",
+    "createUnit": "{org, select, jubla {Configura i turni del tuo {unit}} other {Configura i turni della tua {unit}}}"
+  },
+  "demo": {
+    "badgeAuth": "{org, select, verein {Semplicemente con l’e-mail} other {Con {authShort}}}",
+    "eventTitle": "{org, select, pfadi {Campo estivo scout 2026} jubla {Giornata Jubla & festa parrocchiale} verein {Torneo del paese 2026} other {Sagra di Illnau 2026}}",
+    "eventSubtitle": "{org, select, pfadi {Cucina del campo & posti • Pfadi St. Georg} jubla {Tendone & giochi • Jubla Wohlen} verein {Ristoro & bar • TV Oberglatt} other {Tendone & bar • Cevi Illnau}}",
+    "live": "LIVE",
+    "filled": "{filled}/{total} occupati",
+    "free": "{count, plural, one {# posto libero} other {# posti liberi}}",
+    "occupancy": "Occupazione in diretta",
+    "grill": "Griglia & patatine",
+    "full": "{filled}/{total} pieno",
+    "bar": "Bar & cocktail",
+    "you": "Tu!",
+    "oneFree": "1 posto libero",
+    "joined": "Ci sei!",
+    "signUp": "Iscriviti",
+    "night": "Guardia notturna & sorveglianza tende",
+    "urgent": "Urgente",
+    "plusFree": "+ {count} libero",
+    "tryIt": "Clicca su un turno per provare",
+    "saved": "✓ Turno salvato",
+    "interactive": "Interattivo",
+    "toastTwo": "2 turni prenotati! Sincronizzazione calendario attiva",
+    "toastOne": "Turno prenotato! Promemoria automatico attivo"
+  },
+  "graphics": {
+    "forLeaders": "Per i responsabili",
+    "leadersText": "Nome, {unit} e ruolo di direzione collegati automaticamente",
+    "oneClick": "1 clic",
+    "nicknameBirth": "{nickname} & data di nascita",
+    "forHelpers": "Per volontari & genitori",
+    "helpersText": "Niente password, niente app, iscritti in 10 secondi",
+    "noAccount": "Senza account",
+    "unitPlanning": "{org, select, jubla {Turni del {unit}} verein {Turni dell’{unit}} other {Turni della {unit}}}",
+    "active": "Attivo",
+    "shiftCount": "{count} turni",
+    "shiftCountPercent": "{count} turni · {percent} %",
+    "summerCamp": "Campo estivo",
+    "kitchenSetup": "Cucina & allestimento",
+    "tasks": "Cucina, allestimento, posti",
+    "event1": "{org, select, pfadi {Campo estivo 2026} jubla {Giornata Jubla 2026} verein {Torneo del paese 2026} other {Sagra 2026}}",
+    "event2": "{org, select, jubla {Festa parrocchiale} verein {Festa dell’associazione} other {Campo di Pentecoste 2026}}",
+    "event3": "{org, select, verein {🏆 Torneo popolare attivo} other {🏕️ Campo estivo attivo}}",
+    "phoneEvent": "{org, select, pfadi {Campo estivo 2026} jubla {Giornata Jubla} verein {Torneo del paese} other {Sagra di Illnau}}",
+    "phoneFull": "PIENO",
+    "phoneBar": "Bar 16+",
+    "phoneJoined": "ISCRITTO",
+    "phoneTeardown": "Smontaggio domenica",
+    "phoneOneFree": "1 LIBERO",
+    "confirmed": "Turno confermato!",
+    "inCalendar": "Aggiunto al calendario",
+    "noApp": "⚡ Senza nessuna app"
+  },
+  "legal": {
+    "updated": "Stato: {date}",
+    "navLabel": "Note legali",
+    "privacy": "Protezione dei dati",
+    "terms": "Condizioni di utilizzo",
+    "imprint": "Note legali",
+    "originalTitle": "Versione in lingua originale",
+    "originalText": "Fa fede la versione originale in lingua tedesca. Questa pagina sarà presto disponibile con una traduzione giuridica verificata."
+  },
+  "profile": {
+    "loadError": "Impossibile caricare il profilo.",
+    "backTo": "Torna a {name}"
+  },
+  "redirect": {
+    "login": "Reindirizzamento all’accesso centrale …",
+    "createUnit": "{org, select, jubla {Reindirizzamento alla configurazione del tuo {unit} …} other {Reindirizzamento alla configurazione della tua {unit} …}}",
+    "fallback": "Se il reindirizzamento non parte automaticamente:",
+    "clickHere": "Clicca qui",
+    "loading": "Caricamento …"
+  },
+  "errors": {
+    "home": "Torna alla pagina iniziale",
+    "helpCenter": "Centro assistenza",
+    "centralLogin": "Accesso centrale"
+  },
+  "structuredData": {
+    "orgDescription": "Progetto indipendente e volontario per {target}.",
+    "appDescription": "Lista volontari e pianificazione dei turni gratuite per {target}: campi ed eventi senza caos di Excel. Tutti i volontari si iscrivono tramite link.",
+    "alternatePlanner": "Turni {orgName}",
+    "alternatePlanning": "Pianificazione volontari {orgName}",
+    "alternateList": "Lista volontari online"
+  },
+  "meta": {
+    "title": "{name} · Lista volontari e turni per {target}"
+  }
+}

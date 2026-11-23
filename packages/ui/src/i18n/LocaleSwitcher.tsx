@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { Languages } from 'lucide-react';
 import {
+  INTL_LOCALES,
   LOCALE_COOKIE,
   LOCALE_COOKIE_MAX_AGE,
   LOCALE_LABELS,
@@ -38,9 +39,14 @@ export function useLocaleSettings(): LocaleSettings {
   return useContext(LocaleSettingsContext);
 }
 
-/** Aktuelle Sprache als Kurzcode (next-intl arbeitet mit de-CH usw.) */
+/** Aktuelle Sprache als Kurzcode (de, fr …), egal ob next-intl `de-CH` (Apps) oder `de` (Landing mit Routing) liefert */
 export function useAppLocale(): Locale {
   return parseLocale(useLocale()) ?? 'de';
+}
+
+/** BCP-47 für Datums- und Zahlenformate (de-CH, fr-CH …), auch auf der Landing mit Routing-Sprachen */
+export function useIntlLocale(): string {
+  return INTL_LOCALES[useAppLocale()];
 }
 
 function cookieDomain(hostname: string): string | null {

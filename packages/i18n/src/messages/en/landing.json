@@ -1,0 +1,247 @@
+{
+  "header": {
+    "tagline": "Volunteer scheduling made easy",
+    "help": "Help",
+    "createUnit": "{org, select, other {Register a {unit}}}"
+  },
+  "hero": {
+    "badge": "Volunteer list online • Shift plan {highlight}",
+    "title": "Enough volunteers for every shift.",
+    "titleHighlight": "Without the Excel and WhatsApp chaos.",
+    "intro": "Free volunteer scheduling for {target}: create shifts online, share the link to the volunteer list and volunteers sign themselves up in seconds. The organising committee sees every assignment live. Anyone can sign up, including parents, alumni and people from friendly clubs – no account and no tedious spreadsheets.",
+    "ctaLogin": "Open shift plan / Log in",
+    "howItWorks": "How it works",
+    "protectedTitle": "Shift plans are protected:",
+    "protectedText": "To protect volunteer data from unauthorised access, shift plans are not listed publicly. You get the link to your event directly from your leadership team by email or WhatsApp.",
+    "leadQuestion": "{org, select, verein {Do you run a club?} other {Do you lead a {orgName} {unit}?}}",
+    "proofLink": "1 link",
+    "proofLinkText": "for all volunteers",
+    "proofPhone": "Mobile",
+    "proofPhoneText": "no app to install",
+    "proofFree": "CHF 0",
+    "proofFreeText": "for all {target}"
+  },
+  "associations": {
+    "title": "With Cevi, Scouts or Jubla? There are dedicated versions.",
+    "text": "Leaders log in there directly with their association account; department or group and leadership rights are applied automatically. Same features, also free.",
+    "for": "For {target}",
+    "login": "Log in with {authShort}"
+  },
+  "steps": {
+    "title": "A full volunteer list in three steps.",
+    "step": "Step {number}",
+    "createTitle": "Create the event",
+    "createText": "The committee sets up shifts: when, what needs doing and how many people are needed. With last year’s template it takes minutes.",
+    "shareTitle": "Share the link",
+    "shareText": "{org, select, other {Send the link via WhatsApp, email or flyer. You decide who may sign up: everyone, only your {unit} or individual age groups.}}",
+    "signupTitle": "Everyone signs up",
+    "signupText": "Volunteers pick their own shift, including parents and alumni {org, select, verein {without an account} other {without {authShort}}}. The committee instantly sees where gaps remain."
+  },
+  "comparison": {
+    "badge": "Side by side",
+    "title": "Why not just Excel or WhatsApp?",
+    "intro": "Almost every festival committee and leadership team starts with a shared spreadsheet or a group chat – and quickly hits the same frustrations. Here is the difference at a glance.",
+    "feature": "Feature / criterion",
+    "swipe": "← Swipe →",
+    "excel": "Excel / Sheets",
+    "chat": "WhatsApp / Doodle",
+    "rows": {
+      "noPassword": {
+        "title": "Sign up without password or app",
+        "desc": "Volunteers simply click the link and sign up.",
+        "excel": "Account or Excel app required",
+        "chat": "Messy in the group chat",
+        "app": "10 sec via link (parents too)"
+      },
+      "sso": {
+        "title": "{authShort} login for leaders",
+        "desc": "Log in with existing {authShort} credentials.",
+        "excel": "Type everything by hand",
+        "chat": "No integration",
+        "app": "Name, {unit} & age groups synced"
+      },
+      "minAge": {
+        "title": "Automatic minimum age check",
+        "desc": "Shifts with an age limit (e.g. bar from 16 or 18).",
+        "excel": "Calculate by hand",
+        "chat": "No control",
+        "app": "Automatic check before sign-up"
+      },
+      "calendar": {
+        "title": "Calendar sync & reminders",
+        "desc": "The shift right in your phone calendar.",
+        "excel": "No reminder",
+        "chat": "Gets lost in the chat history",
+        "app": "Automatic calendar entry"
+      },
+      "overview": {
+        "title": "Live overview for the committee",
+        "desc": "See instantly which shifts are still open.",
+        "excel": "Tedious manual counting",
+        "chat": "Nobody has the overview",
+        "app": "Real-time bar per shift"
+      },
+      "template": {
+        "title": "Template for next year",
+        "desc": "Easily reuse camp and festival shifts.",
+        "excel": "Error-prone copy-paste",
+        "chat": "Start from scratch every time",
+        "app": "1 click: copy last year"
+      },
+      "privacy": {
+        "title": "Data protection under Swiss FADP",
+        "desc": "Phone numbers and emails only visible to the committee.",
+        "excel": "Everyone sees all private numbers",
+        "chat": "Data public in the group chat",
+        "app": "Contact details protected"
+      },
+      "vouchers": {
+        "title": "Digital meal vouchers",
+        "desc": "Scan the QR code for volunteer meals at the stand.",
+        "excel": "Paper slips or lists",
+        "chat": "No voucher feature",
+        "app": "Digital voucher with 1-click scan"
+      }
+    }
+  },
+  "benefits": {
+    "badge": "What you get",
+    "title": "{org, select, verein {Volunteer scheduling, built for everyday club life.} other {Volunteer scheduling, built for everyday {orgName} life.}}",
+    "text": "{org, select, other {Whether you’re at the grill, organising the event or leading the whole {unit} – the shift plan takes the tedious organising off your hands, from the village fair to summer camp.}}",
+    "helpersLabel": "For volunteers",
+    "helpersTitle": "Signed up in 10 seconds",
+    "helpersText": "Pick a shift right in the chat browser. No new password and an automatic calendar reminder before the shift.",
+    "committeeLabel": "For the event committee",
+    "committeeTitle": "Always know who’s missing",
+    "committeeText": "Live overview of all shifts, automatic age check (e.g. bar from 18) and last year’s templates in one click.",
+    "leadLabel": "{org, select, other {For the {lead}}}",
+    "leadTitle": "Your own address, {authShort} in sync",
+    "leadText": "{org, select, other {A fixed subdomain with your {unit}’s logo and colour. Leadership rights are taken directly from {authShort}.}}",
+    "leadLink": "{org, select, other {Set up your {unit} now}}"
+  },
+  "features": {
+    "loginTitle": "Log in without a new password",
+    "loginText": "Leaders log in with their usual {authShort} account – name, {unit} and age groups are there instantly. Parents, alumni and volunteers simply sign up with their {nickname} and date of birth.",
+    "loginWith": "With {authShort} or {nickname}",
+    "loginOnce": "Log in once, you’re in everywhere",
+    "addressTitle": "Your own address",
+    "addressText": "{org, select, other {Your {unit} gets a fixed web address with logo and colour. Share it once and every event is there, year after year.}}",
+    "addressExample": "your-{slug}",
+    "addressLink": "{org, select, other {Set up {unit}}}",
+    "eventsTitle": "All events in one place",
+    "eventsText": "Plan the village fair, Whitsun camp, summer camp or anniversary at the same time. Each committee has access to its own event, and next year you start from today’s template.",
+    "eventsCount": "Unlimited events",
+    "eventsScope": "Each committee sees its own area",
+    "mobileTitle": "Made for mobile",
+    "mobileText": "Signing up takes seconds, straight from the chat. And the committee can still assign someone quickly in the festival tent or at the grill. On iPhone and Android, no installation.",
+    "mobileAge": "Minimum age checked automatically",
+    "mobileAgeExample": "e.g. bar from 18"
+  },
+  "final": {
+    "badge": "Ready for your next event?",
+    "title": "No more spreadsheet chaos and empty shifts.",
+    "text": "Village fair, summer camp or anniversary: get started now with {name}. The help centre answers questions about use and setup step by step.",
+    "ctaLogin": "Log in now",
+    "note": "An independent, volunteer-run project · Free for all {target}."
+  },
+  "footer": {
+    "copyright": "© {year} {name} · Independent, volunteer-run project for {target}",
+    "llmsTitle": "Context file for AI agents & language models",
+    "centralLogin": "Central login",
+    "alsoForAssociations": "Also for associations:"
+  },
+  "account": {
+    "login": "Log in",
+    "profileLabel": "Your profile and shifts",
+    "toUnit": "{org, select, other {To your {unit} ({name})}}",
+    "toShifts": "To your shifts ({name})",
+    "createUnit": "{org, select, other {Set up a shift plan for your {unit}}}"
+  },
+  "demo": {
+    "badgeAuth": "{org, select, verein {Simply with email} other {With {authShort}}}",
+    "eventTitle": "{org, select, pfadi {Scout summer camp 2026} jubla {Jubla day & parish fair} verein {Village tournament 2026} other {Illnau village fair 2026}}",
+    "eventSubtitle": "{org, select, pfadi {Camp kitchen & posts • Pfadi St. Georg} jubla {Festival tent & games • Jubla Wohlen} verein {Food stand & bar • TV Oberglatt} other {Festival tent & bar • Cevi Illnau}}",
+    "live": "LIVE",
+    "filled": "{filled}/{total} filled",
+    "free": "{count, plural, one {# spot left} other {# spots left}}",
+    "occupancy": "Live staffing",
+    "grill": "Grill & fries",
+    "full": "{filled}/{total} full",
+    "bar": "Bar & cocktails",
+    "you": "You!",
+    "oneFree": "1 spot left",
+    "joined": "You’re in!",
+    "signUp": "Sign up",
+    "night": "Night watch & tent supervision",
+    "urgent": "Urgent",
+    "plusFree": "+ {count} open",
+    "tryIt": "Click a shift to try it out",
+    "saved": "✓ Shift saved",
+    "interactive": "Interactive",
+    "toastTwo": "2 shifts booked! Calendar sync on",
+    "toastOne": "Shift booked! Automatic reminder on"
+  },
+  "graphics": {
+    "forLeaders": "For leaders",
+    "leadersText": "Name, {unit} & leadership role linked automatically",
+    "oneClick": "1 click",
+    "nicknameBirth": "{nickname} & date of birth",
+    "forHelpers": "For volunteers & parents",
+    "helpersText": "No password, no app, signed up in 10 seconds",
+    "noAccount": "No account",
+    "unitPlanning": "{org, select, other {Shift planning for the {unit}}}",
+    "active": "Active",
+    "shiftCount": "{count} shifts",
+    "shiftCountPercent": "{count} shifts · {percent}%",
+    "summerCamp": "Summer camp",
+    "kitchenSetup": "Kitchen & setup",
+    "tasks": "Kitchen, setup, posts",
+    "event1": "{org, select, pfadi {Summer camp 2026} jubla {Jubla day 2026} verein {Village tournament 2026} other {Village fair 2026}}",
+    "event2": "{org, select, jubla {Parish fair} verein {Club party} other {Whitsun camp 2026}}",
+    "event3": "{org, select, verein {🏆 Fun tournament live} other {🏕️ Summer camp live}}",
+    "phoneEvent": "{org, select, pfadi {Summer camp 2026} jubla {Jubla day} verein {Village tournament} other {Illnau fair}}",
+    "phoneFull": "FULL",
+    "phoneBar": "Bar 16+",
+    "phoneJoined": "IN",
+    "phoneTeardown": "Teardown Sunday",
+    "phoneOneFree": "1 OPEN",
+    "confirmed": "Shift confirmed!",
+    "inCalendar": "Added to calendar",
+    "noApp": "⚡ No app needed"
+  },
+  "legal": {
+    "updated": "Last updated: {date}",
+    "navLabel": "Legal",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "imprint": "Legal Notice",
+    "originalTitle": "Original language version",
+    "originalText": "The original German version is legally binding. This page will soon be available with a verified legal translation."
+  },
+  "profile": {
+    "loadError": "Could not load profile.",
+    "backTo": "Back to {name}"
+  },
+  "redirect": {
+    "login": "Redirecting to the central login …",
+    "createUnit": "{org, select, other {Redirecting to set up your {unit} …}}",
+    "fallback": "If the redirect does not start automatically:",
+    "clickHere": "Click here",
+    "loading": "Loading …"
+  },
+  "errors": {
+    "home": "Back to the homepage",
+    "helpCenter": "Help centre",
+    "centralLogin": "Central login"
+  },
+  "structuredData": {
+    "orgDescription": "Independent, volunteer-run project for {target}.",
+    "appDescription": "Free volunteer list and shift planning for {target}: camps and events without spreadsheet chaos. All volunteers can sign up via link.",
+    "alternatePlanner": "{orgName} shift planner",
+    "alternatePlanning": "{orgName} volunteer scheduling",
+    "alternateList": "Volunteer list online"
+  },
+  "meta": {
+    "title": "{name} · Volunteer list & shift planner for {target}"
+  }
+}

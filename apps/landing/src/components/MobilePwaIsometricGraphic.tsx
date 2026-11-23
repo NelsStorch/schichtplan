@@ -1,6 +1,8 @@
 
 
-import type { OrganizationConfig } from '@schichtplan/shared';
+import { useLocale, useTranslations } from 'next-intl';
+import { getOrganization, type OrganizationConfig } from '@schichtplan/shared';
+import { landingVocab } from '@/lib/landingVocab';
 
 export function MobilePwaIsometricGraphic({
   className = '',
@@ -9,17 +11,11 @@ export function MobilePwaIsometricGraphic({
   className?: string;
   org?: OrganizationConfig;
 }) {
-  const isPfadi = org?.slug === 'pfadi';
-  const isJubla = org?.slug === 'jubla';
-  const isVerein = org?.slug === 'verein';
-
-  const eventName = isPfadi
-    ? 'SoLa 2026'
-    : isJubla
-    ? 'Jubla-Tag'
-    : isVerein
-    ? 'Dorfturnier'
-    : 'Chilbi Illnau';
+  const locale = useLocale();
+  const t = useTranslations('landing.graphics');
+  const vocab = landingVocab(org ?? getOrganization(null, locale), locale);
+  const tDemo = useTranslations('landing.demo');
+  const eventName = t('phoneEvent', vocab);
 
   return (
     <div className={`relative flex items-center justify-center select-none ${className}`}>
@@ -113,40 +109,40 @@ export function MobilePwaIsometricGraphic({
             {/* In-app Shift row 1: Grill & Pommes (Full) */}
             <rect x="12" y="47" width="121" height="27" rx="7" fill="#27272a" stroke="#3f3f46" strokeWidth="0.8" />
             <text x="20" y="59" fill="#fafafa" fontSize="7.5" fontWeight="600" fontFamily="system-ui, -apple-system, sans-serif">
-              Grill & Pommes
+              {tDemo('grill')}
             </text>
             <text x="20" y="68" fill="#a1a1aa" fontSize="6.5" fontFamily="monospace">
               18:00 - 21:00
             </text>
             <rect x="97" y="53" width="28" height="13" rx="6.5" fill="#3f3f46" />
             <text x="102" y="62.5" fill="#d4d4d8" fontSize="6" fontWeight="bold" fontFamily="system-ui, -apple-system, sans-serif">
-              VOLL
+              {t('phoneFull')}
             </text>
 
             {/* In-app Shift row 2: Barbetrieb (Active / Self enrolled) */}
             <rect x="12" y="78" width="121" height="27" rx="7" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" strokeWidth="1" />
             <text x="20" y="90" fill="#fafafa" fontSize="7.5" fontWeight="600" fontFamily="system-ui, -apple-system, sans-serif">
-              Barbetrieb 16+
+              {t('phoneBar')}
             </text>
             <text x="20" y="99" fill="#34d399" fontSize="6.5" fontFamily="monospace">
               21:00 - 00:00 (Du!)
             </text>
             <rect x="91" y="84" width="34" height="13" rx="6.5" fill="#10b981" />
             <text x="96" y="93.5" fill="#ffffff" fontSize="6" fontWeight="bold" fontFamily="system-ui, -apple-system, sans-serif">
-              DABEI
+              {t('phoneJoined')}
             </text>
 
             {/* In-app Shift row 3: Abbau Sonntag (Open slot) */}
             <rect x="12" y="109" width="121" height="27" rx="7" fill="#27272a" stroke="#3f3f46" strokeWidth="0.8" />
             <text x="20" y="121" fill="#fafafa" fontSize="7.5" fontWeight="600" fontFamily="system-ui, -apple-system, sans-serif">
-              Abbau Sonntag
+              {t('phoneTeardown')}
             </text>
             <text x="20" y="130" fill="#a1a1aa" fontSize="6.5" fontFamily="monospace">
               08:00 - 11:00
             </text>
             <rect x="91" y="115" width="34" height="13" rx="6.5" fill="rgba(245, 158, 11, 0.18)" stroke="#f59e0b" strokeWidth="0.8" />
             <text x="96" y="124.5" fill="#fbbf24" fontSize="6" fontWeight="bold" fontFamily="system-ui, -apple-system, sans-serif">
-              1 FREI
+              {t('phoneOneFree')}
             </text>
 
             {/* Home indicator bar at bottom */}
@@ -177,10 +173,10 @@ export function MobilePwaIsometricGraphic({
           <path d="M15 19 L17.5 21.5 L21.5 16.5" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           {/* Text */}
           <text x="32" y="16.5" fill="#ffffff" fontSize="8.5" fontWeight="bold" fontFamily="system-ui, -apple-system, sans-serif">
-            Schicht bestätigt!
+            {t('confirmed')}
           </text>
           <text x="32" y="27.5" fill="#a1a1aa" fontSize="6.5" fontFamily="system-ui, -apple-system, sans-serif">
-            Im Kalender eingetragen
+            {t('inCalendar')}
           </text>
         </g>
 
@@ -191,7 +187,7 @@ export function MobilePwaIsometricGraphic({
           <rect x="0" y="0" width="120" height="28" rx="14" fill="rgba(24, 24, 27, 0.94)" stroke="#f59e0b" strokeWidth="1" />
           <circle cx="14" cy="14" r="4.5" fill="#f59e0b" />
           <text x="25" y="17.5" fill="#fef3c7" fontSize="8.5" fontWeight="600" fontFamily="system-ui, -apple-system, sans-serif">
-            ⚡ Ganz ohne App
+            {t('noApp')}
           </text>
         </g>
       </svg>
