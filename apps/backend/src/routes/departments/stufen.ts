@@ -7,6 +7,7 @@ import {
 } from '@schichtplan/shared';
 import { autoCreateAllCeviDbDepartmentStufen, backfillCeviDbStufen, } from '../../services/homeDepartment.js';
 import { toStufeDto, stufenSyncDue, isUniqueViolation, requireDepartmentPermission, } from './shared.js';
+import { type ErrorTranslator } from '../../plugins/i18n.js';
 
 /** Stufen der Abteilung */
 const departmentStufenRoutes: FastifyPluginAsync = async (fastify) => {
@@ -17,11 +18,12 @@ const departmentStufenRoutes: FastifyPluginAsync = async (fastify) => {
   /** Prüft, ob eine Hitobito-Gruppen-ID tatsächlich zur Verbands-Gruppe dieser Abteilung gehört */
   async function canLinkHitobitoGroup(
     tenant: { organization: OrganizationType; hitobitoGroupId: number | null },
-    hitobitoGroupId: number | null | undefined
+    hitobitoGroupId: number | null | undefined,
+    t: ErrorTranslator
   ): Promise<string | null> {
     if (hitobitoGroupId === null || hitobitoGroupId === undefined) return null;
     if (tenant.organization === 'OTHER' || tenant.hitobitoGroupId === null) {
-      return 'Nur Abteilungen mit verknüpfter Verbands-Gruppe können eine Stufe mit der Verbands-DB verknüpfen.';
+      return t('stufe.linkNeedsGroup');
     }
     const group = await fastify.prisma.hitobitoGroup.findUnique({
       where: { provider_id: { provider: tenant.organization, id: hitobitoGroupId } },
@@ -33,7 +35,7 @@ const departmentStufenRoutes: FastifyPluginAsync = async (fastify) => {
         group.jungscharId !== tenant.hitobitoGroupId &&
         group.ortsgruppeId !== tenant.hitobitoGroupId)
     ) {
-      return 'Diese Verbands-Gruppe gehört nicht zu deiner Abteilung.';
+      return t('stufe.groupNotOwn');
     }
     return null;
   }
@@ -49,7 +51,7 @@ const departmentStufenRoutes: FastifyPluginAsync = async (fastify) => {
       },
     },
     async (request, reply) => {
-    if (!request.tenant) return reply.status(404).send({ error: 'Keine Abteilung im Kontext' });
+    if (!request.tenant) return reply.fail(404, 'department.missingContext');
     // Öffentlicher Abruf: das Nachführen (mit Schreibzugriffen) höchstens alle paar Minuten pro Abteilung.
     // Beim Cevi.DB-Login und in den Stufen-Vorschlägen läuft es ohnehin.
     if (stufenSyncDue(request.tenant.id)) {
@@ -83,7 +85,7 @@ const departmentStufenRoutes: FastifyPluginAsync = async (fastify) => {
     try {
       const count = await fastify.prisma.departmentStufe.count({ where: { departmentId: tenant.id } });
       const hitobitoGroupId = input.hitobitoGroupId ?? input.ceviDbGroupId ?? null;
-      const groupErr = await canLinkHitobitoGroup(tenant, hitobitoGroupId);
+      const groupErr = await canLinkHitobitoGroup(tenant, hitobitoGroupId, request.t);
       if (groupErr) return reply.status(400).send({ error: groupErr });
       const stufe = await fastify.prisma.departmentStufe.create({
         data: {
@@ -97,7 +99,7 @@ const departmentStufenRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.status(201).send(toStufeDto(stufe));
     } catch (err) {
       if (isUniqueViolation(err)) {
-        return reply.status(409).send({ error: 'Diese Stufe (Name oder Cevi.DB-Gruppe) gibt es schon' });
+        return reply.fail(409, 'stufe.exists');
       }
       throw err;
     }
@@ -128,12 +130,12 @@ const departmentStufenRoutes: FastifyPluginAsync = async (fastify) => {
       const existing = await fastify.prisma.departmentStufe.findFirst({
         where: { id: request.params.id, departmentId: tenant.id },
       });
-      if (!existing) return reply.status(404).send({ error: 'Stufe nicht gefunden' });
+      if (!existing) return reply.fail(404, 'stufe.notFound');
 
       try {
         const hitobitoGroupId = input.hitobitoGroupId !== undefined ? input.hitobitoGroupId : input.ceviDbGroupId;
         if (hitobitoGroupId !== undefined && hitobitoGroupId !== existing.hitobitoGroupId) {
-          const groupErr = await canLinkHitobitoGroup(tenant, hitobitoGroupId);
+          const groupErr = await canLinkHitobitoGroup(tenant, hitobitoGroupId, request.t);
           if (groupErr) return reply.status(400).send({ error: groupErr });
         }
         const stufe = await fastify.prisma.departmentStufe.update({
@@ -152,7 +154,7 @@ const departmentStufenRoutes: FastifyPluginAsync = async (fastify) => {
         return toStufeDto(stufe);
       } catch (err) {
         if (isUniqueViolation(err)) {
-          return reply.status(409).send({ error: 'Diese Stufe (Name oder Cevi.DB-Gruppe) gibt es schon' });
+          return reply.fail(409, 'stufe.exists');
         }
         throw err;
       }
@@ -179,8 +181,8 @@ const departmentStufenRoutes: FastifyPluginAsync = async (fastify) => {
       const deleted = await fastify.prisma.departmentStufe.deleteMany({
         where: { id: request.params.id, departmentId: ctx.tenant.id },
       });
-      if (deleted.count === 0) return reply.status(404).send({ error: 'Stufe nicht gefunden' });
-      return { message: 'Stufe gelöscht' };
+      if (deleted.count === 0) return reply.fail(404, 'stufe.notFound');
+      return { message: request.t('success.stufeDeleted') };
     }
   );
 

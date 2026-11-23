@@ -12,10 +12,10 @@ import {
 import { departmentOrtsgruppeId, NO_HOME_CONFIRMATION } from '../../services/homeDepartment.js';
 import { personLabel } from '../../services/profile.js';
 import { isProviderJoinSource } from '../../services/departmentJoin.js';
-import { UNRELATED_PERSON_ERROR, isDepartmentManager } from '../../services/departmentVisibility.js';
+import { isDepartmentManager } from '../../services/departmentVisibility.js';
 import { canGrantPermissions, } from '../../services/permissions.js';
 import { recordDepartmentAction, toDepartmentAuditDto } from '../../services/departmentAudit.js';
-import { CEVINAME_ROLE_ERROR, isCeviNameProfile } from '../../services/nicknameLogin.js';
+import { isCeviNameProfile } from '../../services/nicknameLogin.js';
 import { contactCandidateWhere, requireDepartmentPermission, canEditPerson, homeSource, canConfirmHome } from './shared.js';
 
 /** Personen der Abteilung: Rechte, Stufen, Zugehörigkeit, Protokoll, Mitglieder */
@@ -249,10 +249,10 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
           },
         },
       });
-      if (!user) return reply.status(404).send({ error: 'Person nicht gefunden' });
+      if (!user) return reply.fail(404, 'generic.personNotFound');
       const membership = user.memberships[0] ?? null;
       if (user.homeDepartmentId !== tenant.id && !membership) {
-        return reply.status(400).send({ error: UNRELATED_PERSON_ERROR });
+        return reply.status(400).send({ error: request.t('people.unrelatedPerson') });
       }
       const currentRole = membership?.role ?? 'HELPER';
       const currentPermissions = currentRole === 'ADMIN' ? [] : normalizePermissions(membership?.permissions ?? []);
@@ -268,26 +268,20 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
 
       if (nextRole !== undefined && nextRole !== currentRole) {
         if (!isOther) {
-          return reply.status(400).send({
-            error: 'Die Abteilungsleitung hat alle Rechte. Sie ändert sich nur über Cevi.DB oder das Admin-Portal.',
-          });
+          return reply.fail(400, 'people.leaderHasAllRights');
         }
         if (!access.hasFullAccess) {
-          return reply.status(403).send({
-            error: 'Nur die Vereinsleitung kann Leitungsrollen vergeben oder entziehen.',
-          });
+          return reply.fail(403, 'people.onlyClubLeadersGrant');
         }
         if (nextRole === 'ADMIN' && isCeviNameProfile(user)) {
-          return reply.status(400).send({ error: CEVINAME_ROLE_ERROR });
+          return reply.status(400).send({ error: request.t('people.nicknameProfileNoRoles') });
         }
         if (currentRole === 'ADMIN' && nextRole === 'HELPER') {
           const otherLeaders = await fastify.prisma.departmentMember.count({
             where: { departmentId: tenant.id, role: 'ADMIN', userId: { not: userId } },
           });
           if (otherLeaders === 0) {
-            return reply.status(400).send({
-              error: 'Mindestens eine Vereinsleitung muss in der Abteilung verbleiben.',
-            });
+            return reply.fail(400, 'people.lastClubLeader');
           }
         }
       }
@@ -297,27 +291,25 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
       if (nextPermissions) {
         if (effectiveRole === 'ADMIN') {
           if (!isOther) {
-            return reply.status(400).send({
-              error: 'Die Abteilungsleitung hat alle Rechte. Sie ändert sich nur über Cevi.DB oder das Admin-Portal.',
-            });
+            return reply.fail(400, 'people.leaderHasAllRights');
           }
         } else {
           if (nextPermissions.length > 0 && isCeviNameProfile(user)) {
-            return reply.status(400).send({ error: CEVINAME_ROLE_ERROR });
+            return reply.status(400).send({ error: request.t('people.nicknameProfileNoRoles') });
           }
           if (!canGrantPermissions(access, currentPermissions, nextPermissions)) {
-            return reply.status(403).send({ error: 'Du kannst nur weniger Rechte vergeben, als du selbst hast.' });
+            return reply.fail(403, 'people.rightsExceeded');
           }
         }
       }
 
       if (stufen) {
         if (user.homeDepartmentId !== tenant.id && !membership?.joinedAt) {
-          return reply.status(400).send({ error: 'Stufen gibt es nur für Personen, die zu dieser Abteilung gehören.' });
+          return reply.fail(400, 'people.stufenOnlyMembers');
         }
         const ids = [...new Set(stufen.map((s) => s.stufeId))];
         const found = await fastify.prisma.departmentStufe.count({ where: { id: { in: ids }, departmentId: tenant.id } });
-        if (found !== ids.length) return reply.status(400).send({ error: 'Eine Stufe gehört nicht zu dieser Abteilung' });
+        if (found !== ids.length) return reply.fail(400, 'stufe.notInDepartment');
       }
 
       const roleChanged = nextRole !== undefined && nextRole !== currentRole;
@@ -409,7 +401,7 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
           });
         }
       }
-      return { message: 'Gespeichert' };
+      return { message: request.t('success.saved') };
     }
   );
 
@@ -433,7 +425,7 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
       if (!ctx) return;
       const { tenant, access } = ctx;
       if (!access.hasFullAccess) {
-        return reply.status(403).send({ error: 'Bestätigen kann nur die Abteilungsleitung.' });
+        return reply.fail(403, 'people.onlyLeaderConfirms');
       }
       // Zusätzlich beigetreten (andere Heimabteilung): Beitritt bestätigen
       const joined = await fastify.prisma.departmentMember.findFirst({
@@ -447,7 +439,7 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
       });
       if (joined) {
         if (joined.user.id === request.user.id) {
-          return reply.status(400).send({ error: 'Die eigene Zugehörigkeit kannst du nicht selbst bestätigen.' });
+          return reply.fail(400, 'people.cannotConfirmSelf');
         }
         if (!joined.confirmedAt) {
           await fastify.prisma.departmentMember.update({
@@ -462,7 +454,7 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
             targetLabel: personLabel(joined.user),
           });
         }
-        return { message: 'Zugehörigkeit bestätigt' };
+        return { message: request.t('success.membershipConfirmed') };
       }
 
       const user = await fastify.prisma.user.findFirst({
@@ -479,12 +471,10 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
           lastName: true,
         },
       });
-      if (!user) return reply.status(404).send({ error: 'Person nicht gefunden' });
+      if (!user) return reply.fail(404, 'generic.personNotFound');
       const ortsgruppeId = await departmentOrtsgruppeId(fastify.prisma, tenant.hitobitoGroupId, tenant.organization);
       if (!canConfirmHome(access, request.user.id, user, tenant.id, ortsgruppeId)) {
-        return reply
-          .status(400)
-          .send({ error: 'Bestätigen geht nur für andere Personen mit Cevi.DB-Konto aus eurer Ortsgruppe, die die Abteilung selbst gewählt haben.' });
+        return reply.fail(400, 'people.confirmNotPossible');
       }
       await fastify.prisma.user.update({
         where: { id: user.id },
@@ -502,7 +492,7 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
         targetUserId: user.id,
         targetLabel: personLabel(user),
       });
-      return { message: 'Zugehörigkeit bestätigt' };
+      return { message: request.t('success.membershipConfirmed') };
     }
   );
 
@@ -525,7 +515,7 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
       if (!ctx) return;
       const { tenant, access } = ctx;
       if (!access.hasFullAccess) {
-        return reply.status(403).send({ error: 'Bestätigen kann nur die Abteilungsleitung.' });
+        return reply.fail(403, 'people.onlyLeaderConfirms');
       }
       const joined = await fastify.prisma.departmentMember.findFirst({
         where: {
@@ -549,14 +539,14 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
           targetUserId: joined.user.id,
           targetLabel: personLabel(joined.user),
         });
-        return { message: 'Bestätigung aufgehoben' };
+        return { message: request.t('success.confirmationRevoked') };
       }
 
       const user = await fastify.prisma.user.findFirst({
         where: { id: request.params.userId, homeDepartmentId: tenant.id, homeDepartmentSource: 'CONFIRMED' },
         select: { id: true, nickname: true, firstName: true, lastName: true },
       });
-      if (!user) return reply.status(404).send({ error: 'Person nicht gefunden' });
+      if (!user) return reply.fail(404, 'generic.personNotFound');
       await fastify.prisma.user.update({
         where: { id: user.id },
         data: { homeDepartmentSource: 'SELF', ...NO_HOME_CONFIRMATION },
@@ -568,7 +558,7 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
         targetUserId: user.id,
         targetLabel: personLabel(user),
       });
-      return { message: 'Bestätigung aufgehoben' };
+      return { message: request.t('success.confirmationRevoked') };
     }
   );
 
@@ -614,12 +604,12 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
           },
         },
       });
-      if (!user) return reply.status(404).send({ error: 'Person nicht gefunden' });
+      if (!user) return reply.fail(404, 'generic.personNotFound');
       const isHome = user.homeDepartmentId === tenant.id;
       const membership = user.memberships[0] ?? null;
       const permissions = normalizePermissions(membership?.permissions ?? []);
       if (!canEditPerson(access, request.user.id, { userId: user.id, role: membership?.role ?? null, permissions })) {
-        return reply.status(403).send({ error: 'Diese Person kann nur die Abteilungsleitung entfernen.' });
+        return reply.fail(403, 'people.onlyLeaderRemoves');
       }
       if (membership?.role === 'ADMIN') {
         if (tenant.organization === 'OTHER' && access.hasFullAccess) {
@@ -627,24 +617,24 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
             where: { departmentId: tenant.id, role: 'ADMIN', userId: { not: user.id } },
           });
           if (others === 0) {
-            return reply.status(400).send({ error: 'Mindestens eine Vereinsleitung muss in der Abteilung verbleiben.' });
+            return reply.fail(400, 'people.lastClubLeader');
           }
         } else {
-          return reply.status(400).send({ error: 'Die Abteilungsleitung lässt sich hier nicht entfernen.' });
+          return reply.fail(400, 'people.leaderNotRemovable');
         }
       }
       if (isHome && user.homeDepartmentSource === 'CEVIDB') {
         const providerName = getOrganizationByDbType(tenant.organization).authProviderShort;
         return reply
           .status(400)
-          .send({ error: `Diese Zuordnung kommt aus ${providerName} und lässt sich hier nicht ändern.` });
+          .send({ error: request.t('people.assignmentFromProvider', { provider: providerName }) });
       }
       // Beitritt laut Rollen der Verbands-DB: Der nächste Login trüge ihn still wieder ein (wie beim Selbst-Austritt)
       if (isProviderJoinSource(membership?.joinSource)) {
         const providerName = getOrganizationByDbType(tenant.organization).authProviderShort;
         return reply.status(400).send({
           code: 'FROM_PROVIDER',
-          error: `Diese Zugehörigkeit kommt aus den Rollen in ${providerName} und lässt sich nur dort ändern.`,
+          error: request.t('people.membershipFromProviderRoles', { provider: providerName }),
         });
       }
       const removesLeader = membership?.role === 'ADMIN';
@@ -695,7 +685,7 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
         targetLabel: personLabel(user),
         details: { permissionsBefore: permissions },
       });
-      return { message: 'Zugehörigkeit entfernt' };
+      return { message: request.t('success.membershipRemoved') };
     }
   );
 
@@ -774,11 +764,11 @@ const departmentPeopleRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(404).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(404, 'department.missingContext');
       }
       // Namen und E-Mails aller Mitglieder: nur für wer hier plant (Abteilungsleitung, Planung, OK)
       if (!(await isDepartmentManager(fastify.prisma, request.tenant.id, request.user.id))) {
-        return reply.status(403).send({ error: 'Nur die Abteilungsleitung oder ein Event-OK' });
+        return reply.fail(403, 'people.onlyLeaderOrAnyOk');
       }
       reply.header('Cache-Control', 'no-store');
 

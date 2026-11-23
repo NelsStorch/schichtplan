@@ -2,6 +2,8 @@
 import { ArrowLeft } from 'lucide-react';
 import { helpUrl, imprintUrl, privacyUrl, statusUrl, termsUrl } from '@schichtplan/shared/redirect';
 import { useOrganization } from '@schichtplan/ui';
+import { LocaleSwitcher } from '@schichtplan/ui/i18n';
+import { useTranslations } from 'next-intl';
 
 export interface AuthFooterProps {
   returnTo?: string | null;
@@ -14,6 +16,7 @@ export function AuthFooter({ returnTo, landingHref = '/', showBackLink = false }
   const backTarget = returnTo ?? landingHref;
   const org = useOrganization();
   const appName = org.name;
+  const t = useTranslations('common.footer');
 
   return (
     <footer className="relative mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-xs text-fg-subtle sm:px-8">
@@ -23,27 +26,28 @@ export function AuthFooter({ returnTo, landingHref = '/', showBackLink = false }
       </span>
       <div className="flex flex-wrap items-center gap-5">
         <a href={statusUrl('/', org.domain)} className="font-medium text-fg-muted transition hover:text-fg">
-          Status
+          {t('status')}
         </a>
         <a href={helpUrl('/start/anmelden/', org.domain)} className="font-medium text-fg-muted transition hover:text-fg">
-          Hilfe zum Anmelden
+          {t('loginHelp')}
         </a>
         <a href={privacyUrl(org.domain)} className="font-medium text-fg-muted transition hover:text-fg">
-          Datenschutz
+          {t('privacy')}
         </a>
         <a href={termsUrl(org.domain)} className="font-medium text-fg-muted transition hover:text-fg">
-          Nutzungsbedingungen
+          {t('terms')}
         </a>
         <a href={imprintUrl(org.domain)} className="font-medium text-fg-muted transition hover:text-fg">
-          Impressum
+          {t('imprint')}
         </a>
+        <LocaleSwitcher />
         {showBackLink && (
           <a
             href={backTarget}
             className="inline-flex items-center gap-1.5 font-medium text-fg-muted transition hover:text-fg"
           >
             <ArrowLeft className="size-3.5" />
-            Ohne Anmeldung zurück
+            {t('backWithoutLogin')}
           </a>
         )}
       </div>

@@ -15,7 +15,6 @@ import {
 } from '../../services/eventAccess.js';
 import { resolveOrganizerUser } from '../../services/nicknameLogin.js';
 import {
-  UNRELATED_PERSON_ERROR,
   allUsersRelatedToEvent,
 } from '../../services/departmentVisibility.js';
 
@@ -42,12 +41,12 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
 
       const { slug, dayDate } = request.params;
       if (!/^\d{4}-\d{2}-\d{2}$/.test(dayDate)) {
-        return reply.status(400).send({ error: 'Ungültiges Datumsformat (erwartet YYYY-MM-DD)' });
+        return reply.fail(400, 'team.invalidDate');
       }
 
       const event = await fastify.prisma.event.findUnique({
@@ -61,12 +60,12 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!event) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
 
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.SHIFTS) {
-        return reply.status(403).send({ error: 'Keine Berechtigung zum Verwalten der Tagesverantwortlichen' });
+        return reply.fail(403, 'team.dayLeadsForbidden');
       }
 
       const input = request.body as z.output<typeof SetDayResponsiblesSchema>;
@@ -74,7 +73,7 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
       const uniqueUserIds = [...new Set(input.userIds)];
 
       if (!(await allUsersRelatedToEvent(fastify.prisma, event.id, uniqueUserIds))) {
-        return reply.status(400).send({ error: UNRELATED_PERSON_ERROR });
+        return reply.status(400).send({ error: request.t('people.unrelatedPerson') });
       }
 
       await fastify.prisma.$transaction(async (tx) => {
@@ -136,7 +135,7 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
 
       const event = await fastify.prisma.event.findUnique({
@@ -150,13 +149,13 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!event) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
 
       // Nur Abteilungsleitung oder OK_LEAD darf OK-Mitglieder verwalten
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.ORGANIZERS) {
-        return reply.status(403).send({ error: 'Keine Berechtigung zur OK-Verwaltung' });
+        return reply.fail(403, 'team.manageForbidden');
       }
 
       const input = request.body as z.output<typeof AddEventOrganizerSchema>;
@@ -164,13 +163,13 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
       const { userId, nickname, ceviName, email, role, roleTitle } = input;
 
       // Benutzer finden anhand ID, E-Mail oder Cevi-/Spitzname (nur Konten mit Cevi.DB oder Passwort)
-      const resolved = await resolveOrganizerUser(fastify.prisma, request.tenant.id, { userId, nickname, ceviName, email });
+      const resolved = await resolveOrganizerUser(fastify.prisma, request.tenant.id, { userId, nickname, ceviName, email }, request.t);
       if ('error' in resolved) {
         return reply.status(resolved.status).send({ error: resolved.error });
       }
       const targetUser = resolved.user;
       if (targetUser.id !== request.user.id && !(await allUsersRelatedToEvent(fastify.prisma, event.id, [targetUser.id]))) {
-        return reply.status(400).send({ error: UNRELATED_PERSON_ERROR });
+        return reply.status(400).send({ error: request.t('people.unrelatedPerson') });
       }
 
       // Schutz: Die letzte OK-Leitung kann nicht zu einem einfachen Mitglied herabgestuft werden
@@ -179,9 +178,7 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
         if (currentOrg?.role === 'OK_LEAD') {
           const otherLeads = event.organizers.filter((o) => o.role === 'OK_LEAD' && o.userId !== targetUser.id);
           if (otherLeads.length === 0) {
-            return reply.status(400).send({
-              error: 'Mindestens eine Person mit Event-Leitung (OK-Leitung) muss im OK verbleiben.',
-            });
+            return reply.fail(400, 'team.lastLead');
           }
         }
       }
@@ -247,12 +244,12 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!existing || (request.tenant && existing.event.departmentId !== request.tenant.id)) {
-        return reply.status(404).send({ error: 'OK-Mitglied nicht gefunden' });
+        return reply.fail(404, 'team.memberNotFound');
       }
 
       const flags = await managerFlags(fastify.prisma, existing.event, request.user);
       if (!flags.can.ORGANIZERS) {
-        return reply.status(403).send({ error: 'Keine Berechtigung zur OK-Verwaltung' });
+        return reply.fail(403, 'team.manageForbidden');
       }
 
       // Schutz: Die letzte OK-Leitung kann nicht entfernt werden, solange noch andere OK-Mitglieder existieren
@@ -262,9 +259,7 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
         );
         const otherMembers = existing.event.organizers.filter((o) => o.id !== existing.id);
         if (otherLeads.length === 0 && otherMembers.length > 0) {
-          return reply.status(400).send({
-            error: 'Mindestens eine Person mit Event-Leitung (OK-Leitung) muss im OK verbleiben, solange weitere OK-Mitglieder eingetragen sind.',
-          });
+          return reply.fail(400, 'team.lastLeadWithMembers');
         }
       }
 
@@ -272,7 +267,7 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
         where: { id: organizerId },
       });
 
-      return { message: 'OK-Mitglied erfolgreich entfernt' };
+      return { message: request.t('success.okMemberRemoved') };
     }
   );
 
@@ -294,7 +289,7 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
 
       const event = await fastify.prisma.event.findUnique({
@@ -308,12 +303,12 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!event) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
 
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.HELPERS) {
-        return reply.status(403).send({ error: 'Keine Berechtigung zum Abmelden von Helfenden' });
+        return reply.fail(403, 'team.deregisterForbidden');
       }
 
       const input = request.body as z.output<typeof UnregisterHelperSchema>;
@@ -321,7 +316,7 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
       const { userId, guestName } = input;
 
       if (!userId && !guestName) {
-        return reply.status(400).send({ error: 'userId oder guestName erforderlich' });
+        return reply.fail(400, 'team.userOrGuestRequired');
       }
 
       const whereClause: Prisma.ShiftSignupWhereInput = {
@@ -421,7 +416,7 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
 
       const event = await fastify.prisma.event.findUnique({
@@ -435,12 +430,12 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!event) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
 
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.isManager) {
-        return reply.status(403).send({ error: 'Keine Berechtigung zum Einsehen des Protokolls' });
+        return reply.fail(403, 'team.logForbidden');
       }
 
       const logs = await fastify.prisma.shiftSignupLog.findMany({
@@ -490,10 +485,10 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
       if (Boolean(request.query.userId) === Boolean(request.query.guestName)) {
-        return reply.status(400).send({ error: 'Entweder userId oder guestName angeben' });
+        return reply.fail(400, 'team.userOrGuest');
       }
 
       const event = await fastify.prisma.event.findUnique({
@@ -501,12 +496,12 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
         include: { organizers: true },
       });
       if (!event) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
 
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.isManager) {
-        return reply.status(403).send({ error: 'Keine Berechtigung zum Einsehen des Verlaufs' });
+        return reply.fail(403, 'team.historyForbidden');
       }
       reply.header('Cache-Control', 'no-store');
 

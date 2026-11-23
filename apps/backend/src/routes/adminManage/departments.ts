@@ -11,7 +11,7 @@ import {
   getVocabulary,
 } from '@schichtplan/shared';
 import { autoCreateAllCeviDbDepartmentStufen, NO_HOME_CONFIRMATION } from '../../services/homeDepartment.js';
-import { CEVINAME_ROLE_ERROR, isCeviNameProfile } from '../../services/nicknameLogin.js';
+import { isCeviNameProfile } from '../../services/nicknameLogin.js';
 import { personLabel } from '../../services/profile.js';
 import { recordAdminAction } from '../../services/adminAudit.js';
 import { recordDepartmentAction, toDepartmentAuditDto } from '../../services/departmentAudit.js';
@@ -63,7 +63,7 @@ const adminDepartmentRoutes: FastifyPluginAsync = async (fastify) => {
     const departmentId = request.params.id;
 
     const row = await fastify.prisma.department.findUnique({ where: { id: departmentId }, select: departmentSelect });
-    if (!row) return reply.status(404).send({ error: 'Abteilung nicht gefunden' });
+    if (!row) return reply.fail(404, 'department.notFound');
 
     const personSelect = {
       id: true,
@@ -169,7 +169,7 @@ const adminDepartmentRoutes: FastifyPluginAsync = async (fastify) => {
     const hitobitoGroupId = input.ceviDbGroupId ?? input.hitobitoGroupId;
     const organization = input.organization ?? 'CEVI';
     if (organization === 'OTHER' && hitobitoGroupId) {
-      return reply.status(400).send({ error: 'Ein Verein hat keine Hitobito-Gruppe.' });
+      return reply.fail(400, 'admin.clubHasNoGroup');
     }
 
     if (hitobitoGroupId) {
@@ -180,7 +180,7 @@ const adminDepartmentRoutes: FastifyPluginAsync = async (fastify) => {
       if (existingWithGroup) {
         const vocab = getVocabulary(organization);
         return reply.status(409).send({
-          error: `Für diese ${vocab.authProvider}-Gruppe existiert bereits die ${vocab.department} «${existingWithGroup.name}» (${existingWithGroup.slug}).`,
+          error: request.t('admin.groupTaken', { provider: vocab.authProvider, unit: vocab.department, name: existingWithGroup.name, slug: existingWithGroup.slug }),
         });
       }
     }
@@ -190,8 +190,8 @@ const adminDepartmentRoutes: FastifyPluginAsync = async (fastify) => {
         where: { id: leaderUserId },
         select: { passwordHash: true, providerId: true },
       });
-      if (!leader) return reply.status(400).send({ error: 'Die gewählte Abteilungsleitung gibt es nicht.' });
-      if (isCeviNameProfile(leader)) return reply.status(400).send({ error: CEVINAME_ROLE_ERROR });
+      if (!leader) return reply.fail(400, 'admin.leaderNotFound');
+      if (isCeviNameProfile(leader)) return reply.status(400).send({ error: request.t('people.nicknameProfileNoRoles') });
     }
 
     let created: { id: string; name: string; slug: string };
@@ -213,7 +213,7 @@ const adminDepartmentRoutes: FastifyPluginAsync = async (fastify) => {
       });
     } catch (err) {
       if (isUniqueViolation(err)) {
-        return reply.status(409).send({ error: uniqueConflictMessage(err as Prisma.PrismaClientKnownRequestError) });
+        return reply.status(409).send({ error: uniqueConflictMessage(err as Prisma.PrismaClientKnownRequestError, request.t) });
       }
       throw err;
     }
@@ -256,14 +256,14 @@ const adminDepartmentRoutes: FastifyPluginAsync = async (fastify) => {
       where: { id: request.params.id },
       select: { id: true, name: true, slug: true, organization: true, hitobitoGroupId: true, membersOnly: true },
     }).catch(() => null);
-    if (!existing) return reply.status(404).send({ error: 'Abteilung nicht gefunden' });
+    if (!existing) return reply.fail(404, 'department.notFound');
 
     // Verband nach der Änderung: Gruppen-IDs gelten nur innerhalb ihrer Hitobito-Instanz
     const targetOrganization = data.organization ?? existing.organization;
     const organizationChanged = targetOrganization !== existing.organization;
     if (targetOrganization === 'OTHER') {
       if (targetHitobitoGroupId) {
-        return reply.status(400).send({ error: 'Ein Verein hat keine Hitobito-Gruppe.' });
+        return reply.fail(400, 'admin.clubHasNoGroup');
       }
       if (existing.hitobitoGroupId !== null) targetHitobitoGroupId = null;
     } else if (organizationChanged && targetHitobitoGroupId === undefined) {
@@ -277,9 +277,7 @@ const adminDepartmentRoutes: FastifyPluginAsync = async (fastify) => {
         select: { id: true },
       });
       if (!candidate) {
-        return reply.status(400).send({
-          error: 'Kontaktperson kann nur die Abteilungsleitung oder jemand mit «Personen und Rechte verwalten» sein.',
-        });
+        return reply.fail(400, 'department.contactNotEligible');
       }
     }
 
@@ -297,7 +295,7 @@ const adminDepartmentRoutes: FastifyPluginAsync = async (fastify) => {
       if (existingWithGroup && existingWithGroup.id !== existing.id) {
         const vocab = getVocabulary(targetOrganization);
         return reply.status(409).send({
-          error: `Für diese ${vocab.authProvider}-Gruppe existiert bereits die ${vocab.department} «${existingWithGroup.name}» (${existingWithGroup.slug}).`,
+          error: request.t('admin.groupTaken', { provider: vocab.authProvider, unit: vocab.department, name: existingWithGroup.name, slug: existingWithGroup.slug }),
         });
       }
     }
@@ -341,7 +339,7 @@ const adminDepartmentRoutes: FastifyPluginAsync = async (fastify) => {
       });
     } catch (err) {
       if (isUniqueViolation(err)) {
-        return reply.status(409).send({ error: uniqueConflictMessage(err as Prisma.PrismaClientKnownRequestError) });
+        return reply.status(409).send({ error: uniqueConflictMessage(err as Prisma.PrismaClientKnownRequestError, request.t) });
       }
       throw err;
     }
@@ -399,9 +397,9 @@ const adminDepartmentRoutes: FastifyPluginAsync = async (fastify) => {
       where: { id: request.params.id },
       select: { id: true, slug: true, name: true, organization: true, _count: { select: { events: true, members: true } } },
     }).catch(() => null);
-    if (!department) return reply.status(404).send({ error: 'Abteilung nicht gefunden' });
+    if (!department) return reply.fail(404, 'department.notFound');
     if (input.confirm !== department.slug) {
-      return reply.status(400).send({ error: 'Zur Bestätigung die Subdomain der Abteilung genau eintippen.' });
+      return reply.fail(400, 'admin.confirmSubdomain');
     }
 
     await fastify.prisma.$transaction([
@@ -460,10 +458,10 @@ const adminDepartmentRoutes: FastifyPluginAsync = async (fastify) => {
           })
           .catch(() => null),
       ]);
-      if (!department) return reply.status(404).send({ error: 'Abteilung nicht gefunden' });
-      if (!user) return reply.status(404).send({ error: 'Person nicht gefunden' });
+      if (!department) return reply.fail(404, 'department.notFound');
+      if (!user) return reply.fail(404, 'generic.personNotFound');
       if ((role === 'ADMIN' || permissions.length > 0) && isCeviNameProfile(user)) {
-        return reply.status(400).send({ error: CEVINAME_ROLE_ERROR });
+        return reply.status(400).send({ error: request.t('people.nicknameProfileNoRoles') });
       }
 
       const before = await fastify.prisma.departmentMember.findUnique({
@@ -475,7 +473,7 @@ const adminDepartmentRoutes: FastifyPluginAsync = async (fastify) => {
           where: { departmentId, role: 'ADMIN', userId: { not: userId } },
         });
         if (others === 0) {
-          return reply.status(400).send({ error: 'Das ist die letzte Abteilungsleitung. Zuerst eine andere einsetzen.' });
+          return reply.fail(400, 'admin.lastLeader');
         }
       }
       // Von Hand gesetzte Abteilungsleitung entzieht der Cevi.DB-Login nicht (MANUAL)
@@ -566,13 +564,13 @@ const adminDepartmentRoutes: FastifyPluginAsync = async (fastify) => {
           },
         })
         .catch(() => null);
-      if (!membership) return reply.status(404).send({ error: 'Diese Person hat hier keine Rolle.' });
+      if (!membership) return reply.fail(404, 'admin.noRoleHere');
       if (membership.role === 'ADMIN') {
         const others = await fastify.prisma.departmentMember.count({
           where: { departmentId, role: 'ADMIN', userId: { not: userId } },
         });
         if (others === 0) {
-          return reply.status(400).send({ error: 'Das ist die letzte Abteilungsleitung. Zuerst eine andere einsetzen.' });
+          return reply.fail(400, 'admin.lastLeader');
         }
       }
       await fastify.prisma.departmentMember.deleteMany({ where: { departmentId, userId } });

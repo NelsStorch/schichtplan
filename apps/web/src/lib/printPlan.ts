@@ -1,4 +1,4 @@
-import { getBrowserOrganization, type DepartmentDto, type ShiftDto, type ShiftSignupDto } from '@schichtplan/shared';
+import { getBrowserOrganization, zurichDateTimeFormat, type DepartmentDto, type ShiftDto, type ShiftSignupDto } from '@schichtplan/shared';
 import { dayKeyToIso, fmtDateRange, fmtDayMonth, fmtShortDate, fmtShortWeekday, fmtWeekday, groupByBusinessDay, fmtTimeRange } from './format';
 import type { EventDetails } from './types';
 
@@ -224,7 +224,7 @@ export async function buildPlanDocument(
     title: event.title,
     subtitle,
     dateRange: fmtDateRange(event.startDate, event.endDate, event.dayCutoffTime),
-    stand: new Intl.DateTimeFormat('de-CH', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/Zurich' }).format(new Date()),
+    stand: zurichDateTimeFormat({ dateStyle: 'medium', timeStyle: 'short' }).format(new Date()),
     department: department?.name ?? null,
     accent: /^#[0-9a-f]{6}$/i.test(department?.primaryColor ?? '') ? department!.primaryColor! : DEFAULT_ACCENT,
     logo: logo ?? brandLogo,

@@ -6,10 +6,11 @@
 import type { OrganizationType, PrismaClient } from '../db.js';
 import { isPassiveRoleClass, normalizePermissions, type DepartmentPermission } from '@schichtplan/shared';
 import type { FastifyBaseLogger } from 'fastify';
-import { INVITE_REASON_ERRORS, verifyDepartmentInviteToken } from './inviteToken.js';
+import { INVITE_REASON_ERRORS, inviteReasonError, verifyDepartmentInviteToken } from './inviteToken.js';
 import { recordDepartmentAction } from './departmentAudit.js';
 import { personLabel } from './profile.js';
 import { isCeviNameProfile } from './nicknameLogin.js';
+import { errorTranslator, type ErrorTranslator } from '../plugins/i18n.js';
 
 type Db = Pick<
   PrismaClient,
@@ -103,14 +104,15 @@ export async function checkDepartmentJoin(
     inviteToken?: string | null;
     viaLink?: boolean;
     tenantId?: string | null;
-  }
+  },
+  t: ErrorTranslator = errorTranslator('de')
 ): Promise<JoinCheck> {
   const { userId, user, departmentId } = params;
   const dept = await prisma.department.findUnique({
     where: { id: departmentId },
     select: { id: true, joinMode: true, inviteToken: true, organization: true },
   });
-  if (!dept) return { ok: false, status: 400, error: 'Diese Abteilung gibt es nicht' };
+  if (!dept) return { ok: false, status: 400, error: t('department.doesNotExistShort') };
 
   const member = await prisma.departmentMember.findUnique({
     where: { departmentId_userId: { departmentId, userId } },
@@ -163,16 +165,16 @@ export async function checkDepartmentJoin(
 
   // Angegebene Einladung gilt nicht: lieber sagen warum, als still ohne Bestätigung und Rechte aufzunehmen
   if (inviteProblem) {
-    return { ok: false, status: 403, code: `INVITE_${inviteProblem}`, error: INVITE_REASON_ERRORS[inviteProblem] };
+    return { ok: false, status: 403, code: `INVITE_${inviteProblem}`, error: inviteReasonError(inviteProblem, t) };
   }
 
   if (dept.joinMode === 'INVITE_ONLY') {
-    if (removedAt) return { ok: false, status: 403, code: 'INVITE_REMOVED', error: INVITE_REASON_ERRORS.REMOVED };
+    if (removedAt) return { ok: false, status: 403, code: 'INVITE_REMOVED', error: inviteReasonError('REMOVED', t) };
     return {
       ok: false,
       status: 403,
       code: 'INVITE_REQUIRED',
-      error: 'Beitritt nur per Einladung möglich. Bitte nutze einen gültigen Einladungs-Link.',
+      error: t('department.joinInviteOnly'),
     };
   }
   // LINK_ONLY ist bewusst keine Zugriffsschranke: Der Abteilungs-Link (Subdomain) ist öffentlich,
@@ -187,7 +189,7 @@ export async function checkDepartmentJoin(
       ok: false,
       status: 403,
       code: 'LINK_REQUIRED',
-      error: 'Beitritt nur über den Link der Abteilung/des Vereins oder per Einladung möglich.',
+      error: t('department.joinLinkOnly'),
     };
   }
   return { ok: true, invited: false, grantedPermissions: [] };

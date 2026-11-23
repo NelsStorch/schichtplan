@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { cn } from '../utils/cn';
 
 /**
@@ -5,6 +6,7 @@ import { cn } from '../utils/cn';
  * Ziel ist standardmässig `<main id="inhalt">`.
  */
 export function SkipLink({ targetId = 'inhalt', className }: { targetId?: string; className?: string }) {
+  const t = useTranslations('ui');
   return (
     <a
       href={`#${targetId}`}
@@ -14,7 +16,7 @@ export function SkipLink({ targetId = 'inhalt', className }: { targetId?: string
         className
       )}
     >
-      Zum Inhalt springen
+      {t('skipLink')}
     </a>
   );
 }

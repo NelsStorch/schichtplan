@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { AlertTriangle, CheckCircle2, Info, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '../utils/cn';
 import { Button } from './Button';
 import { Dialog } from './Dialog';
@@ -28,6 +29,7 @@ const toastIcon = {
 };
 
 function ToastProvider({ children }: { children: ReactNode }) {
+  const tFeedback = useTranslations('ui.feedback');
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const nextId = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -103,7 +105,7 @@ function ToastProvider({ children }: { children: ReactNode }) {
             <button
               type="button"
               onClick={() => dismiss(t.id)}
-              aria-label="Meldung schliessen"
+              aria-label={tFeedback('closeMessage')}
               className="-m-1 rounded-full p-1 text-fg-subtle transition hover:text-fg"
             >
               <X className="size-4" />
@@ -139,6 +141,8 @@ function ConfirmDialog({
   onSettle: (value: boolean) => void;
 }) {
   const [secondsLeft, setSecondsLeft] = useState(options.countdownSeconds ?? 0);
+  const t = useTranslations('ui.feedback');
+  const tActions = useTranslations('common.actions');
 
   useEffect(() => {
     const initial = options.countdownSeconds ?? 0;
@@ -159,8 +163,8 @@ function ConfirmDialog({
   }, [options]);
 
   const isLocked = secondsLeft > 0;
-  const baseLabel = options.confirmLabel ?? 'Bestätigen';
-  const label = isLocked ? `${baseLabel} (${secondsLeft}s)` : baseLabel;
+  const baseLabel = options.confirmLabel ?? t('confirm');
+  const label = isLocked ? t('countdown', { label: baseLabel, seconds: secondsLeft }) : baseLabel;
 
   return (
     <Dialog
@@ -173,7 +177,7 @@ function ConfirmDialog({
       footer={
         <>
           <Button variant="ghost" onClick={() => onSettle(false)}>
-            {options.cancelLabel ?? 'Abbrechen'}
+            {options.cancelLabel ?? tActions('cancel')}
           </Button>
           <Button
             variant={options.tone === 'danger' ? 'danger' : 'primary'}

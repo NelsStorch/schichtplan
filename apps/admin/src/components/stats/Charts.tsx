@@ -1,15 +1,14 @@
 'use client';
 
 import { useId, useState } from 'react';
+import { formatDayKey, formatSwissNumber } from '@schichtplan/shared';
 import { Skeleton, cn } from '@schichtplan/ui';
 
-// Tag (YYYY-MM-DD) ohne Zeitzonen-Verschiebung anzeigen: Mittag UTC liegt sicher im richtigen Tag
-const dayFmt = new Intl.DateTimeFormat('de-CH', { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'UTC' });
-const shortDayFmt = new Intl.DateTimeFormat('de-CH', { day: '2-digit', month: '2-digit', timeZone: 'UTC' });
-export const formatDay = (day: string) => dayFmt.format(new Date(`${day}T12:00:00Z`));
-const formatShortDay = (day: string) => shortDayFmt.format(new Date(`${day}T12:00:00Z`));
+// Tag (YYYY-MM-DD) ohne Zeitzonen-Verschiebung anzeigen
+export const formatDay = (day: string) => formatDayKey(day, { weekday: 'short', day: '2-digit', month: '2-digit' });
+const formatShortDay = (day: string) => formatDayKey(day, { day: '2-digit', month: '2-digit' });
 
-export const fmtNumber = (n: number) => n.toLocaleString('de-CH');
+export const fmtNumber = (n: number) => formatSwissNumber(n);
 
 export function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -20,7 +19,7 @@ export function formatBytes(bytes: number) {
     value /= 1024;
     unit++;
   }
-  return `${value.toLocaleString('de-CH', { maximumFractionDigits: value < 10 ? 1 : 0 })} ${units[unit]}`;
+  return `${formatSwissNumber(value, { maximumFractionDigits: value < 10 ? 1 : 0 })} ${units[unit]}`;
 }
 
 /** Kennzahl-Kachel (wie auf der Übersicht) */

@@ -33,6 +33,7 @@ import {
 } from '@schichtplan/ui';
 import {
   EVENT_ACCESS_TYPES,
+  formatSwissNumber,
   type AdminDepartmentListItemDto,
   type AdminEventListDto,
   type AdminEventListItemDto,
@@ -525,7 +526,7 @@ export function EventsPanel({
 
       {data && data.pageCount > 1 && (
         <nav aria-label="Seiten" className="flex items-center justify-between gap-3">
-          <p className="tabular text-[13px] text-fg-muted">{data.total.toLocaleString('de-CH')} Anlässe</p>
+          <p className="tabular text-[13px] text-fg-muted">{formatSwissNumber(data.total)} Anlässe</p>
           <div className="flex items-center gap-2">
             <Button size="sm" variant="secondary" disabled={loading || data.page <= 1} onClick={() => setPage((p) => p - 1)}>
               <ChevronLeft aria-hidden />

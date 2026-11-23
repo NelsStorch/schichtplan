@@ -3,6 +3,7 @@ import {
   DEFAULT_CATERING_EARLY_HOURS,
   DEFAULT_CATERING_TOKEN_ITEMS,
   businessDayKey,
+  compareSwissText,
   type CateringTokenDto,
   type CateringTokensOverviewDto,
   type CateringTokenStatus,
@@ -499,7 +500,7 @@ export async function getCateringOverview(
   fullTokenList.sort((a, b) => {
     const timeDiff = new Date(a.shiftStartTime).getTime() - new Date(b.shiftStartTime).getTime();
     if (timeDiff !== 0) return timeDiff;
-    return a.helperName.localeCompare(b.helperName, 'de-CH');
+    return compareSwissText(a.helperName, b.helperName);
   });
 
   const recentRedemptions = tokens

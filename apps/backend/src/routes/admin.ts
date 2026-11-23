@@ -413,7 +413,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!user) {
-        return reply.status(404).send({ error: 'Person nicht gefunden' });
+        return reply.fail(404, 'generic.personNotFound');
       }
 
       request.log.info({ adminId: request.user.id, userId: user.id }, 'Admin: Userdetail abgerufen');
@@ -494,7 +494,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           },
         },
       });
-      if (!user) return reply.status(404).send({ error: 'Person nicht gefunden' });
+      if (!user) return reply.fail(404, 'generic.personNotFound');
 
       const provider = user.provider;
       const hasProvider = user.providerId !== null;
@@ -597,7 +597,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       const targetUserId = request.params.id;
 
       if (targetUserId === request.user.id) {
-        return reply.status(400).send({ error: 'Du kannst dein eigenes Admin-Konto nicht löschen.' });
+        return reply.fail(400, 'admin.cannotDeleteSelf');
       }
 
       const user = await fastify.prisma.user.findUnique({
@@ -613,13 +613,13 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!user) {
-        return reply.status(404).send({ error: 'Person nicht gefunden' });
+        return reply.fail(404, 'generic.personNotFound');
       }
 
       if (user.isGlobalAdmin) {
         const adminCount = await fastify.prisma.user.count({ where: { isGlobalAdmin: true } });
         if (adminCount <= 1) {
-          return reply.status(400).send({ error: 'Das letzte Konto mit globalen Admin-Rechten kann nicht gelöscht werden.' });
+          return reply.fail(400, 'admin.cannotDeleteLastAdmin');
         }
       }
 
@@ -700,9 +700,9 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           homeDepartment: { select: { organization: true } },
         },
       });
-      if (!user) return reply.status(404).send({ error: 'Person nicht gefunden' });
+      if (!user) return reply.fail(404, 'generic.personNotFound');
       if (!user.email || isPlaceholderEmail(user.email)) {
-        return reply.status(400).send({ error: 'Person hat keine gültige E-Mail-Adresse hinterlegt.' });
+        return reply.fail(400, 'admin.noValidEmail');
       }
 
       const token = crypto.randomBytes(32).toString('base64url');
@@ -755,8 +755,8 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
         where: { id: request.params.id },
         select: { id: true, email: true, firstName: true, lastName: true, nickname: true, totpEnabledAt: true },
       });
-      if (!user) return reply.status(404).send({ error: 'Person nicht gefunden' });
-      if (!user.totpEnabledAt) return reply.status(400).send({ error: 'Die Person hat keine Zwei-Faktor-Anmeldung eingeschaltet.' });
+      if (!user) return reply.fail(404, 'generic.personNotFound');
+      if (!user.totpEnabledAt) return reply.fail(400, 'admin.noTwoFactor');
 
       await fastify.prisma.$transaction([
         fastify.prisma.user.update({
@@ -798,7 +798,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       const rawIds = input.userIds;
       const filteredIds = rawIds.filter((id) => id !== request.user.id);
       if (filteredIds.length === 0) {
-        return reply.status(400).send({ error: 'Das eigene Admin-Konto kann nicht gelöscht werden.' });
+        return reply.fail(400, 'admin.ownAccountNotDeletable');
       }
 
       const users = await fastify.prisma.user.findMany({
@@ -807,7 +807,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (users.some((u) => u.isGlobalAdmin)) {
-        return reply.status(400).send({ error: 'Konten mit globalen Admin-Rechten können nicht im Stapel gelöscht werden.' });
+        return reply.fail(400, 'admin.noBulkDeleteAdmins');
       }
 
       const idsToDelete = users.map((u) => u.id);

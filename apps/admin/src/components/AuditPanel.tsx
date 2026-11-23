@@ -22,6 +22,7 @@ import {
 import { Badge, Button, Callout, Card, Chip, ChipRow, EmptyState, Skeleton, cn } from '@schichtplan/ui';
 import {
   DEPARTMENT_PERMISSIONS,
+  formatSwissNumber,
   isDepartmentPermission,
   type AdminAuditEntryDto,
   type AdminAuditListDto,
@@ -437,7 +438,7 @@ export function AuditPanel({
 
       {data && data.pageCount > 1 && (
         <nav aria-label="Seiten" className="flex items-center justify-between gap-3">
-          <p className="tabular text-[13px] text-fg-muted">{data.total.toLocaleString('de-CH')} Einträge</p>
+          <p className="tabular text-[13px] text-fg-muted">{formatSwissNumber(data.total)} Einträge</p>
           <div className="flex items-center gap-2">
             <Button size="sm" variant="secondary" disabled={loading || data.page <= 1} onClick={() => setPage((p) => p - 1)}>
               <ChevronLeft aria-hidden />

@@ -3,6 +3,9 @@ import type { Metadata, Viewport } from 'next';
 import { getOrganization, getOrganizationSlugFromHost } from '@schichtplan/shared';
 import { ConsoleBanner, FeedbackProvider, OrganizationProvider, SkipLink, ThemeScript, UsageTracker, UmamiScript } from '@schichtplan/ui';
 import { fontVariables } from '@schichtplan/ui/fonts';
+import { LocaleSettingsProvider } from '@schichtplan/ui/i18n';
+import { getRequestLocale } from '@schichtplan/ui/i18n/server';
+import { NextIntlClientProvider } from 'next-intl';
 import { getRequestOrigin, ogImage, ogVersion, safeAccent } from '@schichtplan/ui/og';
 import { CommandPalette, CommandPaletteProvider } from '@/components/command';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
@@ -71,13 +74,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const orgSlug = getOrganizationSlugFromHost(host);
   // Ebene der Abteilung (Region, Kanton, Bund …): bestimmt die Begriffe in der Oberfläche
   const department = await getDepartmentPreview();
+  const i18n = await getRequestLocale(department?.defaultLocale ?? null);
   return (
-    <html lang="de-CH" className={fontVariables} suppressHydrationWarning>
+    <html lang={i18n.intlLocale} className={fontVariables} suppressHydrationWarning>
       <head>
         <ThemeScript />
       </head>
       <body className="min-h-[100dvh]">
         <SkipLink />
+        <NextIntlClientProvider>
+        <LocaleSettingsProvider enabled={i18n.enabled} pseudo={i18n.pseudo} pseudoAvailable={i18n.pseudoAvailable}>
         <OrganizationProvider slug={orgSlug} levelName={department?.levelName ?? null}>
         <FeedbackProvider>
           <PortalProvider>
@@ -90,6 +96,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <ServiceWorkerRegister />
         </FeedbackProvider>
         </OrganizationProvider>
+        </LocaleSettingsProvider>
+        </NextIntlClientProvider>
         <UsageTracker app="web" />
         <UmamiScript host={host} />
         <ConsoleBanner />

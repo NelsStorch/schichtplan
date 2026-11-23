@@ -9,6 +9,8 @@ export interface DepartmentPreview {
   primaryColor: string | null;
   /** Ebene über der Abteilung/Schar (z. B. «Bund»), sonst null */
   levelName?: string | null;
+  /** Standardsprache der Abteilung (de, fr, it, en) */
+  defaultLocale?: string | null;
 }
 
 /** Abteilungs-Slug aus dem Host (`illnau.cevi-schichtplan.ch` → `illnau`), null auf der Hauptdomain. */
@@ -34,6 +36,7 @@ export async function getDepartmentPreview(): Promise<DepartmentPreview | null> 
         logoUrl: d.logoUrl ?? null,
         primaryColor: d.primaryColor ?? null,
         levelName: d.levelName ?? null,
+        defaultLocale: d.defaultLocale ?? null,
       }
     : null;
 }

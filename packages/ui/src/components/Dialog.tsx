@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '../utils/cn';
 
 export interface DialogProps {
@@ -44,6 +45,7 @@ export function Dialog({
 }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
+  const t = useTranslations('ui.dialog');
 
   useEffect(() => {
     const dialog = ref.current;
@@ -106,7 +108,7 @@ export function Dialog({
             <button
               type="button"
               onClick={onClose}
-              aria-label="Schliessen"
+              aria-label={t('close')}
               className="-mr-2 -mt-1 flex size-10 shrink-0 items-center justify-center rounded-full text-fg-subtle transition hover:bg-surface-2 hover:text-fg focus-visible:ring-2 focus-visible:ring-accent"
             >
               <X className="size-5" aria-hidden />

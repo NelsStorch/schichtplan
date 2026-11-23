@@ -1,5 +1,6 @@
 import path from 'path';
 import type { NextConfig } from 'next';
+import createNextIntlPlugin from 'next-intl/plugin';
 
 /**
  * Content-Security-Policy: nur eigene Skripte/Verbindungen, keine fremden Frames/Formulare. Next braucht
@@ -54,4 +55,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// next-intl: Sprache und Texte pro Anfrage aus src/i18n/request.ts (ohne Sprach-Präfix in der URL)
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
+export default withNextIntl(nextConfig);

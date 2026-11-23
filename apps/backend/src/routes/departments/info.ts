@@ -14,6 +14,8 @@ import {
   getHitobitoConfig,
   getOrganizationByDbType,
   isPassiveRoleClass,
+  localeFromDb,
+  localeToDb,
 } from '@schichtplan/shared';
 import { creationRoles, ownUnitGroups } from '../../services/hitobito.js';
 import { autoCreateCeviDbDepartmentStufen, ceviDbGroupPeople, NO_HOME_CONFIRMATION } from '../../services/homeDepartment.js';
@@ -22,7 +24,7 @@ import { canGrantPermissions, departmentAccess, } from '../../services/permissio
 import {
   createDepartmentInviteToken,
   extractBaseInviteToken,
-  INVITE_REASON_ERRORS,
+  inviteReasonError,
   PERSONAL_INVITE_TTL_DAYS,
   verifyDepartmentInviteToken,
   type InvitePreset,
@@ -32,7 +34,7 @@ import { departmentCache } from '../../services/departmentCache.js';
 import { getLoginPortalBaseUrl, rootDomain } from '../../services/authSession.js';
 import { escapeHtml, sendGenericEmail } from '../../services/email.js';
 import { createRateLimiter } from '../../services/rateLimit.js';
-import { contactCandidateWhere, loadContactPerson, NOT_ELIGIBLE_MESSAGES, departmentCreationEligibility, requireDepartmentPermission, } from './shared.js';
+import { contactCandidateWhere, loadContactPerson, NOT_ELIGIBLE_KEYS, departmentCreationEligibility, requireDepartmentPermission, } from './shared.js';
 
 /* Bremse für E-Mail-Einladungen (im Speicher, siehe rateLimit.ts) */
 const inviteUserLimiter = createRateLimiter(60 * 60 * 1000, 30);
@@ -58,7 +60,7 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
     if (!request.tenant) {
-      return reply.status(404).send({ error: 'Keine Abteilung für diese Subdomain gefunden' });
+      return reply.fail(404, 'department.noneForSubdomain');
     }
     reply.header('Cache-Control', 'no-store');
 
@@ -98,6 +100,7 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
       membersOnly: request.tenant.membersOnly,
       allowPasswordless: request.tenant.allowPasswordless,
       joinMode: (request.tenant.joinMode as DepartmentJoinMode) || 'LINK_ONLY',
+      defaultLocale: localeFromDb(request.tenant.defaultLocale) ?? 'de',
       ...(canSeeInviteToken ? { inviteToken: request.tenant.inviteToken } : {}),
       viewerIsMember: await isDepartmentInsider(fastify.prisma, request.tenant.id, request.user?.id),
       createdAt: request.tenant.createdAt.toISOString(),
@@ -145,11 +148,11 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(404).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(404, 'department.missingContext');
       }
       const access = await departmentAccess(fastify.prisma, request.tenant.id, request.user.id);
       if (!access.permissions.has('PEOPLE_VIEW') && !access.permissions.has('DEPARTMENT_SETTINGS')) {
-        return reply.status(403).send({ error: 'Keine Berechtigung zum Einsehen der Abteilungsstatistik.' });
+        return reply.fail(403, 'department.noStatsPermission');
       }
 
       reply.header('Cache-Control', 'no-store');
@@ -299,7 +302,7 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
         const reason = eligibility.reason ?? 'NOT_LEADER';
         return reply
           .status(reason === 'EXISTS' ? 409 : 403)
-          .send({ error: NOT_ELIGIBLE_MESSAGES[reason], reason, existingDepartment: eligibility.existingDepartment });
+          .send({ error: request.t(NOT_ELIGIBLE_KEYS[reason]), reason, existingDepartment: eligibility.existingDepartment });
       }
       // Leitet die Person mehrere Ebenen (z. B. Abteilung und Region), zählt ihre Wahl, aber nur unter ihren eigenen
       const options = eligibility.options ?? [];
@@ -308,12 +311,12 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
           ? options.find((o) => o.hitobitoGroupId === input.hitobitoGroupId)
           : options.find((o) => o.hitobitoGroupId === eligibility.ortsgruppeId);
       if (!isOther && input.hitobitoGroupId !== undefined && !chosen) {
-        return reply.status(403).send({ error: NOT_ELIGIBLE_MESSAGES.NOT_LEADER, reason: 'NOT_LEADER', existingDepartment: null });
+        return reply.status(403).send({ error: request.t(NOT_ELIGIBLE_KEYS.NOT_LEADER), reason: 'NOT_LEADER', existingDepartment: null });
       }
       if (chosen?.existingDepartment) {
         return reply
           .status(409)
-          .send({ error: NOT_ELIGIBLE_MESSAGES.EXISTS, reason: 'EXISTS', existingDepartment: chosen.existingDepartment });
+          .send({ error: request.t(NOT_ELIGIBLE_KEYS.EXISTS), reason: 'EXISTS', existingDepartment: chosen.existingDepartment });
       }
       const ceviDbGroupId = chosen?.hitobitoGroupId ?? eligibility.ortsgruppeId;
       // Eine höhere Ebene (Region, Kantonalverband) wird nicht zur Heimabteilung, wenn die Person schon eine hat
@@ -416,11 +419,11 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
         if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
           const target = String(err.meta?.target ?? '');
           if (target.includes('slug')) {
-            return reply.status(409).send({ error: 'Diese Subdomain ist bereits vergeben' });
+            return reply.fail(409, 'department.subdomainTaken');
           }
           return reply
             .status(409)
-            .send({ error: NOT_ELIGIBLE_MESSAGES.EXISTS, reason: 'EXISTS', existingDepartment: null });
+            .send({ error: request.t(NOT_ELIGIBLE_KEYS.EXISTS), reason: 'EXISTS', existingDepartment: null });
         }
         throw err;
       }
@@ -455,9 +458,7 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
           select: { id: true },
         });
         if (!candidate) {
-          return reply.status(400).send({
-            error: 'Kontaktperson kann nur die Abteilungsleitung oder jemand mit «Personen und Rechte verwalten» sein.',
-          });
+          return reply.fail(400, 'department.contactNotEligible');
         }
       }
 
@@ -481,6 +482,7 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
           membersOnly: input.membersOnly,
           allowPasswordless: input.allowPasswordless,
           joinMode: input.joinMode,
+          defaultLocale: input.defaultLocale !== undefined ? localeToDb(input.defaultLocale) : undefined,
           ...(nextInviteToken !== undefined ? { inviteToken: nextInviteToken } : {}),
         },
       });
@@ -502,6 +504,7 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
         membersOnly: updated.membersOnly,
         allowPasswordless: updated.allowPasswordless,
         joinMode: updated.joinMode as DepartmentJoinMode,
+        defaultLocale: localeFromDb(updated.defaultLocale) ?? 'de',
         inviteToken: updated.inviteToken,
       };
     }
@@ -543,17 +546,14 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
         : null;
       // Abgelaufen oder für eine andere E-Mail: gleich hier sagen (Ob sie schon eingelöst ist, prüft der Beitritt)
       if (dept && dept.organization === request.organization && verified?.reason) {
-        return reply.status(404).send({ code: `INVITE_${verified.reason}`, error: INVITE_REASON_ERRORS[verified.reason] });
+        return reply.status(404).send({ code: `INVITE_${verified.reason}`, error: inviteReasonError(verified.reason, request.t) });
       }
       const item =
         dept && verified?.valid && dept.organization === request.organization
           ? (await departmentCache.getDirectory(fastify.prisma, request.organization)).find((d) => d.id === dept.id)
           : undefined;
       if (!item) {
-        return reply.status(404).send({
-          code: 'INVITE_INVALID',
-          error: 'Dieser Einladungslink ist ungültig oder wurde inzwischen ersetzt.',
-        });
+        return reply.fail(404, 'department.inviteLinkInvalid', undefined, { code: 'INVITE_INVALID' });
       }
       return item satisfies DepartmentDirectoryItemDto;
     }
@@ -613,10 +613,10 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
       preHandler: [fastify.authenticate],
     },
     async (request, reply) => {
-      if (!request.tenant) return reply.status(404).send({ error: 'Keine Abteilung im Kontext' });
+      if (!request.tenant) return reply.fail(404, 'department.missingContext');
       const access = await departmentAccess(fastify.prisma, request.tenant.id, request.user.id);
       if (!access.permissions.has('DEPARTMENT_SETTINGS') && !access.permissions.has('PEOPLE_MANAGE')) {
-        return reply.status(403).send({ error: 'Keine Berechtigung.' });
+        return reply.fail(403, 'auth.noPermissionDot');
       }
       const inviteToken = crypto.randomBytes(18).toString('base64url');
       await fastify.prisma.department.update({
@@ -669,10 +669,10 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
       preHandler: [fastify.authenticate],
     },
     async (request, reply) => {
-      if (!request.tenant) return reply.status(404).send({ error: 'Keine Abteilung im Kontext' });
+      if (!request.tenant) return reply.fail(404, 'department.missingContext');
       const access = await departmentAccess(fastify.prisma, request.tenant.id, request.user.id);
       if (!access.permissions.has('DEPARTMENT_SETTINGS') && !access.permissions.has('PEOPLE_MANAGE')) {
-        return reply.status(403).send({ error: 'Keine Berechtigung.' });
+        return reply.fail(403, 'auth.noPermissionDot');
       }
       const { email, emails: rawList, preset = 'MEMBER' } = request.body as {
         email?: string;
@@ -681,23 +681,21 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
       };
       const recipients = extractEmails(email, rawList);
       if (recipients.length === 0) {
-        return reply.status(400).send({ error: 'Bitte mindestens eine gültige E-Mail-Adresse angeben.' });
+        return reply.fail(400, 'department.inviteEmailRequired');
       }
       if (recipients.length > 50) {
-        return reply.status(400).send({ error: 'Bitte höchstens 50 E-Mail-Adressen auf einmal einladen.' });
+        return reply.fail(400, 'department.inviteTooMany');
       }
       for (const addr of recipients) {
         if (!emailValidator.safeParse(addr).success) {
-          return reply.status(400).send({ error: `Ungültige E-Mail-Adresse: ${addr}` });
+          return reply.status(400).send({ error: request.t('department.inviteInvalidEmail', { address: addr }) });
         }
       }
 
       if (preset !== 'MEMBER') {
         const presetPerms = DEPARTMENT_PERMISSION_PRESETS[preset].permissions;
         if (!canGrantPermissions(access, [], presetPerms)) {
-          return reply.status(403).send({
-            error: 'Du kannst beim Einladen nur Rechte vergeben, die du selbst verwalten darfst.',
-          });
+          return reply.fail(403, 'department.inviteRightsExceeded');
         }
       }
 
@@ -725,10 +723,7 @@ const departmentInfoRoutes: FastifyPluginAsync = async (fastify) => {
         });
       }
       if (inviteUserLimiter.hit(limitKeyUser) || inviteDeptLimiter.hit(limitKeyDept)) {
-        return reply.status(429).send({
-          code: 'RATE_LIMITED',
-          error: 'Zu viele Einladungen in kurzer Zeit. Bitte versuche es später wieder.',
-        });
+        return reply.fail(429, 'department.inviteTooFast', undefined, { code: 'RATE_LIMITED' });
       }
       for (const addr of toSend) {
         inviteRecipientLimiter.hit(`to:${request.tenant.id}:${addr}`);

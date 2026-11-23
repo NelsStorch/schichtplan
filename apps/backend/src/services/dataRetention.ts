@@ -11,7 +11,7 @@
  * Die Anlässe selbst (samt Namen der Eintragungen) bleiben, bis die Abteilung sie löscht.
  * Fristen müssen mit Abschnitt 8 der Datenschutzerklärung (apps/landing/src/app/datenschutz) übereinstimmen.
  */
-import { getOrganizationByDbType, isPlaceholderEmail, type OrganizationType } from '@schichtplan/shared';
+import { formatZurichDate, getOrganizationByDbType, isPlaceholderEmail, type OrganizationType } from '@schichtplan/shared';
 import type { PrismaClient } from '../db.js';
 import { sendInactiveAccountEmail } from './email.js';
 import { anonymizeUserTraces, detachSignupsAnonymously } from './userErasure.js';
@@ -57,7 +57,7 @@ function loginUrlFor(org: OrganizationType, env: NodeJS.ProcessEnv = process.env
 }
 
 function formatDay(date: Date): string {
-  return new Intl.DateTimeFormat('de-CH', { timeZone: 'Europe/Zurich', day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
+  return formatZurichDate(date);
 }
 
 async function purgeLogs(prisma: PrismaClient, now: Date) {

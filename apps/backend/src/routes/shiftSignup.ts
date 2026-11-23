@@ -3,10 +3,12 @@ import { FastifyPluginAsync } from 'fastify';
 import {
   ageAt,
   cancelDeadlineAt,
-  cancelDeadlineText,
   formatZurichTimeRange,
+  getVocabulary,
   SignupShiftSchema,
+  zurichDateTimeParts,
 } from '@schichtplan/shared';
+import type { ErrorKey, ErrorValues } from '../plugins/i18n.js';
 import {
   accessEventInclude,
   accessUserSelect,
@@ -17,7 +19,7 @@ import {
 import { missingProfileFields } from '../services/profile.js';
 import { missingSensitiveConsent, validateAnswers } from './eventParticipation.js';
 import { OTHER_EVENT_SHIFT_TITLE, findShiftCollisions, hasShiftCollision } from '../services/shiftCollision.js';
-import { UNRELATED_PERSON_ERROR, allUsersRelatedToEvent } from '../services/departmentVisibility.js';
+import { allUsersRelatedToEvent } from '../services/departmentVisibility.js';
 import { trackUsage } from '../services/usageStats.js';
 import { personLabel } from '../services/attendance.js';
 import { notifyReplacementTaken, replacementOpen } from '../services/replacement.js';
@@ -62,11 +64,11 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!shift || (request.tenant && shift.event.departmentId !== request.tenant.id)) {
-        return reply.status(404).send({ error: 'Schicht nicht gefunden' });
+        return reply.fail(404, 'signup.shiftNotFound');
       }
 
       if (!request.user) {
-        return reply.status(401).send({ error: 'Nicht angemeldet' });
+        return reply.fail(401, 'auth.notSignedIn');
       }
 
       const flags = await managerFlags(fastify.prisma, shift.event, request.user);
@@ -78,16 +80,16 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
 
       if (userId && userId !== request.user.id) {
         if (!canAssign) {
-          return reply.status(403).send({ error: 'Keine Berechtigung' });
+          return reply.fail(403, 'auth.noPermission');
         }
         // Nur Personen der Abteilung oder des Anlasses, nie beliebige Konten
         if (!(await allUsersRelatedToEvent(fastify.prisma, shift.eventId, [userId]))) {
-          return reply.status(400).send({ error: UNRELATED_PERSON_ERROR });
+          return reply.status(400).send({ error: request.t('people.unrelatedPerson') });
         }
         targetUserId = userId;
       } else if (!userId && guestName) {
         if (!canAssign) {
-          return reply.status(403).send({ error: 'Keine Berechtigung' });
+          return reply.fail(403, 'auth.noPermission');
         }
         targetGuestName = guestName;
       } else {
@@ -109,9 +111,14 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
       if (conflicts.length > 0) {
         const first = conflicts[0];
         if (first.sameShift) {
-          message = `Bereits in dieser Schicht eingetragen${first.taskTitle ? ` (${first.taskTitle})` : ''}.`;
+          message = first.taskTitle
+            ? request.t('signup.alreadyHintSameTask', { task: first.taskTitle })
+            : request.t('signup.alreadyHintSame');
         } else {
-          message = `Bereits eingetragen für «${first.shiftTitle}»${first.taskTitle ? ` (${first.taskTitle})` : ''} (${formatZurichTimeRange(first.startTime, first.endTime)}).`;
+          const time = formatZurichTimeRange(first.startTime, first.endTime, request.intlLocale);
+          message = first.taskTitle
+            ? request.t('signup.alreadyHintTask', { shift: first.shiftTitle ?? request.t('signup.anotherShift'), task: first.taskTitle, time })
+            : request.t('signup.alreadyHint', { shift: first.shiftTitle ?? request.t('signup.anotherShift'), time });
         }
       }
 
@@ -164,23 +171,25 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!shift || (request.tenant && shift.event.departmentId !== request.tenant.id)) {
-        return reply.status(404).send({ error: 'Schicht nicht gefunden' });
+        return reply.fail(404, 'signup.shiftNotFound');
       }
 
       const event = shift.event;
 
       // Selbsteintragung braucht immer ein Konto (ein Cevi-Name-Profil reicht)
       if (!request.user) {
-        return reply.status(401).send({
-          error: 'Zum Eintragen brauchst du ein Konto. Ein Cevi-Name ohne Passwort reicht.',
-          requiresLogin: true,
-        });
+        return reply.fail(
+          401,
+          'signup.accountRequired',
+          { nickname: getVocabulary(request.organization).nickname },
+          { requiresLogin: true }
+        );
       }
 
       const flags = await managerFlags(fastify.prisma, event, request.user);
       const isOkOrAdmin = flags.isManager;
       if (!event.isPublished && !isOkOrAdmin) {
-        return reply.status(404).send({ error: 'Schicht nicht gefunden' });
+        return reply.fail(404, 'signup.shiftNotFound');
       }
 
       // Body parsen
@@ -199,9 +208,9 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
           .map((q) => [q.id, (parse.data.answers?.[q.id] ?? '').trim()] as const)
           .filter(([, value]) => value)
       );
-      const invalidAnswer = validateAnswers(perSignupQuestions, signupAnswers);
+      const invalidAnswer = validateAnswers(perSignupQuestions, signupAnswers, request.t);
       if (invalidAnswer) return reply.status(400).send({ error: invalidAnswer });
-      const noConsent = missingSensitiveConsent(perSignupQuestions, signupAnswers, parse.data.sensitiveConsent);
+      const noConsent = missingSensitiveConsent(perSignupQuestions, signupAnswers, parse.data.sensitiveConsent, request.t);
       if (noConsent) return reply.status(400).send({ error: noConsent });
       const sensitiveIds = new Set(perSignupQuestions.filter((q) => q.sensitive).map((q) => q.id));
       const answeredAt = new Date();
@@ -213,16 +222,16 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
         : null;
       if (parse.data.replacesSignupId) {
         if (!replaced?.replacementWantedAt) {
-          return reply.status(409).send({ error: 'Für diese Eintragung wird kein Ersatz mehr gesucht.' });
+          return reply.fail(409, 'signup.replacementNotWanted');
         }
         if (replaced.attendance === 'PRESENT') {
-          return reply.status(409).send({ error: 'Die Person ist bereits anwesend. Diese Schicht kann nicht mehr übernommen werden.' });
+          return reply.fail(409, 'signup.replacementAlreadyPresent');
         }
         if (replaced.userId === request.user.id) {
-          return reply.status(400).send({ error: 'Das ist deine eigene Eintragung.' });
+          return reply.fail(400, 'signup.replacementOwnSignup');
         }
         if (!replacementOpen(event, shift.startTime)) {
-          return reply.status(409).send({ error: 'Diese Schicht kann nicht mehr übernommen werden.' });
+          return reply.fail(409, 'signup.replacementNotPossible');
         }
         shift.signups = shift.signups.filter((s) => s.id !== replaced.id);
         for (const t of shift.tasks) t.signups = t.signups.filter((s) => s.id !== replaced.id);
@@ -242,12 +251,12 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
       if (canAssign && requestedUserId && !replaced) {
         // Nur Personen der Abteilung oder des Anlasses: sonst sähe das OK danach fremde Kontaktdaten
         if (!(await allUsersRelatedToEvent(fastify.prisma, event.id, [requestedUserId]))) {
-          return reply.status(400).send({ error: UNRELATED_PERSON_ERROR });
+          return reply.status(400).send({ error: request.t('people.unrelatedPerson') });
         }
         targetUserId = requestedUserId;
         targetUser = await fastify.prisma.user.findUnique({ where: { id: targetUserId } });
         if (!targetUser) {
-          return reply.status(404).send({ error: 'Ausgewählte Person nicht gefunden' });
+          return reply.fail(404, 'signup.personNotFound');
         }
       } else if (canAssign && reqGuestName && !replaced) {
         // OK trägt manuellen Gast/Helfer ein
@@ -270,7 +279,7 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
           },
         });
         if (!self) {
-          return reply.status(401).send({ error: 'Konto nicht gefunden' });
+          return reply.fail(401, 'auth.accountNotFound');
         }
         targetUser = self;
 
@@ -299,8 +308,7 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
           .filter((q) => q.required && !signupAnswers[q.id])
           .map((q) => q.id);
         if (missingFields.length > 0 || missingQuestionIds.length > 0 || missingSignupQuestionIds.length > 0) {
-          return reply.status(400).send({
-            error: 'Für diesen Anlass fehlen noch Angaben.',
+          return reply.fail(400, 'signup.missingInfo', undefined, {
             code: 'MISSING_INFO',
             missingFields,
             missingQuestionIds,
@@ -326,44 +334,39 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
         const sameShift = conflicts.some((c) => c.sameShift);
         const isSelf = targetUserId === request.user.id;
 
-        let error: string;
+        let key: ErrorKey;
+        let values: ErrorValues = {};
         if (sameShift) {
-          if (isSelf) {
-            error = first.taskTitle
-              ? `Du bist für diese Schicht bereits für die Arbeit «${first.taskTitle}» eingetragen.`
-              : 'Du bist für diese Schicht bereits eingetragen.';
+          if (first.taskTitle) {
+            key = isSelf ? 'signup.alreadySelfTask' : 'signup.alreadyOtherTask';
+            values = { task: first.taskTitle };
           } else {
-            error = first.taskTitle
-              ? `Diese Person ist für diese Schicht bereits für die Arbeit «${first.taskTitle}» eingetragen.`
-              : 'Diese Person ist für diese Schicht bereits eingetragen.';
+            key = isSelf ? 'signup.alreadySelf' : 'signup.alreadyOther';
           }
         } else {
-          const timeStr = formatZurichTimeRange(first.startTime, first.endTime);
+          const time = formatZurichTimeRange(first.startTime, first.endTime, request.intlLocale);
+          values = {
+            shift: first.shiftTitle ?? request.t('signup.anotherShift'),
+            time,
+            ...(first.taskTitle ? { task: first.taskTitle } : {}),
+          };
           if (isSelf) {
-            error = first.taskTitle
-              ? `Du bist zur gleichen Zeit bereits für die Schicht «${first.shiftTitle}» (${first.taskTitle}, ${timeStr}) eingetragen.`
-              : `Du bist zur gleichen Zeit bereits für die Schicht «${first.shiftTitle}» (${timeStr}) eingetragen.`;
+            key = first.taskTitle ? 'signup.collisionSelfTask' : 'signup.collisionSelf';
           } else {
-            const name =
+            values.name =
               targetUser?.nickname ||
               (targetUser ? `${targetUser.firstName} ${targetUser.lastName}`.trim() : guestName) ||
-              'Diese Person';
-            error = first.taskTitle
-              ? `${name} ist zur gleichen Zeit bereits für die Schicht «${first.shiftTitle}» (${first.taskTitle}, ${timeStr}) eingetragen.`
-              : `${name} ist zur gleichen Zeit bereits für die Schicht «${first.shiftTitle}» (${timeStr}) eingetragen.`;
+              request.t('signup.thisPerson');
+            key = first.taskTitle ? 'signup.collisionOtherTask' : 'signup.collisionOther';
           }
         }
 
-        return reply.status(409).send({
-          error,
-          code: 'TIME_COLLISION',
-          conflicts,
-        });
+        return reply.fail(409, key, values, { code: 'TIME_COLLISION', conflicts });
       }
 
       // Prüfe freie Plätze in der Gesamtschicht
       if (shift.signups.length >= shift.requiredSlots) {
-        return reply.status(409).send({ error: 'Diese Schicht ist bereits voll belegt' });
+        return reply.fail(409, 'signup.shiftFull');
       }
 
       // Arbeit (Task) bestimmen
@@ -374,7 +377,7 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
       } else if (taskId) {
         chosenTask = shift.tasks.find((t) => t.id === taskId);
         if (!chosenTask) {
-          return reply.status(404).send({ error: 'Arbeit in dieser Schicht nicht gefunden' });
+          return reply.fail(404, 'signup.taskNotFound');
         }
       } else if (shift.tasks.length === 1) {
         chosenTask = shift.tasks[0];
@@ -385,9 +388,7 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
 
       // Prüfe freie Plätze in der gewählten Arbeit
       if (chosenTask && chosenTask.signups.length >= chosenTask.requiredSlots) {
-        return reply.status(409).send({
-          error: `Für die Arbeit "${chosenTask.title}" sind alle Plätze belegt. Bitte wähle eine andere Arbeit.`,
-        });
+        return reply.fail(409, 'signup.taskFull', { task: chosenTask.title });
       }
 
       // Altersprüfungen
@@ -399,8 +400,7 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
       // (sonst liesse sich «Bar ab 18» mit einem Konto ohne Geburtsdatum umgehen)
       const strictMinAge = Boolean(shift.minAge || (chosenTask?.minAge && chosenTask.ageRequirementType === 'ALL'));
       if (targetUserId === request.user.id && !isOkOrAdmin && strictMinAge && userAge === null) {
-        return reply.status(400).send({
-          error: 'Für diese Schicht gibt es ein Mindestalter. Bitte gib dein Geburtsdatum an.',
+        return reply.fail(400, 'signup.birthDateRequired', undefined, {
           code: 'MISSING_INFO',
           missingFields: ['BIRTH_DATE'],
           missingQuestionIds: [],
@@ -410,9 +410,9 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
 
       // 1) Mindestalter der Schicht selbst
       if (shift.minAge && userAge !== null && userAge < shift.minAge) {
-        return reply.status(403).send({
-          error: `Für diese Schicht ${shift.title ? `(${shift.title}) ` : ''}ist ein Mindestalter von ${shift.minAge} Jahren erforderlich. Alter: ${userAge} Jahre.`,
-        });
+        return shift.title
+          ? reply.fail(403, 'signup.shiftMinAgeTitled', { shift: shift.title, minAge: shift.minAge, age: userAge })
+          : reply.fail(403, 'signup.shiftMinAge', { minAge: shift.minAge, age: userAge });
       }
 
       // 2) Mindestalter der spezifischen Arbeit
@@ -420,9 +420,7 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
         if (chosenTask.ageRequirementType === 'ALL') {
           // Alle müssen das Mindestalter haben
           if (userAge !== null && userAge < chosenTask.minAge) {
-            return reply.status(403).send({
-              error: `Für die Arbeit "${chosenTask.title}" müssen alle Helfenden mindestens ${chosenTask.minAge} Jahre alt sein. Alter: ${userAge} Jahre.`,
-            });
+            return reply.fail(403, 'signup.taskMinAgeAll', { task: chosenTask.title, minAge: chosenTask.minAge, age: userAge });
           }
         } else if (chosenTask.ageRequirementType === 'AT_LEAST_ONE') {
           // Mindestens eine Person in der Schicht muss das Mindestalter haben
@@ -444,9 +442,7 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
               // Prüfe, ob dies der LETZTE freie Platz in der Schicht ist:
               const remainingShiftSlots = shift.requiredSlots - shift.signups.length;
               if (remainingShiftSlots <= 1) {
-                return reply.status(403).send({
-                  error: `Für die Arbeit "${chosenTask.title}" muss mindestens eine Person in der Schicht mindestens ${chosenTask.minAge} Jahre alt sein. Da dies der letzte freie Platz ist, muss dieser von einer Person ab ${chosenTask.minAge} Jahren besetzt werden.`,
-                });
+                return reply.fail(403, 'signup.taskMinAgeLastSlot', { task: chosenTask.title, minAge: chosenTask.minAge });
               }
             }
           }
@@ -473,7 +469,7 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
             select: { id: true, attendance: true },
           });
           if (!stillOffered || stillOffered.attendance === 'PRESENT') {
-            return { error: 'Diese Schicht wurde schon übernommen, ist bereits anwesend oder wird nicht mehr angeboten.' } as const;
+            return { fail: 'signup.replacementGone' as ErrorKey, values: undefined };
           }
           await tx.cateringToken.updateMany({
             where: { shiftSignupId: replaced.id, status: 'REDEEMED' },
@@ -504,12 +500,10 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
               const otherTitle =
                 targetUserId !== request.user!.id && overlapping.shift.eventId !== shift.eventId
                   ? OTHER_EVENT_SHIFT_TITLE
-                  : overlapping.shift.title || 'eine andere Schicht';
-              return {
-                error: isSame
-                  ? 'Diese Person ist für diese Schicht bereits eingetragen'
-                  : `Zur gleichen Zeit besteht bereits eine Eintragung für «${otherTitle}»`,
-              } as const;
+                  : overlapping.shift.title || request.t('signup.anotherShift');
+              return isSame
+                ? { fail: 'signup.alreadyOther' as ErrorKey, values: undefined }
+                : { fail: 'signup.collisionExisting' as ErrorKey, values: { shift: otherTitle } as ErrorValues };
             }
           } else if (guestName) {
             const candidates = await tx.shiftSignup.findMany({
@@ -524,19 +518,15 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
               include: { shift: true },
             });
             if (candidates.some((c) => collides(c.shift))) {
-              return {
-                error: `Jemand mit dem Namen "${guestName}" ist zur gleichen Zeit bereits eingetragen`,
-              } as const;
+              return { fail: 'signup.guestCollision' as ErrorKey, values: { name: guestName } as ErrorValues };
             }
           }
         }
         if ((await tx.shiftSignup.count({ where: { shiftId } })) >= shift.requiredSlots) {
-          return { error: 'Diese Schicht ist bereits voll belegt' } as const;
+          return { fail: 'signup.shiftFull' as ErrorKey, values: undefined };
         }
         if (chosenTask && (await tx.shiftSignup.count({ where: { taskId: chosenTask.id } })) >= chosenTask.requiredSlots) {
-          return {
-            error: `Für die Arbeit "${chosenTask.title}" sind alle Plätze belegt. Bitte wähle eine andere Arbeit.`,
-          } as const;
+          return { fail: 'signup.taskFull' as ErrorKey, values: { task: chosenTask.title } as ErrorValues };
         }
         // «Mindestens eine Person ab X Jahren» unter der Sperre nochmals prüfen: Sonst könnten zwei zu
         // junge Personen gleichzeitig die letzten Plätze bekommen.
@@ -551,8 +541,9 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
           });
           if (!hasAdult && shift.requiredSlots - current.length <= 1) {
             return {
-              error: `Für die Arbeit "${chosenTask.title}" muss mindestens eine Person in der Schicht mindestens ${chosenTask.minAge} Jahre alt sein. Der letzte freie Platz bleibt für eine Person ab ${chosenTask.minAge} Jahren.`,
-            } as const;
+              fail: 'signup.taskMinAgeLastSlotReserved' as ErrorKey,
+              values: { task: chosenTask.title, minAge: chosenTask.minAge } as ErrorValues,
+            };
           }
         }
 
@@ -594,8 +585,8 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
         });
         return { signup: created } as const;
       });
-      if ('error' in result) {
-        return reply.status(409).send({ error: result.error });
+      if (result.fail) {
+        return reply.fail(409, result.fail, result.values);
       }
       const signup = result.signup;
 
@@ -690,7 +681,7 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
       const { signupId } = request.query;
 
       if (!request.user) {
-        return reply.status(401).send({ error: 'Nicht angemeldet' });
+        return reply.fail(401, 'auth.notSignedIn');
       }
 
       let existingSignup = null;
@@ -721,7 +712,7 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
       // Die Eintragung muss zur Schicht in der Adresse gehören. Bewusst ohne Abteilungs-Prüfung:
       // «Meine Schichten» trägt auch Schichten anderer Abteilungen aus (die Berechtigung folgt unten).
       if (!existingSignup || existingSignup.shiftId !== shiftId) {
-        return reply.status(404).send({ error: 'Eintragung nicht gefunden' });
+        return reply.fail(404, 'signup.signupNotFound');
       }
 
       // Prüfe Berechtigung: Eigener Eintrag ODER Abteilungsleitung ODER Event-OK
@@ -732,21 +723,17 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
       const isSelf = Boolean(request.user && existingSignup.userId === request.user.id);
 
       if (!isSelf && !isManager) {
-        return reply.status(403).send({ error: 'Keine Berechtigung zum Löschen dieser Eintragung' });
+        return reply.fail(403, 'signup.noPermissionDelete');
       }
 
       // Hat die Schicht bereits begonnen oder ist vorbei, darf sich eine Person nicht mehr selbst austragen
       if (!isManager && existingSignup.shift.startTime <= new Date()) {
-        return reply.status(403).send({
-          error: 'Diese Schicht hat bereits begonnen oder ist vorbei. Austragen ist nur über das OK möglich.',
-        });
+        return reply.fail(403, 'signup.signoffStarted');
       }
 
       // Wurde die Anwesenheit bereits erfasst, darf man sich ebenfalls nicht mehr selbst austragen
       if (!isManager && existingSignup.attendance === 'PRESENT') {
-        return reply.status(403).send({
-          error: 'Du bist für diese Schicht bereits als anwesend erfasst und kannst dich nicht mehr selbst austragen.',
-        });
+        return reply.fail(403, 'signup.signoffPresent');
       }
 
       // Wurde bereits ein Verpflegungs-Bon eingelöst, darf man sich nicht mehr selbst austragen
@@ -755,9 +742,7 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
           where: { shiftSignupId: existingSignup.id, status: 'REDEEMED' },
         });
         if (redeemedToken) {
-          return reply.status(403).send({
-            error: 'Du hast für diese Schicht bereits einen Verpflegungs-Bon eingelöst und kannst dich nicht mehr selbst austragen. Bitte melde dich beim OK.',
-          });
+          return reply.fail(403, 'signup.signoffTokenRedeemed');
         }
       }
 
@@ -765,9 +750,12 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
       if (!isManager && event.cancelDeadlineDays !== null && event.cancelDeadlineDays !== undefined) {
         const deadline = cancelDeadlineAt(event.startDate, event.cancelDeadlineDays);
         if (new Date() >= deadline) {
-          const daysText = cancelDeadlineText(deadline, event.cancelDeadlineDays);
-          return reply.status(403).send({
-            error: `Austragen ist ${daysText} nicht mehr selbst möglich. Bitte wende dich direkt an das Event-OK.`,
+          if (event.cancelDeadlineDays === 0) return reply.fail(403, 'signup.signoffDeadlineStart');
+          const parts = zurichDateTimeParts(deadline, request.intlLocale);
+          return reply.fail(403, 'signup.signoffDeadline', {
+            date: parts?.date ?? '',
+            time: parts?.time ?? '',
+            days: event.cancelDeadlineDays,
           });
         }
       }
@@ -825,7 +813,7 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
       });
       trackUsage('SIGNOFF', { dim: isSelf ? 'SELF' : 'OK', departmentId: event.departmentId });
 
-      return { message: 'Erfolgreich aus der Schicht ausgetragen' };
+      return { message: request.t('success.signedOff') };
     }
   );
 };

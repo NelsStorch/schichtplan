@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Copy, Mail, Send, Users } from 'lucide-react';
-import type { EventMessageDto, EventMessageResultDto, EventMessageTarget } from '@schichtplan/shared';
+import { zurichDateTimeFormat, type EventMessageDto, type EventMessageResultDto, type EventMessageTarget } from '@schichtplan/shared';
 import { Badge, Button, Callout, Card, EmptyState, Field, Input, Skeleton, Textarea, cn, useConfirm, useToast } from '@schichtplan/ui';
 import { useOkEvent } from '@/components/ok/OkContext';
 import { OkPageHeader } from '@/components/ok/OkLayout';
@@ -12,8 +12,7 @@ import { dayKeyToIso, fmtDayMonth, fmtShortWeekday, groupByBusinessDay, fmtTimeR
 
 const MAX_BODY = 5000;
 
-const stampFmt = new Intl.DateTimeFormat('de-CH', {
-  timeZone: 'Europe/Zurich',
+const stampFmt = zurichDateTimeFormat({
   weekday: 'short',
   day: '2-digit',
   month: '2-digit',

@@ -7,6 +7,7 @@ import { Prisma, PrismaClient } from '../db.js';
 import { personLabel } from './profile.js';
 import { escapeHtml, sendGenericEmail } from './email.js';
 import { usableEmail } from '../routes/eventMessages.js';
+import { formatZurichDateTime } from '@schichtplan/shared';
 
 export type AdminAuditTarget = 'USER' | 'DEPARTMENT' | 'EVENT';
 
@@ -59,7 +60,7 @@ export function notifyAdminChange(
     });
     const verb = change.granted ? 'ist neu globale*r Admin' : 'ist kein*e globale*r Admin mehr';
     const subject = `Cevi Schichtplan: ${change.targetLabel} ${verb}`;
-    const timestamp = new Date().toLocaleString('de-CH', { timeZone: 'Europe/Zurich' });
+    const timestamp = formatZurichDateTime(new Date());
     const messageHtml = `
       <p style="margin: 0 0 16px 0;"><strong class="email-signature" style="color: #1c1917;">${escapeHtml(change.targetLabel)}</strong> ${escapeHtml(verb)}.</p>
       <p style="margin: 0;">Falls diese Änderung nicht abgesprochen war, prüft bitte sofort das Protokoll im Admin-Portal.</p>

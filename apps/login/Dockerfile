@@ -7,6 +7,7 @@ RUN apk add --no-cache libc6-compat
 FROM base AS dependencies
 WORKDIR /app
 COPY package.json package-lock.json ./
+COPY packages/i18n/package.json ./packages/i18n/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/ui/package.json ./packages/ui/
 COPY apps/backend/package.json ./apps/backend/
@@ -20,6 +21,7 @@ RUN --mount=type=cache,target=/root/.npm npm ci
 FROM base AS development
 WORKDIR /app
 COPY --from=dependencies /app/node_modules ./node_modules
+COPY packages/i18n ./packages/i18n
 COPY packages/shared ./packages/shared
 COPY packages/ui ./packages/ui
 COPY apps/login ./apps/login
@@ -36,9 +38,13 @@ ARG UMAMI_SCRIPT_URL=""
 ENV UMAMI_SCRIPT_URL=$UMAMI_SCRIPT_URL
 COPY package.json package-lock.json ./
 COPY --from=dependencies /app/node_modules ./node_modules
+COPY packages/i18n ./packages/i18n
 COPY packages/shared ./packages/shared
 COPY packages/ui ./packages/ui
 COPY apps/login ./apps/login
+# Sprachpaket (Kataloge, Sprachermittlung) zuerst, unabhängig von shared
+WORKDIR /app/packages/i18n
+RUN npm run build
 WORKDIR /app/packages/shared
 RUN npm run build
 WORKDIR /app/apps/login

@@ -55,23 +55,20 @@ const adminPeopleRoutes: FastifyPluginAsync = async (fastify) => {
         },
       })
       .catch(() => null);
-    if (!user) return reply.status(404).send({ error: 'Person nicht gefunden' });
+    if (!user) return reply.fail(404, 'generic.personNotFound');
 
     if (isGlobalAdmin !== undefined && isGlobalAdmin !== user.isGlobalAdmin) {
       // Admins melden sich über Hitobito an (stärker als ein eigenes Passwort, siehe adminSecurity.ts)
       if (isGlobalAdmin && user.providerId === null) {
-        return reply.status(400).send({
-          error:
-            'Globale Admins brauchen ein Hitobito-Konto (Cevi.DB, PBS MiData oder Jubla-DB). Die Person soll sich zuerst einmal darüber anmelden.',
-        });
+        return reply.fail(400, 'admin.needsHitobito');
       }
       if (!isGlobalAdmin) {
         if (user.id === request.user.id) {
-          return reply.status(400).send({ error: 'Du kannst dir die Admin-Rolle nicht selbst entziehen.' });
+          return reply.fail(400, 'admin.cannotRevokeSelf');
         }
         const adminCount = await fastify.prisma.user.count({ where: { isGlobalAdmin: true } });
         if (adminCount <= 1) {
-          return reply.status(400).send({ error: 'Der letzte globale Admin kann nicht entfernt werden.' });
+          return reply.fail(400, 'admin.cannotRemoveLastAdmin');
         }
       }
       await fastify.prisma.user.update({ where: { id: user.id }, data: { isGlobalAdmin } });
@@ -100,7 +97,7 @@ const adminPeopleRoutes: FastifyPluginAsync = async (fastify) => {
           .findUnique({ where: { id: homeDepartmentId }, select: { id: true, name: true } })
           .catch(() => null);
         if (!targetDept) {
-          return reply.status(404).send({ error: 'Abteilung nicht gefunden' });
+          return reply.fail(404, 'department.notFound');
         }
       }
       await fastify.prisma.$transaction(async (tx) => {
@@ -157,10 +154,10 @@ const adminPeopleRoutes: FastifyPluginAsync = async (fastify) => {
     const { targetUserId } = input;
 
     if (sourceId === targetUserId) {
-      return reply.status(400).send({ error: 'Quelle und Ziel dürfen nicht dasselbe Konto sein.' });
+      return reply.fail(400, 'admin.mergeSameAccount');
     }
     if (sourceId === request.user.id) {
-      return reply.status(400).send({ error: 'Du kannst dein eigenes Admin-Konto nicht als Quelle zusammenführen.' });
+      return reply.fail(400, 'admin.mergeOwnAccount');
     }
 
     const [source, target] = await Promise.all([
@@ -196,19 +193,15 @@ const adminPeopleRoutes: FastifyPluginAsync = async (fastify) => {
         .catch(() => null),
     ]);
 
-    if (!source) return reply.status(404).send({ error: 'Quell-Person nicht gefunden' });
-    if (!target) return reply.status(404).send({ error: 'Ziel-Person nicht gefunden' });
+    if (!source) return reply.fail(404, 'admin.mergeSourceNotFound');
+    if (!target) return reply.fail(404, 'admin.mergeTargetNotFound');
 
     if (source.isGlobalAdmin) {
-      return reply.status(400).send({
-        error: 'Konten mit globalen Admin-Rechten können nicht als Quelle zusammengeführt werden.',
-      });
+      return reply.fail(400, 'admin.mergeAdminSource');
     }
 
     if (isCeviNameProfile(target) && !isCeviNameProfile(source)) {
-      return reply.status(400).send({
-        error: 'Ein Konto mit Cevi.DB oder Passwort kann nicht in ein reines Cevi-Name-Profil überführt werden. Bitte umgekehrt zusammenführen.',
-      });
+      return reply.fail(400, 'admin.mergeDirection');
     }
 
     await mergeUserInto(fastify.prisma, sourceId, targetUserId);

@@ -1,0 +1,24 @@
+{
+  "language": {
+    "label": "Lingua",
+    "switch": "Cambia lingua",
+    "beta": "Beta",
+    "incomplete": "Questa lingua non è ancora tradotta completamente. I testi mancanti vengono mostrati in tedesco."
+  },
+  "actions": {
+    "save": "Salva",
+    "cancel": "Annulla",
+    "close": "Chiudi",
+    "back": "Indietro"
+  },
+  "dateTimeAt": "{date} alle {time}",
+  "footer": {
+    "help": "Aiuto",
+    "loginHelp": "Aiuto per l’accesso",
+    "status": "Stato",
+    "privacy": "Protezione dei dati",
+    "terms": "Condizioni d’uso",
+    "imprint": "Note legali",
+    "backWithoutLogin": "Indietro senza accesso"
+  }
+}

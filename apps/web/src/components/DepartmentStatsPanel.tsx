@@ -18,6 +18,7 @@ import {
   Users,
 } from 'lucide-react';
 import {
+  formatZurichDate,
   zurichDayKey,
   type DepartmentStatsResponseDto,
 } from '@schichtplan/shared';
@@ -104,7 +105,7 @@ export function DepartmentStatsPanel() {
     // Titelzeilen
     rows.push([`${org.name} - Jahresauswertung ${department?.name ?? ''}`]);
     rows.push([`Jahr: ${data.year === 'ALL' ? 'Alle erfassten Jahre' : data.year}`]);
-    rows.push([`Stand: ${new Date().toLocaleDateString('de-CH')}`]);
+    rows.push([`Stand: ${formatZurichDate(new Date())}`]);
     rows.push([
       `Filter: ${countAttendedOnly ? 'Nur bestätigte Anwesenheiten' : 'Alle eingetragenen Schichten'}, ${
         includeSetupTeardown ? 'inkl. Auf-/Abbau' : 'ohne Auf-/Abbau'

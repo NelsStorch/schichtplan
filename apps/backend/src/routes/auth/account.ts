@@ -64,7 +64,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
       reply.header('Cache-Control', 'no-store');
       const user = await loadUserDto(fastify.prisma, request.user.id, request.tenant?.id ?? null);
       if (!user) {
-        return reply.status(404).send({ error: 'Person nicht gefunden' });
+        return reply.fail(404, 'generic.personNotFound');
       }
       return user;
     }
@@ -125,7 +125,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       const input = request.body as z.output<typeof UpdateProfileSchema>;
-      const result = await applyProfileUpdate(fastify.prisma, request.user.id, input);
+      const result = await applyProfileUpdate(fastify.prisma, request.user.id, input, request.t);
       if ('error' in result) return reply.status(result.status).send({ error: result.error });
       return loadUserDto(fastify.prisma, request.user.id, request.tenant?.id ?? null);
     }
@@ -161,39 +161,25 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
         },
       });
 
-      if (!user) return reply.status(404).send({ error: 'Person nicht gefunden' });
+      if (!user) return reply.fail(404, 'generic.personNotFound');
       if (!user.email || isPlaceholderEmail(user.email)) {
-        return reply.status(400).send({
-          error: 'Bitte trage zuerst eine gültige E-Mail-Adresse im Profil ein.',
-        });
+        return reply.fail(400, 'account.emailRequired');
       }
       if (!user.emailVerified) {
-        return reply.status(400).send({
-          error: 'Bitte bestätige zuerst deine E-Mail-Adresse über den Link in deinem Postfach, bevor du ein Passwort festlegst.',
-          code: 'EMAIL_NOT_VERIFIED',
-        });
+        return reply.fail(400, 'account.confirmEmailFirst', undefined, { code: 'EMAIL_NOT_VERIFIED' });
       }
 
       // Wenn bereits ein Passwort existiert, muss das bisherige Passwort angegeben und korrekt sein
       if (user.passwordHash) {
         if (!input.currentPassword) {
-          return reply.status(400).send({
-            error: 'Bitte gib dein aktuelles Passwort ein.',
-            code: 'CURRENT_PASSWORD_REQUIRED',
-          });
+          return reply.fail(400, 'account.currentPasswordRequired', undefined, { code: 'CURRENT_PASSWORD_REQUIRED' });
         }
         if (passwordChangeFailures.hit(user.id)) {
-          return reply.status(429).send({
-            error: 'Zu viele Versuche. Bitte warte ein paar Minuten.',
-            code: 'RATE_LIMITED',
-          });
+          return reply.fail(429, 'generic.tooManyAttempts', undefined, { code: 'RATE_LIMITED' });
         }
         const matches = await bcrypt.compare(input.currentPassword, user.passwordHash);
         if (!matches) {
-          return reply.status(401).send({
-            error: 'Das aktuelle Passwort ist nicht korrekt.',
-            code: 'CURRENT_PASSWORD_WRONG',
-          });
+          return reply.fail(401, 'account.currentPasswordWrong', undefined, { code: 'CURRENT_PASSWORD_WRONG' });
         }
         passwordChangeFailures.undo(user.id);
       }
@@ -261,23 +247,19 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!user) {
-        return reply.status(404).send({ error: 'Person nicht gefunden' });
+        return reply.fail(404, 'generic.personNotFound');
       }
 
       // Nur Accounts über Cevi.DB oder Passwort dürfen sich selbst löschen
       if (user.providerId === null && !user.passwordHash) {
-        return reply.status(403).send({
-          error: 'Nur Konten mit Cevi.DB oder Passwort können sich selbst löschen.',
-        });
+        return reply.fail(403, 'account.selfDeleteNotAllowed');
       }
 
       // Schutz: Der letzte globale Administrator kann sich nicht selbst löschen
       if (user.isGlobalAdmin) {
         const adminCount = await fastify.prisma.user.count({ where: { isGlobalAdmin: true } });
         if (adminCount <= 1) {
-          return reply.status(400).send({
-            error: 'Du bist die letzte Plattform-Administration und kannst dein Konto nicht löschen.',
-          });
+          return reply.fail(400, 'account.lastPlatformAdmin');
         }
       }
 
@@ -293,7 +275,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
         });
         if (otherLeaders === 0) {
           return reply.status(400).send({
-            error: `Du bist die einzige Leitung der Abteilung «${m.department.name}». Bitte übertrage die Leitung zuerst an eine andere Person.`,
+            error: request.t('account.onlyLeader', { department: m.department.name }),
           });
         }
       }
@@ -340,7 +322,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
       // Ohne Namen und E-Mail: Das Protokoll soll die gelöschte Person nicht weiter enthalten
       request.log.info({ userId, viaProvider: Boolean(user.providerId), hasPassword: Boolean(user.passwordHash) }, 'Person hat ihr Konto selbst gelöscht');
 
-      return { success: true, message: 'Dein Konto wurde erfolgreich gelöscht.' };
+      return { success: true, message: request.t('success.accountDeleted') };
     }
   );
 
@@ -375,7 +357,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
           birthDate: true,
         },
       });
-      if (!current) return reply.status(404).send({ error: 'Person nicht gefunden' });
+      if (!current) return reply.fail(404, 'generic.personNotFound');
 
       const fromCeviDb = current.homeDepartmentSource === 'CEVIDB';
       const departmentId = fromCeviDb ? current.homeDepartmentId : input.departmentId;
@@ -389,9 +371,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
           (m) => m.id !== userId
         );
         if (clash) {
-          return reply.status(409).send({
-            error: 'In dieser Abteilung gibt es schon ein Profil mit diesem Spitznamen und Geburtsdatum.',
-          });
+          return reply.fail(409, 'account.nicknameProfileExists');
         }
       }
       let invited = false;
@@ -410,7 +390,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
           inviteToken: input.inviteToken,
           viaLink: input.viaLink,
           tenantId: request.tenant?.id ?? null,
-        });
+        }, request.t);
         // Cevi.DB-Heimabteilung ist fest: ein ungültiger Token ändert dort nichts, ist aber kein Fehler
         if (!check.ok && !(fromCeviDb && inviteTargetDeptId === departmentId)) {
           return reply.status(check.status).send({ code: check.code, error: check.error });
@@ -443,7 +423,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
           })
         : [];
       if (stufen.length !== new Set(wanted.map((s) => s.stufeId)).size) {
-        return reply.status(400).send({ error: 'Eine Stufe gehört nicht zu dieser Abteilung' });
+        return reply.fail(400, 'stufe.notInDepartment');
       }
 
       // Stufen weiterer Abteilungen (Beitritte) bleiben beim Wechsel der Heimabteilung erhalten
@@ -568,9 +548,9 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
           birthDate: true,
         },
       });
-      if (!current) return reply.status(404).send({ error: 'Person nicht gefunden' });
+      if (!current) return reply.fail(404, 'generic.personNotFound');
       if (current.homeDepartmentId === input.departmentId) {
-        return reply.status(400).send({ error: 'Das ist bereits deine Hauptabteilung.' });
+        return reply.fail(400, 'account.alreadyHomeDepartment');
       }
       if (isCeviNameProfile(current) && current.nickname && current.birthDate) {
         const birthIso = current.birthDate.toISOString().slice(0, 10);
@@ -578,9 +558,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
           (m) => m.id !== userId
         );
         if (clash) {
-          return reply.status(409).send({
-            error: 'In dieser Abteilung gibt es schon ein Profil mit diesem Spitznamen und Geburtsdatum.',
-          });
+          return reply.fail(409, 'account.nicknameProfileExists');
         }
       }
 
@@ -591,7 +569,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
         inviteToken: input.inviteToken,
         viaLink: input.viaLink,
         tenantId: request.tenant?.id ?? null,
-      });
+      }, request.t);
       if (!check.ok) return reply.status(check.status).send({ code: check.code, error: check.error });
 
       const ids = [...new Set(input.stufen.map((s) => s.stufeId))];
@@ -600,7 +578,7 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
           where: { id: { in: ids }, departmentId: input.departmentId },
         });
         if (found !== ids.length) {
-          return reply.status(400).send({ error: 'Eine Stufe gehört nicht zu dieser Abteilung' });
+          return reply.fail(400, 'stufe.notInDepartment');
         }
       }
 
@@ -645,13 +623,10 @@ const accountRoutes: FastifyPluginAsync = async (fastify) => {
         where: { departmentId_userId: { departmentId, userId } },
         select: { joinedAt: true, joinSource: true },
       });
-      if (!member?.joinedAt) return reply.status(404).send({ error: 'Du bist dort nicht beigetreten.' });
+      if (!member?.joinedAt) return reply.fail(404, 'account.notJoined');
       // Beitritt aus der Verbands-DB: käme beim nächsten Login zurück, ändern lässt er sich nur dort
       if (isProviderJoinSource(member.joinSource)) {
-        return reply.status(400).send({
-          code: 'FROM_PROVIDER',
-          error: 'Diese Zugehörigkeit kommt aus der Verbandsdatenbank und lässt sich nur dort ändern.',
-        });
+        return reply.fail(400, 'account.membershipFromProvider', undefined, { code: 'FROM_PROVIDER' });
       }
       await fastify.prisma.$transaction(async (tx) => {
         await tx.departmentMember.update({

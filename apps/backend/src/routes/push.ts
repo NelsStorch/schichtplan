@@ -152,10 +152,10 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
       const input = request.body as z.output<typeof PushSubscribeSchema>;
       const { endpoint, keys, standalone } = input;
       if (!isAllowedPushEndpoint(endpoint)) {
-        return reply.status(400).send({ error: 'Dieser Push-Dienst wird nicht unterstützt.' });
+        return reply.fail(400, 'push.serviceUnsupported');
       }
       if (!isValidP256dhKey(keys.p256dh)) {
-        return reply.status(400).send({ error: 'Ungültiger Push-Schlüssel (p256dh)' });
+        return reply.fail(400, 'push.invalidKey');
       }
 
       const userId = request.user.id;
@@ -340,7 +340,7 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
       const { count: deleted } = await fastify.prisma.pushSubscription.deleteMany({
         where: { id: request.params.id, userId },
       });
-      if (deleted === 0) return reply.status(404).send({ error: 'Gerät nicht gefunden' });
+      if (deleted === 0) return reply.fail(404, 'push.deviceNotFound');
       if (request.cookies?.[PUSH_DEVICE_COOKIE]?.trim() === request.params.id) clearPushDeviceCookie(reply);
       const count = await fastify.prisma.pushSubscription.count({ where: { userId } });
       return { ok: true, subscriptionCount: count };
@@ -362,17 +362,17 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (resubscribeLimiter.hit(`ip:${request.ip}`)) {
-        return reply.status(429).send({ error: 'Zu viele Anfragen' });
+        return reply.fail(429, 'generic.tooManyRequestsShort');
       }
       const { oldEndpoint, endpoint, keys } = request.body as z.output<typeof PushResubscribeSchema>;
       if (!isAllowedPushEndpoint(endpoint)) {
-        return reply.status(400).send({ error: 'Dieser Push-Dienst wird nicht unterstützt.' });
+        return reply.fail(400, 'push.serviceUnsupported');
       }
       if (!isValidP256dhKey(keys.p256dh)) {
-        return reply.status(400).send({ error: 'Ungültiger Push-Schlüssel (p256dh)' });
+        return reply.fail(400, 'push.invalidKey');
       }
       const old = await fastify.prisma.pushSubscription.findUnique({ where: { endpoint: oldEndpoint }, select: { id: true } });
-      if (!old) return reply.status(404).send({ error: 'Abo nicht gefunden' });
+      if (!old) return reply.fail(404, 'push.subscriptionNotFound');
       if (oldEndpoint !== endpoint) {
         // Falls der neue Endpoint schon existiert, das Duplikat entfernen
         await fastify.prisma.pushSubscription.deleteMany({ where: { endpoint, id: { not: old.id } } });
@@ -400,9 +400,7 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const userId = request.user.id;
       if (testPushLimiter.hit(userId)) {
-        return reply.status(429).send({
-          error: 'Bitte warte kurz, bevor du eine weitere Test-Benachrichtigung sendest.',
-        });
+        return reply.fail(429, 'push.testThrottled');
       }
 
       const user = await fastify.prisma.user.findUnique({
@@ -410,7 +408,7 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
         select: { firstName: true, nickname: true, homeDepartment: { select: { slug: true, organization: true } } },
       });
       if (!user) {
-        return reply.status(404).send({ error: 'Person nicht gefunden' });
+        return reply.fail(404, 'generic.personNotFound');
       }
 
       const displayName = user.nickname || user.firstName;
@@ -433,10 +431,7 @@ const pushRoutes: FastifyPluginAsync = async (fastify) => {
       );
 
       if (result.sent === 0) {
-        return reply.status(400).send({
-          error: 'Keine aktiven Geräte erreicht. Bitte aktiviere die Browser-Benachrichtigung auf diesem Gerät erneut.',
-          ...result,
-        });
+        return reply.fail(400, 'push.noActiveDevices', undefined, { ...result });
       }
 
       return {

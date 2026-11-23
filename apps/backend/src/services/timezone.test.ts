@@ -18,6 +18,12 @@ import {
   zurichDateTime,
   zurichDayKey,
   zurichTimeKey,
+  compareSwissText,
+  formatDayKey,
+  formatSwissNumber,
+  formatZurichShiftWhen,
+  zurichDateTimeFormat,
+  zurichDateTimeParts,
 } from '@schichtplan/shared';
 
 describe('Timezone helpers (Europe/Zurich)', () => {
@@ -131,5 +137,60 @@ describe('Schweizer Kalendertage und Alter', () => {
 
   it('schreibt Zeitspannen einheitlich', () => {
     expect(formatZurichTimeRange('2026-06-13T16:00:00.000Z', '2026-06-13T20:00:00.000Z')).toBe('18:00–22:00');
+  });
+});
+
+describe('Sprachfähige Formatter (immer Schweizer Zeit)', () => {
+  const start = '2026-10-24T16:00:00.000Z'; // 18:00 MESZ
+  const end = '2026-10-24T20:00:00.000Z';
+
+  it('bleibt ohne Sprache bei Deutsch wie bisher', () => {
+    expect(formatZurichDateTime(start)).toBe('24.10.2026 um 18:00 Uhr');
+    expect(formatZurichShiftWhen(start, end)).toBe('Sa 24.10.2026 · 18:00–22:00');
+    expect(formatZurichDateTime('kaputt')).toBe('');
+  });
+
+  it('schreibt Wochentage je Sprache, Datum und Uhrzeit bleiben schweizerisch', () => {
+    expect(formatZurichShiftWhen(start, end, 'fr-CH')).toBe('sam 24.10.2026 · 18:00–22:00');
+    expect(formatZurichShiftWhen(start, end, 'it-CH')).toBe('sab 24.10.2026 · 18:00–22:00');
+    expect(formatZurichShiftWhen(start, end, 'en-CH')).toBe('Sat 24.10.2026 · 18:00–22:00');
+    expect(formatZurichTimeRange(start, end, 'fr-CH')).toBe('18:00–22:00');
+    expect(formatZurichDate(start, 'en-CH')).toBe('24.10.2026');
+    expect(formatZurichTime(start, 'it-CH')).toBe('18:00');
+  });
+
+  it('liefert Datum und Uhrzeit getrennt für übersetzte Sätze', () => {
+    expect(zurichDateTimeParts(start, 'fr-CH')).toEqual({ date: '24.10.2026', time: '18:00' });
+    expect(zurichDateTimeParts(null)).toBeNull();
+  });
+
+  it('rechnet immer in Schweizer Zeit, auch über Mitternacht UTC', () => {
+    // 23:30 UTC im Winter = 00:30 MEZ am Folgetag
+    expect(zurichDateTimeFormat({ day: '2-digit', month: '2-digit' }, 'en-CH').format(new Date('2026-01-10T23:30:00Z'))).toBe(
+      '11.01'
+    );
+  });
+
+  it('formatiert Kalendertage ohne Verschiebung (Zeitumstellung 29.03.2026)', () => {
+    expect(formatDayKey('2026-03-29', { weekday: 'short', day: '2-digit', month: '2-digit' })).toBe('So., 29.03.');
+    expect(formatDayKey('2026-03-29', { day: '2-digit', month: '2-digit', year: 'numeric' }, 'fr-CH')).toBe('29.03.2026');
+  });
+
+  it('formatiert Zahlen schweizerisch', () => {
+    // Tausendertrennzeichen je nach ICU-Version ' oder ’
+    expect(formatSwissNumber(1234.5)).toMatch(/^1['’]234\.5$/);
+    // fr-CH: Apostroph oder schmales Leerzeichen (U+202F), je nach ICU-Version
+    expect(formatSwissNumber(1234.5, {}, 'fr-CH')).toMatch(/^1['’\u202f ]234,5$/);
+    expect(formatSwissNumber(2.345, { maximumFractionDigits: 1 })).toBe('2.3');
+  });
+
+  it('sortiert mit Umlauten und Akzenten', () => {
+    expect(['Zürich', 'Zug', 'Aarau', 'Émile', 'Eva'].sort((a, b) => compareSwissText(a, b))).toEqual([
+      'Aarau',
+      'Émile',
+      'Eva',
+      'Zug',
+      'Zürich',
+    ]);
   });
 });

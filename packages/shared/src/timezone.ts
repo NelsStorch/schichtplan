@@ -11,27 +11,65 @@ export const SWISS_LOCALE = 'de-CH';
 /** Kulanzfenster in Millisekunden für minimale Uhren-Abweichungen zwischen Client und Server */
 export const SIGNUP_OPEN_GRACE_MS = 2000;
 
-const zurichDateFmt = new Intl.DateTimeFormat(SWISS_LOCALE, {
-  day: '2-digit',
-  month: '2-digit',
-  year: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit',
-  timeZone: SWISS_TIMEZONE,
-});
+/**
+ * BCP-47-Tag für Intl, z. B. 'de-CH', 'fr-CH', 'it-CH', 'en-CH' (Zuordnung je Sprache: `INTL_LOCALES` in
+ * `@schichtplan/i18n`). Ohne Angabe gilt Deutsch (`SWISS_LOCALE`). Die Sprache ändert nur die Schreibweise,
+ * gerechnet wird immer in Schweizer Zeit.
+ */
+export type IntlLocale = string;
 
-const zurichTimeFmt = new Intl.DateTimeFormat(SWISS_LOCALE, {
-  hour: '2-digit',
-  minute: '2-digit',
-  timeZone: SWISS_TIMEZONE,
-});
+const MAX_CACHED_FORMATTERS = 200;
+const dateTimeFormats = new Map<string, Intl.DateTimeFormat>();
+const numberFormats = new Map<string, Intl.NumberFormat>();
+const collators = new Map<string, Intl.Collator>();
 
-const zurichShortDateFmt = new Intl.DateTimeFormat(SWISS_LOCALE, {
-  day: '2-digit',
-  month: '2-digit',
-  year: 'numeric',
-  timeZone: SWISS_TIMEZONE,
-});
+function cached<T>(cache: Map<string, T>, key: string, create: () => T): T {
+  let value = cache.get(key);
+  if (!value) {
+    // Schutz vor unbegrenztem Wachstum bei vielen verschiedenen Optionen
+    if (cache.size >= MAX_CACHED_FORMATTERS) cache.clear();
+    value = create();
+    cache.set(key, value);
+  }
+  return value;
+}
+
+/**
+ * Wiederverwendbarer Datums-/Zeitformatierer in Schweizer Zeit (Zeitzone ist fest, nicht überschreibbar).
+ * Statt `new Intl.DateTimeFormat('de-CH', …)` in Apps verwenden, damit die Sprache austauschbar bleibt.
+ */
+export function zurichDateTimeFormat(
+  options: Omit<Intl.DateTimeFormatOptions, 'timeZone'>,
+  intlLocale: IntlLocale = SWISS_LOCALE
+): Intl.DateTimeFormat {
+  const opts: Intl.DateTimeFormatOptions = { ...options, timeZone: SWISS_TIMEZONE };
+  return cached(dateTimeFormats, `${intlLocale}|${JSON.stringify(opts)}`, () => new Intl.DateTimeFormat(intlLocale, opts));
+}
+
+/** Zahl in Schweizer Schreibweise, z. B. 1'234.5 (de/en) bzw. 1'234,5 (fr) */
+export function formatSwissNumber(
+  value: number,
+  options: Intl.NumberFormatOptions = {},
+  intlLocale: IntlLocale = SWISS_LOCALE
+): string {
+  return cached(numberFormats, `${intlLocale}|${JSON.stringify(options)}`, () => new Intl.NumberFormat(intlLocale, options)).format(
+    value
+  );
+}
+
+/** Texte sprachgerecht vergleichen (Umlaute, Akzente), z. B. `names.sort((a, b) => compareSwissText(a, b))` */
+export function compareSwissText(a: string, b: string, intlLocale: IntlLocale = SWISS_LOCALE): number {
+  return cached(collators, intlLocale, () => new Intl.Collator(intlLocale)).compare(a, b);
+}
+
+function toValidDate(date: Date | string | null | undefined): Date | null {
+  if (!date) return null;
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return isNaN(d.getTime()) ? null : d;
+}
+
+const DATE_OPTIONS = { day: '2-digit', month: '2-digit', year: 'numeric' } as const;
+const TIME_OPTIONS = { hour: '2-digit', minute: '2-digit' } as const;
 
 const zurichInputPartsFmt = new Intl.DateTimeFormat('en-CA', {
   year: 'numeric',
@@ -44,36 +82,60 @@ const zurichInputPartsFmt = new Intl.DateTimeFormat('en-CA', {
 });
 
 /**
- * Formatiert Datum und Uhrzeit in Schweizer Zeit:
- * z. B. "24.10.2026 um 18:00 Uhr"
+ * Formatiert Datum und Uhrzeit in Schweizer Zeit auf Deutsch:
+ * z. B. "24.10.2026 um 18:00 Uhr". Für andere Sprachen `zurichDateTimeParts()` mit der Nachricht
+ * `common.dateTimeAt` aus `@schichtplan/i18n` kombinieren.
  */
 export function formatZurichDateTime(date: Date | string | null | undefined): string {
-  if (!date) return '';
-  const d = typeof date === 'string' ? new Date(date) : date;
-  if (isNaN(d.getTime())) return '';
-  return zurichDateFmt.format(d).replace(',', ' um') + ' Uhr';
+  const parts = zurichDateTimeParts(date);
+  return parts ? `${parts.date} um ${parts.time} Uhr` : '';
+}
+
+/**
+ * Datum und Uhrzeit getrennt, für übersetzte Sätze:
+ * `t('common.dateTimeAt', zurichDateTimeParts(d, 'fr-CH'))` → «24.10.2026 à 18:00»
+ */
+export function zurichDateTimeParts(
+  date: Date | string | null | undefined,
+  intlLocale: IntlLocale = SWISS_LOCALE
+): { date: string; time: string } | null {
+  const d = toValidDate(date);
+  if (!d) return null;
+  return {
+    date: zurichDateTimeFormat(DATE_OPTIONS, intlLocale).format(d),
+    time: zurichDateTimeFormat(TIME_OPTIONS, intlLocale).format(d),
+  };
 }
 
 /**
  * Formatiert die Uhrzeit in Schweizer Zeit:
  * z. B. "18:00"
  */
-export function formatZurichTime(date: Date | string | null | undefined): string {
-  if (!date) return '';
-  const d = typeof date === 'string' ? new Date(date) : date;
-  if (isNaN(d.getTime())) return '';
-  return zurichTimeFmt.format(d);
+export function formatZurichTime(date: Date | string | null | undefined, intlLocale: IntlLocale = SWISS_LOCALE): string {
+  const d = toValidDate(date);
+  return d ? zurichDateTimeFormat(TIME_OPTIONS, intlLocale).format(d) : '';
 }
 
 /**
  * Formatiert das Datum in Schweizer Zeit:
  * z. B. "24.10.2026"
  */
-export function formatZurichDate(date: Date | string | null | undefined): string {
-  if (!date) return '';
-  const d = typeof date === 'string' ? new Date(date) : date;
-  if (isNaN(d.getTime())) return '';
-  return zurichShortDateFmt.format(d);
+export function formatZurichDate(date: Date | string | null | undefined, intlLocale: IntlLocale = SWISS_LOCALE): string {
+  const d = toValidDate(date);
+  return d ? zurichDateTimeFormat(DATE_OPTIONS, intlLocale).format(d) : '';
+}
+
+/**
+ * Kalendertag (YYYY-MM-DD) formatieren, ohne dass er durch Zeitzonen auf den Vor- oder Folgetag rutscht
+ * (gerechnet ab Mittag), z. B. `formatDayKey('2026-10-24', { weekday: 'short', day: '2-digit', month: '2-digit' })`
+ */
+export function formatDayKey(
+  dayKey: string,
+  options: Omit<Intl.DateTimeFormatOptions, 'timeZone'>,
+  intlLocale: IntlLocale = SWISS_LOCALE
+): string {
+  const d = toValidDate(`${dayKey.slice(0, 10)}T12:00:00Z`);
+  return d ? zurichDateTimeFormat(options, intlLocale).format(d) : '';
 }
 
 /**
@@ -177,14 +239,16 @@ export function formatZurichDateRange(
   return `${fd}.${fm}.${fy}–${td}.${tm}.${ty}`;
 }
 
-const zurichWeekdayFmt = new Intl.DateTimeFormat(SWISS_LOCALE, { weekday: 'short', timeZone: SWISS_TIMEZONE });
-
 /** Zeitpunkt und Dauer einer Schicht kompakt, z. B. «Sa 22.08.2026 · 18:00–22:00» (Schweizer Zeit) */
-export function formatZurichShiftWhen(start: Date | string, end: Date | string): string {
-  const d = typeof start === 'string' ? new Date(start) : start;
-  if (isNaN(d.getTime())) return '';
-  const weekday = zurichWeekdayFmt.format(d).replace('.', '');
-  return `${weekday} ${formatZurichDate(d)} · ${formatZurichTimeRange(d, end)}`;
+export function formatZurichShiftWhen(
+  start: Date | string,
+  end: Date | string,
+  intlLocale: IntlLocale = SWISS_LOCALE
+): string {
+  const d = toValidDate(start);
+  if (!d) return '';
+  const weekday = zurichDateTimeFormat({ weekday: 'short' }, intlLocale).format(d).replace('.', '');
+  return `${weekday} ${formatZurichDate(d, intlLocale)} · ${formatZurichTimeRange(d, end, intlLocale)}`;
 }
 
 /** YYYY-MM-DD um ganze Kalendertage verschieben */
@@ -237,8 +301,12 @@ export function formatDays(n: number): string {
 }
 
 /** Zeitspanne in Schweizer Zeit, einheitlich «18:00–22:00» */
-export function formatZurichTimeRange(start: Date | string, end: Date | string): string {
-  return `${formatZurichTime(start)}–${formatZurichTime(end)}`;
+export function formatZurichTimeRange(
+  start: Date | string,
+  end: Date | string,
+  intlLocale: IntlLocale = SWISS_LOCALE
+): string {
+  return `${formatZurichTime(start, intlLocale)}–${formatZurichTime(end, intlLocale)}`;
 }
 
 /**

@@ -67,14 +67,12 @@ const eventReadRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
     if (!request.tenant) {
-      return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+      return reply.fail(400, 'department.missingContext');
     }
     // Startseite nur für Mitglieder: Aussenstehende bekommen keine Liste
     if (request.tenant.membersOnly && !(await isDepartmentInsider(fastify.prisma, request.tenant.id, request.user?.id))) {
       reply.header('Cache-Control', 'no-store');
-      return reply
-        .status(403)
-        .send({ error: 'Diese Abteilung zeigt ihre Anlässe nur Mitgliedern.', code: 'MEMBERS_ONLY' });
+      return reply.fail(403, 'event.membersOnly', undefined, { code: 'MEMBERS_ONLY' });
     }
 
     // Entwürfe nur für «Alle Anlässe sehen» (inkl. Abteilungsleitung) und das OK des jeweiligen Anlasses
@@ -139,7 +137,7 @@ const eventReadRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(404).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(404, 'department.missingContext');
       }
       const event = await fastify.prisma.event.findUnique({
         where: { departmentId_slug: { departmentId: request.tenant.id, slug: request.params.slug } },
@@ -184,7 +182,7 @@ const eventReadRoutes: FastifyPluginAsync = async (fastify) => {
       // Gleiche Antwort für «gibt es nicht» und «nicht sichtbar»: verrät nicht, ob ein interner Anlass existiert
       if (!preview) {
         reply.header('Cache-Control', 'no-store');
-        return reply.status(404).send({ error: 'Keine Vorschau verfügbar' });
+        return reply.fail(404, 'event.noPreview');
       }
       reply.header('Cache-Control', 'public, max-age=60');
       return preview;
@@ -206,7 +204,7 @@ const eventReadRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const tenant = request.tenant;
       if (!tenant) {
-        return reply.status(404).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(404, 'department.missingContext');
       }
       const event = await fastify.prisma.event.findUnique({
         where: { departmentId_slug: { departmentId: tenant.id, slug: request.params.slug } },
@@ -214,7 +212,7 @@ const eventReadRoutes: FastifyPluginAsync = async (fastify) => {
       });
       if (!event || !isPreviewVisible(event, tenant.membersOnly)) {
         reply.header('Cache-Control', 'no-store');
-        return reply.status(404).send({ error: 'Keine Vorschau verfügbar' });
+        return reply.fail(404, 'event.noPreview');
       }
       // Gleiche Farbwahl wie beim Check-in-Aushang
       const color = tenant.qrCustomColors && tenant.qrColorPrimary ? tenant.qrColorPrimary : tenant.primaryColor;
@@ -254,7 +252,7 @@ const eventReadRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
       reply.header('Cache-Control', 'no-store');
 
@@ -329,7 +327,7 @@ const eventReadRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!event) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
 
       const viewer = request.user
@@ -350,7 +348,7 @@ const eventReadRoutes: FastifyPluginAsync = async (fastify) => {
       const flags = await managerFlags(fastify.prisma, event, viewer);
       // Entwürfe (nicht veröffentlicht) sehen nur Abteilungsleitung, Planung und OK, auch nicht über den Link
       if (!event.isPublished && !flags.isManager) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
       const hasGrant = viewer ? await hasValidGrant(fastify.prisma, event.id, viewer.id) : false;
       const access = evaluateEventAccess(event, request.tenant.name, viewer, flags, hasGrant);

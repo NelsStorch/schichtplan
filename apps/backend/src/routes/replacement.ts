@@ -5,6 +5,7 @@ import { managerFlags } from '../services/eventAccess.js';
 import { personLabel } from '../services/attendance.js';
 import { replacementOpen } from '../services/replacement.js';
 import { trackUsage } from '../services/usageStats.js';
+import { type ErrorTranslator } from '../plugins/i18n.js';
 
 /**
  * «Ersatz gesucht»: Eingetragene bieten ihre Schicht zur Übernahme an. Sie bleiben eingetragen,
@@ -13,18 +14,18 @@ import { trackUsage } from '../services/usageStats.js';
  */
 const replacementRoutes: FastifyPluginAsync = async (fastify) => {
   /** Eintragung laden und prüfen, ob die Person sie ändern darf (selbst oder «Helfende einteilen») */
-  async function loadSignup(signupId: string, user: { id: string; isGlobalAdmin: boolean }) {
+  async function loadSignup(signupId: string, user: { id: string; isGlobalAdmin: boolean }, t: ErrorTranslator) {
     const signup = await fastify.prisma.shiftSignup.findUnique({
       where: { id: signupId },
       include: { shift: { include: { event: { include: { organizers: true } } } } },
     });
-    if (!signup) return { ok: false, status: 404, error: 'Eintragung nicht gefunden' } as const;
+    if (!signup) return { ok: false, status: 404, error: t('signup.signupNotFound') } as const;
     const event = signup.shift.event;
     const isSelf = signup.userId === user.id;
     if (!isSelf) {
       const flags = await managerFlags(fastify.prisma, event, user);
       if (!flags.can.HELPERS) {
-        return { ok: false, status: 403, error: 'Das ist nicht deine Eintragung' } as const;
+        return { ok: false, status: 403, error: t('replacement.notOwnSignup') } as const;
       }
     }
     return { ok: true, event, signup, isSelf } as const;
@@ -48,29 +49,25 @@ const replacementRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       const input = request.body as z.output<typeof ReplacementOfferSchema>;
-      const found = await loadSignup(request.params.signupId, request.user);
+      const found = await loadSignup(request.params.signupId, request.user, request.t);
       if (!found.ok) return reply.status(found.status).send({ error: found.error });
       const { event, signup, isSelf } = found;
 
       if (!event.allowReplacement) {
-        return reply.status(400).send({ error: 'Bei diesem Anlass kann kein Ersatz gesucht werden. Melde dich beim OK.' });
+        return reply.fail(400, 'replacement.disabled');
       }
       if (!replacementOpen(event, signup.shift.startTime)) {
-        return reply.status(400).send({ error: 'Für diese Schicht kann kein Ersatz mehr gesucht werden. Melde dich beim OK.' });
+        return reply.fail(400, 'replacement.tooLate');
       }
       if (signup.attendance === 'PRESENT') {
-        return reply.status(400).send({
-          error: 'Du bist für diese Schicht bereits als anwesend erfasst. Ersatz kann nur über das OK geregelt werden.',
-        });
+        return reply.fail(400, 'replacement.alreadyPresent');
       }
       if (isSelf) {
         const redeemedToken = await fastify.prisma.cateringToken.findFirst({
           where: { shiftSignupId: signup.id, status: 'REDEEMED' },
         });
         if (redeemedToken) {
-          return reply.status(400).send({
-            error: 'Für diese Schicht wurde bereits ein Verpflegungs-Bon eingelöst. Ersatz kann nur über das OK geregelt werden.',
-          });
+          return reply.fail(400, 'replacement.tokenRedeemed');
         }
       }
 
@@ -121,7 +118,7 @@ const replacementRoutes: FastifyPluginAsync = async (fastify) => {
       preHandler: [fastify.authenticate],
     },
     async (request, reply) => {
-      const found = await loadSignup(request.params.signupId, request.user);
+      const found = await loadSignup(request.params.signupId, request.user, request.t);
       if (!found.ok) return reply.status(found.status).send({ error: found.error });
 
       await fastify.prisma.shiftSignup.update({

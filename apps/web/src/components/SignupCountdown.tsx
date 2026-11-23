@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Clock, Sparkles } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@schichtplan/ui';
 import { formatZurichDateTime } from '@schichtplan/shared';
 
@@ -24,6 +25,7 @@ export function SignupCountdown({
   autoReload = true,
   reloadShiftId,
 }: SignupCountdownProps) {
+  const t = useTranslations('web.event.countdown');
   const [diff, setDiff] = useState<number | null>(null);
   // Erst nach dem Mount berechnen: Date.now() waere sonst auf Server und Client verschieden (Hydration-Fehler #418)
   const hasTriggeredRef = useRef(false);
@@ -137,7 +139,7 @@ export function SignupCountdown({
       return (
         <span className={cn('inline-flex items-center gap-1.5 font-semibold text-success-ink', className)}>
           <Sparkles className="size-4 animate-bounce text-success" />
-          <span>Jetzt freigeschaltet!</span>
+          <span>{t('unlockedNoticeCompact')}</span>
         </span>
       );
     }
@@ -150,9 +152,9 @@ export function SignupCountdown({
       >
         <div className="flex items-center justify-center gap-2 text-sm sm:text-base font-bold text-success-ink">
           <Sparkles className="size-5 animate-bounce text-success" />
-          <span>Jetzt freigeschaltet! Seite wird aktualisiert...</span>
+          <span>{t('unlockedNotice')}</span>
         </div>
-        <p className="mt-1 text-2xs text-fg-muted">Du kannst dich jetzt direkt für Schichten eintragen.</p>
+        <p className="mt-1 text-2xs text-fg-muted">{t('canSignupNow')}</p>
       </div>
     );
   }
@@ -161,7 +163,7 @@ export function SignupCountdown({
   if (diff > ONE_DAY_MS) {
     return (
       <span className={cn('text-xs text-fg-muted', className)}>
-        Öffnet am {formatZurichDateTime(opensAt)}
+        {t('opensAtDate', { date: formatZurichDateTime(opensAt) })}
       </span>
     );
   }
@@ -178,13 +180,13 @@ export function SignupCountdown({
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     timeDisplay = `${hours > 0 ? `${hours}h ` : ''}${minutes}m`;
-    subLabel = `${hours > 0 ? `${hours} Std. ` : ''}${minutes} Min.`;
+    subLabel = `${hours > 0 ? `${hours}h ` : ''}${minutes}m`;
   } else if (diff > 60 * 1000) {
     const minutes = Math.floor(diff / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
     const pad = (n: number) => String(n).padStart(2, '0');
     timeDisplay = `${pad(minutes)}:${pad(seconds)}`;
-    subLabel = `${minutes} Min. ${seconds} Sek.`;
+    subLabel = `${minutes}m ${seconds}s`;
   } else {
     isFinalRush = true;
     const seconds = Math.floor(diff / 1000);
@@ -192,7 +194,7 @@ export function SignupCountdown({
     const pad3 = (n: number) => String(n).padStart(3, '0');
     const pad2 = (n: number) => String(n).padStart(2, '0');
     timeDisplay = `${pad2(seconds)}.${pad3(millis)}s`;
-    subLabel = `${seconds} Sek. ${millis} ms`;
+    subLabel = `${seconds}s ${millis}ms`;
   }
 
   if (compact) {
@@ -236,10 +238,10 @@ export function SignupCountdown({
           </div>
           <div>
             <p className="text-xs font-semibold text-fg">
-              {isFinalRush ? 'Gleich geht es los!' : 'Freischaltung zum Eintragen:'}
+              {isFinalRush ? t('almostOpen') : t('signupOpensIn')}
             </p>
             <p className="text-2xs text-fg-muted">
-              {subLabel ? `Noch ${subLabel}` : 'In Kürze verfügbar'}
+              {subLabel ? t('remainingTime', { time: subLabel }) : t('availableSoon')}
             </p>
           </div>
         </div>

@@ -1,0 +1,24 @@
+{
+  "language": {
+    "label": "Sprache",
+    "switch": "Sprache wechseln",
+    "beta": "Beta",
+    "incomplete": "Diese Sprache ist noch nicht vollständig übersetzt. Fehlende Texte erscheinen auf Deutsch."
+  },
+  "actions": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "close": "Schliessen",
+    "back": "Zurück"
+  },
+  "dateTimeAt": "{date} um {time} Uhr",
+  "footer": {
+    "help": "Hilfe",
+    "loginHelp": "Hilfe zum Anmelden",
+    "status": "Status",
+    "privacy": "Datenschutz",
+    "terms": "Nutzungsbedingungen",
+    "imprint": "Impressum",
+    "backWithoutLogin": "Ohne Anmeldung zurück"
+  }
+}

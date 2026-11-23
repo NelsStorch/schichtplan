@@ -1,23 +1,27 @@
-import { addDaysToDayKey, ageAt, zurichDayKey, type AdminUserListItemDto, type LoginMethod } from '@schichtplan/shared';
+import {
+  addDaysToDayKey,
+  ageAt,
+  zurichDateTimeFormat,
+  zurichDayKey,
+  type AdminUserListItemDto,
+  type LoginMethod,
+} from '@schichtplan/shared';
 
 // Immer Schweizer Zeit, auch wenn jemand aus dem Ausland schaut
-const TZ = 'Europe/Zurich';
-const dateFmt = new Intl.DateTimeFormat('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: TZ });
-const dateTimeFmt = new Intl.DateTimeFormat('de-CH', {
+const dateFmt = zurichDateTimeFormat({ day: '2-digit', month: '2-digit', year: 'numeric' });
+const dateTimeFmt = zurichDateTimeFormat({
   day: '2-digit',
   month: '2-digit',
   year: 'numeric',
   hour: '2-digit',
   minute: '2-digit',
-  timeZone: TZ,
 });
-const shiftFmt = new Intl.DateTimeFormat('de-CH', {
+const shiftFmt = zurichDateTimeFormat({
   weekday: 'short',
   day: '2-digit',
   month: '2-digit',
   hour: '2-digit',
   minute: '2-digit',
-  timeZone: TZ,
 });
 
 export const formatDate = (iso: string) => dateFmt.format(new Date(iso));
@@ -68,12 +72,10 @@ export const organizerRoleLabels: Record<string, string> = {
   OK_MEMBER: 'OK-Mitglied',
 };
 
-const eventDayFmt = new Intl.DateTimeFormat('de-CH', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Zurich' });
-
 /** Zeitraum eines Anlasses: «14.06.2026» oder «14.06.2026 – 16.06.2026» (Schweizer Zeit) */
 export function formatEventRange(start: string, end: string) {
-  const a = eventDayFmt.format(new Date(start));
-  const b = eventDayFmt.format(new Date(end));
+  const a = dateFmt.format(new Date(start));
+  const b = dateFmt.format(new Date(end));
   return a === b ? a : `${a} – ${b}`;
 }
 

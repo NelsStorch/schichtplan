@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Loader2, UtensilsCrossed } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { CateringTokenDto } from '@schichtplan/shared';
 import { Button, Dialog, EmptyState } from '@schichtplan/ui';
 import { CateringTokenCard } from '@/components/CateringTokenCard';
@@ -20,6 +21,7 @@ export function CateringTokensDialog({
   eventSlug,
   eventTitle,
 }: CateringTokensDialogProps) {
+  const t = useTranslations('web.cateringDialog');
   const [tokens, setTokens] = useState<CateringTokenDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,14 +53,14 @@ export function CateringTokensDialog({
       onClose={onClose}
       size="md"
       icon={<UtensilsCrossed />}
-      title="Verpflegungs- & Getränke-Bons"
-      description={`Deine digitalen Bons für «${eventTitle}».`}
+      title={t('title')}
+      description={t('description', { eventTitle })}
     >
       <div className="space-y-4">
         {loading ? (
           <div className="py-12 text-center text-fg-muted flex flex-col items-center justify-center gap-2">
             <Loader2 className="size-6 animate-spin text-accent-ink" />
-            <p className="text-xs">Gutscheine werden geladen…</p>
+            <p className="text-xs">{t('loading')}</p>
           </div>
         ) : error ? (
           <div className="rounded-xl border border-danger/30 bg-danger/10 p-4 text-center text-xs text-danger-ink">
@@ -67,19 +69,19 @@ export function CateringTokensDialog({
         ) : tokens.length === 0 ? (
           <EmptyState
             icon={<UtensilsCrossed />}
-            title="Keine Verpflegungs-Bons"
-            description="Für diesen Anlass sind keine digitalen Gutscheine hinterlegt oder deine Schicht ist noch nicht freigeschaltet."
+            title={t('emptyTitle')}
+            description={t('emptyDescription')}
           />
         ) : (
           <div className="space-y-3">
             <p className="text-xs text-fg-muted">
-              Zeige den gewünschten Bon am Essens- oder Getränkestand vor und wische vor den Augen des Personals nach rechts.
+              {t('instructions')}
             </p>
             <div className="grid gap-3 max-h-[60vh] overflow-y-auto pr-1">
-              {tokens.map((t) => (
+              {tokens.map((tokenItem) => (
                 <CateringTokenCard
-                  key={t.id}
-                  token={t}
+                  key={tokenItem.id}
+                  token={tokenItem}
                   slug={eventSlug}
                   onRedeemed={(updated) => {
                     setTokens((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
@@ -92,7 +94,7 @@ export function CateringTokensDialog({
 
         <div className="pt-2 flex justify-end">
           <Button variant="secondary" onClick={onClose}>
-            Schliessen
+            {t('closeAction')}
           </Button>
         </div>
       </div>

@@ -3,6 +3,7 @@
 import { use, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { CalendarClock, CheckCircle2, LogIn, QrCode, TriangleAlert, UtensilsCrossed } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { CateringTokenDto, CheckinResultDto } from '@schichtplan/shared';
 import { Card, EmptyState, Skeleton, buttonClasses } from '@schichtplan/ui';
 import { AppShell } from '@/components/AppShell';
@@ -18,6 +19,7 @@ type State =
 
 /** Ziel des QR-Codes am Anlass: eigene, gerade laufende Schichten als anwesend markieren */
 export default function CheckinPage({ params }: { params: Promise<{ slug: string }> }) {
+  const t = useTranslations('web.checkin');
   const { slug } = use(params);
   const { user, loading: portalLoading } = usePortal();
   const [state, setState] = useState<State>({ kind: 'loading' });
@@ -35,14 +37,14 @@ export default function CheckinPage({ params }: { params: Promise<{ slug: string
     if (!code || code.length < 10) {
       setState({
         kind: 'error',
-        message: 'Im Link fehlt ein gültiger Check-in-Code. Bitte scanne den offiziellen QR-Code direkt auf dem Plakat am Anlass vor Ort.',
+        message: t('missingCodeError'),
       });
       return;
     }
     api<CheckinResultDto>(`/api/events/${slug}/checkin`, { method: 'POST', json: { code } })
       .then((result) => setState({ kind: 'done', result }))
       .catch((err) => setState({ kind: 'error', message: errorMessage(err) }));
-  }, [portalLoading, user, slug]);
+  }, [portalLoading, user, slug, t]);
 
   return (
     <AppShell>
@@ -54,7 +56,7 @@ export default function CheckinPage({ params }: { params: Promise<{ slug: string
             {!portalLoading && (
               <p className="pt-2 text-center text-sm text-fg-muted">
                 <a href={loginUrl()} className="inline-flex items-center gap-1.5 font-semibold text-accent-ink">
-                  <LogIn className="size-4" /> Zur Anmeldung
+                  <LogIn className="size-4" /> {t('toLogin')}
                 </a>
               </p>
             )}
@@ -62,18 +64,18 @@ export default function CheckinPage({ params }: { params: Promise<{ slug: string
         ) : state.kind === 'loading' ? (
           <div className="space-y-3" aria-busy="true">
             <p className="flex items-center gap-2 text-sm font-semibold text-fg-muted">
-              <QrCode className="size-4" /> Check-in läuft…
+              <QrCode className="size-4" /> {t('running')}
             </p>
             <Skeleton className="h-32 w-full rounded-card" />
           </div>
         ) : state.kind === 'error' ? (
           <EmptyState
             icon={<TriangleAlert />}
-            title="Check-in nicht möglich"
+            title={t('errorTitle')}
             description={state.message}
             action={
               <Link href={`/events/${slug}`} className={buttonClasses({ variant: 'secondary' })}>
-                Zum Schichtplan
+                {t('toEventAction')}
               </Link>
             }
           />
@@ -86,6 +88,7 @@ export default function CheckinPage({ params }: { params: Promise<{ slug: string
 }
 
 function CheckinResult({ slug, result, name }: { slug: string; result: CheckinResultDto; name: string }) {
+  const t = useTranslations('web.checkin');
   const [tokens, setTokens] = useState<CateringTokenDto[]>(result.cateringTokens ?? []);
 
   // Falls beim Check-in keine Tokens mitgegeben wurden (z. B. noch nicht im Check-in-Fenster),
@@ -103,10 +106,10 @@ function CheckinResult({ slug, result, name }: { slug: string; result: CheckinRe
   const actions = (
     <div className="flex flex-wrap justify-center gap-2">
       <Link href="/meine-schichten" className={buttonClasses({ variant: 'secondary' })}>
-        Meine Schichten
+        {t('myShiftsAction')}
       </Link>
       <Link href={`/events/${slug}`} className={buttonClasses({ variant: 'ghost' })}>
-        Zum Schichtplan
+        {t('toEventAction')}
       </Link>
     </div>
   );
@@ -115,10 +118,10 @@ function CheckinResult({ slug, result, name }: { slug: string; result: CheckinRe
     <div className="space-y-3 pt-3 text-left">
       <div className="flex items-center gap-2">
         <UtensilsCrossed className="size-5 text-accent-ink" />
-        <h2 className="font-display text-lg font-bold text-fg">Deine Verpflegungs-Bons</h2>
+        <h2 className="font-display text-lg font-bold text-fg">{t('cateringTitle')}</h2>
       </div>
       <p className="text-xs text-fg-muted">
-        Zeige deinen Bon am Essens- oder Getränkestand vor und wische zum Entwerten direkt vor dem Personal.
+        {t('cateringInstructions')}
       </p>
       <div className="grid gap-3">
         {tokens.map((token) => (
@@ -127,7 +130,7 @@ function CheckinResult({ slug, result, name }: { slug: string; result: CheckinRe
             token={token}
             slug={slug}
             onRedeemed={(updated) => {
-              setTokens((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+              setTokens((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
             }}
           />
         ))}
@@ -140,17 +143,24 @@ function CheckinResult({ slug, result, name }: { slug: string; result: CheckinRe
       <div className="space-y-6">
         <EmptyState
           icon={<CalendarClock />}
-          title={result.nextShift ? 'Deine Schicht hat noch nicht begonnen' : 'Gerade keine Schicht für dich'}
+          title={result.nextShift ? t('notStartedTitle') : t('noShiftNowTitle')}
           description={
             result.nextShift
-              ? `Deine nächste Schicht${result.nextShift.shiftTitle?.trim() ? ` «${result.nextShift.shiftTitle}»` : ''} beginnt ${fmtWeekday(result.nextShift.startTime)} um ${fmtTime(result.nextShift.startTime)}. ${(() => {
-              const early = result.checkinEarlyMinutes ?? 30;
-              const late = result.checkinLateMinutes ?? 30;
-              const earlyPart = early === 0 ? 'ab Schichtbeginn' : `ab ${early} Minuten vorher`;
-              const latePart = late === 0 ? 'bis Schichtende' : `bis ${late} Minuten nach Schichtende`;
-              return `Einchecken geht ${earlyPart} ${latePart}: scann den QR-Code dann nochmals.`;
-            })()}`
-              : `Du bist bei «${result.eventTitle}» in keiner laufenden oder kommenden Schicht eingetragen. Melde dich beim OK, wenn du trotzdem hilfst.`
+              ? (() => {
+                  const early = result.checkinEarlyMinutes ?? 30;
+                  const late = result.checkinLateMinutes ?? 30;
+                  const earlyPart = early === 0 ? t('fromShiftStart') : t('fromMinutesBefore', { minutes: early });
+                  const latePart = late === 0 ? t('untilShiftEnd') : t('untilMinutesAfter', { minutes: late });
+                  const windowPart = t('windowText', { earlyPart, latePart });
+                  const shiftTitle = result.nextShift.shiftTitle?.trim() ? ` «${result.nextShift.shiftTitle}»` : '';
+                  return t('nextShiftInfo', {
+                    shiftTitle,
+                    weekday: fmtWeekday(result.nextShift.startTime),
+                    time: fmtTime(result.nextShift.startTime),
+                    windowPart,
+                  });
+                })()
+              : t('noUpcomingShifts', { eventTitle: result.eventTitle })
           }
           action={actions}
         />
@@ -167,7 +177,7 @@ function CheckinResult({ slug, result, name }: { slug: string; result: CheckinRe
       </div>
       <div>
         <h1 className="font-display text-2xl font-extrabold text-fg">
-          {allAlready ? 'Du bist schon eingecheckt' : `Danke${name ? `, ${name}` : ''}! Du bist eingecheckt.`}
+          {allAlready ? t('alreadyCheckedInTitle') : t('checkedInSuccessTitle', { name: name ? t('nameGreeting', { name }) : '' })}
         </h1>
         <p className="mt-1 text-sm text-fg-muted">{result.eventTitle}</p>
       </div>

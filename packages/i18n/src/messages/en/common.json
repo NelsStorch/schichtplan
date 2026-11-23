@@ -1,0 +1,24 @@
+{
+  "language": {
+    "label": "Language",
+    "switch": "Change language",
+    "beta": "Beta",
+    "incomplete": "This language is not fully translated yet. Missing texts are shown in German."
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back"
+  },
+  "dateTimeAt": "{date} at {time}",
+  "footer": {
+    "help": "Help",
+    "loginHelp": "Help with signing in",
+    "status": "Status",
+    "privacy": "Privacy",
+    "terms": "Terms of use",
+    "imprint": "Legal notice",
+    "backWithoutLogin": "Back without signing in"
+  }
+}

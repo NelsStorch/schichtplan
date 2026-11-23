@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Check, Database, Search, UsersRound } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { DepartmentDirectoryItemDto, StufeRole, UserDto } from '@schichtplan/shared';
 import { Button, Callout, BrandLogo, Input, ThemeToggle, cn, useOrganization } from '@schichtplan/ui';
 import { cleanReturnTo, departmentSlugFromReturnTo, finalDestination } from '@/lib/destination';
@@ -11,13 +12,18 @@ import { OtherProviderHint } from '@/components/OtherProviderHint';
 
 const NONE = 'NONE';
 
-const ROLE_OPTIONS: { value: StufeRole | null; label: string }[] = [
-  { value: null, label: 'Nein' },
-  { value: 'TEILNEHMER', label: 'Teilnehmer*in' },
-  { value: 'LEITUNG', label: 'Leitung' },
-];
-
 function DepartmentSetup() {
+  const t = useTranslations('login.department');
+
+  const roleOptions = useMemo<{ value: StufeRole | null; label: string }[]>(
+    () => [
+      { value: null, label: t('roleNone') },
+      { value: 'TEILNEHMER', label: t('roleParticipant') },
+      { value: 'LEITUNG', label: t('roleLeader') },
+    ],
+    [t]
+  );
+
   const searchParams = useSearchParams();
   const returnTo = cleanReturnTo(searchParams.get('return_to'));
   const inviteToken = searchParams.get('invite')?.trim() || null;
@@ -87,7 +93,7 @@ function DepartmentSetup() {
           if (!dirList.some((d) => d.id === found.id)) setDepartments([...dirList, found]);
         } else {
           const data = await lookupRes.json().catch(() => ({}));
-          setError(data.error || 'Dieser Einladungslink ist ungültig oder wurde inzwischen ersetzt.');
+          setError(data.error || t('inviteInvalid'));
         }
       }
 
@@ -118,7 +124,7 @@ function DepartmentSetup() {
             window.location.href = finalDestination(returnTo, data as UserDto, org.dbType);
             return;
           }
-          setError(data.error || 'Der Einladungslink konnte nicht eingelöst werden.');
+          setError(data.error || t('inviteFailed'));
         }
         setExtraBlocked(!inviteToken && target.joinMode === 'INVITE_ONLY' && !verified.has(target.id));
         setExtraTarget(target);
@@ -138,7 +144,7 @@ function DepartmentSetup() {
           window.location.href = finalDestination(returnTo, joinData as UserDto, org.dbType);
           return;
         }
-        setError(joinData.error || 'Der Einladungslink konnte nicht eingelöst werden.');
+        setError(joinData.error || t('inviteFailed'));
       };
 
       if (inviteToken && target) {
@@ -168,8 +174,8 @@ function DepartmentSetup() {
       ) {
         setSelected(target.id);
       }
-    })().catch(() => setError('Die Angaben konnten nicht geladen werden. Bitte lade die Seite neu.'));
-  }, [returnTo, inviteToken, returnToSlug, org.dbType]);
+    })().catch(() => setError(t('loadFailed')));
+  }, [returnTo, inviteToken, returnToSlug, org.dbType, t]);
 
   const fromCeviDb = Boolean(user?.homeDepartmentFromCeviDb);
   const lockedStufen = useMemo(
@@ -229,7 +235,7 @@ function DepartmentSetup() {
           }),
         });
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || 'Beitreten hat nicht geklappt.');
+        if (!res.ok) throw new Error(data.error || t('joinFailed'));
         window.location.href = finalDestination(returnTo, data as UserDto, org.dbType);
         return;
       }
@@ -245,16 +251,16 @@ function DepartmentSetup() {
         }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Speichern hat nicht geklappt.');
+      if (!res.ok) throw new Error(data.error || t('saveFailed'));
       window.location.href = finalDestination(returnTo, data as UserDto, org.dbType);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Speichern hat nicht geklappt.');
+      setError(err instanceof Error ? err.message : t('saveFailed'));
       setSaving(false);
     }
   };
 
   const leave = async (departmentId: string, name: string) => {
-    if (!window.confirm(`${name} verlassen? Deine Stufen dort werden entfernt. Rechte bleiben, bis die Leitung sie entfernt.`)) {
+    if (!window.confirm(t('confirmLeave', { name }))) {
       return;
     }
     setLeaving(departmentId);
@@ -262,10 +268,10 @@ function DepartmentSetup() {
     try {
       const res = await fetch(`/api/auth/me/memberships/${departmentId}`, { method: 'DELETE' });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Verlassen hat nicht geklappt.');
+      if (!res.ok) throw new Error(data.error || t('leaveFailed'));
       setUser(data as UserDto);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Verlassen hat nicht geklappt.');
+      setError(err instanceof Error ? err.message : t('leaveFailed'));
     } finally {
       setLeaving(null);
     }
@@ -275,12 +281,9 @@ function DepartmentSetup() {
   const rootHost = typeof window === 'undefined' ? '' : window.location.hostname.replace(/^login\./, '');
 
   const isMasculine = org.unitTerm === 'Verein';
-  const toWhichUnit = isMasculine ? `Zu welchem ${org.unitTerm}` : `Zu welcher ${org.unitTerm}`;
-  const forAUnit = isMasculine ? `für einen ${org.unitTerm}` : `für eine ${org.unitTerm}`;
-  const joinAUnit = isMasculine ? `einem ${org.unitTerm}` : `einer ${org.unitTerm}`;
-  const yourUnitGenitive = isMasculine ? `deines ${org.unitTerm}s` : `deiner ${org.unitTerm}`;
-  const noUnitFound = isMasculine ? `Keinen ${org.unitTerm} gefunden.` : `Keine ${org.unitTerm} gefunden.`;
-  const belongsToNoUnit = isMasculine ? `Ich gehöre zu keinem ${org.unitTerm}` : `Ich gehöre zu keiner ${org.unitTerm}`;
+  const unitQuestion = isMasculine
+    ? t('whichUnitMasculine', { unitTerm: org.unitTerm })
+    : t('whichUnitFeminine', { unitTerm: org.unitTerm });
 
   return (
     <div className="grain flex min-h-[100dvh] flex-col">
@@ -296,10 +299,20 @@ function DepartmentSetup() {
 
       <main id="inhalt" className="relative mx-auto w-full max-w-[30rem] flex-1 px-5 pb-16 pt-6 sm:pt-10">
         <h1 className="font-display text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-fg text-balance">
-          {user ? `Hallo ${user.nickname || user.ceviName || user.firstName}.` : `Deine ${org.unitTerm}`} {toWhichUnit} gehörst du?
+          {user
+            ? t('titleUser', {
+                name: user.nickname || user.ceviName || user.firstName,
+                unitQuestion,
+              })
+            : t('titleGeneral', {
+                unitTerm: org.unitTerm,
+                unitQuestion,
+              })}
         </h1>
         <p className="mt-3 text-[15px] leading-relaxed text-fg-muted">
-          Manche Anlässe sind nur {forAUnit} oder einzelne Stufen. Du kannst das später jederzeit ändern.
+          {isMasculine
+            ? t('subtitleMasculine', { unitTerm: org.unitTerm })
+            : t('subtitleFeminine', { unitTerm: org.unitTerm })}
         </p>
 
         <div className="mt-8 space-y-6">
@@ -315,21 +328,20 @@ function DepartmentSetup() {
           ) : (
             <>
               {extraTarget && user?.homeDepartment ? (
-                <section aria-label={`${extraTarget.name} beitreten`} className="space-y-3">
+                <section aria-label={t('joinUnit', { name: extraTarget.name })} className="space-y-3">
                   <div className="flex items-center gap-3 rounded-card border border-line bg-surface p-4">
                     <BrandLogo className="size-10 shrink-0" logoUrl={extraTarget.logoUrl} alt="" />
                     <span className="min-w-0">
                       <span className="block text-sm font-semibold text-fg">{extraTarget.name}</span>
                       <span className="block text-[13px] text-fg-subtle">
-                        {inviteToken ? 'Über deinen Einladungslink' : `Über den Link der ${org.unitTerm}`}
+                        {inviteToken ? t('viaInviteLink') : t('viaUnitLink', { unitTerm: org.unitTerm })}
                       </span>
                     </span>
                   </div>
                   {extraBlocked ? (
-                    <Callout tone="info" title="Nur per Einladung">
+                    <Callout tone="info" title={t('inviteOnlyTitle')}>
                       <p className="mt-1 text-[13px] leading-relaxed text-fg">
-                        {extraTarget.name} nimmt neue Mitglieder nur über einen Einladungslink auf. Frag die Leitung
-                        nach einem Link.
+                        {t('inviteOnlyText', { name: extraTarget.name })}
                       </p>
                     </Callout>
                   ) : (
@@ -337,16 +349,22 @@ function DepartmentSetup() {
                       <DepartmentOption
                         selected={!asHome}
                         onSelect={() => setAsHome(false)}
-                        title="Zusätzlich beitreten"
-                        subtitle={`${user.homeDepartment.name} bleibt deine Haupt-${org.unitTerm}`}
+                        title={t('joinAdditionally')}
+                        subtitle={t('joinAdditionallySubtitle', {
+                          name: user.homeDepartment.name,
+                          unitTerm: org.unitTerm,
+                        })}
                         icon={<UsersRound className="size-[18px]" />}
                       />
                       {!fromCeviDb && (
                         <DepartmentOption
                           selected={asHome}
                           onSelect={() => setAsHome(true)}
-                          title={`Als Haupt-${org.unitTerm} festlegen`}
-                          subtitle={`Ersetzt ${user.homeDepartment.name} als Haupt-${org.unitTerm}`}
+                          title={t('setAsHome', { unitTerm: org.unitTerm })}
+                          subtitle={t('setAsHomeSubtitle', {
+                            name: user.homeDepartment.name,
+                            unitTerm: org.unitTerm,
+                          })}
                           icon={<Check className="size-[18px]" />}
                         />
                       )}
@@ -364,7 +382,7 @@ function DepartmentSetup() {
                       setStufen(Object.fromEntries((user.stufen ?? []).map((s) => [s.stufeId, s.role])));
                     }}
                   >
-                    {extraBlocked ? 'Zurück zu meinen Angaben' : 'Nicht beitreten'}
+                    {extraBlocked ? t('backToMyDetails') : t('doNotJoin')}
                   </button>
                 </section>
               ) : (fromCeviDb || inviteLocked) && selectedDepartment ? (
@@ -380,13 +398,13 @@ function DepartmentSetup() {
                     <span className="block text-sm font-semibold text-fg">{selectedDepartment.name}</span>
                     <span className="block text-[13px] text-fg-subtle">
                       {fromCeviDb
-                        ? `Aus deinem ${org.authProviderShort}-Profil übernommen`
-                        : 'Über deinen Einladungslink ausgewählt'}
+                        ? t('fromProviderProfile', { authProviderShort: org.authProviderShort })
+                        : t('fromInviteLink')}
                     </span>
                   </span>
                 </div>
               ) : (
-                <section aria-label={`${org.unitTerm} wählen`} className="space-y-3">
+                <section aria-label={t('chooseUnitAria', { unitTerm: org.unitTerm })} className="space-y-3">
                   {selectable.length > 6 && (
                     <div className="relative">
                       <Search
@@ -397,8 +415,8 @@ function DepartmentSetup() {
                         type="search"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder={`${org.unitTerm} suchen`}
-                        aria-label={`${org.unitTerm} suchen`}
+                        placeholder={t('searchPlaceholder', { unitTerm: org.unitTerm })}
+                        aria-label={t('searchAria', { unitTerm: org.unitTerm })}
                         className="pl-11"
                       />
                     </div>
@@ -419,20 +437,20 @@ function DepartmentSetup() {
                         />
                       ))}
                       {visible.length === 0 && (
-                        <p className="px-5 py-4 text-sm text-fg-subtle">{noUnitFound}</p>
+                        <p className="px-5 py-4 text-sm text-fg-subtle">{t('noneFound', { unitTerm: org.unitTerm })}</p>
                       )}
                     </div>
                   ) : (
                     <Callout tone="info">
-                      Um {joinAUnit} beizutreten, öffne bitte den direkten Link oder Einladungslink {yourUnitGenitive}.
+                      {t('joinHint', { unitTerm: org.unitTerm })}
                     </Callout>
                   )}
                   <div role="radiogroup" className="overflow-hidden rounded-card border border-line bg-surface/70">
                     <DepartmentOption
                       selected={selected === NONE}
                       onSelect={() => choose(NONE)}
-                      title={belongsToNoUnit}
-                      subtitle="Eltern, Ehemalige, Freund*innen und Gäste"
+                      title={t('noUnit', { unitTerm: org.unitTerm })}
+                      subtitle={t('noUnitSubtitle')}
                       icon={<UsersRound className="size-[18px]" />}
                     />
                   </div>
@@ -442,9 +460,9 @@ function DepartmentSetup() {
               {selectedDepartment && selectedDepartment.stufen.length > 0 && !extraBlocked && (
                 <section aria-labelledby="stufen-titel" className="animate-fade-in">
                   <h2 id="stufen-titel" className="text-sm font-semibold text-fg">
-                    In welchen Stufen bist du dabei?
+                    {t('stufenTitle')}
                   </h2>
-                  <p className="mt-1 text-[13px] text-fg-subtle">Wähle alle, die passen. Keine ist auch in Ordnung.</p>
+                  <p className="mt-1 text-[13px] text-fg-subtle">{t('stufenSubtitle')}</p>
                   <ul className="mt-3 divide-y divide-line rounded-card border border-line bg-surface/70">
                     {selectedDepartment.stufen.map((stufe) => {
                       const locked = lockedStufen.has(stufe.id);
@@ -453,14 +471,18 @@ function DepartmentSetup() {
                         <li key={stufe.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
                           <span className="min-w-0">
                             <span className="block text-sm font-semibold text-fg">{stufe.name}</span>
-                            {locked && <span className="block text-xs text-fg-subtle">aus {org.authProviderShort || 'Verband'}</span>}
+                            {locked && (
+                              <span className="block text-xs text-fg-subtle">
+                                {t('fromProvider', { authProviderShort: org.authProviderShort || 'Verband' })}
+                              </span>
+                            )}
                           </span>
                           <div
                             role="radiogroup"
-                            aria-label={`Rolle in ${stufe.name}`}
+                            aria-label={t('roleIn', { name: stufe.name })}
                             className="flex rounded-full bg-surface-2 p-0.5"
                           >
-                            {ROLE_OPTIONS.map((option) => {
+                            {roleOptions.map((option) => {
                               const active = role === option.value;
                               return (
                                 /* biome-ignore lint/a11y/useSemanticElements: Segmented Control mit ARIA-Radio-Pattern */
@@ -499,11 +521,14 @@ function DepartmentSetup() {
               {!extraTarget && (user?.joinedDepartments?.length ?? 0) > 0 && (
                 <section aria-labelledby="weitere-titel">
                   <h2 id="weitere-titel" className="text-sm font-semibold text-fg">
-                    Weitere {org.unitTerm === 'Verein' ? 'Vereine' : 'Mitgliedschaften'}
+                    {t('furtherUnitsTitle', {
+                      unitTermPlural: org.unitTerm === 'Verein' ? 'Vereine' : 'Mitgliedschaften',
+                    })}
                   </h2>
                   <p className="mt-1 text-[13px] text-fg-subtle">
-                    Hier bist du zusätzlich dabei. Beitreten geht über den Link oder Einladungslink
-                    {org.slug !== 'verein' ? `, oder automatisch über deine Rollen in ${org.authProviderShort}` : ''}.
+                    {org.slug !== 'verein'
+                      ? t('furtherUnitsSubtitleOrg', { authProviderShort: org.authProviderShort })
+                      : t('furtherUnitsSubtitleVerein')}
                   </p>
                   <ul className="mt-3 divide-y divide-line rounded-card border border-line bg-surface/70">
                     {user!.joinedDepartments!.map((d) => (
@@ -512,17 +537,19 @@ function DepartmentSetup() {
                           <span className="block truncate text-sm font-semibold text-fg">{d.name}</span>
                           <span className="block text-xs text-fg-subtle">
                             {d.fromProvider
-                              ? `Aus ${org.authProviderShort}`
+                              ? t('statusFromProvider', { authProviderShort: org.authProviderShort })
                               : d.confirmed
-                                ? 'Bestätigt'
+                                ? t('statusConfirmed')
                                 : d.counts
-                                  ? 'Selbst beigetreten'
-                                  : 'Wartet auf Bestätigung'}
+                                  ? t('statusSelfJoined')
+                                  : t('statusWaiting')}
                           </span>
                         </span>
                         {d.fromProvider ? (
                           // Kommt beim Login aus den Rollen und lässt sich nur in der Verbands-DB ändern
-                          <span className="shrink-0 text-xs text-fg-subtle">nur in {org.authProviderShort} änderbar</span>
+                          <span className="shrink-0 text-xs text-fg-subtle">
+                            {t('onlyChangeableInProvider', { authProviderShort: org.authProviderShort })}
+                          </span>
                         ) : (
                           <Button
                             size="sm"
@@ -530,7 +557,7 @@ function DepartmentSetup() {
                             loading={leaving === d.id}
                             onClick={() => leave(d.id, d.name)}
                           >
-                            Verlassen
+                            {t('leave')}
                           </Button>
                         )}
                       </li>
@@ -541,7 +568,7 @@ function DepartmentSetup() {
 
               {!extraBlocked && (
                 <Button size="lg" className="w-full" disabled={!selected} loading={saving} onClick={save}>
-                  {extraTarget && !asHome ? `${extraTarget.name} beitreten` : 'Speichern und weiter'}
+                  {extraTarget && !asHome ? t('joinUnit', { name: extraTarget.name }) : t('saveAndContinue')}
                 </Button>
               )}
             </>

@@ -16,7 +16,6 @@ import { z } from 'zod';
 import { RequestPasswordResetSchema, ResetPasswordSchema, isPlaceholderEmail } from '@schichtplan/shared';
 import { sendPasswordResetEmail } from '../services/email.js';
 import { createRateLimiter } from '../services/rateLimit.js';
-import { RATE_LIMIT_ERROR } from '../services/nicknameLogin.js';
 import { getLoginPortalBaseUrl } from '../services/authSession.js';
 import { trackUsage } from '../services/usageStats.js';
 
@@ -48,7 +47,7 @@ const passwordResetRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (requestsByIp.hit(request.ip)) {
-        return reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
+        return reply.status(429).send({ error: request.t('auth.rateLimited'), code: 'RATE_LIMITED' });
       }
       const input = request.body as z.output<typeof RequestPasswordResetSchema>;
       const email = input.email.toLowerCase();
@@ -110,7 +109,7 @@ const passwordResetRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (confirmsByIp.hit(request.ip)) {
-        return reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
+        return reply.status(429).send({ error: request.t('auth.rateLimited'), code: 'RATE_LIMITED' });
       }
       const input = request.body as z.output<typeof ResetPasswordSchema>;
 
@@ -120,10 +119,7 @@ const passwordResetRoutes: FastifyPluginAsync = async (fastify) => {
       });
       if (!record || record.expiresAt < new Date()) {
         if (record) await fastify.prisma.passwordResetToken.delete({ where: { id: record.id } });
-        return reply.status(400).send({
-          error: 'Dieser Link ist ungültig oder abgelaufen. Fordere bitte einen neuen an.',
-          code: 'INVALID_TOKEN',
-        });
+        return reply.fail(400, 'auth.resetLinkInvalid', undefined, { code: 'INVALID_TOKEN' });
       }
 
       const passwordHash = await bcrypt.hash(input.password, 10);
@@ -146,7 +142,7 @@ const passwordResetRoutes: FastifyPluginAsync = async (fastify) => {
 
       request.log.info({ userId: record.userId }, 'Passwort zurückgesetzt');
       trackUsage('PASSWORD_RESET', { dim: 'DONE' });
-      return { success: true, message: 'Dein Passwort ist geändert. Du kannst dich jetzt damit anmelden.' };
+      return { success: true, message: request.t('success.passwordChanged') };
     }
   );
 };

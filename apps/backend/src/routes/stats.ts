@@ -97,18 +97,18 @@ const statsRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
     const isDnt = request.headers['sec-gpc'] === '1' || request.headers.dnt === '1';
-    if (uiLimiter.hit(request.ip)) return reply.status(429).send({ error: 'Zu viele Meldungen' });
+    if (uiLimiter.hit(request.ip)) return reply.fail(429, 'stats.tooMany');
     // sendBeacon schickt text/plain, damit der Browser keine Vorab-Anfrage braucht
     let body: unknown = request.body;
     if (typeof body === 'string') {
       try {
         body = JSON.parse(body);
       } catch {
-        return reply.status(400).send({ error: 'Ungültige Meldung' });
+        return reply.fail(400, 'stats.invalid');
       }
     }
     const parse = UiStatsSchema.safeParse(body);
-    if (!parse.success) return reply.status(400).send({ error: 'Ungültige Meldung' });
+    if (!parse.success) return reply.fail(400, 'stats.invalid');
     for (const event of parse.data.events) {
       const isExplicit = event.name === 'HELP_FEEDBACK_YES' || event.name === 'HELP_FEEDBACK_NO';
       if (isDnt && !isExplicit) continue;
@@ -124,7 +124,7 @@ const statsRoutes: FastifyPluginAsync = async (fastify) => {
     '/api/stats/page-load',
     { schema: { hide: true, body: PageLoadSchema } },
     async (request, reply) => {
-      if (!tenantHeaderAllowed(request.headers)) return reply.status(404).send({ error: 'Nicht gefunden' });
+      if (!tenantHeaderAllowed(request.headers)) return reply.fail(404, 'generic.notFoundShort');
       const { dim } = request.body as z.output<typeof PageLoadSchema>;
       const ok = trackUsageUnchecked('PAGE_LOAD', dim, request.tenant?.id ?? null);
       return reply.status(ok ? 204 : 400).send();

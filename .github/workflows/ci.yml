@@ -53,6 +53,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Sprachpaket bauen
+        run: npm run build --workspace=packages/i18n
+
       - name: Shared-Paket bauen
         run: npm run build --workspace=packages/shared
 
@@ -66,7 +69,8 @@ jobs:
         env:
           DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
 
-      # Dasselbe wie lokal: Lint (Biome), Typecheck aller Apps, Tests (Backend, Web, Login, Admin)
+      # Dasselbe wie lokal: Lint (Biome), Typecheck aller Apps, Übersetzungskataloge (i18n), Tests
+      # (i18n, Backend, Web, Login, Admin)
       - name: Lint, Typecheck und Tests
         run: npm run check
 
@@ -86,6 +90,9 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      - name: Sprachpaket bauen
+        run: npm run build --workspace=packages/i18n
 
       - name: Shared-Paket bauen
         run: npm run build --workspace=packages/shared

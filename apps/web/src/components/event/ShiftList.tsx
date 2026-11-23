@@ -1,10 +1,11 @@
 'use client';
 
 import { AlertCircle, Check, ChevronRight, Coffee, Hammer, Plus, Repeat, Timer, Zap } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { ShiftDto } from '@schichtplan/shared';
 import { Badge, Button, cn } from '@schichtplan/ui';
 import { businessDayKey, fmtDayMonth, fmtShortWeekday, fmtTime, fmtTimeRange, shiftName } from '@/lib/format';
-import { STATUS_STYLES, freeLabel, replacementOffers, shiftStats, shiftTasks } from './shift-utils';
+import { STATUS_STYLES, replacementOffers, shiftStats, shiftTasks } from './shift-utils';
 
 export interface ShiftPauseHint {
   kind: 'direct' | 'break';
@@ -42,6 +43,7 @@ export function NeededShifts({
   limit?: number;
   onShowAll: () => void;
 }) {
+  const t = useTranslations('web.event');
   const needed = shifts
     .map((shift) => ({
       shift,
@@ -58,20 +60,20 @@ export function NeededShifts({
     <section aria-labelledby="needed-title" className="animate-fade-up">
       <div className="mb-3 flex items-end justify-between gap-3">
         <h2 id="needed-title" className="font-display text-xl font-extrabold tracking-tight text-fg sm:text-2xl">
-          Noch gesucht
+          {t('neededTitle')}
           <span className="tabular ml-2 text-base font-semibold text-fg-subtle">
-            {freeTotal} {freeTotal === 1 ? 'Platz' : 'Plätze'}
+            {t('freeSlotsCount', { count: freeTotal })}
           </span>
         </h2>
         {needed.length > limit && (
           <button type="button" onClick={onShowAll} className="text-sm font-semibold text-accent-ink hover:underline">
-            Alle {needed.length} anzeigen
+            {t('showAllNeeded', { count: needed.length })}
           </button>
         )}
       </div>
       <ul className="grid gap-2.5 sm:grid-cols-2">
         {needed.slice(0, limit).map(({ shift, stats, offers }) => {
-          const openTasks = shiftTasks(shift).filter((t) => t.filled < t.requiredSlots);
+          const openTasks = shiftTasks(shift).filter((item) => item.filled < item.requiredSlots);
           const mine = actions.isMine(shift);
           const handover = !mine ? actions.getHandover?.(shift) : null;
           return (
@@ -103,28 +105,28 @@ export function NeededShifts({
                     ) : null}
                     {stats.urgent && (
                       <Badge size="sm" tone="warning">
-                        <Timer className="size-3" /> bald
+                        <Timer className="size-3" /> {t('soonBadge')}
                       </Badge>
                     )}
                     {offers > 0 && (
                       <Badge size="sm" tone="warning">
-                        <Repeat className="size-3" /> Ersatz gesucht
+                        <Repeat className="size-3" /> {t('takeOverBadge')}
                       </Badge>
                     )}
                   </p>
                   <p className="mt-0.5 truncate text-xs text-fg-muted">
                     {openTasks.length > 1 || !shift.title?.trim() || openTasks[0]?.title !== shift.title
-                      ? openTasks.map((t) => `${t.title} ${t.requiredSlots - t.filled}`).join(' · ')
+                      ? openTasks.map((taskItem) => `${taskItem.title} ${taskItem.requiredSlots - taskItem.filled}`).join(' · ')
                       : `${fmtDayMonth(shift.startTime)}, bis ${fmtTime(shift.endTime)}`}
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   <span className={cn('tabular text-sm font-bold', STATUS_STYLES[stats.status].text)}>
-                    {stats.free > 0 ? freeLabel(stats.free) : `${offers} übernehmbar`}
+                    {stats.free > 0 ? t('slotsFree', { count: stats.free }) : t('takeableOffers', { count: offers })}
                   </span>
                   {mine ? (
                     <span className="flex size-9 items-center justify-center rounded-full bg-success/15 text-success-ink">
-                      <Check className="size-4" aria-label="Du bist dabei" />
+                      <Check className="size-4" aria-label={t('youAreIn')} />
                     </span>
                   ) : actions.hasConflict?.(shift) ? (
                     <span
@@ -137,7 +139,7 @@ export function NeededShifts({
                     <div className="flex items-center gap-1">
                       {handover && (
                         <span
-                          title={`Überschneidet sich um ${handover.overlapMinutes} Min. mit «${shiftName(handover.otherShift)}» zur Übergabe`}
+                          title={t('handoverTitle', { overlap: handover.overlapMinutes, otherShift: shiftName(handover.otherShift) })}
                           className="hidden sm:inline-flex items-center rounded-full bg-accent/15 px-1.5 py-0.5 text-2xs font-semibold text-accent-ink"
                         >
                           {handover.overlapMinutes}m
@@ -145,7 +147,7 @@ export function NeededShifts({
                       )}
                       <Button
                         size="icon-sm"
-                        aria-label={`In ${shift.title?.trim() || fmtTimeRange(shift.startTime, shift.endTime)} eintragen`}
+                        aria-label={t('quickSignupAria', { title: shift.title?.trim() || fmtTimeRange(shift.startTime, shift.endTime) })}
                         loading={actions.busyShiftId === shift.id}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -170,6 +172,7 @@ export function NeededShifts({
 
 /** Kompakte Zeilen pro Schicht: Zeit, Arbeiten mit Belegung, Balken, Aktion. */
 export function ShiftRows({ shifts, actions }: { shifts: ShiftDto[]; actions: ShiftActions }) {
+  const t = useTranslations('web.event');
   return (
     <ul className="divide-y divide-line overflow-hidden rounded-card border border-line bg-surface">
       {shifts.map((shift) => {
@@ -218,22 +221,22 @@ export function ShiftRows({ shifts, actions }: { shifts: ShiftDto[]; actions: Sh
                   ) : null}
                   {shift.isSetupTeardown && (
                     <Badge size="sm" tone="neutral">
-                      <Hammer className="size-3" /> Auf-/Abbau
+                      <Hammer className="size-3" /> {t('ticket.setupTeardownBadge')}
                     </Badge>
                   )}
                   {responsibles && responsibles.length > 0 && (
                     <Badge size="sm" tone="neutral" className="max-w-[180px] truncate">
-                      Leitung: {responsibles.map((r) => r.displayName).join(', ')}
+                      {t('ticket.leaderBadge', { leaders: responsibles.map((r) => r.displayName).join(', ') })}
                     </Badge>
                   )}
                   {shift.minAge ? (
                     <Badge size="sm" tone="warning">
-                      ab {shift.minAge}
+                      {t('details.minAgeBadge', { age: shift.minAge })}
                     </Badge>
                   ) : null}
                   {mine && (
                     <Badge size="sm" tone="success">
-                      <Check className="size-3" /> Du
+                      <Check className="size-3" /> {t('details.youSuffix')}
                     </Badge>
                   )}
                   {pauseHint && (
@@ -256,31 +259,31 @@ export function ShiftRows({ shifts, actions }: { shifts: ShiftDto[]; actions: Sh
                   )}
                   {stats.urgent && (
                     <Badge size="sm" tone="warning">
-                      <Timer className="size-3" /> bald
+                      <Timer className="size-3" /> {t('soonBadge')}
                     </Badge>
                   )}
                   {offers > 0 && (
                     <Badge size="sm" tone="warning">
-                      <Repeat className="size-3" /> Ersatz gesucht{offers > 1 ? ` (${offers})` : ''}
+                      <Repeat className="size-3" /> {t('details.replacementWantedBadge', { count: offers > 1 ? ` (${offers})` : '' })}
                     </Badge>
                   )}
                 </div>
 
                 {showTasks && (
                   <ul className="mt-1.5 flex flex-wrap gap-1.5" aria-label="Arbeiten">
-                    {tasks.map((t) => {
-                      const full = t.filled >= t.requiredSlots;
+                    {tasks.map((taskItem) => {
+                      const full = taskItem.filled >= taskItem.requiredSlots;
                       return (
                         <li
-                          key={t.id}
+                          key={taskItem.id}
                           className={cn(
                             'tabular inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
                             full ? 'bg-surface-2 text-fg-subtle' : 'bg-accent/10 text-accent-ink'
                           )}
                         >
-                          {t.title}
+                          {taskItem.title}
                           <span className="font-bold">
-                            {t.filled}/{t.requiredSlots}
+                            {taskItem.filled}/{taskItem.requiredSlots}
                           </span>
                         </li>
                       );
@@ -301,10 +304,10 @@ export function ShiftRows({ shifts, actions }: { shifts: ShiftDto[]; actions: Sh
               </div>
 
               <div className="flex shrink-0 flex-col items-end justify-between gap-2">
-                <span className={cn('tabular text-sm font-bold', style.text)}>{freeLabel(stats.free)}</span>
+                <span className={cn('tabular text-sm font-bold', style.text)}>{t('slotsFree', { count: stats.free })}</span>
                 {isFull && actions.contactName && (
                   <span className="text-2xs text-accent-ink font-semibold truncate max-w-[140px] text-right">
-                    Fragen: {actions.contactName}
+                    {t('questionsContact', { name: actions.contactName })}
                   </span>
                 )}
                 {!stats.over && !mine && stats.free === 0 && offers > 0 && actions.canTakeOver && !actions.hasConflict?.(shift) && (
@@ -316,7 +319,7 @@ export function ShiftRows({ shifts, actions }: { shifts: ShiftDto[]; actions: Sh
                       actions.onOpen(shift);
                     }}
                   >
-                    <Repeat /> <span className="hidden sm:inline">Übernehmen</span>
+                    <Repeat /> <span className="hidden sm:inline">{t('details.takeOverAction')}</span>
                   </Button>
                 )}
                 {!stats.over && !mine && stats.free > 0 && actions.canSignup && (
@@ -326,16 +329,16 @@ export function ShiftRows({ shifts, actions }: { shifts: ShiftDto[]; actions: Sh
                       className="inline-flex items-center gap-1 rounded-full border border-warning/30 bg-warning/15 px-2.5 py-1 text-xs font-semibold text-warning-ink"
                     >
                       <AlertCircle className="size-3.5 text-warning" />
-                      <span className="hidden sm:inline">Kollision</span>
+                      <span className="hidden sm:inline">{t('collisionBadge')}</span>
                     </span>
                   ) : (
                     <div className="flex items-center gap-1.5">
                       {handover && (
                         <span
-                          title={`Überschneidet sich um ${handover.overlapMinutes} Min. mit «${shiftName(handover.otherShift)}» zur Schichtübergabe`}
+                          title={t('handoverTitle', { overlap: handover.overlapMinutes, otherShift: shiftName(handover.otherShift) })}
                           className="hidden md:inline-flex items-center rounded-full bg-accent/15 px-2 py-0.5 text-2xs font-semibold text-accent-ink"
                         >
-                          {handover.overlapMinutes}m Übergabe
+                          {t('handoverBadge', { overlap: handover.overlapMinutes })}
                         </span>
                       )}
                       <Button
@@ -347,7 +350,7 @@ export function ShiftRows({ shifts, actions }: { shifts: ShiftDto[]; actions: Sh
                           actions.onQuickSignup(shift);
                         }}
                       >
-                        <Plus /> <span className="hidden sm:inline">Eintragen</span>
+                        <Plus /> <span className="hidden sm:inline">{t('details.signupAction')}</span>
                       </Button>
                     </div>
                   )

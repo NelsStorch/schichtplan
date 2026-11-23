@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { KeyRound, ShieldCheck } from 'lucide-react';
 import { isPlaceholderEmail, type UserDto } from '@schichtplan/shared';
 import { Badge } from './Badge';
@@ -23,6 +24,8 @@ export interface PasswordSettingsProps {
 export function PasswordSettings({ user, onUserChange }: PasswordSettingsProps) {
   const org = useOrganization();
   const toast = useToast();
+  const t = useTranslations('ui.passwordSettings');
+  const tActions = useTranslations('common.actions');
 
   const [isOpen, setIsOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -46,12 +49,12 @@ export function PasswordSettings({ user, onUserChange }: PasswordSettingsProps) 
     setError(null);
 
     if (newPassword.length < 8) {
-      setError('Das neue Passwort muss mindestens 8 Zeichen lang sein.');
+      setError(t('tooShort'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError('Die eingegebenen Passwörter stimmen nicht überein.');
+      setError(t('mismatch'));
       return;
     }
 
@@ -68,12 +71,12 @@ export function PasswordSettings({ user, onUserChange }: PasswordSettingsProps) 
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.error || 'Fehler beim Speichern des Passworts.');
+        throw new Error(data.error || t('saveFailed'));
       }
 
       toast({
-        title: user.hasPassword ? 'Passwort geändert' : 'Fallback-Passwort festgelegt',
-        description: data.message || 'Dein Passwort wurde erfolgreich gespeichert.',
+        title: user.hasPassword ? t('changed') : t('fallbackSet'),
+        description: data.message || t('saved'),
         tone: 'success',
       });
 
@@ -85,7 +88,7 @@ export function PasswordSettings({ user, onUserChange }: PasswordSettingsProps) 
 
       resetForm();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fehler beim Speichern des Passworts.');
+      setError(err instanceof Error ? err.message : t('saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -97,23 +100,23 @@ export function PasswordSettings({ user, onUserChange }: PasswordSettingsProps) 
         <div>
           <div className="flex items-center gap-2">
             <h2 className="flex items-center gap-2 text-base font-bold text-fg">
-              <KeyRound className="size-4 text-accent-ink" /> Passwort &amp; Fallback-Login
+              <KeyRound className="size-4 text-accent-ink" /> {t('title')}
             </h2>
             {user.hasPassword ? (
               <Badge tone="success" size="sm" className="gap-1">
-                <ShieldCheck className="size-3" /> Aktiv
+                <ShieldCheck className="size-3" /> {t('active')}
               </Badge>
             ) : (
               <Badge tone="neutral" size="sm">
-                Kein Passwort
+                {t('noPassword')}
               </Badge>
             )}
           </div>
 
           <p className="mt-2 text-sm text-fg-muted">
             {user.hasPassword
-              ? 'Dein Konto verfügt über ein Passwort. Du kannst dich damit jederzeit direkt mit deiner E-Mail-Adresse anmelden.'
-              : `Du bist über ${org.name} angemeldet. Du kannst hier ein Notfall-Passwort festlegen, um dich auch anmelden zu können, falls ${org.authProviderShort || 'die Verbandsdatenbank'} vorübergehend nicht erreichbar ist.`}
+              ? t('hasPasswordInfo')
+              : t('fallbackInfo', { app: org.name, provider: org.authProviderShort || t('providerFallback') })}
           </p>
         </div>
 
@@ -128,7 +131,7 @@ export function PasswordSettings({ user, onUserChange }: PasswordSettingsProps) 
             disabled={!hasRealEmail}
             className="shrink-0"
           >
-            {user.hasPassword ? 'Passwort ändern' : 'Fallback-Passwort festlegen'}
+            {user.hasPassword ? t('change') : t('setFallback')}
           </Button>
         )}
       </div>
@@ -136,7 +139,7 @@ export function PasswordSettings({ user, onUserChange }: PasswordSettingsProps) 
       {!hasRealEmail && (
         <div className="mt-3">
           <Callout tone="info">
-            Trage bitte zuerst oben im Profil eine gültige E-Mail-Adresse ein, um ein Passwort festzulegen.
+            {t('emailFirst')}
           </Callout>
         </div>
       )}
@@ -146,7 +149,7 @@ export function PasswordSettings({ user, onUserChange }: PasswordSettingsProps) 
           {error && <Callout tone="danger">{error}</Callout>}
 
           {user.hasPassword && (
-            <Field label="Aktuelles Passwort" required>
+            <Field label={t('current')} required>
               <PasswordInput
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
@@ -157,7 +160,7 @@ export function PasswordSettings({ user, onUserChange }: PasswordSettingsProps) 
           )}
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={user.hasPassword ? 'Neues Passwort' : 'Passwort'} hint="Mindestens 8 Zeichen" required>
+            <Field label={user.hasPassword ? t('new') : t('password')} hint={t('minLength')} required>
               <PasswordInput
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -167,7 +170,7 @@ export function PasswordSettings({ user, onUserChange }: PasswordSettingsProps) 
               />
             </Field>
 
-            <Field label="Passwort wiederholen" required>
+            <Field label={t('repeat')} required>
               <PasswordInput
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -180,10 +183,10 @@ export function PasswordSettings({ user, onUserChange }: PasswordSettingsProps) 
 
           <div className="flex items-center justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={resetForm} disabled={saving}>
-              Abbrechen
+              {tActions('cancel')}
             </Button>
             <Button type="submit" loading={saving} disabled={!newPassword || !confirmPassword}>
-              Passwort speichern
+              {t('save')}
             </Button>
           </div>
         </form>

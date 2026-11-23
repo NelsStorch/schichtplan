@@ -12,6 +12,7 @@ import {
   type DepartmentPermission,
   REQUIRED_PROFILE_FIELD_KEYS,
   RESERVED_SUBDOMAINS,
+  SUPPORTED_LOCALES,
   SUBDOMAIN_REGEX,
 } from './constants.js';
 
@@ -311,7 +312,12 @@ export const MoveEventSchema = z.object({
 export type MoveEventInput = z.infer<typeof MoveEventSchema>;
 
 /** Profilangaben, die eine Person für einen Anlass nachträgt (nur gesetzte Felder werden geändert) */
+/** Sprache der Oberfläche (de, fr, it, en) */
+export const LocaleSchema = z.enum(SUPPORTED_LOCALES);
+
 export const UpdateProfileSchema = z.object({
+  /** Gewählte Sprache; null setzt sie zurück (dann Browser bzw. Abteilung) */
+  locale: LocaleSchema.nullable().optional(),
   firstName: z.string().trim().min(2, 'Vorname ist zu kurz').max(80).optional(),
   lastName: z.string().trim().min(2, 'Nachname ist zu kurz').max(80).optional(),
   phone: z
@@ -465,6 +471,8 @@ export const UpdateDepartmentSchema = z.object({
   membersOnly: z.boolean().optional(),
   allowPasswordless: z.boolean().optional(),
   joinMode: DepartmentJoinModeSchema.optional(),
+  /** Standardsprache für Personen ohne eigene Wahl (und Sprache der Inhalte des OK) */
+  defaultLocale: LocaleSchema.optional(),
 });
 
 export type UpdateDepartmentInput = z.infer<typeof UpdateDepartmentSchema>;

@@ -8,6 +8,7 @@ import {
   type EventQuestionType,
   type ResponsiblePersonDto,
 } from '@schichtplan/shared';
+import { errorTranslator, type ErrorTranslator } from '../../plugins/i18n.js';
 
 
 // Gemeinsame Bausteine der Anlass-Routen (routes/events/*) und der Vorlagen (routes/eventTemplates.ts)
@@ -71,18 +72,19 @@ export async function resolveAccessLists(
   departmentId: string,
   accessType: string,
   allowedDepartmentIds: string[],
-  allowedStufeIds: string[]
+  allowedStufeIds: string[],
+  t: ErrorTranslator = errorTranslator('de')
 ): Promise<{ departmentIds: string[]; stufeIds: string[] } | { error: string }> {
   const cfg = accessTypeConfig(accessType);
   const departmentIds = cfg.whitelist
     ? [...new Set(allowedDepartmentIds)].filter((id) => id !== departmentId)
     : [];
   if (cfg.whitelist && departmentIds.length === 0) {
-    return { error: 'Bitte mindestens eine weitere Abteilung freischalten oder einen anderen Typ wählen.' };
+    return { error: t('event.whitelistEmpty') };
   }
   if (departmentIds.length > 0) {
     const found = await prisma.department.count({ where: { id: { in: departmentIds } } });
-    if (found !== departmentIds.length) return { error: 'Eine der gewählten Abteilungen gibt es nicht' };
+    if (found !== departmentIds.length) return { error: t('event.departmentMissing') };
   }
 
   const stufeIds = cfg.scope === 'DEPARTMENT' ? [...new Set(allowedStufeIds)] : [];
@@ -91,7 +93,7 @@ export async function resolveAccessLists(
     const found = await prisma.departmentStufe.count({
       where: { id: { in: stufeIds }, departmentId: { in: allowedDepartments } },
     });
-    if (found !== stufeIds.length) return { error: 'Eine der gewählten Stufen gehört nicht zu den Abteilungen' };
+    if (found !== stufeIds.length) return { error: t('event.stufeNotInDepartments') };
   }
   return { departmentIds, stufeIds };
 }

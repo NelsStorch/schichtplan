@@ -7,7 +7,6 @@ import {
   getOrganizationByDbType,
 } from '@schichtplan/shared';
 import {
-  RATE_LIMIT_ERROR,
   findCeviNameMatches,
   pickCeviNameMatch,
   claimCeviNameAttempt,
@@ -15,7 +14,7 @@ import {
   tooManyRequests,
 } from '../../services/nicknameLogin.js';
 import { trackUsage } from '../../services/usageStats.js';
-import { INVITE_REASON_ERRORS, verifyDepartmentInviteToken } from '../../services/inviteToken.js';
+import { inviteReasonError, verifyDepartmentInviteToken } from '../../services/inviteToken.js';
 
 import {
   setAuthCookie,
@@ -42,7 +41,7 @@ const nicknameAuthRoutes: FastifyPluginAsync = async (fastify) => {
 
   const loginHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     if (tooManyRequests(request.ip)) {
-      return reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
+      return reply.status(429).send({ error: request.t('auth.rateLimited'), code: 'RATE_LIMITED' });
     }
     const input = request.body as z.output<typeof CeviNameQuickLoginSchema>;
     const { departmentSlug, ceviName, birthDate, returnTo } = input;
@@ -57,18 +56,15 @@ const nicknameAuthRoutes: FastifyPluginAsync = async (fastify) => {
       select: { id: true, name: true, allowPasswordless: true },
     });
     if (!department) {
-      return reply.status(404).send({ error: 'Diese Abteilung gibt es nicht.' });
+      return reply.fail(404, 'department.doesNotExist');
     }
     if (!department.allowPasswordless) {
-      return reply.status(403).send({
-        code: 'PASSWORDLESS_DISABLED',
-        error: 'Die passwortlose Anmeldung ist hier deaktiviert. Bitte melde dich mit E-Mail und Passwort oder Verbands-Login an.',
-      });
+      return reply.fail(403, 'nickname.passwordlessDisabled', undefined, { code: 'PASSWORDLESS_DISABLED' });
     }
 
     // Sperre vor der Suche: Auch ein richtiges Geburtsdatum kommt während der Sperre nicht durch
     if (claimCeviNameAttempt(department.id, ceviName)) {
-      return reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
+      return reply.status(429).send({ error: request.t('auth.rateLimited'), code: 'RATE_LIMITED' });
     }
     const matches = await findCeviNameMatches(fastify.prisma, department.id, ceviName, birthDate);
     const result = pickCeviNameMatch(matches);
@@ -79,21 +75,21 @@ const nicknameAuthRoutes: FastifyPluginAsync = async (fastify) => {
       trackUsage('LOGIN_FAILED', { dim: 'CEVINAME_USE_CEVIDB', departmentId: department.id });
       return reply.status(403).send({
         code: 'USE_CEVIDB',
-        error: `Zu diesem ${vocab.nickname} gibt es ein Konto mit ${vocab.authProvider}. Melde dich bitte mit ${vocab.authProvider} an.`,
+        error: request.t('nickname.providerAccount', { nickname: vocab.nickname, provider: vocab.authProvider }),
       });
     }
     if (result.kind === 'USE_PASSWORD') {
       trackUsage('LOGIN_FAILED', { dim: 'CEVINAME_USE_PASSWORD', departmentId: department.id });
       return reply.status(403).send({
         code: 'USE_PASSWORD',
-        error: `Zu diesem ${vocab.nickname} gibt es ein geschütztes Konto. Melde dich bitte mit E-Mail und Passwort an.`,
+        error: request.t('nickname.protectedAccount', { nickname: vocab.nickname }),
       });
     }
     if (result.kind === 'NONE') {
       trackUsage('LOGIN_FAILED', { dim: 'CEVINAME_NOT_FOUND', departmentId: department.id });
       return reply.status(404).send({
         code: 'NOT_FOUND',
-        error: `Bei ${department.name} gibt es noch kein Profil mit diesem ${vocab.nickname} und Geburtsdatum.`,
+        error: request.t('nickname.noProfile', { department: department.name, nickname: vocab.nickname }),
       });
     }
 
@@ -119,7 +115,7 @@ const nicknameAuthRoutes: FastifyPluginAsync = async (fastify) => {
 
   const registerHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     if (tooManyRequests(request.ip)) {
-      return reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
+      return reply.status(429).send({ error: request.t('auth.rateLimited'), code: 'RATE_LIMITED' });
     }
     const input = request.body as z.output<typeof CeviNameRegisterSchema>;
     const { departmentSlug, ceviName, birthDate, firstName, lastName, phone, stufen, returnTo, inviteToken } = input;
@@ -134,13 +130,10 @@ const nicknameAuthRoutes: FastifyPluginAsync = async (fastify) => {
       select: { id: true, name: true, allowPasswordless: true, joinMode: true, inviteToken: true },
     });
     if (!department) {
-      return reply.status(404).send({ error: 'Diese Abteilung gibt es nicht.' });
+      return reply.fail(404, 'department.doesNotExist');
     }
     if (!department.allowPasswordless) {
-      return reply.status(403).send({
-        code: 'PASSWORDLESS_DISABLED',
-        error: 'Die passwortlose Anmeldung ist hier deaktiviert. Bitte melde dich mit E-Mail und Passwort oder Verbands-Login an.',
-      });
+      return reply.fail(403, 'nickname.passwordlessDisabled', undefined, { code: 'PASSWORDLESS_DISABLED' });
     }
     // Ohne E-Mail: Einladungen mit Rechten (an eine E-Mail gebunden) gelten hier nicht, Spitznamen-Profile haben keine Rechte
     const inviteCheck = verifyDepartmentInviteToken(department.id, department.inviteToken, inviteToken);
@@ -149,7 +142,7 @@ const nicknameAuthRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.status(403).send({
         code: inviteCheck.reason ? `INVITE_${inviteCheck.reason}` : 'INVITE_REQUIRED',
         error: inviteCheck.reason
-          ? INVITE_REASON_ERRORS[inviteCheck.reason]
+          ? inviteReasonError(inviteCheck.reason, request.t)
           : 'Für diese Abteilung brauchst du einen gültigen Einladungslink.',
       });
     }
@@ -157,7 +150,7 @@ const nicknameAuthRoutes: FastifyPluginAsync = async (fastify) => {
     // Gleicher Cevi-Name und gleiches Geburtsdatum in derselben Abteilung gibt es nur einmal.
     // Die Antwort verrät, ob Name und Geburtsdatum passen: gleiche Bremse wie beim Login.
     if (claimCeviNameAttempt(department.id, ceviName)) {
-      return reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
+      return reply.status(429).send({ error: request.t('auth.rateLimited'), code: 'RATE_LIMITED' });
     }
     const matches = await findCeviNameMatches(fastify.prisma, department.id, ceviName, birthDate);
     // Kein Treffer verrät nichts: kein Fehlversuch
@@ -180,7 +173,7 @@ const nicknameAuthRoutes: FastifyPluginAsync = async (fastify) => {
         where: { id: { in: stufeIds }, departmentId: department.id },
       });
       if (found !== stufeIds.length) {
-        return reply.status(400).send({ error: 'Eine Stufe gehört nicht zu dieser Abteilung' });
+        return reply.fail(400, 'stufe.notInDepartment');
       }
     }
 

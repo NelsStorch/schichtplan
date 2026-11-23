@@ -44,7 +44,7 @@ const calendarRoutes: FastifyPluginAsync = async (fastify) => {
     const token = rawToken.replace(/\.ics$/i, '');
 
     if (!token || !/^[0-9a-f]{16,64}$/i.test(token)) {
-      return reply.status(404).send({ error: 'Ungültiger Kalender-Token' });
+      return reply.fail(404, 'calendar.invalidToken');
     }
 
     const user = await fastify.prisma.user.findUnique({
@@ -58,7 +58,7 @@ const calendarRoutes: FastifyPluginAsync = async (fastify) => {
     });
 
     if (!user) {
-      return reply.status(404).send({ error: 'Kalender nicht gefunden' });
+      return reply.fail(404, 'calendar.notFound');
     }
 
     const shifts = await getUserCalendarShifts(fastify.prisma, user.id);

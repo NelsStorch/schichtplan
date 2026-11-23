@@ -13,6 +13,7 @@ import {
 import { personLabel } from '../../services/profile.js';
 import { canGrantPermissions, departmentAccess, type DepartmentAccess } from '../../services/permissions.js';
 import { usableEmail } from '../eventMessages.js';
+import { type ErrorKey } from '../../plugins/i18n.js';
 
 // Gemeinsame Bausteine der Abteilungs-Routen (routes/departments/*)
 
@@ -70,6 +71,17 @@ export async function loadContactPerson(
 export const isUniqueViolation = (err: unknown) =>
   err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002';
 
+/** Meldung je Grund als Schlüssel (Übersetzung über request.t) */
+export const NOT_ELIGIBLE_KEYS = {
+  NOT_CEVIDB: 'department.notEligibleNotCevidb',
+  NOT_LEADER: 'department.notEligibleNotLeader',
+  NO_ORTSGRUPPE: 'department.notEligibleNoOrtsgruppe',
+  EXISTS: 'department.notEligibleExists',
+  UNVERIFIED: 'department.notEligibleUnverified',
+  LIMIT: 'department.notEligibleLimit',
+} as const satisfies Record<string, ErrorKey>;
+
+/** Deutsche Fassung (Tests, Logs) */
 export const NOT_ELIGIBLE_MESSAGES = {
   NOT_CEVIDB: 'Um eine Abteilung anzulegen, melde dich bitte mit Cevi.DB an.',
   NOT_LEADER:
@@ -233,12 +245,12 @@ export async function departmentCreationEligibility(
 /** Recht in der Abteilung der Subdomain prüfen (Abteilungsleitung und globale Admins haben alle) */
 export async function requireDepartmentPermission(fastify: FastifyInstance, request: FastifyRequest, reply: FastifyReply, permission: DepartmentPermission) {
   if (!request.tenant) {
-    reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+    reply.fail(400, 'department.missingContext');
     return null;
   }
   const access = await departmentAccess(fastify.prisma, request.tenant.id, request.user.id);
   if (!access.permissions.has(permission)) {
-    reply.status(403).send({ error: `Dafür braucht es das Recht «${DEPARTMENT_PERMISSIONS[permission].label}».` });
+    reply.status(403).send({ error: request.t('department.permissionRequired', { permission: DEPARTMENT_PERMISSIONS[permission].label }) });
     return null;
   }
   return { tenant: request.tenant, access };

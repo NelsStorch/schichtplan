@@ -18,7 +18,7 @@ import {
   cn,
   useToast,
 } from '@schichtplan/ui';
-import { SUBDOMAIN_REGEX, getOrganizationByDbType, type AdminDepartmentListItemDto, type AdminUserListItemDto, type OrganizationType } from '@schichtplan/shared';
+import { SUBDOMAIN_REGEX, formatSwissNumber, getOrganizationByDbType, type AdminDepartmentListItemDto, type AdminUserListItemDto, type OrganizationType } from '@schichtplan/shared';
 import { send, errorMessage } from '../lib/api';
 import { ORGANIZATION_TYPES, matchesOrg, organizationLabel, providerLabel, type OrgFilter } from '../lib/organizations';
 import { downloadCsv } from '../lib/csv';
@@ -445,7 +445,7 @@ export function DepartmentsPanel({
                       ] as const
                     ).map(([label, value]) => (
                       <div key={label} className="rounded-tile bg-surface-2 px-1 py-2">
-                        <dd className="font-display text-lg font-bold leading-none text-fg">{value.toLocaleString('de-CH')}</dd>
+                        <dd className="font-display text-lg font-bold leading-none text-fg">{formatSwissNumber(value)}</dd>
                         <dt className="mt-1 text-2xs text-fg-subtle">{label}</dt>
                       </div>
                     ))}

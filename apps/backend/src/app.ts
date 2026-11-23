@@ -7,10 +7,12 @@ import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import compress from '@fastify/compress';
 import { hasZodFastifySchemaValidationErrors } from 'fastify-type-provider-zod';
+import type { Locale } from '@schichtplan/i18n';
 
 import prismaPlugin from './plugins/prisma.js';
 import jwtPlugin from './plugins/jwt.js';
 import tenantPlugin from './plugins/tenant.js';
+import i18nPlugin, { errorTranslator, type ErrorKey, type ErrorTranslator } from './plugins/i18n.js';
 import statsPlugin from './plugins/stats.js';
 import docsPlugin from './plugins/docs.js';
 
@@ -81,32 +83,61 @@ export function isAllowedOrigin(origin: string, rootDomain: string, allowLocalho
 // Eigene Meldungen in den Schemas haben Vorrang und bleiben unverändert.
 z.config(z.locales.de());
 
-/** Deutsche Meldungen für Fehler, die Fastify selbst auslöst (nach Code, sonst nach Status) */
-const FASTIFY_ERROR_MESSAGES: Record<string, string> = {
-  FST_ERR_CTP_BODY_TOO_LARGE: 'Die Anfrage ist zu gross.',
-  FST_ERR_CTP_INVALID_MEDIA_TYPE: 'Dieses Format wird nicht unterstützt.',
-  FST_ERR_CTP_INVALID_CONTENT_LENGTH: 'Ungültige Anfrage.',
-  FST_ERR_CTP_EMPTY_JSON_BODY: 'Die Anfrage ist leer.',
-  FST_ERR_CTP_INVALID_JSON_BODY: 'Die Anfrage enthält kein gültiges JSON.',
-  NOT_FOUND: 'Nicht gefunden.',
+/** Zod-Sprachpakete für Validierungsmeldungen in anderen Sprachen */
+const ZOD_LOCALES: Record<Locale, ReturnType<typeof z.locales.de>> = {
+  de: z.locales.de(),
+  fr: z.locales.fr(),
+  it: z.locales.it(),
+  en: z.locales.en(),
 };
-const STATUS_MESSAGES: Record<number, string> = {
-  400: 'Ungültige Anfrage.',
-  401: 'Nicht angemeldet.',
-  403: 'Kein Zugriff.',
-  404: 'Nicht gefunden.',
-  405: 'Diese Methode ist hier nicht erlaubt.',
-  413: 'Die Anfrage ist zu gross.',
-  415: 'Dieses Format wird nicht unterstützt.',
-  429: 'Zu viele Anfragen. Bitte warte kurz.',
+
+/**
+ * Meldung einer ungültigen Eingabe in der Sprache der Anfrage. Deutsch: wie bisher (auch eigene Meldungen der
+ * Schemas). Andere Sprachen: Zods Standardmeldung in dieser Sprache, rekonstruiert aus dem Issue (eigene
+ * deutsche Meldungen der Schemas wandern erst später in die Kataloge).
+ */
+export function validationMessage(
+  entry: { keyword?: string; message?: string; params?: Record<string, unknown> } | undefined,
+  locale: Locale
+): string | null {
+  if (!entry) return null;
+  if (locale === 'de') return entry.message || null;
+  try {
+    const issue = { ...(entry.params ?? {}), code: entry.keyword } as Parameters<ReturnType<typeof z.locales.de>['localeError']>[0];
+    const out = ZOD_LOCALES[locale].localeError(issue);
+    const message = typeof out === 'string' ? out : out?.message;
+    return message || null;
+  } catch {
+    return null;
+  }
+}
+
+/** Meldungen für Fehler, die Fastify selbst auslöst (nach Code, sonst nach Status) */
+const FASTIFY_ERROR_KEYS: Record<string, ErrorKey> = {
+  FST_ERR_CTP_BODY_TOO_LARGE: 'generic.tooLarge',
+  FST_ERR_CTP_INVALID_MEDIA_TYPE: 'generic.unsupportedMedia',
+  FST_ERR_CTP_INVALID_CONTENT_LENGTH: 'generic.badRequest',
+  FST_ERR_CTP_EMPTY_JSON_BODY: 'generic.emptyBody',
+  FST_ERR_CTP_INVALID_JSON_BODY: 'generic.invalidJson',
+  NOT_FOUND: 'generic.notFound',
+};
+const STATUS_KEYS: Record<number, ErrorKey> = {
+  400: 'generic.badRequest',
+  401: 'generic.unauthorized',
+  403: 'generic.forbidden',
+  404: 'generic.notFound',
+  405: 'generic.methodNotAllowed',
+  413: 'generic.tooLarge',
+  415: 'generic.unsupportedMedia',
+  429: 'generic.tooManyRequests',
 };
 
 /**
  * Einheitliches Fehlerformat wie in den Routen: `error` ist die Meldung fürs Frontend, `code` maschinenlesbar.
  * Nie die Originalmeldung von Fastify übernehmen (englisch, kann Interna nennen).
  */
-export function clientErrorBody(statusCode: number, code?: string) {
-  const message = (code && FASTIFY_ERROR_MESSAGES[code]) || STATUS_MESSAGES[statusCode] || 'Die Anfrage konnte nicht verarbeitet werden.';
+export function clientErrorBody(statusCode: number, code?: string, t: ErrorTranslator = errorTranslator('de')) {
+  const message = t((code && FASTIFY_ERROR_KEYS[code]) || STATUS_KEYS[statusCode] || 'generic.unprocessable');
   return { statusCode, code: code || `HTTP_${statusCode}`, error: message, message };
 }
 
@@ -162,9 +193,9 @@ export async function buildApp(): Promise<FastifyInstance> {
     timeWindow: '1 minute',
     // Health-Checks von Docker/Monitoring nie bremsen
     allowList: (request) => request.url === '/health' || request.url.startsWith('/api/health'),
-    errorResponseBuilder: (_request, context) => ({
+    errorResponseBuilder: (request, context) => ({
       statusCode: context.statusCode,
-      error: 'Zu viele Anfragen. Bitte warte einen Moment und versuche es dann nochmals.',
+      error: request.t('generic.rateLimited'),
     }),
   });
 
@@ -173,6 +204,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(statsPlugin);
   await app.register(jwtPlugin);
   await app.register(tenantPlugin);
+  await app.register(i18nPlugin);
   await app.register(docsPlugin);
 
   // Zentraler Fehler-Handler für Server-Fehler & Admin-Webhook-Alarme.
@@ -183,7 +215,7 @@ export async function buildApp(): Promise<FastifyInstance> {
     // Ungültige Eingaben aus den Routenschemata: wie bisher als {error: "Meldung"} melden,
     // denn das Frontend zeigt `error` direkt an (sonst stünde dort nur «Bad Request»).
     if (hasZodFastifySchemaValidationErrors(error)) {
-      const message = error.validation[0]?.message || 'Ungültige Eingabe';
+      const message = validationMessage(error.validation[0], request.locale) || request.t('generic.invalidInput');
       return reply.status(400).send({ statusCode: 400, code: 'FST_ERR_VALIDATION', error: message, message });
     }
 
@@ -217,7 +249,7 @@ export async function buildApp(): Promise<FastifyInstance> {
 
     if (statusCode >= 500) {
       request.log.error(error);
-      const message = 'Ein interner Serverfehler ist aufgetreten. Bitte versuche es nochmals.';
+      const message = request.t('generic.internal');
       return reply.status(statusCode).send({
         statusCode,
         code: 'INTERNAL',
@@ -229,12 +261,12 @@ export async function buildApp(): Promise<FastifyInstance> {
 
     // Übrige Fehler von Fastify selbst (ungültiges JSON, zu grosser Body, falscher Content-Type ...):
     // gleiches Format wie alle anderen Fehler, mit deutscher Meldung statt «Bad Request»
-    return reply.status(statusCode).send(clientErrorBody(statusCode, error.code));
+    return reply.status(statusCode).send(clientErrorBody(statusCode, error.code, request.t));
   });
 
   // Unbekannte Routen: gleiches Format (sonst «Route GET:/api/x not found» auf Englisch)
-  app.setNotFoundHandler((_request, reply) => {
-    reply.status(404).send(clientErrorBody(404, 'NOT_FOUND'));
+  app.setNotFoundHandler((request, reply) => {
+    reply.status(404).send(clientErrorBody(404, 'NOT_FOUND', request.t));
   });
 
   // Application routes

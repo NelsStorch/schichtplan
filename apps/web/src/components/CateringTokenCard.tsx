@@ -11,7 +11,8 @@ import {
   Ticket,
   UtensilsCrossed,
 } from 'lucide-react';
-import { SWISS_TIMEZONE, type CateringTokenDto } from '@schichtplan/shared';
+import { useTranslations } from 'next-intl';
+import { zurichDateTimeFormat, type CateringTokenDto } from '@schichtplan/shared';
 import { Badge, Card, cn, useToast } from '@schichtplan/ui';
 import { api, errorMessage } from '@/lib/api';
 import { fmtTime, fmtWeekday } from '@/lib/format';
@@ -58,6 +59,7 @@ export function CateringTokenCard({
   onRedeemed,
   isManager,
 }: CateringTokenCardProps) {
+  const t = useTranslations('web.cateringDialog.tokenCard');
   const toast = useToast();
   const [token, setToken] = useState<CateringTokenDto>(initialToken);
   const [isRedeeming, setIsRedeeming] = useState(false);
@@ -133,13 +135,13 @@ export function CateringTokenCard({
       setCountdownSeconds(120);
       onRedeemed?.(updated);
       toast({
-        title: `${updated.title} entwertet`,
-        description: 'Viel Vergnügen und en Guete!',
+        title: t('redeemedToastTitle', { title: updated.title }),
+        description: t('redeemedToastDescription'),
         tone: 'success',
       });
     } catch (err) {
       toast({
-        title: 'Entwertung fehlgeschlagen',
+        title: t('redeemFailedTitle'),
         description: errorMessage(err),
         tone: 'error',
       });
@@ -200,8 +202,8 @@ export function CateringTokenCard({
         if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
         warningTimerRef.current = setTimeout(() => setSpeedWarning(false), 3800);
         toast({
-          title: 'Bitte langsam schieben',
-          description: 'Zum Schutz vor versehentlichem Entwerten den Regler langsam bis zum Ende ziehen und loslassen.',
+          title: t('dragSlowlyTitle'),
+          description: t('dragSlowlyDescription'),
           tone: 'info',
         });
       }
@@ -214,12 +216,7 @@ export function CateringTokenCard({
   const isReadyToRelease = swipeProgress >= REDEEM_THRESHOLD;
 
   // Formatierung der Live-Uhrzeit mit Sekunden in Europe/Zurich
-  const timeString = currentTime.toLocaleTimeString('de-CH', {
-    timeZone: SWISS_TIMEZONE,
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  });
+  const timeString = zurichDateTimeFormat({ hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(currentTime);
 
   return (
     <Card
@@ -243,36 +240,35 @@ export function CateringTokenCard({
 
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/20 text-success-ink font-bold text-xs uppercase tracking-wider mb-1">
-              <Sparkles className="size-3.5" /> Bon soeben entwertet
+              <Sparkles className="size-3.5" /> {t('justRedeemedBadge')}
             </div>
             <h3 className="font-display text-xl sm:text-2xl font-extrabold text-fg">
               {token.title}
             </h3>
             <p className="text-xs sm:text-sm text-fg-muted mt-0.5">
-              Vor dem Standpersonal vorweisen – bitte nicht schliessen.
+              {t('showToStaffPrompt')}
             </p>
           </div>
 
           {/* Screenshot-Schutz: Laufende Sekunden-Uhrzeit */}
           <div className="mx-auto max-w-xs rounded-xl bg-bg/80 border border-success/30 p-3 shadow-inner">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-fg-muted">
-              Offizielle Festzeit
+              {t('officialEventTime')}
             </p>
             <p className="font-mono text-2xl font-black text-success-ink tracking-widest tabular-nums my-0.5">
               {timeString}
             </p>
             <p className="text-xs font-medium text-fg-muted">
-              Live-Gültigkeit: noch{' '}
-              <span className="font-bold text-fg font-mono">
-                {Math.floor(countdownSeconds / 60)}:
-                {(countdownSeconds % 60).toString().padStart(2, '0')}
-              </span>{' '}
-              Min
+              {t.rich('liveValidity', {
+                minutes: Math.floor(countdownSeconds / 60),
+                seconds: (countdownSeconds % 60).toString().padStart(2, '0'),
+                bold: (chunks) => <span className="font-bold text-fg font-mono">{chunks}</span>,
+              })}
             </p>
           </div>
 
           <div className="text-xs text-fg-muted">
-            {token.shiftTitle || 'Schicht'}: {token.taskTitle ? `${token.taskTitle} · ` : ''}
+            {token.shiftTitle || t('defaultShift')}: {token.taskTitle ? `${token.taskTitle} · ` : ''}
             {fmtWeekday(token.shiftStartTime)}, {fmtTime(token.shiftStartTime)}–{fmtTime(token.shiftEndTime)}
           </div>
         </div>
@@ -296,7 +292,7 @@ export function CateringTokenCard({
               <div className="min-w-0">
                 <h4 className="font-bold text-base text-fg truncate">{token.title}</h4>
                 <p className="text-xs text-fg-muted truncate">
-                  {token.shiftTitle || 'Schicht'}
+                  {token.shiftTitle || t('defaultShift')}
                   {token.taskTitle ? ` (${token.taskTitle})` : ''}
                 </p>
               </div>
@@ -304,15 +300,15 @@ export function CateringTokenCard({
 
             {token.status === 'REDEEMED' ? (
               <Badge tone="neutral" className="shrink-0 text-xs">
-                <Check className="size-3 mr-1" /> Eingelöst
+                <Check className="size-3 mr-1" /> {t('redeemedBadge')}
               </Badge>
             ) : token.isAvailableNow ? (
               <Badge tone="accent" className="shrink-0 text-xs">
-                Einlösbar
+                {t('redeemableBadge')}
               </Badge>
             ) : (
               <Badge tone="neutral" className="shrink-0 text-xs">
-                <Clock className="size-3 mr-1" /> Ab {fmtTime(token.availableFrom)}
+                <Clock className="size-3 mr-1" /> {t('availableFromBadge', { time: fmtTime(token.availableFrom) })}
               </Badge>
             )}
           </div>
@@ -323,7 +319,7 @@ export function CateringTokenCard({
             </span>
             {token.redeemedAt && (
               <span className="text-success-ink font-medium">
-                · Entwertet um {fmtTime(token.redeemedAt)} Uhr
+                {t('redeemedAtTime', { time: fmtTime(token.redeemedAt) })}
               </span>
             )}
           </div>
@@ -370,20 +366,20 @@ export function CateringTokenCard({
                     )}
                   >
                     {isRedeeming
-                      ? 'Wird entwertet…'
+                      ? t('redeeming')
                       : speedWarning
-                        ? '⚠️ Zu schnell – bitte langsam nach rechts ziehen!'
+                        ? t('dragTooFast')
                         : isReadyToRelease
-                          ? 'Jetzt loslassen zum Entwerten!'
+                          ? t('releaseToRedeem')
                           : swipeProgress > 0.15
-                            ? `Weiter bis ganz nach rechts ziehen (${Math.round(swipeProgress * 100)}%)…`
-                            : 'Regler links fassen & ganz nach rechts ziehen'}
+                            ? t('dragFurther', { percent: Math.round(swipeProgress * 100) })
+                            : t('dragInstructions')}
                   </div>
 
                   {/* Verschiebbarer Schieberegler (Thumb) – NUR hier startet das Ziehen */}
                   <div
                     role="slider"
-                    aria-label={`${token.title} entwerten`}
+                    aria-label={t('dragSliderAria', { title: token.title })}
                     aria-valuemin={0}
                     aria-valuemax={100}
                     aria-valuenow={Math.round(swipeProgress * 100)}
@@ -419,15 +415,20 @@ export function CateringTokenCard({
 
                 {speedWarning && (
                   <div className="mt-2 flex items-center justify-center gap-1.5 rounded-lg bg-warning/15 border border-warning/30 px-3 py-1.5 text-xs font-medium text-warning-ink animate-in fade-up">
-                    <span>⚠️ <strong>Zu schnell geschoben:</strong> Bitte den Knopf langsam und gleichmässig ganz nach rechts ziehen.</span>
+                    <span>
+                      {t.rich('dragSpeedWarning', {
+                        bold: (chunks) => <strong>{chunks}</strong>,
+                      })}
+                    </span>
                   </div>
                 )}
               </>
               ) : (
                 <div className="rounded-lg bg-bg-muted/30 border border-border/50 p-2.5 text-center text-xs text-fg-muted">
-                  Gutschein ist am Festtag ab{' '}
-                  <span className="font-semibold text-fg">{fmtTime(token.availableFrom)} Uhr</span>{' '}
-                  (oder nach Schicht-Check-in) verfügbar.
+                  {t.rich('availableLaterNotice', {
+                    time: fmtTime(token.availableFrom),
+                    bold: (chunks) => <span className="font-semibold text-fg">{chunks}</span>,
+                  })}
                 </div>
               )}
             </div>
@@ -441,7 +442,7 @@ export function CateringTokenCard({
                 onClick={() => void handleRedeem()}
                 className="text-[11px] text-accent-ink hover:underline font-semibold"
               >
-                Als OK vorzeitig entwerten (Kulanz)
+                {t('earlyRedeemManager')}
               </button>
             </div>
           )}

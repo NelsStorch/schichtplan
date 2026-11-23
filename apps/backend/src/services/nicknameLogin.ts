@@ -1,5 +1,6 @@
 import type { PrismaClient } from '../db.js';
 import { createRateLimiter } from './rateLimit.js';
+import { errorTranslator, type ErrorTranslator } from '../plugins/i18n.js';
 
 /**
  * Spitznamen-Profile (Cevi-Name, Pfadiname, Leitername): Konten ohne Hitobito und ohne Passwort.
@@ -85,7 +86,8 @@ export function pickCeviNameMatch(
 export async function resolveOrganizerUser(
   prisma: Pick<PrismaClient, 'user'>,
   departmentId: string,
-  who: { userId?: string; nickname?: string; ceviName?: string; email?: string }
+  who: { userId?: string; nickname?: string; ceviName?: string; email?: string },
+  t: ErrorTranslator = errorTranslator('de')
 ): Promise<{ user: { id: string } } | { error: string; status: number }> {
   let user: { id: string; passwordHash: string | null; providerId: string | null } | null = null;
   const select = { id: true, passwordHash: true, providerId: true } as const;
@@ -113,7 +115,7 @@ export async function resolveOrganizerUser(
       user = pick[0];
     } else if (local.length > 1) {
       return {
-        error: `Mehrere Personen heissen «${name}». Gib die E-Mail an oder wähle die Person aus der Liste.`,
+        error: t('team.ambiguousNickname', { name }),
         status: 409,
       };
     } else {
@@ -123,12 +125,12 @@ export async function resolveOrganizerUser(
           OR: [{ homeDepartmentId: departmentId }, { memberships: { some: { departmentId } } }],
         },
       });
-      if (onlyProfile > 0) return { error: CEVINAME_ROLE_ERROR, status: 400 };
+      if (onlyProfile > 0) return { error: t('people.nicknameProfileNoRoles'), status: 400 };
     }
   }
 
-  if (!user) return { error: 'Diese Person wurde nicht gefunden. Sie braucht bereits ein Konto.', status: 404 };
-  if (isCeviNameProfile(user)) return { error: CEVINAME_ROLE_ERROR, status: 400 };
+  if (!user) return { error: t('team.personNeedsAccount'), status: 404 };
+  if (isCeviNameProfile(user)) return { error: t('people.nicknameProfileNoRoles'), status: 400 };
   return { user: { id: user.id } };
 }
 

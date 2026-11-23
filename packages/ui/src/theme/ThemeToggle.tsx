@@ -2,17 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { Monitor, Moon, Sun } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '../utils/cn';
 import { THEME_STORAGE_KEY } from './ThemeScript';
 
 type ThemeChoice = 'system' | 'light' | 'dark';
 
 const order: ThemeChoice[] = ['system', 'light', 'dark'];
-const labels: Record<ThemeChoice, string> = {
-  system: 'Farbschema: System',
-  light: 'Farbschema: Hell',
-  dark: 'Farbschema: Dunkel',
-};
 
 function applyTheme(choice: ThemeChoice) {
   const root = document.documentElement;
@@ -28,6 +24,7 @@ function applyTheme(choice: ThemeChoice) {
 
 /** Wechselt System → Hell → Dunkel. */
 export function ThemeToggle({ className }: { className?: string }) {
+  const t = useTranslations('ui.theme');
   const [choice, setChoice] = useState<ThemeChoice>('system');
 
   useEffect(() => {
@@ -47,8 +44,8 @@ export function ThemeToggle({ className }: { className?: string }) {
     <button
       type="button"
       onClick={next}
-      aria-label={labels[choice]}
-      title={labels[choice]}
+      aria-label={t(choice)}
+      title={t(choice)}
       className={cn(
         'flex size-10 items-center justify-center rounded-full text-fg-muted transition hover:bg-surface-2 hover:text-fg',
         className

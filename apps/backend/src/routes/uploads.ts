@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { canUploadImages } from '../services/departmentVisibility.js';
 import { detectImageType, unsafeSvgReason } from '../services/imageUpload.js';
 import { createRateLimiter } from '../services/rateLimit.js';
+import { formatSwissNumber } from '@schichtplan/shared';
 
 const ALLOWED_MIME_TYPES = new Set([
   'image/png',
@@ -64,7 +65,7 @@ const uploadRoutes: FastifyPluginAsync = async (fastify) => {
       return reply
         .header('Cache-Control', 'public, max-age=60')
         .status(404)
-        .send({ error: 'Bild nicht gefunden' });
+        .send({ error: request.t('upload.notFound') });
     }
 
     // Bilder liegen auf der eigenen Domain: Ein SVG darf beim direkten Öffnen kein Skript ausführen
@@ -99,11 +100,11 @@ const uploadRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       // Hochladen nur für wer Logos und Banner setzen kann (sonst füllt jedes Gratis-Profil die DB)
       if (!(await canUploadImages(fastify.prisma, request.user.id))) {
-        return reply.status(403).send({ error: 'Nur die Abteilungsleitung oder ein Event-OK kann Bilder hochladen' });
+        return reply.fail(403, 'upload.forbidden');
       }
 
       if (uploadLimiter.hit(request.user.id)) {
-        return reply.status(429).send({ error: 'Zu viele Uploads. Bitte versuche es später wieder.' });
+        return reply.fail(429, 'upload.tooMany');
       }
 
       const body = request.body || {};
@@ -120,12 +121,12 @@ const uploadRoutes: FastifyPluginAsync = async (fastify) => {
           }
           rawBase64 = matches[2];
         } else {
-          return reply.status(400).send({ error: 'Ungültiges Data-URL-Format' });
+          return reply.fail(400, 'upload.invalidDataUrl');
         }
       }
 
       if (!rawBase64) {
-        return reply.status(400).send({ error: 'Keine Bilddaten übermittelt' });
+        return reply.fail(400, 'upload.noData');
       }
 
       // Dateiendung zu MimeType mappen falls nötig
@@ -144,36 +145,38 @@ const uploadRoutes: FastifyPluginAsync = async (fastify) => {
 
       if (!ALLOWED_MIME_TYPES.has(mimeType)) {
         return reply.status(400).send({
-          error: `Nicht unterstütztes Bildformat (${mimeType || 'unbekannt'}). Erlaubt: PNG, JPEG, WebP, SVG, GIF.`,
+          error: request.t('upload.unsupportedFormat', { format: mimeType || request.t('upload.unknownFormat') }),
         });
       }
 
       // Vor dem Dekodieren prüfen, damit keine riesigen Puffer entstehen
       if (rawBase64.length > Math.ceil((MAX_FILE_SIZE * 4) / 3) + 4) {
-        return reply.status(400).send({ error: 'Datei ist zu gross. Maximal erlaubt: 6 MB.' });
+        return reply.fail(400, 'upload.tooLarge');
       }
 
       const buffer = Buffer.from(rawBase64, 'base64');
 
       if (buffer.length === 0) {
-        return reply.status(400).send({ error: 'Die hochgeladene Datei ist leer' });
+        return reply.fail(400, 'upload.empty');
       }
 
       if (buffer.length > MAX_FILE_SIZE) {
         return reply.status(400).send({
-          error: `Datei ist zu gross (${(buffer.length / 1024 / 1024).toFixed(1)} MB). Maximal erlaubt: 6 MB.`,
+          error: request.t('upload.tooLargeSize', {
+            size: formatSwissNumber(buffer.length / 1024 / 1024, { minimumFractionDigits: 1, maximumFractionDigits: 1 }, request.intlLocale),
+          }),
         });
       }
 
       // Der Inhalt muss zum angegebenen Format passen (sonst z. B. HTML als «image/png»)
       const detected = detectImageType(buffer);
       if (!detected || detected !== mimeType) {
-        return reply.status(400).send({ error: 'Der Dateiinhalt passt nicht zum Bildformat.' });
+        return reply.fail(400, 'upload.contentMismatch');
       }
       if (detected === 'image/svg+xml') {
         const reason = unsafeSvgReason(buffer.toString('utf8'));
         if (reason) {
-          return reply.status(400).send({ error: `Dieses SVG ist nicht erlaubt (${reason}). Bitte als PNG oder ein einfaches SVG hochladen.` });
+          return reply.status(400).send({ error: request.t('upload.svgNotAllowed', { reason }) });
         }
       }
 

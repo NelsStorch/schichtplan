@@ -16,6 +16,7 @@ import {
   type CateringBatchMode,
   type PhysicalCardScanResultDto,
 } from '@schichtplan/shared';
+import { TranslatableError } from '../plugins/i18n.js';
 
 export interface CreateBatchParams {
   eventId: string;
@@ -36,7 +37,7 @@ export async function createCateringBatch(
     where: { id: eventId },
     select: { id: true, title: true, cateringTokenItems: true, cateringTokensEnabled: true },
   });
-  if (!event) throw new Error('Anlass nicht gefunden');
+  if (!event) throw new TranslatableError('event.notFoundAnlass');
 
   const items = (
     event.cateringTokenItems && event.cateringTokenItems.length > 0
@@ -46,7 +47,7 @@ export async function createCateringBatch(
     .map((s) => s.trim())
     .filter(Boolean);
 
-  if (items.length === 0) throw new Error('Keine Gutschein-Artikel für diesen Anlass definiert');
+  if (items.length === 0) throw new TranslatableError('catering.noItems');
 
   // Nächste Tranchen-Nummer ermitteln
   const lastBatch = await prisma.cateringBatch.findFirst({
@@ -185,7 +186,7 @@ export async function toggleBatchBlocked(
     where: { id: params.batchId, eventId: params.eventId },
     include: { tokens: { select: { status: true } } },
   });
-  if (!batch) throw new Error('Tranche nicht gefunden');
+  if (!batch) throw new TranslatableError('catering.batchNotFound');
 
   const nextBlocked = !batch.isBlocked;
   await prisma.cateringBatch.update({
@@ -260,8 +261,8 @@ export async function redeemPhysicalTokens(
   const { eventId, code, tokenId, redeemAll, redeemedByName } = params;
 
   const card = await getPhysicalCardByCode(prisma, { eventId, code });
-  if (!card) throw new Error('Bon nicht gefunden');
-  if (card.isBlocked) throw new Error('Dieser Bon ist gesperrt und kann nicht entwertet werden.');
+  if (!card) throw new TranslatableError('catering.cardNotFound');
+  if (card.isBlocked) throw new TranslatableError('catering.cardBlocked');
 
   const now = new Date();
 
@@ -280,9 +281,9 @@ export async function redeemPhysicalTokens(
     });
   } else if (tokenId) {
     const target = card.items.find((i) => i.id === tokenId);
-    if (!target) throw new Error('Artikel nicht auf diesem Bon vorhanden');
-    if (target.status === 'REDEEMED') throw new Error('Dieser Artikel wurde bereits entwertet');
-    if (target.status === 'BLOCKED') throw new Error('Dieser Artikel ist gesperrt');
+    if (!target) throw new TranslatableError('catering.itemNotOnCard');
+    if (target.status === 'REDEEMED') throw new TranslatableError('catering.itemRedeemed');
+    if (target.status === 'BLOCKED') throw new TranslatableError('catering.itemBlocked');
 
     // Nur entwerten, wenn noch offen: zwei gleichzeitige Scans dürfen denselben Artikel nicht doppelt einlösen
     const { count } = await prisma.cateringToken.updateMany({
@@ -293,13 +294,13 @@ export async function redeemPhysicalTokens(
         redeemedByName,
       },
     });
-    if (count === 0) throw new Error('Dieser Artikel wurde bereits entwertet');
+    if (count === 0) throw new TranslatableError('catering.itemRedeemed');
   } else {
-    throw new Error('Kein Artikel zum Entwerten angegeben');
+    throw new TranslatableError('catering.noItemSelected');
   }
 
   const updated = await getPhysicalCardByCode(prisma, { eventId, code });
-  if (!updated) throw new Error('Fehler beim Aktualisieren des Bons');
+  if (!updated) throw new TranslatableError('catering.updateFailed');
   return updated;
 }
 
@@ -339,7 +340,7 @@ export async function generateBatchPdf(
     },
   });
 
-  if (!batch) throw new Error('Tranche nicht gefunden');
+  if (!batch) throw new TranslatableError('catering.batchNotFound');
 
   const orgConfig = getOrganizationByDbType(batch.event.department.organization);
 

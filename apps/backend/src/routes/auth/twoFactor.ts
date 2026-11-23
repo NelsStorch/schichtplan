@@ -14,7 +14,6 @@ import QRCode from 'qrcode';
 import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { getOrganizationByDbType, isPlaceholderEmail } from '@schichtplan/shared';
-import { RATE_LIMIT_ERROR } from '../../services/nicknameLogin.js';
 import { loadUserDto, setAuthCookie } from '../../services/authSession.js';
 import { trackUsage } from '../../services/usageStats.js';
 import {
@@ -67,13 +66,13 @@ const twoFactorRoutes: FastifyPluginAsync = async (fastify) => {
     const ipBlocked = twoFactorFailuresByIp.hit(request.ip);
     const userBlocked = twoFactorFailuresByUser.hit(user.id);
     if (ipBlocked || userBlocked) {
-      reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
+      reply.status(429).send({ error: request.t('auth.rateLimited'), code: 'RATE_LIMITED' });
       return null;
     }
     const result = await consumeSecondFactor(fastify.prisma, user, code);
     if (!result.ok) {
       trackUsage('LOGIN_FAILED', { dim: 'TWO_FACTOR_WRONG' });
-      reply.status(401).send({ error: 'Der Code stimmt nicht oder wurde schon verwendet.', code: 'TWO_FACTOR_WRONG' });
+      reply.fail(401, 'twoFactor.codeInvalidOrUsed', undefined, { code: 'TWO_FACTOR_WRONG' });
       return null;
     }
     twoFactorFailuresByIp.undo(request.ip);
@@ -99,7 +98,7 @@ const twoFactorRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       reply.header('Cache-Control', 'no-store');
       const challenge = readChallengeCookie(request);
-      if (!challenge) return reply.status(404).send({ error: 'Keine offene Anmeldung. Bitte melde dich nochmals an.' });
+      if (!challenge) return reply.fail(404, 'twoFactor.noPendingLogin');
       return { pending: true, viaProvider: challenge.amr !== 'password' };
     }
   );
@@ -118,15 +117,12 @@ const twoFactorRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const challenge = readChallengeCookie(request);
       if (!challenge) {
-        return reply.status(400).send({
-          error: 'Die Anmeldung ist abgelaufen. Bitte melde dich nochmals an.',
-          code: 'CHALLENGE_EXPIRED',
-        });
+        return reply.fail(400, 'twoFactor.loginExpired', undefined, { code: 'CHALLENGE_EXPIRED' });
       }
       const user = await fastify.prisma.user.findUnique({ where: { id: challenge.uid }, select: twoFactorSelect });
       if (!user?.totpEnabledAt) {
         clearChallengeCookie(reply);
-        return reply.status(400).send({ error: 'Die Anmeldung ist abgelaufen. Bitte melde dich nochmals an.', code: 'CHALLENGE_EXPIRED' });
+        return reply.fail(400, 'twoFactor.loginExpired', undefined, { code: 'CHALLENGE_EXPIRED' });
       }
 
       const { code } = request.body as z.output<typeof CodeSchema>;
@@ -193,21 +189,21 @@ const twoFactorRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       if (!isTwoFactorConfigured()) return reply.status(503).send({ error: NOT_CONFIGURED });
       const user = await loadSelf(request);
-      if (!user) return reply.status(404).send({ error: 'Person nicht gefunden' });
+      if (!user) return reply.fail(404, 'generic.personNotFound');
       if (!user.passwordHash && !user.providerId) {
-        return reply.status(400).send({ error: 'Zwei-Faktor gibt es nur für Konten mit Passwort oder Verbands-Login.' });
+        return reply.fail(400, 'twoFactor.notAvailable');
       }
       if (user.totpEnabledAt) {
-        return reply.status(409).send({ error: 'Die Zwei-Faktor-Anmeldung ist schon eingeschaltet.' });
+        return reply.fail(409, 'twoFactor.alreadyEnabled');
       }
       if (user.passwordHash) {
         const { currentPassword } = request.body as { currentPassword?: string };
         // Gleiche Bremse wie bei falschen Codes: zuerst zählen, dann prüfen (gegen parallele Anfragen)
         if (twoFactorFailuresByUser.hit(user.id)) {
-          return reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
+          return reply.status(429).send({ error: request.t('auth.rateLimited'), code: 'RATE_LIMITED' });
         }
         if (!currentPassword || !(await bcrypt.compare(currentPassword, user.passwordHash))) {
-          return reply.status(401).send({ error: 'Das Passwort stimmt nicht.', code: 'CURRENT_PASSWORD_WRONG' });
+          return reply.fail(401, 'auth.wrongPassword', undefined, { code: 'CURRENT_PASSWORD_WRONG' });
         }
         twoFactorFailuresByUser.undo(user.id);
       }
@@ -247,28 +243,25 @@ const twoFactorRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       if (!isTwoFactorConfigured()) return reply.status(503).send({ error: NOT_CONFIGURED });
       const user = await loadSelf(request);
-      if (!user) return reply.status(404).send({ error: 'Person nicht gefunden' });
-      if (user.totpEnabledAt) return reply.status(409).send({ error: 'Die Zwei-Faktor-Anmeldung ist schon eingeschaltet.' });
+      if (!user) return reply.fail(404, 'generic.personNotFound');
+      if (user.totpEnabledAt) return reply.fail(409, 'twoFactor.alreadyEnabled');
       if (!user.totpPendingSecret) {
-        return reply.status(400).send({ error: 'Bitte starte die Einrichtung nochmals.', code: 'SETUP_MISSING' });
+        return reply.fail(400, 'twoFactor.restartSetup', undefined, { code: 'SETUP_MISSING' });
       }
 
       const input = request.body as { code: string; onProviderLogin?: boolean };
       if (twoFactorFailuresByUser.hit(user.id)) {
-        return reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
+        return reply.status(429).send({ error: request.t('auth.rateLimited'), code: 'RATE_LIMITED' });
       }
       let secret: string;
       try {
         secret = decryptSecret(user.totpPendingSecret);
       } catch {
-        return reply.status(400).send({ error: 'Bitte starte die Einrichtung nochmals.', code: 'SETUP_MISSING' });
+        return reply.fail(400, 'twoFactor.restartSetup', undefined, { code: 'SETUP_MISSING' });
       }
       const step = verifyTotp(secret, input.code, null);
       if (step === null) {
-        return reply.status(401).send({
-          error: 'Der Code stimmt nicht. Prüfe, ob die Uhrzeit auf dem Handy stimmt, und versuche es mit dem nächsten Code.',
-          code: 'TWO_FACTOR_WRONG',
-        });
+        return reply.fail(401, 'twoFactor.codeWrongCheckTime', undefined, { code: 'TWO_FACTOR_WRONG' });
       }
       twoFactorFailuresByUser.reset(user.id);
 
@@ -285,7 +278,7 @@ const twoFactorRoutes: FastifyPluginAsync = async (fastify) => {
         },
       });
       if (updated.count !== 1) {
-        return reply.status(409).send({ error: 'Bitte starte die Einrichtung nochmals.', code: 'SETUP_MISSING' });
+        return reply.fail(409, 'twoFactor.restartSetup', undefined, { code: 'SETUP_MISSING' });
       }
       const recoveryCodes = await replaceRecoveryCodes(fastify.prisma, user.id);
 
@@ -313,7 +306,7 @@ const twoFactorRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       const user = await loadSelf(request);
-      if (!user?.totpEnabledAt) return reply.status(400).send({ error: 'Die Zwei-Faktor-Anmeldung ist nicht eingeschaltet.' });
+      if (!user?.totpEnabledAt) return reply.fail(400, 'twoFactor.notEnabled');
       const input = request.body as { code: string; onProviderLogin: boolean };
       if (!(await checkCode(request, reply, user, input.code))) return reply;
 
@@ -337,7 +330,7 @@ const twoFactorRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       const user = await loadSelf(request);
-      if (!user?.totpEnabledAt) return reply.status(400).send({ error: 'Die Zwei-Faktor-Anmeldung ist nicht eingeschaltet.' });
+      if (!user?.totpEnabledAt) return reply.fail(400, 'twoFactor.notEnabled');
       const { code } = request.body as z.output<typeof CodeSchema>;
       if (!(await checkCode(request, reply, user, code))) return reply;
 
@@ -362,7 +355,7 @@ const twoFactorRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       const user = await loadSelf(request);
-      if (!user?.totpEnabledAt) return reply.status(400).send({ error: 'Die Zwei-Faktor-Anmeldung ist nicht eingeschaltet.' });
+      if (!user?.totpEnabledAt) return reply.fail(400, 'twoFactor.notEnabled');
       const { code } = request.body as z.output<typeof CodeSchema>;
       if (!(await checkCode(request, reply, user, code))) return reply;
 

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   ArrowLeft,
   Award,
@@ -48,31 +49,13 @@ export interface NotFoundViewProps {
   className?: string;
 }
 
-const SCOUT_WISDOMS = [
-  '«De Rauch gaht immer zum Schönschte!» – Unumstössliches Cevi-Naturgesetz seit 1855.',
-  'Wenn du dich im Wald verirrst: Krawatte geraderücken, Schoggi essen und warten, bis jemand mit einer Fackel kommt.',
-  'Regel #1 an der Chilbi: Kein Schichtplan überlebt den ersten Ansturm am Samstagabend unversehrt.',
-  'Der Kompass zeigt immer nach Norden – ausser du hältst dein Taschenmesser daneben.',
-  'Im Zweifelsfall immer dem Duft von frisch gebratenen Bratwürsten oder Crêpes folgen.',
-  'Echte Cevianer*innen verirren sich nicht – sie erkunden nur unerschlossene Nebenpfade.',
-  'Der Knoten hält bombenfest. Niemand weiss zwar genau welcher Knoten es ist, aber er hält.',
-  'Das K-Weg Liederbuch hat über 200 Lieder. Gesungen werden am Lagerfeuer trotzdem immer dieselben drei.',
-  'Wer zu spät zur Schicht antritt, muss beim Zeltabbau die krummen Heringe geradedrücken.',
-  'Es gibt kein schlechtes Wetter für Helfer*innen – nur zu dünne Regenpellerinen.',
-  'Tipp der Lagerleitung: Immer den roten Kreidemarkierungen an den Bäumen nachgehen.',
-  'Die beste Schicht ist diejenige, bei der es am Schluss Gratis-Kuchen und heissen Tee gibt.',
-];
-
-const FIRE_REACTIONS = [
-  'Herrlich warm! Aber der gesuchte Link ist wohl im Rauch aufgegangen.',
-  'Stockbrot ist fast durch – nimm dir gern einen Platz am Feuer!',
-  '«De Rauch gaht immer zum Schönschte!» – Da musst wohl du gemeint sein.',
-  'Achtung Funkenflug! Gut, dass alle Zelte vorschriftsmässig im Abstand stehen.',
-  'Lagerleiter ruft: «Wer hat denn den Schichtplan ins Feuer geworfen?!»',
-  'Funken fliegen bis zum Polarstern... der gesuchte Pfad bleibt leider verschollen.',
-  'K-Weg Liederbuch aufgeschlagen: «Zäme am Füür...»',
-  'Megastufe erreicht! Zeit für Marshmallows und Schoggibananen am Feuer.',
-];
+/** Anzahl Texte je Gruppe im Katalog (ui.notFound.wisdom0…, reaction0…, particle0…) */
+const WISDOM_COUNT = 12;
+const REACTION_COUNT = 8;
+const PARTICLE_COUNT = 5;
+type WisdomKey = `wisdom${0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11}`;
+type ReactionKey = `reaction${0 | 1 | 2 | 3 | 4 | 5 | 6 | 7}`;
+type ParticleKey = `particle${0 | 1 | 2 | 3 | 4}`;
 
 interface FloatingParticle {
   id: number;
@@ -86,17 +69,23 @@ interface FloatingParticle {
  * Funkenflug-Easter-Egg, rotierende Cevi-Überlebensweisheiten und klare Wegweiser.
  */
 export function NotFoundView({
-  badge = '🧭 404 · Wegmarkierung verloren',
-  title = 'Pfad verloren im Dickicht?',
-  description = 'Hier brennt zwar ein gemütliches Feuer, aber Schichten oder Seiten gibt es an dieser Weggabelung keine. Vielleicht ist der Link veraltet oder der Posten wurde abgebaut.',
+  badge: badgeProp,
+  title: titleProp,
+  description: descriptionProp,
   homeHref = '/',
-  homeLabel = 'Zurück zum Lagerplatz',
+  homeLabel: homeLabelProp,
   departmentName,
   departmentLogoUrl,
   secondaryActions = [],
   showBackStep = true,
   className,
 }: NotFoundViewProps) {
+  const t = useTranslations('ui.notFound');
+  const tError = useTranslations('ui.errorView');
+  const badge = badgeProp ?? t('badge');
+  const title = titleProp ?? t('title');
+  const description = descriptionProp ?? t('description');
+  const homeLabel = homeLabelProp ?? t('home');
   const [logs, setLogs] = useState(0);
   const [isFirePumping, setIsFirePumping] = useState(false);
   const [particles, setParticles] = useState<FloatingParticle[]>([]);
@@ -116,22 +105,22 @@ export function NotFoundView({
 
   useEffect(() => {
     // Zufällige Weisheit beim Laden
-    setWisdomIndex(Math.floor(Math.random() * SCOUT_WISDOMS.length));
+    setWisdomIndex(Math.floor(Math.random() * WISDOM_COUNT));
     setCanGoBack(typeof window !== 'undefined' && window.history.length > 1);
   }, []);
 
   const currentFireReaction = useMemo(() => {
     if (logs === 0) return null;
-    return FIRE_REACTIONS[(logs - 1) % FIRE_REACTIONS.length];
-  }, [logs]);
+    return t(`reaction${(logs - 1) % REACTION_COUNT}` as ReactionKey);
+  }, [logs, t]);
 
   const addWood = useCallback(() => {
     setLogs((prev) => prev + 1);
     setIsFirePumping(true);
     setTimeout(() => setIsFirePumping(false), 400);
 
-    const particleTexts = ['+1 Scheit 🪵', 'Knister! ✨', '🔥 Warm!', 'Funkenflug! 🌟', 'Gemütlich ⛺'];
-    const text = logs === 9 ? '🎖️ Feuermeister!' : particleTexts[Math.floor(Math.random() * particleTexts.length)];
+    const text =
+      logs === 9 ? t('fireMasterParticle') : t(`particle${Math.floor(Math.random() * PARTICLE_COUNT)}` as ParticleKey);
     const id = Date.now() + Math.random();
     const x = Math.floor(Math.random() * 80) - 40;
 
@@ -139,10 +128,10 @@ export function NotFoundView({
     setTimeout(() => {
       setParticles((prev) => prev.filter((p) => p.id !== id));
     }, 1200);
-  }, [logs]);
+  }, [logs, t]);
 
   const nextWisdom = () => {
-    setWisdomIndex((prev) => (prev + 1) % SCOUT_WISDOMS.length);
+    setWisdomIndex((prev) => (prev + 1) % WISDOM_COUNT);
   };
 
   const handleBack = () => {
@@ -199,7 +188,7 @@ export function NotFoundView({
             <span className="font-display text-sm font-bold tracking-tight text-fg group-hover:text-accent-ink transition-colors">
               {departmentName || orgName}
             </span>
-            <span className="text-2xs font-medium text-fg-subtle">Lagerplatz & Schichten</span>
+            <span className="text-2xs font-medium text-fg-subtle">{t('subtitle')}</span>
           </div>
         </Link>
         <div className="flex items-center gap-2">
@@ -237,8 +226,8 @@ export function NotFoundView({
           <button
             type="button"
             onClick={addWood}
-            title="Klick aufs Feuer, um Holz nachzulegen!"
-            aria-label="Lagerfeuer: Klick um Holz nachzulegen"
+            title={t('fireTitle')}
+            aria-label={t('fireLabel')}
             className={cn(
               'group relative cursor-pointer select-none rounded-card p-2 outline-none transition-[transform,filter] duration-300',
               isFirePumping ? 'scale-105' : 'hover:scale-[1.02]',
@@ -350,7 +339,7 @@ export function NotFoundView({
                 {/* Schild 2: Lagerplatz */}
                 <g transform="rotate(4 333 148)">
                   <path d="M310 144 L348 144 L356 150 L348 156 L310 156 Z" className="fill-accent/15 stroke-accent" strokeWidth="1.5" />
-                  <text x="316" y="152" fontSize="6.5" fontWeight="bold" className="fill-accent-ink">Lager ➜</text>
+                  <text x="316" y="152" fontSize="6.5" fontWeight="bold" className="fill-accent-ink">{t('signCamp')}</text>
                 </g>
               </g>
 
@@ -453,7 +442,7 @@ export function NotFoundView({
               )}
             >
               <Flame className="size-3.5 text-amber-500 fill-amber-500 animate-pulse" />
-              <span>Holz nachlegen</span>
+              <span>{t('addWood')}</span>
               {logs > 0 && (
                 <span className="tabular font-mono text-2xs rounded-full bg-accent/15 px-1.5 py-0.2 text-accent-ink font-bold">
                   {logs}
@@ -464,7 +453,7 @@ export function NotFoundView({
             {logs >= 10 && (
               <Badge tone="success" className="animate-scale-in">
                 <Award className="size-3 mr-1" />
-                Ehren-Feuermeister*in!
+                {t('fireMaster')}
               </Badge>
             )}
           </div>
@@ -509,10 +498,10 @@ export function NotFoundView({
               variant="secondary"
               size="lg"
               onClick={handleBack}
-              aria-label="Zur vorherigen Seite zurückkehren"
+              aria-label={tError('backLabel')}
             >
               <ArrowLeft className="size-5" />
-              <span>Einen Schritt zurück</span>
+              <span>{tError('back')}</span>
             </Button>
           )}
         </div>
@@ -574,21 +563,21 @@ export function NotFoundView({
             <div className="flex items-center justify-between pb-2 border-b border-line">
               <span className="inline-flex items-center gap-1.5 text-2xs font-bold uppercase tracking-wider text-accent-ink">
                 <Sparkles className="size-3.5 text-amber-500" />
-                Cevi-Überlebensweisheit #{wisdomIndex + 1}
+                {t('wisdomTitle', { number: wisdomIndex + 1 })}
               </span>
               <button
                 type="button"
                 onClick={nextWisdom}
-                title="Nächster Tipp"
-                aria-label="Nächste Weisheit anzeigen"
+                title={t('nextTip')}
+                aria-label={t('nextWisdomLabel')}
                 className="flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-semibold text-fg-subtle hover:bg-surface-2 hover:text-fg transition active:rotate-180 duration-200"
               >
                 <RefreshCw className="size-3" />
-                <span className="hidden sm:inline">Nächster</span>
+                <span className="hidden sm:inline">{t('next')}</span>
               </button>
             </div>
             <p className="mt-3 text-xs sm:text-sm leading-relaxed text-fg-muted italic">
-              {SCOUT_WISDOMS[wisdomIndex]}
+              {t(`wisdom${wisdomIndex}` as WisdomKey)}
             </p>
           </div>
         </div>

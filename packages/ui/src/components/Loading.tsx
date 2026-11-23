@@ -1,4 +1,5 @@
 import type { HTMLAttributes } from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '../utils/cn';
 
 /* ----------------------------------------------------------------- Spinner */
@@ -64,7 +65,8 @@ export interface PageLoaderProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 /** Zentrierte Ladeanzeige für Seiten und grosse Bereiche. */
-export function PageLoader({ label = 'Lädt …', fullscreen, className, ...props }: PageLoaderProps) {
+export function PageLoader({ label, fullscreen, className, ...props }: PageLoaderProps) {
+  const t = useTranslations('ui.loading');
   return (
     <div
       role="status"
@@ -78,7 +80,7 @@ export function PageLoader({ label = 'Lädt …', fullscreen, className, ...prop
       {...props}
     >
       <Spinner size="lg" />
-      <span className="text-sm text-fg-muted">{label}</span>
+      <span className="text-sm text-fg-muted">{label ?? t('default')}</span>
     </div>
   );
 }

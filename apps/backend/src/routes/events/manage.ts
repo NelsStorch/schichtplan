@@ -16,7 +16,6 @@ import {
 import { resolveOrganizerUser } from '../../services/nicknameLogin.js';
 import { hasDepartmentPermission } from '../../services/permissions.js';
 import {
-  UNRELATED_PERSON_ERROR,
   allUsersRelatedTo,
   allUsersRelatedToEvent,
 } from '../../services/departmentVisibility.js';
@@ -42,14 +41,11 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
 
       if (!(await hasDepartmentPermission(fastify.prisma, request.tenant.id, request.user.id, 'EVENTS_CREATE'))) {
-        return reply.status(403).send({
-          error:
-            'Anlässe erstellen kann die Abteilungsleitung oder wer das Recht «Anlässe erstellen» hat. Bitte wende dich an deine Abteilungsleitung: Sie kann dir das Recht geben oder den Anlass für dich erstellen.',
-        });
+        return reply.fail(403, 'event.createForbidden');
       }
 
       const input = request.body as z.output<typeof CreateEventSchema>;
@@ -100,14 +96,12 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (existing) {
-        return reply
-          .status(409)
-          .send({ error: 'Ein Event mit diesem Slug existiert bereits in dieser Abteilung' });
+        return reply.fail(409, 'event.slugExists');
       }
 
       // Kontaktperson nur aus der eigenen Abteilung (der Anlass gibt es noch nicht)
       if (!(await allUsersRelatedTo(fastify.prisma, { departmentIds: [request.tenant.id] }, [contactUserId]))) {
-        return reply.status(400).send({ error: UNRELATED_PERSON_ERROR });
+        return reply.status(400).send({ error: request.t('people.unrelatedPerson') });
       }
 
       const lists = await resolveAccessLists(
@@ -115,7 +109,7 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
         request.tenant.id,
         accessType,
         allowedDepartmentIds,
-        allowedStufeIds
+        allowedStufeIds, request.t
       );
       if ('error' in lists) {
         return reply.status(400).send({ error: lists.error });
@@ -139,14 +133,14 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
             }
             continue;
           }
-          const resolved = await resolveOrganizerUser(fastify.prisma, request.tenant.id, item);
+          const resolved = await resolveOrganizerUser(fastify.prisma, request.tenant.id, item, request.t);
           if ('error' in resolved) {
-            const who = (item as { nickname?: string; ceviName?: string; email?: string }).nickname || item.ceviName || item.email || 'Eine Person';
-            return reply.status(resolved.status).send({ error: `OK: ${who}: ${resolved.error}` });
+            const who = (item as { nickname?: string; ceviName?: string; email?: string }).nickname || item.ceviName || item.email || request.t('team.somePerson');
+            return reply.status(resolved.status).send({ error: request.t('team.organizerProblem', { who, problem: resolved.error }) });
           }
           const targetUser = resolved.user;
           if (!(await allUsersRelatedTo(fastify.prisma, { departmentIds: [request.tenant.id] }, [targetUser.id]))) {
-            return reply.status(400).send({ error: UNRELATED_PERSON_ERROR });
+            return reply.status(400).send({ error: request.t('people.unrelatedPerson') });
           }
 
           if (!userIdsSeen.has(targetUser.id)) {
@@ -241,7 +235,7 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
 
       const event = await fastify.prisma.event.findUnique({
@@ -259,22 +253,20 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!event) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
 
       // Einstellungen (Zugang, Design, Fragen) nur Abteilungsleitung und OK-Leitung, wie im Frontend.
       // OK-Mitglieder planen Schichten, ändern aber nicht, wer sich eintragen darf.
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.SETTINGS) {
-        return reply
-          .status(403)
-          .send({ error: 'Nur die Abteilungsleitung oder die OK-Leitung dürfen diesen Anlass bearbeiten' });
+        return reply.fail(403, 'event.editForbidden');
       }
 
       const input = request.body as z.output<typeof UpdateEventSchema>;
       const body = input;
       if (body.contactUserId && !(await allUsersRelatedToEvent(fastify.prisma, event.id, [body.contactUserId]))) {
-        return reply.status(400).send({ error: UNRELATED_PERSON_ERROR });
+        return reply.status(400).send({ error: request.t('people.unrelatedPerson') });
       }
 
       // Prüfen, ob der neue Slug bereits von einem anderen Event der Abteilung genutzt wird
@@ -289,7 +281,7 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
           },
         });
         if (slugConflict && slugConflict.id !== event.id) {
-          return reply.status(409).send({ error: 'Ein Event mit dieser Adresse (Slug) existiert bereits in dieser Abteilung' });
+          return reply.fail(409, 'event.slugAddressExists');
         }
         newSlug = body.slug;
       }
@@ -301,7 +293,7 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
         event.departmentId,
         accessType,
         body.allowedDepartmentIds ?? event.allowedDepartments.map((a) => a.departmentId),
-        body.allowedStufeIds ?? event.allowedStufen.map((a) => a.stufeId)
+        body.allowedStufeIds ?? event.allowedStufen.map((a) => a.stufeId), request.t
       );
       if ('error' in lists) {
         return reply.status(400).send({ error: lists.error });
@@ -396,20 +388,18 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
       const event = await fastify.prisma.event.findUnique({
         where: { departmentId_slug: { departmentId: request.tenant.id, slug: request.params.slug } },
         include: { organizers: true },
       });
       if (!event) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.SETTINGS) {
-        return reply
-          .status(403)
-          .send({ error: 'Nur die Abteilungsleitung oder die OK-Leitung dürfen diesen Anlass verschieben' });
+        return reply.fail(403, 'event.moveForbidden');
       }
       const input = request.body as z.output<typeof MoveEventSchema>;
 
@@ -444,24 +434,24 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
       const event = await fastify.prisma.event.findUnique({
         where: { departmentId_slug: { departmentId: request.tenant.id, slug: request.params.slug } },
         select: { id: true, slug: true, title: true, departmentId: true, organizers: true },
       });
       if (!event) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
 
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.DELETE) {
-        return reply.status(403).send({ error: 'Anlässe löschen darf nur die Abteilungsleitung oder wer das Recht «Anlässe löschen» hat' });
+        return reply.fail(403, 'event.deleteForbidden');
       }
 
       const parse = ConfirmDeleteSchema.safeParse(request.body ?? {});
       if (!parse.success || parse.data.confirm !== event.slug) {
-        return reply.status(400).send({ error: 'Zur Bestätigung das Kürzel des Anlasses genau eintippen.' });
+        return reply.fail(400, 'event.confirmSlug');
       }
 
       // Kaskadiert zu Schichten, Eintragungen, OK, Fragen, Zugangs-Links, Protokoll und Nachrichten
@@ -471,7 +461,7 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
         { userId: request.user.id, eventId: event.id, slug: event.slug, departmentId: event.departmentId },
         'Anlass von der Abteilungsleitung gelöscht'
       );
-      return { message: `«${event.title}» wurde gelöscht` };
+      return { message: request.t('success.eventDeleted', { event: event.title }) };
     }
   );
 
@@ -493,7 +483,7 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
 
       const event = await fastify.prisma.event.findUnique({
@@ -520,12 +510,12 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!event) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
 
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.TEMPLATES) {
-        return reply.status(403).send({ error: 'Keine Berechtigung zum Erstellen von Vorlagen' });
+        return reply.fail(403, 'template.createForbidden');
       }
 
       const input = request.body as z.output<typeof SaveAsTemplateSchema>;

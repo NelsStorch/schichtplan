@@ -20,8 +20,8 @@ import {
   UserPlus,
   X,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
-  formatZurichDateTime,
   isSignupTimeOpen,
   replacementDeadline,
   type ShiftDto,
@@ -90,7 +90,8 @@ export function ShiftDetailsDialog({
   onWithdrawReplacement,
   onTakeOver,
 }: ShiftDetailsDialogProps) {
-  // Hooks müssen vor dem frühen return stehen (sonst wechselt die Hook-Anzahl, wenn shift gesetzt wird)
+  const t = useTranslations('web.event.details');
+  const tTicket = useTranslations('web.event.ticket');
   const org = useOrganization();
   const toast = useToast();
   const conflictingShift = useMemo(() => {
@@ -172,9 +173,9 @@ export function ShiftDetailsDialog({
     }
     try {
       await navigator.clipboard.writeText(`${text}\n${url}`);
-      toast({ title: 'Link kopiert', description: 'Einfach in WhatsApp oder E-Mail einfügen.' });
+      toast({ title: t('shareShiftTitle'), description: t('shareShiftSuccess') });
     } catch {
-      toast({ title: 'Kopieren nicht möglich', description: url, tone: 'error' });
+      toast({ title: t('shareShiftError'), description: url, tone: 'error' });
     }
   };
 
@@ -193,34 +194,37 @@ export function ShiftDetailsDialog({
           <div className="flex flex-wrap items-center gap-1.5">
             {shift.isSetupTeardown && (
               <Badge tone="warning" className="border-warning/30 bg-warning/15 font-bold text-warning-ink">
-                🛠️ Aufbau- / Abbau-Schicht
+                {t('setupTeardownBadge')}
               </Badge>
             )}
             {shift.category ? <Badge>{shift.category}</Badge> : null}
             {shift.minAge && (
               <Badge tone="warning">
-                <Shield className="size-3" /> Schicht ab {shift.minAge} J.
+                <Shield className="size-3" /> {t('minAgeBadge', { age: shift.minAge })}
               </Badge>
             )}
             {isMine && (
               <Badge tone="success">
-                <Check className="size-3" /> Du bist dabei
+                <Check className="size-3" /> {t('youAreInBadge')}
               </Badge>
             )}
             {offerCount > 0 && !over && (
               <Badge tone="warning">
-                <Repeat className="size-3" /> Ersatz gesucht{offerCount > 1 ? ` (${offerCount})` : ''}
+                <Repeat className="size-3" /> {t('replacementWantedBadge', { count: offerCount > 1 ? ` (${offerCount})` : '' })}
               </Badge>
             )}
-            {over && <Badge tone="neutral">Vergangen</Badge>}
+            {over && <Badge tone="neutral">{t('pastBadge')}</Badge>}
           </div>
         </div>
       }
       footer={
         <div className="flex w-full flex-wrap items-center justify-between gap-3">
           <div className="text-xs text-fg-muted">
-            <span className="tabular font-mono font-bold text-fg">{filled}</span> von{' '}
-            <span className="tabular font-mono font-bold text-fg">{total}</span> Plätzen besetzt
+            {t.rich('slotsFilled', {
+              filled,
+              total,
+              bold: (chunks) => <span className="tabular font-mono font-bold text-fg">{chunks}</span>,
+            })}
           </div>
           <div className="flex items-center gap-2">
             {canManage && onAssignHelper && (
@@ -229,7 +233,7 @@ export function ShiftDetailsDialog({
                 size="sm"
                 onClick={() => onAssignHelper(shift)}
               >
-                <UserPlus className="size-3.5" /> Person einteilen
+                <UserPlus className="size-3.5" /> {t('assignHelperAction')}
               </Button>
             )}
             {canManage && onEditShift && (
@@ -241,24 +245,24 @@ export function ShiftDetailsDialog({
                   onEditShift(shift);
                 }}
               >
-                <Edit className="size-3.5" /> Bearbeiten
+                <Edit className="size-3.5" /> {t('editAction')}
               </Button>
             )}
             {!over && (
               <Button variant="secondary" size="sm" onClick={() => shareShift()}>
                 {sharesReplacement ? (
                   <>
-                    <Repeat className="size-3.5" /> Ersatz-Suche teilen
+                    <Repeat className="size-3.5" /> {t('shareReplacementAction')}
                   </>
                 ) : (
                   <>
-                    <Share2 className="size-3.5" /> Teilen
+                    <Share2 className="size-3.5" /> {t('shareAction')}
                   </>
                 )}
               </Button>
             )}
             <Button variant="secondary" size="sm" onClick={onClose}>
-              Schliessen
+              {t('closeAction')}
             </Button>
           </div>
         </div>
@@ -296,10 +300,10 @@ export function ShiftDetailsDialog({
                 )}
               >
                 {status === 'full'
-                  ? 'Voll besetzt'
+                  ? tTicket('statusFull')
                   : status === 'last'
-                  ? 'Noch 1 Platz frei'
-                  : `Noch ${free} Plätze frei`}
+                  ? tTicket('statusLast')
+                  : tTicket('statusOpen', { free })}
               </p>
             </div>
           </div>
@@ -319,31 +323,32 @@ export function ShiftDetailsDialog({
         {/* Einladungs-Link Hinweis */}
         {event.viewer?.pendingLink && !event.viewer.pendingLink.alreadyRedeemed && (
           event.viewer.pendingLink.isExpired ? (
-            <Callout tone="warning" title="Einladungs-Link abgelaufen">
-              <p>Die Einlösefrist für diesen Zugangs-Link ist abgelaufen. Melde dich beim OK für einen neuen Link.</p>
+            <Callout tone="warning" title={t('linkExpiredTitle')}>
+              <p>{t('linkExpiredText')}</p>
             </Callout>
           ) : event.viewer.pendingLink.isBoundToOther ? (
-            <Callout tone="danger" title="Persönlicher Link bereits vergeben">
-              <p>Dieser persönliche Zugangs-Link wurde bereits von einer anderen Person eingelöst.</p>
+            <Callout tone="danger" title={t('linkBoundOtherTitle')}>
+              <p>{t('linkBoundOtherText')}</p>
             </Callout>
           ) : needsLogin ? (
-            <Callout tone="info" title="Du wurdest eingeladen">
+            <Callout tone="info" title={t('invitedTitle')}>
               <p>
-                Melde dich an, um deinen Zugang zu «{event.title}» freizuschalten (ein {org.nicknameTerm} ohne Passwort
-                reicht).
+                {t('invitedLoginText', { eventTitle: event.title, nicknameTerm: org.nicknameTerm })}
               </p>
               <a href={loginUrl()} className={buttonClasses({ size: 'sm', className: 'mt-2' })}>
-                <LogIn className="size-3.5" /> Anmelden und Zugang freischalten
+                <LogIn className="size-3.5" /> {t('invitedLoginAction')}
               </a>
             </Callout>
           ) : !event.viewer.access?.canSignup && onRedeemLink ? (
-            <Callout tone="info" title="Du wurdest eingeladen">
+            <Callout tone="info" title={t('invitedTitle')}>
               <p>
-                Schalte jetzt deinen Zugang zu «{event.title}» frei
-                {event.viewer.pendingLink.label ? ` («${event.viewer.pendingLink.label}»)` : ''}, um dich für diese Schicht einzutragen.
+                {t('invitedUnlockText', {
+                  eventTitle: event.title,
+                  label: event.viewer.pendingLink.label ? ` («${event.viewer.pendingLink.label}»)` : '',
+                })}
               </p>
               <Button size="sm" loading={busy} onClick={onRedeemLink} className="mt-2">
-                <KeyRound className="size-3.5" /> Jetzt freischalten
+                <KeyRound className="size-3.5" /> {t('invitedUnlockAction')}
               </Button>
             </Callout>
           ) : null
@@ -357,9 +362,9 @@ export function ShiftDetailsDialog({
                 <HelpCircle className="size-5" />
               </div>
               <div className="space-y-1 text-xs">
-                <h4 className="font-semibold text-fg text-sm">Schicht ist voll besetzt</h4>
+                <h4 className="font-semibold text-fg text-sm">{t('shiftFullTitle')}</h4>
                 <p className="text-fg-muted">
-                  Hast du Fragen zu dieser Schicht oder möchtest dich als Springer melden? Wende dich an die verantwortliche Person:
+                  {t('shiftFullText')}
                 </p>
                 <div className="pt-2 flex flex-wrap items-center gap-3">
                   <span className="font-semibold text-fg">{event.contactUser.displayName}</span>
@@ -392,10 +397,10 @@ export function ShiftDetailsDialog({
           <div className="rounded-card border border-line bg-surface p-4 sm:p-5 space-y-2.5">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-bold uppercase tracking-wider text-fg-subtle">
-                {event.responsibleMode === 'BY_DAY' ? 'Tages-Verantwortliche*r' : 'Schicht-Verantwortliche*r'}
+                {event.responsibleMode === 'BY_DAY' ? t('dayLeaderHeading') : t('shiftLeaderHeading')}
               </h4>
               <Badge tone="neutral" size="sm">
-                {effectiveResponsibles.length} {effectiveResponsibles.length === 1 ? 'Person' : 'Personen'}
+                {t('personCountBadge', { count: effectiveResponsibles.length })}
               </Badge>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
@@ -412,7 +417,7 @@ export function ShiftDetailsDialog({
                         )}
                         {r.email && (
                           <a href={`mailto:${r.email}`} className="inline-flex items-center gap-0.5 hover:text-accent-ink">
-                            <Mail className="size-3" /> Mail
+                            <Mail className="size-3" /> {t('mailShort')}
                           </a>
                         )}
                       </div>
@@ -428,15 +433,15 @@ export function ShiftDetailsDialog({
         <div>
           <div className="mb-2 flex items-center justify-between">
             <h3 className="font-display text-base font-bold text-fg sm:text-lg">
-              Arbeiten in dieser Schicht
+              {t('tasksInShiftTitle')}
             </h3>
             <span className="font-mono text-xs font-semibold text-fg-subtle">
-              {tasks.length} {tasks.length === 1 ? 'Arbeit' : 'Arbeiten'}
+              {t('tasksCount', { count: tasks.length })}
             </span>
           </div>
 
           <p className="mb-4 text-xs text-fg-muted">
-            Wähle eine konkrete Arbeit aus, um dich einzutragen. Die Anforderungen und Jugendschutz-Regeln gelten pro Arbeit.
+            {t('tasksInstructions')}
           </p>
 
           <div className="grid gap-3.5">
@@ -477,7 +482,7 @@ export function ShiftDetailsDialog({
                           </h4>
                           {isMineInThisTask && (
                             <Badge tone="success" size="sm">
-                              <Check className="size-3" /> Deine Arbeit
+                              <Check className="size-3" /> {t('yourTaskBadge')}
                             </Badge>
                           )}
                         </div>
@@ -497,7 +502,7 @@ export function ShiftDetailsDialog({
                               : 'bg-surface-2 text-fg-muted'
                           )}
                         >
-                          {taskFilled}/{taskTotal} belegt
+                          {t('taskSlotsFilled', { filled: taskFilled, total: taskTotal })}
                         </span>
                       </div>
                     </div>
@@ -508,11 +513,11 @@ export function ShiftDetailsDialog({
                         <Badge tone="warning" size="sm">
                           {task.ageRequirementType === 'ALL' ? (
                             <>
-                              <AlertCircle className="size-3" /> Mindestalter ab {task.minAge} Jahren (alle Helfenden dieser Arbeit)
+                              <AlertCircle className="size-3" /> {t('minAgeAll', { age: task.minAge })}
                             </>
                           ) : (
                             <>
-                              <Shield className="size-3" /> Mindestalter ab {task.minAge} Jahren (mindestens 1 Person in Schicht)
+                              <Shield className="size-3" /> {t('minAgeOne', { age: task.minAge })}
                             </>
                           )}
                         </Badge>
@@ -523,12 +528,12 @@ export function ShiftDetailsDialog({
                   {/* Eingetragene Personen */}
                   <div className="rounded-field border border-line/60 bg-surface-2/40 p-3">
                     <span className="mb-2 block text-2xs font-bold uppercase tracking-wider text-fg-subtle">
-                      Eingeteilte Helfende ({taskFilled}/{taskTotal})
+                      {t('assignedHelpersTitle', { filled: taskFilled, total: taskTotal })}
                     </span>
 
                     {taskSignups.length === 0 ? (
                       <p className="text-xs italic text-fg-subtle">
-                        Noch niemand eingetragen. Sei die erste Person!
+                        {t('noHelpersYet')}
                       </p>
                     ) : (
                       <ul className="flex flex-wrap gap-1.5" aria-label="Eingetragene Helfende">
@@ -538,7 +543,7 @@ export function ShiftDetailsDialog({
                           return (
                             <li
                               key={s.id}
-                              title={wanted ? 'Sucht Ersatz' : undefined}
+                              title={wanted ? t('seekingReplacementTooltip') : undefined}
                               className={cn(
                                 'inline-flex h-7 items-center gap-1.5 rounded-full pl-1 pr-2.5 text-xs font-medium transition-colors',
                                 wanted
@@ -554,9 +559,9 @@ export function ShiftDetailsDialog({
                                 className="size-5 text-[8px]"
                               />
                               <span>
-                                {s.displayName} {isCurrentUser && '(Du)'}
+                                {s.displayName} {isCurrentUser && t('youSuffix')}
                               </span>
-                              {wanted && <Repeat className="size-3" aria-label="sucht Ersatz" />}
+                              {wanted && <Repeat className="size-3" aria-label={t('seekingReplacementTooltip')} />}
                               {canManage && !isCurrentUser && !over && (s.replacementWantedAt || replacementOpen) && (
                                 <button
                                   type="button"
@@ -567,10 +572,10 @@ export function ShiftDetailsDialog({
                                   }
                                   aria-label={
                                     s.replacementWantedAt
-                                      ? `Ersatz-Suche für ${s.displayName} beenden`
-                                      : `Ersatz für ${s.displayName} suchen`
+                                      ? t('stopReplacementAria', { name: s.displayName })
+                                      : t('seekReplacementAria', { name: s.displayName })
                                   }
-                                  title={s.replacementWantedAt ? 'Ersatz-Suche beenden' : 'Ersatz suchen'}
+                                  title={s.replacementWantedAt ? t('stopReplacementTitle') : t('seekReplacementTitle')}
                                   className="-mr-1 ml-0.5 rounded-full p-0.5 text-fg-subtle transition hover:bg-warning/15 hover:text-warning-ink"
                                 >
                                   <Repeat className="size-3" />
@@ -580,7 +585,7 @@ export function ShiftDetailsDialog({
                                 <button
                                   type="button"
                                   onClick={() => onRemoveHelper(s.id, s.displayName)}
-                                  aria-label={`${s.displayName} austragen`}
+                                  aria-label={t('removeHelperAria', { name: s.displayName })}
                                   className="-mr-1 ml-0.5 rounded-full p-0.5 text-fg-subtle transition hover:bg-danger/10 hover:text-danger-ink"
                                 >
                                   <X className="size-3" />
@@ -603,11 +608,11 @@ export function ShiftDetailsDialog({
                             <div className="min-w-0 text-xs">
                               <p className="font-semibold text-warning-ink">
                                 <Repeat className="mr-1 inline size-3.5" />
-                                {o.userId || o.guestName ? `${o.displayName} sucht Ersatz` : 'Ersatz gesucht'}
+                                {o.userId || o.guestName ? t('replacementWantedFor', { name: o.displayName }) : t('replacementWantedGeneral')}
                               </p>
                               {o.replacementNote && <p className="mt-0.5 text-fg-muted">«{o.replacementNote}»</p>}
                               {o.replacementByName && (
-                                <p className="mt-0.5 text-2xs text-fg-subtle">eingetragen durch {o.replacementByName}</p>
+                                <p className="mt-0.5 text-2xs text-fg-subtle">{t('replacementBy', { name: o.replacementByName })}</p>
                               )}
                             </div>
                             {canTakeOverHere &&
@@ -616,11 +621,11 @@ export function ShiftDetailsDialog({
                                   href={loginUrl()}
                                   className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-accent-fg hover:brightness-110"
                                 >
-                                  <Lock className="size-3" /> Anmelden &amp; übernehmen
+                                  <Lock className="size-3" /> {t('loginAndTakeOver')}
                                 </a>
                               ) : (
                                 <Button size="sm" disabled={busy} onClick={() => onTakeOver?.(o, task.id === 'default' ? undefined : task)}>
-                                  <UserCheck className="size-3.5" /> Übernehmen
+                                  <UserCheck className="size-3.5" /> {t('takeOverAction')}
                                 </Button>
                               ))}
                           </li>
@@ -635,7 +640,7 @@ export function ShiftDetailsDialog({
                       {isMineInThisTask && taskMineSignup?.replacementWantedAt ? (
                         <div className="flex w-full flex-wrap items-center justify-between gap-2">
                           <p className="flex items-center gap-1.5 text-xs font-semibold text-warning-ink">
-                            <Repeat className="size-3.5" /> Du suchst Ersatz. Bis jemand übernimmt, bist du eingetragen.
+                            <Repeat className="size-3.5" /> {t('youSeekReplacementNotice')}
                           </p>
                           <Button
                             size="sm"
@@ -643,7 +648,7 @@ export function ShiftDetailsDialog({
                             disabled={busy}
                             onClick={() => onWithdrawReplacement?.(taskMineSignup.id)}
                           >
-                            Zurückziehen
+                            {t('withdrawAction')}
                           </Button>
                         </div>
                       ) : isMineInThisTask ? (
@@ -655,7 +660,7 @@ export function ShiftDetailsDialog({
                             disabled={busy}
                             onClick={() => onOfferReplacement(taskMineSignup.id, null)}
                           >
-                            <Repeat className="size-3.5" /> Ersatz suchen
+                            <Repeat className="size-3.5" /> {t('seekReplacementAction')}
                           </Button>
                         )}
                         <button
@@ -664,7 +669,7 @@ export function ShiftDetailsDialog({
                           disabled={busy}
                           className="group inline-flex items-center gap-2 rounded-full border border-danger/40 bg-danger/15 py-1.5 pl-3.5 pr-2 text-xs font-semibold text-danger-ink transition-all duration-200 hover:bg-danger/25 active:scale-[0.98]"
                         >
-                          <span>Aus dieser Arbeit austragen</span>
+                          <span>{t('cancelTaskSignupAction')}</span>
                           <span className="flex size-5 items-center justify-center rounded-full bg-danger/20 transition-transform duration-200 group-hover:scale-110">
                             <UserMinus className="size-3" />
                           </span>
@@ -672,39 +677,42 @@ export function ShiftDetailsDialog({
                         </>
                       ) : isMineInOtherTask ? (
                         <div className="flex items-center gap-1.5 text-xs font-medium text-fg-muted">
-                          <Check className="size-3.5 text-accent-ink" /> Du bist bereits für eine andere Arbeit eingeteilt
+                          <Check className="size-3.5 text-accent-ink" /> {t('alreadyInOtherTask')}
                         </div>
                       ) : conflictingShift ? (
                         <div className="flex items-center gap-1.5 rounded-full border border-warning/40 bg-warning/10 px-3 py-1.5 text-xs font-semibold text-warning-ink">
                           <AlertCircle className="size-3.5 shrink-0 text-warning" />
                           <span>
-                            Zeitkollision mit «{conflictingShift.title}» ({fmtTimeRange(conflictingShift.startTime, conflictingShift.endTime)})
+                            {t('conflictTimeWarning', {
+                              title: conflictingShift.title ?? '',
+                              timeRange: fmtTimeRange(conflictingShift.startTime, conflictingShift.endTime),
+                            })}
                           </span>
                         </div>
                       ) : taskFull ? (
                         <span className="rounded-full bg-surface-2 px-3 py-1.5 text-xs font-medium text-fg-muted border border-line">
-                          Voll besetzt
+                          {t('shiftFullBadge')}
                         </span>
                       ) : !event.allowPublicSignup ? (
                         <span
-                          title="Das Eintragen ist geschlossen."
+                          title={t('signupClosedBadge')}
                           className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3 py-1.5 text-xs font-medium text-fg-muted"
                         >
-                          <Lock className="size-3" /> Eintragen geschlossen
+                          <Lock className="size-3" /> {t('signupClosedBadge')}
                         </span>
                       ) : (event.signupOpensAt && !isSignupTimeOpen(event.signupOpensAt)) ? (
                         <span
-                          title={`Das Eintragen ist erst ab ${formatZurichDateTime(event.signupOpensAt!)} möglich.`}
+                          title={t('signupNotOpenBadge')}
                           className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3 py-1.5 text-xs font-medium text-fg-muted"
                         >
-                          <Lock className="size-3" /> Noch nicht geöffnet
+                          <Lock className="size-3" /> {t('signupNotOpenBadge')}
                         </span>
                       ) : needsLogin ? (
                         <a
                           href={loginUrl()}
                           className="group inline-flex items-center gap-2 rounded-full bg-accent py-1.5 pl-3.5 pr-2 text-xs font-semibold text-accent-fg transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
                         >
-                          <span>Anmelden &amp; eintragen</span>
+                          <span>{t('loginAndSignupAction')}</span>
                           <span className="flex size-5 items-center justify-center rounded-full bg-black/20 transition-transform duration-200 group-hover:scale-110">
                             <Lock className="size-3" />
                           </span>
@@ -712,11 +720,11 @@ export function ShiftDetailsDialog({
                       ) : event.viewer?.pendingLink && !event.viewer.pendingLink.alreadyRedeemed && !event.viewer.access?.canSignup ? (
                         event.viewer.pendingLink.isExpired ? (
                           <span className="inline-flex items-center gap-1.5 rounded-full border border-warning/30 bg-warning/10 px-3 py-1.5 text-xs font-medium text-warning-ink">
-                            <Lock className="size-3" /> Link abgelaufen
+                            <Lock className="size-3" /> {t('linkExpiredBadge')}
                           </span>
                         ) : event.viewer.pendingLink.isBoundToOther ? (
                           <span className="inline-flex items-center gap-1.5 rounded-full border border-danger/30 bg-danger/10 px-3 py-1.5 text-xs font-medium text-danger-ink">
-                            <Lock className="size-3" /> Link vergeben
+                            <Lock className="size-3" /> {t('linkTakenBadge')}
                           </span>
                         ) : onRedeemLink ? (
                           <button
@@ -725,14 +733,14 @@ export function ShiftDetailsDialog({
                             disabled={busy}
                             className="group inline-flex items-center gap-2 rounded-full bg-accent py-1.5 pl-3.5 pr-2 text-xs font-semibold text-accent-fg shadow-sm transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
                           >
-                            <span>Zugang freischalten</span>
+                            <span>{t('unlockAccessAction')}</span>
                             <span className="flex size-5 items-center justify-center rounded-full bg-black/20 transition-transform duration-200 group-hover:scale-110">
                               <KeyRound className="size-3" />
                             </span>
                           </button>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3 py-1.5 text-xs font-medium text-fg-muted">
-                            <Lock className="size-3" /> Für dich nicht freigeschaltet
+                            <Lock className="size-3" /> {t('notUnlockedForYou')}
                           </span>
                         )
                       ) : blockedReason ? (
@@ -740,7 +748,7 @@ export function ShiftDetailsDialog({
                           title={blockedReason}
                           className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3 py-1.5 text-xs font-medium text-fg-muted"
                         >
-                          <Lock className="size-3" /> {event.viewer?.access?.reason === 'SIGNUP_NOT_YET_OPEN' ? 'Noch nicht geöffnet' : 'Für dich nicht freigeschaltet'}
+                          <Lock className="size-3" /> {event.viewer?.access?.reason === 'SIGNUP_NOT_YET_OPEN' ? t('signupNotOpenBadge') : t('notUnlockedForYou')}
                         </span>
                       ) : (
                         <button
@@ -749,7 +757,7 @@ export function ShiftDetailsDialog({
                           disabled={busy}
                           className="group inline-flex items-center gap-2 rounded-full bg-accent py-1.5 pl-3.5 pr-2 text-xs font-semibold text-accent-fg shadow-sm transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
                         >
-                          <span>Für diese Arbeit eintragen</span>
+                          <span>{t('signupForTaskAction')}</span>
                           <span className="flex size-5 items-center justify-center rounded-full bg-black/20 transition-transform duration-200 group-hover:scale-110">
                             <UserPlus className="size-3" />
                           </span>

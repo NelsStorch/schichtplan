@@ -11,9 +11,6 @@ import {
   getOrganizationByDbType,
 } from '@schichtplan/shared';
 import { sendAccountExistsEmail, sendVerificationEmail } from '../../services/email.js';
-import {
-  RATE_LIMIT_ERROR,
-} from '../../services/nicknameLogin.js';
 import { trackUsage } from '../../services/usageStats.js';
 import { createRateLimiter } from '../../services/rateLimit.js';
 import { needsSecondFactor, setChallengeCookie } from '../../services/twoFactor.js';
@@ -85,7 +82,7 @@ const passwordAuthRoutes: FastifyPluginAsync = async (fastify) => {
     const ipBlocked = loginFailuresByIp.hit(request.ip);
     const emailBlocked = loginFailuresByEmail.hit(emailKey);
     if (ipBlocked || emailBlocked) {
-      return reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
+      return reply.status(429).send({ error: request.t('auth.rateLimited'), code: 'RATE_LIMITED' });
     }
     const user = await fastify.prisma.user.findUnique({
       where: { email: emailKey },
@@ -104,18 +101,14 @@ const passwordAuthRoutes: FastifyPluginAsync = async (fastify) => {
     const passwordOk = await bcrypt.compare(password, user?.passwordHash || DUMMY_PASSWORD_HASH);
     if (!user?.passwordHash || !passwordOk) {
       trackUsage('LOGIN_FAILED', { dim: 'PASSWORD_WRONG', departmentId: request.tenant?.id });
-      return reply.status(401).send({ error: 'E-Mail oder Passwort falsch' });
+      return reply.fail(401, 'auth.wrongCredentials');
     }
     loginFailuresByIp.undo(request.ip);
     loginFailuresByEmail.reset(emailKey);
 
     // E-Mail-Bestätigung erzwingen
     if (!user.emailVerified) {
-      return reply.status(403).send({
-        error: 'Bitte bestätige zuerst deine E-Mail-Adresse. Wir haben dir einen Bestätigungslink gesendet.',
-        requiresVerification: true,
-        email: user.email,
-      });
+      return reply.fail(403, 'auth.emailNotConfirmed', undefined, { requiresVerification: true, email: user.email });
     }
 
     // Mit Zwei-Faktor: noch kein Login, erst der Code aus der App (POST /api/auth/2fa/verify)
@@ -153,7 +146,7 @@ const passwordAuthRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
     if (mailRequestsByIp.hit(request.ip)) {
-      return reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
+      return reply.status(429).send({ error: request.t('auth.rateLimited'), code: 'RATE_LIMITED' });
     }
     const input = request.body as z.output<typeof RegisterHelperSchema>;
 
@@ -186,7 +179,7 @@ const passwordAuthRoutes: FastifyPluginAsync = async (fastify) => {
         resetUrl: `${loginPortalUrl}/passwort-vergessen`,
         organization: request.organization,
       });
-      return registrationAccepted(cleanEmail);
+      return registrationAccepted(cleanEmail, request.t);
     }
 
     let user: { id: string; nickname: string | null; firstName: string };
@@ -213,7 +206,7 @@ const passwordAuthRoutes: FastifyPluginAsync = async (fastify) => {
     } catch (err) {
       // Gleichzeitig hat ein anderes Konto die Adresse bekommen: gleiche Antwort wie bei «gibt es schon»
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
-        return registrationAccepted(cleanEmail);
+        return registrationAccepted(cleanEmail, request.t);
       }
       throw err;
     }
@@ -248,7 +241,7 @@ const passwordAuthRoutes: FastifyPluginAsync = async (fastify) => {
     });
 
     // Absichtlich KEIN Auth-Cookie setzen, damit die E-Mail zuerst verifiziert werden muss
-    return registrationAccepted(cleanEmail);
+    return registrationAccepted(cleanEmail, request.t);
   });
 
   // 5a. Bestätigungs-E-Mail erneut anfordern
@@ -264,7 +257,7 @@ const passwordAuthRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
     if (mailRequestsByIp.hit(request.ip)) {
-      return reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
+      return reply.status(429).send({ error: request.t('auth.rateLimited'), code: 'RATE_LIMITED' });
     }
     const input = request.body as z.output<typeof ResendVerificationSchema>;
 
@@ -277,7 +270,7 @@ const passwordAuthRoutes: FastifyPluginAsync = async (fastify) => {
     // soll sich hier nicht abfragen lassen
     const genericAnswer = {
       success: true,
-      message: 'Falls es zu dieser E-Mail ein unbestätigtes Konto gibt, haben wir einen neuen Bestätigungslink gesendet.',
+      message: request.t('success.confirmLinkResent'),
     };
     if (!user || user.emailVerified) return genericAnswer;
 
@@ -329,7 +322,7 @@ const passwordAuthRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
     if (verifyEmailByIp.hit(request.ip)) {
-      return reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
+      return reply.status(429).send({ error: request.t('auth.rateLimited'), code: 'RATE_LIMITED' });
     }
     const input = request.body as z.output<typeof VerifyEmailSchema>;
 
@@ -342,18 +335,12 @@ const passwordAuthRoutes: FastifyPluginAsync = async (fastify) => {
     });
 
     if (!tokenRecord) {
-      return reply.status(400).send({
-        error: 'Dieser Bestätigungslink ist ungültig oder wurde bereits verwendet.',
-      });
+      return reply.fail(400, 'auth.confirmLinkInvalid');
     }
 
     if (tokenRecord.expiresAt < new Date()) {
       await fastify.prisma.emailVerificationToken.delete({ where: { id: tokenRecord.id } });
-      return reply.status(400).send({
-        error: 'Dieser Bestätigungslink ist abgelaufen. Bitte fordere einen neuen an.',
-        expired: true,
-        email: tokenRecord.email,
-      });
+      return reply.fail(400, 'auth.confirmLinkExpired', undefined, { expired: true, email: tokenRecord.email });
     }
 
     const updatedUser = await fastify.prisma.$transaction(async (tx) => {
@@ -377,7 +364,7 @@ const passwordAuthRoutes: FastifyPluginAsync = async (fastify) => {
     // (jemand kann ein Konto mit fremder E-Mail vorbereiten). Anmelden geht nur mit dem eigenen Passwort.
     return {
       success: true,
-      message: 'E-Mail-Adresse bestätigt. Melde dich jetzt mit deinem Passwort an.',
+      message: request.t('success.emailConfirmed'),
       email: updatedUser.email,
       name: updatedUser.nickname || updatedUser.firstName,
     };

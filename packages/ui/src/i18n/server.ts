@@ -1,0 +1,82 @@
+/**
+ * Sprache einer Anfrage in den Next.js-Apps (nur Server: Cookies, Header). Gleiche Prioritätenkette wie im
+ * Backend (`resolveLocale` aus @schichtplan/i18n): Cookie → Browser → Standardsprache der Abteilung → Deutsch,
+ * jeweils nur freigeschaltete Sprachen des Verbands. Konzept: docs/internal/i18n-konzept.md
+ *
+ * Nutzung in `src/i18n/request.ts` jeder App:
+ *   export default getRequestConfig(() => createRequestConfig({ namespaces: ['common'] }));
+ */
+import { cache } from 'react';
+import { cookies, headers } from 'next/headers';
+import {
+  I18N_TIME_ZONE,
+  INTL_LOCALES,
+  LOCALE_COOKIE,
+  PSEUDO_LOCALE,
+  createI18nErrorHandler,
+  getEnabledLocales,
+  getMessageFallback,
+  pickMessages,
+  resolveLocale,
+  type Locale,
+  type LocaleSource,
+  type Namespace,
+} from '@schichtplan/i18n';
+import { getOrganizationTypeFromHost } from '@schichtplan/shared';
+import { getRequestOrigin } from '../og';
+
+export interface RequestLocaleInfo {
+  /** Kurzcode (de, fr, it, en) */
+  locale: Locale;
+  /** BCP-47 für Intl und `<html lang>` (de-CH …) */
+  intlLocale: string;
+  source: LocaleSource;
+  /** Freigeschaltete Sprachen für den Sprachwähler */
+  enabled: Locale[];
+  /** Pseudo-Sprache aktiv (nur Entwicklung) */
+  pseudo: boolean;
+  /** Pseudo-Sprache im Sprachwähler anbieten (nur Entwicklung) */
+  pseudoAvailable: boolean;
+}
+
+const isDev = process.env.NODE_ENV !== 'production';
+
+/** Pro Anfrage zwischengespeichert: Layout und `request.ts` rechnen nicht doppelt */
+export const getRequestLocale = cache(async (department?: string | null): Promise<RequestLocaleInfo> => {
+  const [{ host }, cookieStore, h] = await Promise.all([getRequestOrigin(), cookies(), headers()]);
+  // Zur Laufzeit gelesen: auf Dev lassen sich Sprachen mit I18N_ENABLED_LOCALES=de,fr,en freischalten
+  const enabled = getEnabledLocales(getOrganizationTypeFromHost(host), process.env.I18N_ENABLED_LOCALES);
+  const cookie = cookieStore.get(LOCALE_COOKIE)?.value ?? null;
+  const pseudo = isDev && cookie === PSEUDO_LOCALE;
+  const { locale, source } = resolveLocale({
+    cookie: pseudo ? null : cookie,
+    acceptLanguage: h.get('accept-language'),
+    department,
+    enabled,
+  });
+  return { locale, intlLocale: INTL_LOCALES[locale], source, enabled, pseudo, pseudoAvailable: isDev };
+});
+
+/** Konfiguration für `getRequestConfig` von next-intl: nur die genannten Namespaces, Lücken auf Deutsch */
+export async function createRequestConfig({
+  namespaces,
+  department,
+}: {
+  namespaces: readonly Namespace[];
+  /** Standardsprache der Abteilung dieser Subdomain (z. B. aus /api/departments/current) */
+  department?: string | null;
+}) {
+  const info = await getRequestLocale(department ?? null);
+  let messages: Record<string, unknown> = pickMessages(info.locale, namespaces);
+  if (info.pseudo) {
+    const { pseudoLocalizeMessages } = await import('@schichtplan/i18n/pseudo');
+    messages = pseudoLocalizeMessages(messages);
+  }
+  return {
+    locale: info.intlLocale,
+    messages,
+    timeZone: I18N_TIME_ZONE,
+    onError: createI18nErrorHandler(),
+    getMessageFallback,
+  };
+}

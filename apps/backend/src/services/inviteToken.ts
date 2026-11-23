@@ -6,6 +6,7 @@ import {
   type DepartmentPermissionPreset,
 } from '@schichtplan/shared';
 import { resolveJwtSecret } from '../plugins/jwt.js';
+import { errorTranslator, type ErrorKey, type ErrorTranslator } from '../plugins/i18n.js';
 
 export type InvitePreset = 'MEMBER' | DepartmentPermissionPreset;
 
@@ -161,3 +162,18 @@ export const INVITE_REASON_ERRORS = {
   USED: 'Diese Einladung wurde schon eingelöst. Bitte lass dich nochmals einladen.',
   REMOVED: 'Die Leitung hat dich aus dieser Abteilung entfernt. Für einen neuen Beitritt braucht es eine neue Einladung.',
 } as const;
+
+const INVITE_REASON_KEYS = {
+  EXPIRED: 'invite.expired',
+  OTHER_EMAIL: 'invite.otherEmail',
+  USED: 'invite.used',
+  REMOVED: 'invite.removed',
+} as const satisfies Record<keyof typeof INVITE_REASON_ERRORS, ErrorKey>;
+
+/** Meldung zu einer ungültigen Einladung in der Sprache der Anfrage (Standard: Deutsch) */
+export function inviteReasonError(
+  reason: keyof typeof INVITE_REASON_ERRORS,
+  t: ErrorTranslator = errorTranslator('de')
+): string {
+  return t(INVITE_REASON_KEYS[reason], { days: PERSONAL_INVITE_TTL_DAYS });
+}

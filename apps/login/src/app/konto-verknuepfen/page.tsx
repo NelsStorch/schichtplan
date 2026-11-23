@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Link2 } from 'lucide-react';
 import { Button, Callout, BrandLogo, Field, Input, ThemeToggle, useOrganization } from '@schichtplan/ui';
 import { cleanReturnTo, withReturnTo } from '@/lib/destination';
@@ -13,6 +14,7 @@ import { AuthFooter } from '@/components/AuthFooter';
  * weil es zwei Konten mit derselben E-Mail nicht geben darf.
  */
 function LinkAccount() {
+  const t = useTranslations('login.linkAccount');
   const searchParams = useSearchParams();
   // Verband der Domain, vom Server-Layout bereitgestellt (richtig schon beim ersten Rendern)
   const org = useOrganization();
@@ -53,11 +55,11 @@ function LinkAccount() {
       });
       const data = await res.json().catch(() => ({}));
       if (data.twoFactorRequired) setTwoFactorRequired(true);
-      if (!res.ok) throw new Error(data.error || 'Das hat nicht geklappt.');
+      if (!res.ok) throw new Error(data.error || t('failed'));
       setDone(true);
       window.location.href = data.redirectUrl;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Das hat nicht geklappt.');
+      setError(err instanceof Error ? err.message : t('failed'));
       setSaving(false);
     }
   };
@@ -83,13 +85,13 @@ function LinkAccount() {
         {missing ? (
           <div className="animate-fade-up space-y-5">
             <h1 className="font-display text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-fg">
-              Verknüpfung abgelaufen
+              {t('expiredTitle')}
             </h1>
             <p className="text-[15px] leading-relaxed text-fg-muted">
-              Melde dich bitte nochmals mit {org.authProviderShort} an. Danach fragen wir wieder nach deinem Passwort.
+              {t('expiredDescription', { authProviderShort: org.authProviderShort })}
             </p>
             <Button size="lg" className="w-full" onClick={() => (window.location.href = withReturnTo('/', returnTo, inviteToken))}>
-              Zur Anmeldung
+              {t('goToLogin')}
             </Button>
           </div>
         ) : !info ? (
@@ -103,17 +105,15 @@ function LinkAccount() {
               <Link2 className="size-6" />
             </span>
             <h1 className="font-display text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-fg text-balance">
-              Du hast schon ein Konto
+              {t('title')}
             </h1>
             <p className="mt-3 text-[15px] leading-relaxed text-fg-muted">
-              Zu <span className="font-medium text-fg">{info.email}</span> gibt es ein Konto mit Passwort. Gib das
-              Passwort ein, dann verbinden wir es mit {org.authProviderShort}. Deine Schichten und Rollen bleiben, und du meldest
-              dich danach auf beide Arten an.
+              {t('subtitle', { email: info.email ?? '', authProviderShort: org.authProviderShort })}
             </p>
 
             <div className="mt-8 space-y-5">
               {error && <Callout tone="danger">{error}</Callout>}
-              <Field label="Passwort" required>
+              <Field label={t('password')} required>
                 <Input
                   type="password"
                   value={password}
@@ -124,7 +124,7 @@ function LinkAccount() {
                 />
               </Field>
               {twoFactorRequired && (
-                <Field label="Zwei-Faktor-Code (oder Wiederherstellungscode)" required>
+                <Field label={t('twoFactorLabel')} required>
                   <Input
                     type="text"
                     inputMode="numeric"
@@ -137,24 +137,27 @@ function LinkAccount() {
                 </Field>
               )}
               <Button type="submit" size="lg" className="w-full" loading={saving} disabled={!password || (twoFactorRequired && !code.trim()) || done}>
-                Verknüpfen und anmelden
+                {t('submit')}
               </Button>
               <Button type="button" variant="ghost" className="w-full" onClick={cancel} disabled={saving}>
-                Abbrechen
+                {t('cancel')}
               </Button>
               <p className="px-1 text-[13px] leading-relaxed text-fg-subtle">
-                Passwort vergessen?{' '}
-                <a
-                  href={withReturnTo(
-                    `/passwort-vergessen${info.email ? `?email=${encodeURIComponent(info.email)}` : ''}`,
-                    returnTo,
-                    inviteToken
-                  )}
-                  className="font-medium text-accent-ink underline-offset-4 hover:underline"
-                >
-                  Neues Passwort setzen
-                </a>
-                , danach nochmals mit {org.authProviderShort} anmelden. Zwei Konten mit derselben E-Mail gibt es nicht.
+                {t.rich('forgotPasswordHint', {
+                  authProviderShort: org.authProviderShort,
+                  resetLink: (chunks) => (
+                    <a
+                      href={withReturnTo(
+                        `/passwort-vergessen${info.email ? `?email=${encodeURIComponent(info.email)}` : ''}`,
+                        returnTo,
+                        inviteToken
+                      )}
+                      className="font-medium text-accent-ink underline-offset-4 hover:underline"
+                    >
+                      {chunks}
+                    </a>
+                  ),
+                })}
               </p>
             </div>
           </form>

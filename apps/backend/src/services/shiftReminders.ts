@@ -18,6 +18,7 @@ import {
   formatReminderLeadTime,
   getOrganization,
   getOrganizationByDbType,
+  zurichDateTimeFormat,
   type OrganizationType,
 } from '@schichtplan/shared';
 import type { PrismaClient } from '../db.js';
@@ -29,18 +30,10 @@ export const REMINDER_LEAD_HOURS = 24;
 export const MAX_REMINDER_WINDOW_MINUTES = 10_080;
 export const REMINDER_INTERVAL_MS = 10 * 60 * 1000;
 
-const TIME_ZONE = 'Europe/Zurich';
-
 /** «Sa, 01.06.2030, 18:00–22:00» (gleicher Tag) bzw. mit beiden Daten über Mitternacht */
 export function formatShiftTime(start: Date, end: Date): string {
-  const day = new Intl.DateTimeFormat('de-CH', {
-    timeZone: TIME_ZONE,
-    weekday: 'short',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
-  const time = new Intl.DateTimeFormat('de-CH', { timeZone: TIME_ZONE, hour: '2-digit', minute: '2-digit' });
+  const day = zurichDateTimeFormat({ weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+  const time = zurichDateTimeFormat({ hour: '2-digit', minute: '2-digit' });
   const startDay = day.format(start);
   const endDay = day.format(end);
   return startDay === endDay

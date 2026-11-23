@@ -23,7 +23,7 @@
     "db:migrate": "npm run db:migrate --workspace=apps/backend",
     "db:seed": "npm run db:seed --workspace=apps/backend",
     "db:studio": "npm run db:studio --workspace=apps/backend",
-    "test": "npm run test --workspace=apps/backend && npm run test --workspace=apps/web && npm run test --workspace=apps/login && npm run test --workspace=apps/admin",
+    "test": "npm run test --workspace=packages/i18n && npm run test --workspace=apps/backend && npm run test --workspace=apps/web && npm run test --workspace=apps/login && npm run test --workspace=apps/admin",
     "test:db": "node scripts/test-db.mjs",
     "test:integration": "node scripts/test-db.mjs",
     "typecheck": "tsc --noEmit -p apps/backend && tsc --noEmit -p apps/web && tsc --noEmit -p apps/login && tsc --noEmit -p apps/landing && tsc --noEmit -p apps/admin",
@@ -31,8 +31,9 @@
     "hilfe:build": "npm --prefix hilfe run build",
     "hilfe:preview": "npm --prefix hilfe run preview",
     "lint": "biome lint .",
-    "check": "npm run lint && npm run typecheck && npm test",
-    "test:e2e": "playwright test -c e2e/playwright.config.ts"
+    "check": "npm run lint && npm run typecheck && npm run i18n:check && npm test",
+    "test:e2e": "playwright test -c e2e/playwright.config.ts",
+    "i18n:check": "npm run check --workspace=packages/i18n"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",

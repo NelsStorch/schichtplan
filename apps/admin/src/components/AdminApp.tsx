@@ -30,6 +30,7 @@ import {
   imprintUrl,
   privacyUrl,
   statusUrl,
+  zurichDateTimeFormat,
   type AdminDepartmentListItemDto,
   type AdminOverviewDto,
   type AdminSessionDto,
@@ -397,7 +398,7 @@ const parseHash = (): { tab: AdminTab; entity?: string } => {
   return { tab, entity: second ? decodeURIComponent(second) : undefined };
 };
 
-const timeFmt = new Intl.DateTimeFormat('de-CH', { weekday: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Zurich' });
+const timeFmt = zurichDateTimeFormat({ weekday: 'short', hour: '2-digit', minute: '2-digit' });
 
 function AdminHome({
   user,

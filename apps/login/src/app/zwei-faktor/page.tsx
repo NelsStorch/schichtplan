@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { ShieldCheck } from 'lucide-react';
 import { Button, Callout, BrandLogo, Field, Input, ThemeToggle, useOrganization } from '@schichtplan/ui';
 import { afterLogin, cleanReturnTo, withReturnTo } from '@/lib/destination';
@@ -12,6 +13,8 @@ import { AuthFooter } from '@/components/AuthFooter';
  * der Authenticator-App. Erst danach setzt der Server das Login-Cookie.
  */
 function TwoFactor() {
+  const t = useTranslations('login.twoFactor');
+  const tGeneral = useTranslations('login.general');
   const searchParams = useSearchParams();
   const org = useOrganization();
   const inviteToken = searchParams.get('invite')?.trim() || '';
@@ -51,21 +54,19 @@ function TwoFactor() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (data.code === 'CHALLENGE_EXPIRED') setState('missing');
-        throw new Error(data.error || 'Das hat nicht geklappt.');
+        throw new Error(data.error || t('failed'));
       }
       setDone(true);
       const target = data.redirectUrl || afterLogin(data.user, returnTo, org.dbType, inviteToken);
       if (typeof data.recoveryCodesLeft === 'number' && data.recoveryCodesLeft <= 3) {
         // Kurz stehen lassen, damit der Hinweis gelesen werden kann
-        setNotice(
-          `Du hast noch ${data.recoveryCodesLeft} Wiederherstellungscode${data.recoveryCodesLeft === 1 ? '' : 's'}. Erstelle im Profil neue Codes.`
-        );
+        setNotice(t('recoveryCodesLeft', { count: data.recoveryCodesLeft }));
         setTimeout(() => (window.location.href = target), 4000);
         return;
       }
       window.location.href = target;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Das hat nicht geklappt.');
+      setError(err instanceof Error ? err.message : t('failed'));
       setCode('');
       setSaving(false);
     }
@@ -104,13 +105,13 @@ function TwoFactor() {
         {state === 'missing' ? (
           <div className="animate-fade-up space-y-5">
             <h1 className="font-display text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-fg">
-              Anmeldung abgelaufen
+              {t('expiredTitle')}
             </h1>
             <p className="text-[15px] leading-relaxed text-fg-muted">
-              Der Code muss innert 10 Minuten nach dem Passwort eingegeben werden. Melde dich bitte nochmals an.
+              {t('expiredDescription')}
             </p>
             <Button size="lg" className="w-full" onClick={() => (window.location.href = withReturnTo('/', returnTo, inviteToken))}>
-              Zur Anmeldung
+              {tGeneral('backToLogin')}
             </Button>
           </div>
         ) : state === 'loading' ? (
@@ -124,18 +125,21 @@ function TwoFactor() {
               <ShieldCheck className="size-6" />
             </span>
             <h1 className="font-display text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-fg text-balance">
-              {useRecovery ? 'Wiederherstellungscode' : 'Code aus der App'}
+              {useRecovery ? t('titleRecovery') : t('titleApp')}
             </h1>
             <p className="mt-3 text-[15px] leading-relaxed text-fg-muted">
               {useRecovery
-                ? 'Gib einen deiner Wiederherstellungscodes ein. Jeder Code funktioniert nur einmal.'
-                : `${viaProvider ? `Die Anmeldung bei ${org.authProviderShort} hat geklappt. ` : ''}Öffne deine Authenticator-App und gib den 6-stelligen Code für ${org.name} ein.`}
+                ? t('subtitleRecovery')
+                : t('subtitleApp', {
+                    providerNotice: viaProvider ? t('providerNotice', { authProviderShort: org.authProviderShort }) : '',
+                    orgName: org.name,
+                  })}
             </p>
 
             <div className="mt-8 space-y-5">
               {error && <Callout tone="danger">{error}</Callout>}
               {notice && <Callout tone="warning">{notice}</Callout>}
-              <Field label={useRecovery ? 'Wiederherstellungscode' : '6-stelliger Code'} required>
+              <Field label={useRecovery ? t('labelRecovery') : t('labelApp')} required>
                 <Input
                   key={useRecovery ? 'recovery' : 'totp'}
                   autoFocus
@@ -158,7 +162,7 @@ function TwoFactor() {
                 loading={saving}
                 disabled={done || (useRecovery ? code.trim().length < 10 : code.length !== 6)}
               >
-                Anmelden
+                {t('submit')}
               </Button>
               <button
                 type="button"
@@ -169,14 +173,13 @@ function TwoFactor() {
                 }}
                 className="w-full text-center text-[13px] font-medium text-accent-ink underline-offset-4 hover:underline"
               >
-                {useRecovery ? 'Doch mit dem Code aus der App' : 'Kein Zugriff auf die App? Wiederherstellungscode verwenden'}
+                {useRecovery ? t('switchToApp') : t('switchToRecovery')}
               </button>
               <Button type="button" variant="ghost" className="w-full" onClick={cancel} disabled={saving}>
-                Abbrechen
+                {t('cancel')}
               </Button>
               <p className="px-1 text-[13px] leading-relaxed text-fg-subtle">
-                Handy und Wiederherstellungscodes verloren? Melde dich bei den Betreibern des Schichtplans. Sie können
-                die Zwei-Faktor-Anmeldung nach einer Prüfung zurücksetzen.
+                {t('lostDeviceNotice')}
               </p>
             </div>
           </form>

@@ -28,7 +28,7 @@ const privacyRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const userId = request.user.id;
       if (exportLimiter.hit(userId)) {
-        return reply.status(429).send({ error: 'Zu viele Downloads. Bitte versuche es später nochmals.' });
+        return reply.fail(429, 'privacy.tooManyDownloads');
       }
       const user = await fastify.prisma.user.findUnique({
         where: { id: userId },
@@ -79,7 +79,7 @@ const privacyRoutes: FastifyPluginAsync = async (fastify) => {
           pushSubscriptions: { select: { createdAt: true, origin: true } },
         },
       });
-      if (!user) return reply.status(404).send({ error: 'Person nicht gefunden' });
+      if (!user) return reply.fail(404, 'generic.personNotFound');
 
       const { pushSubscriptions, ...rest } = user;
       const data = {
@@ -111,18 +111,18 @@ const privacyRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       const to = process.env.PRIVACY_CONTACT_EMAIL || process.env.ADMIN_ALERT_EMAIL || '';
-      if (!to) return reply.status(503).send({ error: 'Die Kontaktadresse ist nicht hinterlegt. Bitte schreib uns direkt (siehe Impressum).' });
+      if (!to) return reply.fail(503, 'privacy.noContactAddress');
 
       const user = await fastify.prisma.user.findUnique({
         where: { id: request.user.id },
         select: { id: true, firstName: true, lastName: true, nickname: true, provider: true, providerId: true, passwordHash: true },
       });
-      if (!user) return reply.status(404).send({ error: 'Person nicht gefunden' });
+      if (!user) return reply.fail(404, 'generic.personNotFound');
       if (user.providerId !== null || user.passwordHash) {
-        return reply.status(400).send({ error: 'Du kannst dein Konto selbst löschen (Konto-Menü).' });
+        return reply.fail(400, 'privacy.canSelfDelete');
       }
       if (deletionRequestLimiter.hit(user.id)) {
-        return reply.status(429).send({ error: 'Dein Antrag ist schon unterwegs. Wir melden uns.' });
+        return reply.fail(429, 'privacy.requestPending');
       }
 
       const name = [user.nickname, `${user.firstName} ${user.lastName ?? ''}`.trim()].filter(Boolean).join(' / ');
@@ -140,10 +140,10 @@ const privacyRoutes: FastifyPluginAsync = async (fastify) => {
       });
       if (!sent) {
         deletionRequestLimiter.undo(user.id);
-        return reply.status(502).send({ error: 'Der Antrag konnte nicht verschickt werden. Bitte versuche es später nochmals.' });
+        return reply.fail(502, 'privacy.requestFailed');
       }
       request.log.info({ userId: user.id }, 'Löschantrag gestellt');
-      return { message: 'Dein Löschantrag ist bei uns. Wir löschen dein Konto innert 30 Tagen.' };
+      return { message: request.t('success.deletionRequested') };
     }
   );
 };

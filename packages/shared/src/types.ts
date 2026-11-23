@@ -1,4 +1,5 @@
 import type {
+  AppLocale,
   AttendanceMode,
   AttendanceStatus,
   CateringTokenStatus,
@@ -60,6 +61,8 @@ export interface DepartmentDto {
   allowPasswordless?: boolean;
   /** Beitrittsmodus für E-Mail-Konten */
   joinMode?: DepartmentJoinMode;
+  /** Standardsprache der Abteilung */
+  defaultLocale?: AppLocale;
   /** Geheimer Einladungs-Token (nur für Berechtigte sichtbar) */
   inviteToken?: string | null;
   /** Angemeldete Person gehört dazu (Heimabteilung, Rolle, OK) und sieht die Startseite */
@@ -400,6 +403,8 @@ export interface UserDto {
   emailNotifyMessages?: boolean;
   /** Anzahl aktivierter Browser-Push-Geräte dieses Kontos */
   pushSubscriptionCount?: number;
+  /** Selbst gewählte Sprache; null = automatisch (Browser bzw. Abteilung) */
+  locale?: AppLocale | null;
 }
 
 // ---------------------------------------------------------------------------

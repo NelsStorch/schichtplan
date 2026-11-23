@@ -10,6 +10,7 @@ import {
   type KeyboardEvent,
 } from 'react';
 import { Calendar } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Input, cn } from '@schichtplan/ui';
 
 export function formatDisplayDate(digits: string): string {
@@ -73,6 +74,7 @@ export const BirthDateInput = forwardRef<HTMLInputElement, BirthDateInputProps>(
     },
     ref
   ) {
+    const t = useTranslations('login.birthDate');
     const textInputRef = useRef<HTMLInputElement>(null);
     const pickerRef = useRef<HTMLInputElement>(null);
     useImperativeHandle(ref, () => textInputRef.current as HTMLInputElement);
@@ -142,7 +144,7 @@ export const BirthDateInput = forwardRef<HTMLInputElement, BirthDateInputProps>(
           id={id}
           type="text"
           inputMode="numeric"
-          placeholder="TT.MM.JJJJ"
+          placeholder={t('format')}
           value={display}
           onChange={(e) => handleTextChange(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -177,7 +179,7 @@ export const BirthDateInput = forwardRef<HTMLInputElement, BirthDateInputProps>(
           onClick={openCalendar}
           tabIndex={-1}
           className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-fg-subtle transition-colors hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          aria-label="Kalender öffnen"
+          aria-label={t('openCalendar')}
         >
           <Calendar className="size-4" />
         </button>

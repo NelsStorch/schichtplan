@@ -5,6 +5,7 @@ import {
   getRootDomain,
   getOrganization,
   ORGANIZATIONS,
+  localeFromDb,
   type UserDto,
   type OrganizationType,
 } from '@schichtplan/shared';
@@ -20,6 +21,7 @@ import { accessFrom } from '../services/permissions.js';
 import { createRateLimiter } from '../services/rateLimit.js';
 import { isTwoFactorConfigured } from '../services/twoFactor.js';
 import { isProviderJoinSource } from '../services/departmentJoin.js';
+import { errorTranslator, type ErrorTranslator } from '../plugins/i18n.js';
 
 /** Passwort-Login: höchstens 30 Fehlversuche pro IP in 10 Minuten, 10 pro E-Mail in 15 Minuten */
 export const loginFailuresByIp = createRateLimiter(10 * 60 * 1000, 30);
@@ -404,6 +406,7 @@ export async function loadUserDto(
     emailNotifyReplacement: user.emailNotifyReplacement ?? true,
     emailNotifyMessages: user.emailNotifyMessages ?? true,
     pushSubscriptionCount: user._count?.pushSubscriptions ?? 0,
+    locale: localeFromDb(user.locale),
   };
 }
 
@@ -422,12 +425,12 @@ export async function ensureHelperMembership(
 
 
 /** Antwort auf eine Registrierung, gleich ob das Konto neu ist oder die E-Mail schon eines hat */
-export function registrationAccepted(email: string) {
+export function registrationAccepted(email: string, t: ErrorTranslator = errorTranslator('de')) {
   return {
     success: true,
     requiresVerification: true,
     email,
-    message: 'Bitte überprüfe dein Postfach: Wir haben dir eine E-Mail geschickt, um dich anzumelden.',
+    message: t('success.checkInbox'),
   };
 }
 

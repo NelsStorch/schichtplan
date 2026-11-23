@@ -33,6 +33,7 @@ import {
 import { timingSafeEqual } from 'node:crypto';
 import { eventUrl } from '../services/shiftReminders.js';
 import { createRateLimiter } from '../services/rateLimit.js';
+import { TranslatableError } from '../plugins/i18n.js';
 
 /** Pfad- und Abfrageparameter der Verpflegungs-Routen (vom Routen-Schema geprüft) */
 const SlugParams = z.object({ slug: z.string().min(1).max(100) });
@@ -132,7 +133,7 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
 
     const limitKey = `${request.ip}:${event.id}`;
     if (staffPinLimiter.isBlocked(limitKey)) {
-      reply.status(429).send({ error: 'Zu viele falsche PIN-Versuche. Bitte warte ein paar Minuten.' });
+      reply.fail(429, 'catering.tooManyPinAttempts');
       return null;
     }
     if (!givenPin || !samePin(givenPin, expected)) {
@@ -188,7 +189,7 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const event = await findEvent(request.tenant?.id, request.params.slug, request.user.id);
       if (!event) {
-        return reply.status(404).send({ error: 'Anlass nicht gefunden' });
+        return reply.fail(404, 'event.notFoundAnlass');
       }
 
       if (!event.cateringTokensEnabled) {
@@ -230,11 +231,11 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const event = await findEvent(request.tenant?.id, request.params.slug, request.user.id);
       if (!event) {
-        return reply.status(404).send({ error: 'Anlass nicht gefunden' });
+        return reply.fail(404, 'event.notFoundAnlass');
       }
 
       if (!event.cateringTokensEnabled) {
-        return reply.status(400).send({ error: 'Verpflegungs-Bons sind für diesen Anlass nicht aktiviert' });
+        return reply.fail(400, 'catering.disabled');
       }
 
       const token = await fastify.prisma.cateringToken.findUnique({
@@ -278,7 +279,7 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
 
       const shift = token?.signup?.shift ?? token?.shift;
       if (!token || !shift || shift.eventId !== event.id) {
-        return reply.status(404).send({ error: 'Verpflegungs-Bon nicht gefunden' });
+        return reply.fail(404, 'catering.tokenNotFound');
       }
 
       const ownerUserId = token.signup?.userId ?? token.userId;
@@ -287,18 +288,15 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
       const canManage = flags.can.ATTENDANCE || flags.isManager;
 
       if (!isOwner && !canManage) {
-        return reply.status(403).send({ error: 'Du darfst nur deine eigenen Verpflegungs-Bons einlösen' });
+        return reply.fail(403, 'catering.onlyOwnTokens');
       }
 
       if (token.status === 'BLOCKED') {
-        return reply.status(403).send({ error: 'Dieser Verpflegungs-Bon ist gesperrt.' });
+        return reply.fail(403, 'catering.tokenBlocked');
       }
 
       if (token.status === 'REDEEMED') {
-        return reply.status(409).send({
-          error: 'Dieser Verpflegungs-Bon wurde bereits eingelöst',
-          redeemedAt: token.redeemedAt ? token.redeemedAt.toISOString() : null,
-        });
+        return reply.fail(409, 'catering.tokenRedeemed', undefined, { redeemedAt: token.redeemedAt ? token.redeemedAt.toISOString() : null });
       }
 
       const now = new Date();
@@ -314,7 +312,7 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
       if (!available && !canManage) {
         const fromTime = availableFromTime(shift.startTime, earlyHours);
         return reply.status(400).send({
-          error: `Dieser Bon ist erst ab ${formatZurichTime(fromTime)} Uhr (oder nach dem Check-in) einlösbar.`,
+          error: request.t('catering.notYetRedeemable', { time: formatZurichTime(fromTime, request.intlLocale) }),
         });
       }
 
@@ -335,12 +333,9 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
       const updated = await fastify.prisma.cateringToken.findUniqueOrThrow({ where: { id: token.id } });
       if (count === 0) {
         if (updated.status === 'BLOCKED') {
-          return reply.status(403).send({ error: 'Dieser Verpflegungs-Bon ist gesperrt.' });
+          return reply.fail(403, 'catering.tokenBlocked');
         }
-        return reply.status(409).send({
-          error: 'Dieser Verpflegungs-Bon wurde bereits eingelöst',
-          redeemedAt: updated.redeemedAt ? updated.redeemedAt.toISOString() : null,
-        });
+        return reply.fail(409, 'catering.tokenRedeemed', undefined, { redeemedAt: updated.redeemedAt ? updated.redeemedAt.toISOString() : null });
       }
 
       const isResponsible = !token.shiftSignupId;
@@ -380,16 +375,16 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
       const event = await findEvent(request.tenant.id, request.params.slug);
       if (!event) {
-        return reply.status(404).send({ error: 'Anlass nicht gefunden' });
+        return reply.fail(404, 'event.notFoundAnlass');
       }
 
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.ATTENDANCE && !flags.isManager) {
-        return reply.status(403).send({ error: 'Nur das OK darf Verpflegungs-Bons zurücksetzen' });
+        return reply.fail(403, 'catering.resetOnlyOk');
       }
 
       const token = await fastify.prisma.cateringToken.findUnique({
@@ -430,7 +425,7 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
 
       const shift = token?.signup?.shift ?? token?.shift;
       if (!token || !shift || shift.eventId !== event.id) {
-        return reply.status(404).send({ error: 'Verpflegungs-Bon nicht gefunden' });
+        return reply.fail(404, 'catering.tokenNotFound');
       }
 
       const updated = await fastify.prisma.cateringToken.update({
@@ -489,16 +484,16 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
       const event = await findEvent(request.tenant.id, request.params.slug);
       if (!event) {
-        return reply.status(404).send({ error: 'Anlass nicht gefunden' });
+        return reply.fail(404, 'event.notFoundAnlass');
       }
 
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.ATTENDANCE && !flags.isManager) {
-        return reply.status(403).send({ error: 'Keine Berechtigung für die Verpflegungs-Übersicht' });
+        return reply.fail(403, 'catering.noOverviewPermission');
       }
 
       return getCateringOverview(fastify.prisma, {
@@ -524,10 +519,10 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       const event = await findEvent(request.tenant?.id, request.params.slug, request.user.id);
-      if (!event) return reply.status(404).send({ error: 'Anlass nicht gefunden' });
+      if (!event) return reply.fail(404, 'event.notFoundAnlass');
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.ATTENDANCE && !flags.isManager) {
-        return reply.status(403).send({ error: 'Keine Berechtigung' });
+        return reply.fail(403, 'auth.noPermission');
       }
 
       const [signupsCount, responsiblesCount] = await Promise.all([
@@ -561,10 +556,10 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       const event = await findEvent(request.tenant?.id, request.params.slug, request.user.id);
-      if (!event) return reply.status(404).send({ error: 'Anlass nicht gefunden' });
+      if (!event) return reply.fail(404, 'event.notFoundAnlass');
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.ATTENDANCE && !flags.isManager) {
-        return reply.status(403).send({ error: 'Keine Berechtigung' });
+        return reply.fail(403, 'auth.noPermission');
       }
 
       return getEventCateringBatches(fastify.prisma, event.id);
@@ -586,10 +581,10 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       const event = await findEvent(request.tenant?.id, request.params.slug, request.user.id);
-      if (!event) return reply.status(404).send({ error: 'Anlass nicht gefunden' });
+      if (!event) return reply.fail(404, 'event.notFoundAnlass');
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.ATTENDANCE && !flags.isManager) {
-        return reply.status(403).send({ error: 'Keine Berechtigung' });
+        return reply.fail(403, 'auth.noPermission');
       }
 
       const input = request.body as z.output<typeof CreateCateringBatchSchema>;
@@ -623,14 +618,14 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       const event = await findEvent(request.tenant?.id, request.params.slug, request.user.id);
-      if (!event) return reply.status(404).send({ error: 'Anlass nicht gefunden' });
+      if (!event) return reply.fail(404, 'event.notFoundAnlass');
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.ATTENDANCE && !flags.isManager) {
-        return reply.status(403).send({ error: 'Keine Berechtigung' });
+        return reply.fail(403, 'auth.noPermission');
       }
 
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
       const tenant = request.tenant;
 
@@ -650,8 +645,8 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
           },
         });
       } catch (err) {
-        if (err instanceof Error && err.message === 'Tranche nicht gefunden') {
-          return reply.status(404).send({ error: err.message });
+        if (err instanceof TranslatableError && err.key === 'catering.batchNotFound') {
+          return reply.fail(404, err.key);
         }
         throw err;
       }
@@ -681,10 +676,10 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       const event = await findEvent(request.tenant?.id, request.params.slug, request.user.id);
-      if (!event) return reply.status(404).send({ error: 'Anlass nicht gefunden' });
+      if (!event) return reply.fail(404, 'event.notFoundAnlass');
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.ATTENDANCE && !flags.isManager) {
-        return reply.status(403).send({ error: 'Keine Berechtigung' });
+        return reply.fail(403, 'auth.noPermission');
       }
 
       return toggleBatchBlocked(fastify.prisma, {
@@ -709,9 +704,9 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       reply.header('Cache-Control', 'no-store');
-      if (!request.tenant) return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+      if (!request.tenant) return reply.fail(400, 'department.missingContext');
       const event = await findEvent(request.tenant.id, request.params.slug);
-      if (!event) return reply.status(404).send({ error: 'Anlass nicht gefunden' });
+      if (!event) return reply.fail(404, 'event.notFoundAnlass');
 
       const staff = await authorizeStaff(
         request,
@@ -722,11 +717,11 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
       if (!staff) return reply;
 
       const code = request.query.code?.trim();
-      if (!code) return reply.status(400).send({ error: 'Code fehlt' });
+      if (!code) return reply.fail(400, 'catering.codeMissing');
 
       const card = await getPhysicalCardByCode(fastify.prisma, { eventId: event.id, code });
       if (!card) {
-        return reply.status(404).send({ error: 'Ungültiger oder unbekannter Bon-Code' });
+        return reply.fail(404, 'catering.invalidCode');
       }
 
       return card;
@@ -746,9 +741,9 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
       preHandler: [fastify.optionalAuthenticate],
     },
     async (request, reply) => {
-      if (!request.tenant) return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+      if (!request.tenant) return reply.fail(400, 'department.missingContext');
       const event = await findEvent(request.tenant.id, request.params.slug);
-      if (!event) return reply.status(404).send({ error: 'Anlass nicht gefunden' });
+      if (!event) return reply.fail(404, 'event.notFoundAnlass');
 
       const input = request.body as z.output<typeof RedeemPhysicalTokenSchema>;
 
@@ -770,7 +765,12 @@ export const cateringRoutes: FastifyPluginAsync = async (fastify) => {
         });
       } catch (err) {
         return reply.status(400).send({
-          error: err instanceof Error ? err.message : 'Entwertung fehlgeschlagen',
+          error:
+            err instanceof TranslatableError
+              ? request.t(err.key, err.values)
+              : err instanceof Error
+                ? err.message
+                : request.t('catering.redeemFailed'),
         });
       }
     }

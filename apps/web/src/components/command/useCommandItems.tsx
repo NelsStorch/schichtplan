@@ -38,6 +38,7 @@ import {
   Wrench,
 } from 'lucide-react';
 import {
+  compareSwissText,
   getLandingUrl,
   type DepartmentPersonDto,
   type EventDto,
@@ -1662,7 +1663,7 @@ export function useCommandItems(query: string) {
         if (a.shifts.length > 0 && b.shifts.length === 0) return -1;
         if (a.shifts.length === 0 && b.shifts.length > 0) return 1;
         if (a.shifts.length !== b.shifts.length) return b.shifts.length - a.shifts.length;
-        return a.name.localeCompare(b.name, 'de-CH');
+        return compareSwissText(a.name, b.name);
       });
 
       // CommandItems erzeugen

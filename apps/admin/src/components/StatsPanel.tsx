@@ -17,6 +17,8 @@ import {
   type UsageMetricDef,
   type UsageMetricGroup,
   type UsageMetricKey,
+  formatSwissNumber,
+  zurichDateTimeFormat,
 } from '@schichtplan/shared';
 import { api, errorMessage } from '../lib/api';
 import { formatDateTime } from '../lib/format';
@@ -351,7 +353,7 @@ function EventsView({ data }: { data: AdminStatsFeaturesDto }) {
         <StatTile label="Volle Schichten" value={pct(data.fill.fullShiftsPct)} />
         <StatTile
           label="OK-Grösse"
-          value={data.okTeams.avgSize === null ? null : data.okTeams.avgSize.toLocaleString('de-CH')}
+          value={data.okTeams.avgSize === null ? null : formatSwissNumber(data.okTeams.avgSize)}
           hint={`${data.okTeams.events} Anlässe mit OK`}
         />
       </StatGrid>
@@ -605,14 +607,14 @@ export function StatsPanel({
   const [reload, setReload] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<string>(() =>
-    new Date().toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    zurichDateTimeFormat({ hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date())
   );
 
   const handleRefresh = () => {
     setRefreshing(true);
     setReload((n) => n + 1);
     setLastRefreshed(
-      new Date().toLocaleTimeString('de-CH', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      zurichDateTimeFormat({ hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date())
     );
     setTimeout(() => setRefreshing(false), 600);
   };

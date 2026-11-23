@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ClipboardCheck, History, RefreshCw, Repeat, Search, UserMinus, UserPlus, X } from 'lucide-react';
 import type { ShiftSignupLogDto } from '@schichtplan/shared';
-import { ATTENDANCE_STATUSES } from '@schichtplan/shared';
+import { ATTENDANCE_STATUSES, zurichDateTimeFormat } from '@schichtplan/shared';
 import { Badge, Button, Card, Chip, EmptyState, Input, Skeleton, cn, useToast } from '@schichtplan/ui';
 import { useOkEvent } from '@/components/ok/OkContext';
 import { OkPageHeader } from '@/components/ok/OkLayout';
@@ -12,8 +12,7 @@ import { fmtWeekday, fmtTimeRange } from '@/lib/format';
 
 type Action = 'ALL' | 'SIGNUP' | 'SIGNOFF' | 'REPLACE' | 'ATTENDANCE';
 
-const stampFmt = new Intl.DateTimeFormat('de-CH', {
-  timeZone: 'Europe/Zurich',
+const stampFmt = zurichDateTimeFormat({
   day: '2-digit',
   month: '2-digit',
   year: 'numeric',

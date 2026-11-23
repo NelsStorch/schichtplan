@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -56,25 +57,13 @@ export interface ErrorViewProps {
   className?: string;
 }
 
-const KITCHEN_WISDOMS = [
-  'Wenn die Gamelle anbrennt: Boden nicht abkratzen, mehr Maggi rein und behaupten, das gehöre zum Geheimrezept.',
-  'Regel #2 der Lagerküche: Hunger ist der beste Koch, aber ein funktionierender Server schadet auch nicht.',
-  'Pfadfinder-Tipp: Bei Systemabstürzen hilft tief durchatmen, Krawatte richten und beherzt auf «Nochmal versuchen» drücken.',
-  'Wer den Kochlöffel schwingt, bestimmt die Musik – ausser der Server kocht über.',
-  'Echte Cevianer*innen verlieren nie die Nerven – sie machen einfach ein kurzes Lagerfeuer-Päuschen.',
-  'Selbst der beste Spähtrupp stolpert mal über eine Wurzel im Code.',
-  'Schoggi-Banane heilt fast alles. Notfalls hilft auch ein Seiten-Reload.',
-];
-
-const STIR_REACTIONS = [
-  'Einmal kräftig umgerührt! Vielleicht klappt es jetzt schon?',
-  'Noch eine Prise Maggi... die geheime Zutat jedes Cevi-Lagers!',
-  'Suppe blubbert munter weiter. Der Server holt tief Luft...',
-  'Achtung, heisse Gamelle! Nicht die Finger verbrennen.',
-  'Boden ist noch nicht angebrannt – wir sind guter Dinge!',
-  'Das Küchenteam nickt anerkennend. Jetzt nochmal «Neu laden» probieren!',
-  'Volle Kochstufe erreicht! Zeit für ein Festmahl!',
-];
+/** Anzahl Texte je Gruppe im Katalog (ui.errorView.wisdom0…, stir0…, particle0…) */
+const WISDOM_COUNT = 7;
+const STIR_COUNT = 7;
+const PARTICLE_COUNT = 5;
+type WisdomKey = `wisdom${0 | 1 | 2 | 3 | 4 | 5 | 6}`;
+type StirKey = `stir${0 | 1 | 2 | 3 | 4 | 5 | 6}`;
+type ParticleKey = `particle${0 | 1 | 2 | 3 | 4}`;
 
 interface FloatingParticle {
   id: number;
@@ -91,17 +80,22 @@ interface FloatingParticle {
 export function ErrorView({
   error,
   reset,
-  badge = '⚠️ 500 · Rauch im Unterholz',
-  title = 'Da brennt etwas an...',
-  description = 'Ein unerwarteter Fehler hat diesen Posten lahmgelegt. Keine Sorge – deine Schichten und Daten sind sicher im Rucksack verstaut.',
+  badge: badgeProp,
+  title: titleProp,
+  description: descriptionProp,
   homeHref = '/',
-  homeLabel = 'Zurück zum Lagerplatz',
+  homeLabel: homeLabelProp,
   departmentName,
   departmentLogoUrl,
   secondaryActions = [],
   showBackStep = true,
   className,
 }: ErrorViewProps) {
+  const t = useTranslations('ui.errorView');
+  const badge = badgeProp ?? t('badge');
+  const title = titleProp ?? t('title');
+  const description = descriptionProp ?? t('description');
+  const homeLabel = homeLabelProp ?? t('home');
   const [stirs, setStirs] = useState(0);
   const [isPotBumping, setIsPotBumping] = useState(false);
   const [particles, setParticles] = useState<FloatingParticle[]>([]);
@@ -122,22 +116,22 @@ export function ErrorView({
   const displayLogoUrl = departmentLogoUrl || org?.logoUrl || '/images/cevi-logo.svg';
 
   useEffect(() => {
-    setWisdomIndex(Math.floor(Math.random() * KITCHEN_WISDOMS.length));
+    setWisdomIndex(Math.floor(Math.random() * WISDOM_COUNT));
     setCanGoBack(typeof window !== 'undefined' && window.history.length > 1);
   }, []);
 
   const currentStirReaction = useMemo(() => {
     if (stirs === 0) return null;
-    return STIR_REACTIONS[(stirs - 1) % STIR_REACTIONS.length];
-  }, [stirs]);
+    return t(`stir${(stirs - 1) % STIR_COUNT}` as StirKey);
+  }, [stirs, t]);
 
   const stirPot = useCallback(() => {
     setStirs((prev) => prev + 1);
     setIsPotBumping(true);
     setTimeout(() => setIsPotBumping(false), 350);
 
-    const particleTexts = ['Blubber! 🫧', '+1 Prise Maggi 🧂', 'Umgerührt! 🥄', 'Lecker 🍲', 'Zisch! 💨'];
-    const text = stirs === 9 ? '🎖️ Küchenprofi!' : particleTexts[Math.floor(Math.random() * particleTexts.length)];
+    const text =
+      stirs === 9 ? t('kitchenPro') : t(`particle${Math.floor(Math.random() * PARTICLE_COUNT)}` as ParticleKey);
     const id = Date.now() + Math.random();
     const x = Math.floor(Math.random() * 80) - 40;
 
@@ -145,7 +139,7 @@ export function ErrorView({
     setTimeout(() => {
       setParticles((prev) => prev.filter((p) => p.id !== id));
     }, 1200);
-  }, [stirs]);
+  }, [stirs, t]);
 
   const copyErrorDetails = useCallback(() => {
     const details = [
@@ -208,7 +202,7 @@ export function ErrorView({
             <span className="font-display text-sm font-bold tracking-tight text-fg group-hover:text-accent-ink transition-colors">
               {departmentName || orgName}
             </span>
-            <span className="text-2xs font-medium text-fg-subtle">Lagerküche & Technik</span>
+            <span className="text-2xs font-medium text-fg-subtle">{t('subtitle')}</span>
           </div>
         </Link>
         <div className="flex items-center gap-2">
@@ -246,8 +240,8 @@ export function ErrorView({
           <button
             type="button"
             onClick={stirPot}
-            title="Klick auf die Gamelle, um umzurühren!"
-            aria-label="Kochende Gamelle: Klick um die Suppe umzurühren"
+            title={t('stirTitle')}
+            aria-label={t('stirLabel')}
             className={cn(
               'group relative cursor-pointer select-none rounded-card p-2 outline-none transition-[transform,filter] duration-300',
               isPotBumping ? 'scale-105' : 'hover:scale-[1.02]',
@@ -369,7 +363,7 @@ export function ErrorView({
               )}
             >
               <Utensils className="size-3.5 text-amber-500 animate-pulse" />
-              <span>Suppe umrühren</span>
+              <span>{t('stirButton')}</span>
               {stirs > 0 && (
                 <span className="tabular font-mono text-2xs rounded-full bg-warning/20 px-1.5 py-0.2 text-warning-ink font-bold">
                   {stirs}
@@ -380,7 +374,7 @@ export function ErrorView({
             {stirs >= 10 && (
               <Badge tone="warning" className="animate-scale-in">
                 <Award className="size-3 mr-1" />
-                Meisterkoch der Lagerküche!
+                {t('masterChef')}
               </Badge>
             )}
           </div>
@@ -416,7 +410,7 @@ export function ErrorView({
               className="shadow-glow"
             >
               <RefreshCw className="size-5" />
-              <span>Nochmal versuchen</span>
+              <span>{t('retry')}</span>
             </Button>
           )}
 
@@ -436,10 +430,10 @@ export function ErrorView({
               variant="outline"
               size="lg"
               onClick={handleBack}
-              aria-label="Zur vorherigen Seite zurückkehren"
+              aria-label={t('backLabel')}
             >
               <ArrowLeft className="size-5" />
-              <span>Einen Schritt zurück</span>
+              <span>{t('back')}</span>
             </Button>
           )}
         </div>
@@ -505,7 +499,7 @@ export function ErrorView({
             >
               <span className="inline-flex items-center gap-2">
                 <AlertTriangle className="size-3.5 text-warning" />
-                Fehlerdetails für Support & Technik
+                {t('detailsToggle')}
               </span>
               {showDetails ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
             </button>
@@ -514,7 +508,7 @@ export function ErrorView({
               <div className="mt-2 rounded-field border border-line bg-surface p-4 text-xs font-mono animate-fade-in shadow-soft">
                 <div className="flex items-center justify-between border-b border-line pb-2 mb-2">
                   <span className="text-2xs font-sans font-bold uppercase tracking-wider text-fg-subtle">
-                    Fehler-Protokoll
+                    {t('log')}
                   </span>
                   <button
                     type="button"
@@ -522,23 +516,23 @@ export function ErrorView({
                     className="inline-flex items-center gap-1 text-2xs font-sans font-semibold text-accent-ink hover:underline"
                   >
                     {copied ? <Check className="size-3 text-success" /> : <Copy className="size-3" />}
-                    <span>{copied ? 'Kopiert!' : 'Kopieren'}</span>
+                    <span>{copied ? t('copied') : t('copy')}</span>
                   </button>
                 </div>
 
                 <div className="space-y-1.5 overflow-x-auto text-fg-muted">
                   <p>
-                    <strong className="text-danger-ink">Meldung:</strong> {error.message || 'Unbekannter Fehler'}
+                    <strong className="text-danger-ink">{t('message')}</strong> {error.message || t('unknown')}
                   </p>
                   {error.digest && (
                     <p>
-                      <strong className="text-fg">Digest-Code:</strong> {error.digest}
+                      <strong className="text-fg">{t('digest')}</strong> {error.digest}
                     </p>
                   )}
                   {error.stack && (
                     <details className="mt-2">
                       <summary className="cursor-pointer text-2xs text-fg-subtle hover:text-fg">
-                        Stacktrace anzeigen
+                        {t('stack')}
                       </summary>
                       <pre className="mt-2 max-h-40 overflow-y-auto whitespace-pre-wrap rounded bg-surface-2 p-2 text-[11px] leading-tight text-fg-subtle">
                         {error.stack}
@@ -555,10 +549,10 @@ export function ErrorView({
         <div className="mt-8 w-full max-w-md animate-fade-up">
           <div className="rounded-card border border-dashed border-line-strong bg-surface/75 p-4 text-left backdrop-blur-sm">
             <span className="text-2xs font-bold uppercase tracking-wider text-warning-ink block pb-1 border-b border-line">
-              ⛺ Lagerküchen-Regel
+              {t('ruleTitle')}
             </span>
             <p className="mt-2.5 text-xs sm:text-sm leading-relaxed text-fg-muted italic">
-              «{KITCHEN_WISDOMS[wisdomIndex]}»
+              «{t(`wisdom${wisdomIndex}` as WisdomKey)}»
             </p>
           </div>
         </div>

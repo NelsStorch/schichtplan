@@ -1,18 +1,15 @@
-import { businessDayKey, formatZurichTimeRange } from '@schichtplan/shared';
+import { businessDayKey, formatZurichTimeRange, zurichDateTimeFormat } from '@schichtplan/shared';
 
 export { businessDayKey };
 
 // Anlässe finden in der Schweiz statt: Zeiten immer in Schweizer Zeit anzeigen,
-// auch wenn jemand aus dem Ausland schaut.
-const TZ = 'Europe/Zurich';
-const LOCALE = 'de-CH';
-
-const timeFmt = new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2-digit', timeZone: TZ });
-const weekdayFmt = new Intl.DateTimeFormat(LOCALE, { weekday: 'long', timeZone: TZ });
-const shortWeekdayFmt = new Intl.DateTimeFormat(LOCALE, { weekday: 'short', timeZone: TZ });
-const dayMonthFmt = new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'long', timeZone: TZ });
-const shortDateFmt = new Intl.DateTimeFormat(LOCALE, { day: '2-digit', month: '2-digit', timeZone: TZ });
-const fullDateFmt = new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ });
+// auch wenn jemand aus dem Ausland schaut (zurichDateTimeFormat setzt die Zeitzone fest).
+const timeFmt = zurichDateTimeFormat({ hour: '2-digit', minute: '2-digit' });
+const weekdayFmt = zurichDateTimeFormat({ weekday: 'long' });
+const shortWeekdayFmt = zurichDateTimeFormat({ weekday: 'short' });
+const dayMonthFmt = zurichDateTimeFormat({ day: 'numeric', month: 'long' });
+const shortDateFmt = zurichDateTimeFormat({ day: '2-digit', month: '2-digit' });
+const fullDateFmt = zurichDateTimeFormat({ day: 'numeric', month: 'long', year: 'numeric' });
 
 export const fmtTime = (iso: string) => timeFmt.format(new Date(iso));
 /** Zeitspanne einheitlich «18:00–22:00» */

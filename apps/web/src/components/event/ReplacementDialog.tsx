@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Info } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button, Dialog, Field, Textarea } from '@schichtplan/ui';
 import { helpUrl } from '@schichtplan/shared';
 
@@ -24,51 +25,59 @@ export function ReplacementDialog({
   onClose: () => void;
   onSubmit: (note: string) => void;
 }) {
+  const t = useTranslations('web.replacementDialog');
   const [note, setNote] = useState('');
   useEffect(() => {
     if (open) setNote('');
   }, [open]);
+
+  const moreLink = (chunks: React.ReactNode) => (
+    <a
+      href={helpUrl('/helfen/ersatz-suchen/')}
+      target="_blank"
+      rel="noreferrer"
+      className="font-semibold text-accent-ink hover:underline"
+    >
+      {chunks}
+    </a>
+  );
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
       size="sm"
-      title={personName ? `Ersatz für ${personName} suchen` : 'Ersatz suchen'}
+      title={personName ? t('titleOther', { name: personName }) : t('titleSelf')}
       description={shiftLabel}
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>
-            Abbrechen
+            {t('cancelAction')}
           </Button>
           <Button loading={busy} onClick={() => onSubmit(note.trim())}>
-            Ersatz suchen
+            {t('submitAction')}
           </Button>
         </>
       }
     >
       <div className="space-y-4">
         <p className="text-sm text-fg-muted">
-          {personName ? `${personName} bleibt` : 'Du bleibst'} eingetragen, bis jemand die Schicht übernimmt. Wer sich für
-          diese Schicht eintragen darf, kann sie mit einem Klick übernehmen.{' '}
-          {personName ? `${personName} bekommt` : 'Du bekommst'} dann eine Mail.{' '}
-          <a href={helpUrl('/helfen/ersatz-suchen/')} target="_blank" rel="noreferrer" className="font-semibold text-accent-ink hover:underline">
-            Mehr dazu
-          </a>
+          {personName
+            ? t.rich('descriptionOther', { name: personName, moreLink: () => moreLink(t('moreLinkText')) })
+            : t.rich('descriptionSelf', { moreLink: () => moreLink(t('moreLinkText')) })}
         </p>
-        <Field label="Grund (freiwillig)">
+        <Field label={t('reasonLabel')}>
           <Textarea
             rows={2}
             maxLength={300}
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="z. B. Bin an diesem Tag verhindert"
+            placeholder={t('reasonPlaceholder')}
           />
         </Field>
         <p className="flex items-start gap-2 rounded-field border border-warning/30 bg-warning/10 p-2.5 text-xs text-warning-ink">
           <Info className="mt-0.5 size-3.5 shrink-0" />
-          Den Grund sehen alle, die im Schichtplan die Namen sehen. Schreib nichts Persönliches hinein, z. B. keine
-          Krankheit.
+          {t('privacyWarning')}
         </p>
       </div>
     </Dialog>

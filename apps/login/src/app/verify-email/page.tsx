@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import {
   Button,
@@ -15,6 +16,7 @@ import { cleanReturnTo, withReturnTo } from '@/lib/destination';
 import { AuthShell } from '@/components/AuthShell';
 
 function VerifyEmailContent() {
+  const t = useTranslations('login.verifyEmail');
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const errorParam = searchParams.get('error');
@@ -24,7 +26,7 @@ function VerifyEmailContent() {
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(
-    errorParam === 'missing_token' ? 'Kein Bestätigungstoken angegeben.' : null
+    errorParam === 'missing_token' ? t('missingToken') : null
   );
 
   // Formular zum erneuten Anfordern eines Links im Fehlerfall
@@ -68,13 +70,13 @@ function VerifyEmailContent() {
         if (!isMounted) return;
 
         if (ok) {
-          setSuccess(data.message || 'Deine E-Mail-Adresse wurde erfolgreich bestätigt.');
+          setSuccess(data.message || t('successDefault'));
         } else {
-          setError(data.error || 'Der Bestätigungslink ist ungültig oder abgelaufen.');
+          setError(data.error || t('invalidLink'));
         }
       } catch {
         if (isMounted) {
-          setError('Verbindung zum Server fehlgeschlagen. Bitte versuche es später nochmals.');
+          setError(t('serverFailed'));
         }
       } finally {
         if (isMounted) {
@@ -88,7 +90,7 @@ function VerifyEmailContent() {
     return () => {
       isMounted = false;
     };
-  }, [token]);
+  }, [token, t]);
 
   const handleResend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,17 +113,17 @@ function VerifyEmailContent() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        throw new Error(data.error || 'Fehler beim Senden des Bestätigungslinks.');
+        throw new Error(data.error || t('resendFailed'));
       }
 
       setResendMessage({
         tone: 'success',
-        text: data.message || 'Neuer Bestätigungslink wurde gesendet.',
+        text: data.message || t('resendSuccess'),
       });
     } catch (err) {
       setResendMessage({
         tone: 'danger',
-        text: err instanceof Error ? err.message : 'Fehler beim Senden des Bestätigungslinks.',
+        text: err instanceof Error ? err.message : t('resendFailed'),
       });
     } finally {
       setResending(false);
@@ -135,9 +137,9 @@ function VerifyEmailContent() {
           <div className="text-center">
             <Loader2 className="mx-auto size-10 animate-spin text-accent-ink" />
             <h1 className="mt-4 font-display text-[1.5rem] font-semibold tracking-tight text-fg">
-              E-Mail-Adresse wird bestätigt …
+              {t('verifyingTitle')}
             </h1>
-            <p className="mt-2 text-sm text-fg-muted">Einen kleinen Moment bitte.</p>
+            <p className="mt-2 text-sm text-fg-muted">{t('verifyingSubtitle')}</p>
           </div>
         )}
 
@@ -147,11 +149,11 @@ function VerifyEmailContent() {
               <CheckCircle2 className="size-8" />
             </div>
             <h1 className="mt-4 font-display text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-fg">
-              E-Mail bestätigt!
+              {t('successTitle')}
             </h1>
             <p className="mt-3 text-[15px] leading-relaxed text-fg-muted">{success}</p>
             <Button size="lg" className="mt-8 w-full" onClick={() => (window.location.href = withReturnTo('/', returnTo, inviteToken))}>
-              Zur Anmeldung
+              {t('goToLogin')}
             </Button>
           </div>
         )}
@@ -162,16 +164,16 @@ function VerifyEmailContent() {
               <AlertCircle className="size-6" />
             </div>
             <h1 className="mt-4 font-display text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-fg">
-              Bestätigung fehlgeschlagen
+              {t('failedTitle')}
             </h1>
             <div className="mt-3">
               <Callout tone="danger">{error}</Callout>
             </div>
 
             <div className="mt-8 rounded-card border border-line bg-surface p-5">
-              <h2 className="text-sm font-semibold text-fg">Neuen Link anfordern</h2>
+              <h2 className="text-sm font-semibold text-fg">{t('resendSectionTitle')}</h2>
               <p className="mt-1 text-xs text-fg-muted">
-                Gib deine registrierte E-Mail-Adresse ein, um einen neuen Bestätigungslink zu erhalten.
+                {t('resendSectionSubtitle')}
               </p>
 
               {resendMessage && (
@@ -181,18 +183,18 @@ function VerifyEmailContent() {
               )}
 
               <form onSubmit={handleResend} className="mt-4 space-y-3">
-                <Field label="E-Mail" required>
+                <Field label={t('email')} required>
                   <Input
                     type="email"
                     value={resendEmail}
                     onChange={(e) => setResendEmail(e.target.value)}
-                    placeholder="deine.email@beispiel.ch"
+                    placeholder={t('emailPlaceholder')}
                     autoComplete="email"
                     required
                   />
                 </Field>
                 <Button type="submit" loading={resending} className="w-full">
-                  {resending ? 'Wird gesendet …' : 'Bestätigungslink senden'}
+                  {resending ? t('resending') : t('resendButton')}
                 </Button>
               </form>
             </div>
@@ -202,7 +204,7 @@ function VerifyEmailContent() {
                 href={withReturnTo('/', returnTo, inviteToken)}
                 className="text-sm font-medium text-accent-ink underline-offset-4 hover:underline"
               >
-                Zurück zur Anmeldung
+                {t('backToLogin')}
               </Link>
             </div>
           </div>

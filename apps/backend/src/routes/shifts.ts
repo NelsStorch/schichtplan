@@ -13,7 +13,7 @@ import {
 import {
   managerFlags,
 } from '../services/eventAccess.js';
-import { UNRELATED_PERSON_ERROR, allUsersRelatedToEvent } from '../services/departmentVisibility.js';
+import { allUsersRelatedToEvent } from '../services/departmentVisibility.js';
 import { syncEventRange } from '../services/eventRange.js';
 import { EMAIL_REMINDER_MINUTES, PUSH_REMINDER_MINUTES, isPlaceholderEmail } from '@schichtplan/shared';
 import { pastReminderMinutes, toResponsiblePersonDto } from '../services/shiftDto.js';
@@ -51,7 +51,7 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
         responsibleUserIds,
       } = input;
       if (new Date(endTime) <= new Date(startTime)) {
-        return reply.status(400).send({ error: 'Das Ende der Schicht muss nach dem Beginn liegen' });
+        return reply.fail(400, 'shift.endBeforeStart');
       }
 
       // Event & Abteilung prüfen
@@ -61,7 +61,7 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!event || (request.tenant && event.departmentId !== request.tenant.id)) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
 
       // Prüfe Berechtigung: Abteilungsleitung, Planner oder Event-OK
@@ -69,18 +69,16 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
       const flags = await managerFlags(fastify.prisma, event, request.user);
 
       if (!flags.can.SHIFTS) {
-        return reply
-          .status(403)
-          .send({ error: 'Keine Berechtigung zum Erstellen von Schichten für dieses Event' });
+        return reply.fail(403, 'shift.createForbidden');
       }
 
       if (!(await allUsersRelatedToEvent(fastify.prisma, event.id, responsibleUserIds ?? []))) {
-        return reply.status(400).send({ error: UNRELATED_PERSON_ERROR });
+        return reply.status(400).send({ error: request.t('people.unrelatedPerson') });
       }
 
       const hasValidTask = tasks && tasks.length > 0 && tasks.some((t) => t.title?.trim().length > 0);
       if (!title?.trim() && !hasValidTask) {
-        return reply.status(400).send({ error: 'Bitte gib entweder einen Schichttitel oder mindestens eine Arbeit an.' });
+        return reply.fail(400, 'shift.titleOrTaskRequired');
       }
 
       const resolvedTasks =
@@ -189,7 +187,7 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
       } = input;
 
       if (new Date(endTime) <= new Date(startTime)) {
-        return reply.status(400).send({ error: 'Das Ende der Serie muss nach dem Beginn liegen' });
+        return reply.fail(400, 'shift.seriesEndBeforeStart');
       }
 
       // Event & Abteilung prüfen
@@ -199,7 +197,7 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!event || (request.tenant && event.departmentId !== request.tenant.id)) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
 
       // Prüfe Berechtigung: Abteilungsleitung, Planner oder Event-OK
@@ -207,13 +205,11 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
       const flags = await managerFlags(fastify.prisma, event, request.user);
 
       if (!flags.can.SHIFTS) {
-        return reply
-          .status(403)
-          .send({ error: 'Keine Berechtigung zum Erstellen von Schichten für dieses Event' });
+        return reply.fail(403, 'shift.createForbidden');
       }
 
       if (!(await allUsersRelatedToEvent(fastify.prisma, event.id, responsibleUserIds ?? []))) {
-        return reply.status(400).send({ error: UNRELATED_PERSON_ERROR });
+        return reply.status(400).send({ error: request.t('people.unrelatedPerson') });
       }
 
       const intervals = calculateShiftSeriesIntervals({
@@ -225,16 +221,16 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (intervals.length === 0) {
-        return reply.status(400).send({ error: 'Keine Schichten generiert. Zeitraum oder Dauer prüfen.' });
+        return reply.fail(400, 'shift.seriesEmpty');
       }
 
       if (intervals.length > 50) {
-        return reply.status(400).send({ error: 'Maximal 50 Schichten pro Serie erlaubt.' });
+        return reply.fail(400, 'shift.seriesTooMany');
       }
 
       const hasValidTask = tasks && tasks.length > 0 && tasks.some((t) => t.title?.trim().length > 0);
       if (!title?.trim() && !hasValidTask) {
-        return reply.status(400).send({ error: 'Bitte gib entweder einen Schichttitel oder mindestens eine Arbeit an.' });
+        return reply.fail(400, 'shift.titleOrTaskRequired');
       }
 
       const resolvedTasks =
@@ -346,7 +342,7 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!shift || (request.tenant && shift.event.departmentId !== request.tenant.id)) {
-        return reply.status(404).send({ error: 'Schicht nicht gefunden' });
+        return reply.fail(404, 'signup.shiftNotFound');
       }
 
       // Berechtigung prüfen
@@ -354,15 +350,15 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
       const flags = await managerFlags(fastify.prisma, shift.event, request.user);
 
       if (!flags.can.SHIFTS) {
-        return reply.status(403).send({ error: 'Keine Berechtigung zum Bearbeiten dieser Schicht' });
+        return reply.fail(403, 'shift.editForbidden');
       }
 
       const { title, category, isSetupTeardown, startTime, endTime, description, minAge, tasks, responsibleUserIds } = input;
       if (!(await allUsersRelatedToEvent(fastify.prisma, shift.eventId, responsibleUserIds ?? []))) {
-        return reply.status(400).send({ error: UNRELATED_PERSON_ERROR });
+        return reply.status(400).send({ error: request.t('people.unrelatedPerson') });
       }
       if (new Date(endTime ?? shift.endTime) <= new Date(startTime ?? shift.startTime)) {
-        return reply.status(400).send({ error: 'Das Ende der Schicht muss nach dem Beginn liegen' });
+        return reply.fail(400, 'shift.endBeforeStart');
       }
 
       // Falls tasks übergeben wurden: Synchronisieren
@@ -505,7 +501,7 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!updated) {
-        return reply.status(404).send({ error: 'Schicht nicht gefunden' });
+        return reply.fail(404, 'signup.shiftNotFound');
       }
 
       return {
@@ -558,14 +554,14 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!shift || (request.tenant && shift.event.departmentId !== request.tenant.id)) {
-        return reply.status(404).send({ error: 'Schicht nicht gefunden' });
+        return reply.fail(404, 'signup.shiftNotFound');
       }
 
       // Schichten planen: Abteilungsleitung, OK oder Recht «Schichten planen»
       const flags = await managerFlags(fastify.prisma, shift.event, request.user);
 
       if (!flags.can.SHIFTS) {
-        return reply.status(403).send({ error: 'Keine Berechtigung zum Löschen dieser Schicht' });
+        return reply.fail(403, 'shift.deleteForbidden');
       }
 
       // Helfende benachrichtigen, wenn notify aktiv ist
@@ -623,7 +619,7 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
         await syncEventRange(tx, shift.eventId);
       });
 
-      return { message: 'Schicht erfolgreich gelöscht' };
+      return { message: request.t('success.shiftDeleted') };
     }
   );
 
@@ -656,14 +652,14 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!shift || (request.tenant && shift.event.departmentId !== request.tenant.id)) {
-        return reply.status(404).send({ error: 'Schicht nicht gefunden' });
+        return reply.fail(404, 'signup.shiftNotFound');
       }
 
       // Schichten planen: Abteilungsleitung, OK oder Recht «Schichten planen»
       const flags = await managerFlags(fastify.prisma, shift.event, request.user);
 
       if (!flags.can.SHIFTS) {
-        return reply.status(403).send({ error: 'Keine Berechtigung zum Duplizieren dieser Schicht' });
+        return reply.fail(403, 'shift.duplicateForbidden');
       }
 
       // Vom Routen-Schema geprüft (DuplicateShiftSchema): Titel höchstens 120 Zeichen, Zeiten im ISO-Format
@@ -671,7 +667,7 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
       const newStartTime = body.startTime ? new Date(body.startTime) : new Date(shift.startTime);
       const newEndTime = body.endTime ? new Date(body.endTime) : new Date(shift.endTime);
       if (newEndTime <= newStartTime) {
-        return reply.status(400).send({ error: 'Das Ende der Schicht muss nach dem Beginn liegen' });
+        return reply.fail(400, 'shift.endBeforeStart');
       }
 
       const duplicated = await fastify.prisma.shift.create({
@@ -747,7 +743,7 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
       const event = await fastify.prisma.event.findUnique({
         where: { departmentId_slug: { departmentId: request.tenant.id, slug: request.params.slug } },
@@ -757,11 +753,11 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
         },
       });
       if (!event) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.SHIFTS) {
-        return reply.status(403).send({ error: 'Keine Berechtigung zum Bearbeiten der Schichten' });
+        return reply.fail(403, 'shift.editAllForbidden');
       }
 
       const input = request.body as z.output<typeof BulkShiftsSchema>;
@@ -773,7 +769,7 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
         include: { tasks: { include: { _count: { select: { signups: true } } } } },
       });
       if (shifts.length !== shiftIds.length) {
-        return reply.status(400).send({ error: 'Eine Schicht gehört nicht zu diesem Anlass' });
+        return reply.fail(400, 'event.shiftNotInEvent');
       }
 
       const skipped: BulkShiftsResultDto['skipped'] = [];

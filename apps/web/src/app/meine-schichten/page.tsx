@@ -26,9 +26,11 @@ import {
   UtensilsCrossed,
   Zap,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   cancelDeadlineAt,
   cancelDeadlineText,
+  formatSwissNumber,
   getDepartmentUrl,
   replacementDeadline,
   type ResponsiblePersonDto,
@@ -94,6 +96,7 @@ function hasBriefingDetails(s: MyShift): boolean {
 }
 
 export default function MyShiftsPage() {
+  const t = useTranslations('web.myShifts');
   const { user, department, loading: sessionLoading } = usePortal();
   const toast = useToast();
   const confirm = useConfirm();
@@ -134,17 +137,16 @@ export default function MyShiftsPage() {
   const handleResetToken = async () => {
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
       toast({
-        title: 'Keine Internetverbindung',
-        description: 'Zum Erneuern des Links wird eine Internetverbindung benötigt.',
+        title: t('offlineErrorTitle'),
+        description: t('offlineResetDescription'),
         tone: 'error',
       });
       return;
     }
     const ok = await confirm({
-      title: 'Abo-Link wirklich erneuern?',
-      description:
-        'Bestehende Kalender-Abonnements (z. B. auf deinem Smartphone oder in Outlook) verlieren den Zugriff und müssen mit dem neuen Link aktualisiert werden.',
-      confirmLabel: 'Neuen Link generieren',
+      title: t('confirmResetTitle'),
+      description: t('confirmResetDescription'),
+      confirmLabel: t('confirmResetAction'),
       tone: 'danger',
     });
     if (!ok) return;
@@ -153,11 +155,11 @@ export default function MyShiftsPage() {
       const data = await api<CalendarTokenData>('/api/calendar/token/reset', { method: 'POST' });
       setCalData(data);
       toast({
-        title: 'Neuer Kalender-Link generiert',
-        description: 'Bestehende Abos müssen mit dem neuen Link aktualisiert werden.',
+        title: t('resetSuccessTitle'),
+        description: t('resetSuccessDescription'),
       });
     } catch (err) {
-      toast({ title: 'Fehler beim Erneuern', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('resetErrorTitle'), description: errorMessage(err), tone: 'error' });
     } finally {
       setResettingToken(false);
     }
@@ -168,10 +170,10 @@ export default function MyShiftsPage() {
       setShifts(await api<MyShift[]>('/api/shifts/my'));
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) setNeedsLogin(true);
-      else toast({ title: 'Schichten konnten nicht geladen werden', description: errorMessage(err), tone: 'error' });
+      else toast({ title: t('loadErrorTitle'), description: errorMessage(err), tone: 'error' });
       setShifts([]);
     }
-  }, [toast]);
+  }, [t, toast]);
 
   useEffect(() => {
     if (sessionLoading) return;
@@ -191,8 +193,8 @@ export default function MyShiftsPage() {
   const cancel = async (shift: MyShift) => {
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
       toast({
-        title: 'Keine Internetverbindung',
-        description: 'Im Offline-Modus ist nur die Leseansicht verfügbar. Zum Austragen wird eine Internetverbindung benötigt.',
+        title: t('offlineErrorTitle'),
+        description: t('offlineCancelDescription'),
         tone: 'error',
       });
       return;
@@ -208,28 +210,33 @@ export default function MyShiftsPage() {
       if (new Date() >= deadline) {
         const daysText = cancelDeadlineText(deadline, shift.cancelDeadlineDays);
         await confirm({
-          title: 'Austragen nicht mehr selbst möglich',
-          description: `Das selbständige Austragen für «${shift.eventTitle}» ist ${daysText} gesperrt. Bitte wende dich direkt an das Event-OK.`,
-          confirmLabel: 'Verstanden',
+          title: t('cancelBlockedTitle'),
+          description: t('cancelBlockedDescription', { title: shift.eventTitle, daysText }),
+          confirmLabel: t('understoodAction'),
           tone: 'default',
         });
         return;
       }
     }
     const ok = await confirm({
-      title: 'Aus Schicht austragen?',
-      description: `Du wirst aus "${shift.title?.trim() || fmtTimeRange(shift.startTime, shift.endTime)}" ausgetragen. Der Platz wird für andere frei.`,
-      confirmLabel: 'Austragen',
+      title: t('confirmCancelTitle'),
+      description: t('confirmCancelDescription', {
+        shiftName: shift.title?.trim() || fmtTimeRange(shift.startTime, shift.endTime),
+      }),
+      confirmLabel: t('cancelAction'),
       tone: 'danger',
     });
     if (!ok) return;
     setBusy(shift.signupId);
     try {
       await api(`/api/shifts/${shift.shiftId}/signup`, { method: 'DELETE' });
-      toast({ title: 'Du bist ausgetragen', description: shift.title?.trim() || fmtTimeRange(shift.startTime, shift.endTime) });
+      toast({
+        title: t('cancelSuccessTitle'),
+        description: shift.title?.trim() || fmtTimeRange(shift.startTime, shift.endTime),
+      });
       await load();
     } catch (err) {
-      toast({ title: 'Austragen hat nicht geklappt', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('cancelErrorTitle'), description: errorMessage(err), tone: 'error' });
     } finally {
       setBusy(null);
     }
@@ -240,11 +247,14 @@ export default function MyShiftsPage() {
     setBusy(replacementFor.signupId);
     try {
       await api(`/api/signups/${replacementFor.signupId}/replacement`, { method: 'PUT', json: { note: note || null } });
-      toast({ title: 'Ersatz wird gesucht', description: 'Du bleibst eingetragen, bis jemand übernimmt. Du bekommst dann eine Mail.' });
+      toast({
+        title: t('replacementOfferedTitle'),
+        description: t('replacementOfferedDescription'),
+      });
       setReplacementFor(null);
       await load();
     } catch (err) {
-      toast({ title: 'Hat nicht geklappt', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('replacementErrorTitle'), description: errorMessage(err), tone: 'error' });
     } finally {
       setBusy(null);
     }
@@ -254,10 +264,13 @@ export default function MyShiftsPage() {
     setBusy(shift.signupId);
     try {
       await api(`/api/signups/${shift.signupId}/replacement`, { method: 'DELETE' });
-      toast({ title: 'Ersatz-Suche beendet', description: 'Du bleibst eingetragen.' });
+      toast({
+        title: t('replacementWithdrawnTitle'),
+        description: t('replacementWithdrawnDescription'),
+      });
       await load();
     } catch (err) {
-      toast({ title: 'Hat nicht geklappt', description: errorMessage(err), tone: 'error' });
+      toast({ title: t('replacementErrorTitle'), description: errorMessage(err), tone: 'error' });
     } finally {
       setBusy(null);
     }
@@ -269,11 +282,11 @@ export default function MyShiftsPage() {
         <div className="mx-auto max-w-xl px-4 pt-16">
           <EmptyState
             icon={<Ticket />}
-            title="Melde dich an"
-            description="Mit deinem Konto siehst du hier alle deine Einsätze auf einen Blick, mit Kalender-Export."
+            title={t('loginRequiredTitle')}
+            description={t('loginRequiredDescription')}
             action={
               <a href={loginUrl()} className={buttonClasses()}>
-                <LogIn /> Anmelden
+                <LogIn /> {t('loginAction')}
               </a>
             }
           />
@@ -295,7 +308,7 @@ export default function MyShiftsPage() {
       <div className="mx-auto max-w-4xl px-4 pt-8 sm:px-6 sm:pt-14">
         <header className="animate-fade-up">
           <h1 className="font-display text-[2.75rem] font-extrabold leading-[0.95] tracking-[-0.04em] text-fg sm:text-6xl">
-            Meine Schichten
+            {t('title')}
           </h1>
           {shifts === null ? (
             <Skeleton className="mt-6 h-16 w-72" />
@@ -303,19 +316,19 @@ export default function MyShiftsPage() {
             <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
               <dl className="flex gap-8">
                 <div>
-                  <dt className="text-sm text-fg-subtle">Einsätze</dt>
+                  <dt className="text-sm text-fg-subtle">{t('shiftsCount')}</dt>
                   <dd className="tabular font-display text-4xl font-extrabold tracking-tight text-fg">{shifts.length}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm text-fg-subtle">Stunden</dt>
+                  <dt className="text-sm text-fg-subtle">{t('hoursCount')}</dt>
                   <dd className="tabular font-display text-4xl font-extrabold tracking-tight text-fg">
-                    {hours.toLocaleString('de-CH', { maximumFractionDigits: 1 })}
+                    {formatSwissNumber(hours, { maximumFractionDigits: 1 })}
                   </dd>
                 </div>
               </dl>
               {calData && (
                 <Button variant="secondary" size="sm" onClick={() => setCalDialogOpen(true)}>
-                  <CalendarSync className="size-4" /> Kalender-Abo &amp; Export
+                  <CalendarSync className="size-4" /> {t('calendarSubscribeAction')}
                 </Button>
               )}
             </div>
@@ -324,19 +337,18 @@ export default function MyShiftsPage() {
 
         {calData?.resetNotice && (
           <div className="mt-6 rounded-card border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-fg">
-            <p className="font-semibold text-fg">Kalender-Abo bitte neu einrichten</p>
+            <p className="font-semibold text-fg">{t('resetNoticeTitle')}</p>
             <p className="mt-1 text-fg-muted">
-              Dein früheres Schnelllogin-Profil wurde mit deinem Konto zusammengeführt. Aus Sicherheitsgründen wurde der
-              alte Kalender-Link deaktiviert. Bitte <strong>lösche zuerst das alte Kalender-Abo</strong> in deiner
-              Kalender-App und richte es danach mit deinem neuen Link neu ein (gleiches gilt für allfällige
-              Push-Benachrichtigungen im Profil).
+              {t.rich('resetNoticeDescription', {
+                bold: (chunks) => <strong>{chunks}</strong>,
+              })}
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <Button size="sm" variant="primary" onClick={() => setCalDialogOpen(true)}>
-                <CalendarSync className="size-4" /> Neues Kalender-Abo einrichten
+                <CalendarSync className="size-4" /> {t('resetNoticeSetupAction')}
               </Button>
               <Button size="sm" variant="ghost" onClick={dismissCalResetNotice}>
-                Hinweis ausblenden
+                {t('resetNoticeDismissAction')}
               </Button>
             </div>
           </div>
@@ -352,11 +364,11 @@ export default function MyShiftsPage() {
           <EmptyState
             className="mt-10"
             icon={<Ticket />}
-            title="Noch keine Einsätze"
-            description="Du bist noch für keine Schicht eingetragen. Such dir einen Anlass aus und hilf mit."
+            title={t('emptyTitle')}
+            description={t('emptyDescription')}
             action={
               <Link href="/" className={buttonClasses()}>
-                Schichten finden <ArrowRight />
+                {t('findShiftsAction')} <ArrowRight />
               </Link>
             }
           />
@@ -369,10 +381,10 @@ export default function MyShiftsPage() {
                 <div className="relative flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-semibold text-fg-muted">Als Nächstes</p>
+                      <p className="text-sm font-semibold text-fg-muted">{t('nextHeader')}</p>
                       {next.isResponsible && (
                         <Badge tone="accent">
-                          <Shield className="size-3" /> {next.responsibleRole || 'Schichtleitung'}
+                          <Shield className="size-3" /> {next.responsibleRole || t('roleLeader')}
                         </Badge>
                       )}
                     </div>
@@ -409,7 +421,7 @@ export default function MyShiftsPage() {
                         size="sm"
                         onClick={() => setCateringFor({ slug: next.eventSlug, title: next.eventTitle })}
                       >
-                        <UtensilsCrossed className="size-4" /> Verpflegungs-Bons
+                        <UtensilsCrossed className="size-4" /> {t('cateringTokensAction')}
                       </Button>
                     )}
                     <a
@@ -417,17 +429,17 @@ export default function MyShiftsPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className={buttonClasses({ variant: 'secondary' })}
-                      title="Diesen Einzeleinsatz in Google Kalender speichern"
+                      title={t('googleCalendarTitle')}
                     >
-                      <CalendarPlus className="size-4" /> Google Kalender
+                      <CalendarPlus className="size-4" /> {t('googleCalendarAction')}
                     </a>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => downloadIcs(`schicht-${next.shiftId.slice(0, 8)}.ics`, [toCalendar(next)])}
-                      title="Einzelschicht als .ics herunterladen"
+                      title={t('icsDownloadTitle')}
                     >
-                      <Download className="size-4" /> .ics
+                      <Download className="size-4" /> {t('icsDownloadAction')}
                     </Button>
                   </div>
                 </div>
@@ -445,15 +457,15 @@ export default function MyShiftsPage() {
             {upcoming.length > 0 && (
               <section className="mt-12">
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-                  <h2 className="font-display text-2xl font-bold tracking-tight text-fg">Anstehend</h2>
+                  <h2 className="font-display text-2xl font-bold tracking-tight text-fg">{t('upcomingHeader')}</h2>
                   {upcoming.length > 1 && (
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => downloadIcs('meine-schichten.ics', upcoming.map(toCalendar))}
-                      title="Alle kommenden Schichten als statische .ics-Datei herunterladen"
+                      title={t('exportAllIcsTitle')}
                     >
-                      <Download className="size-4" /> Alle als .ics exportieren
+                      <Download className="size-4" /> {t('exportAllIcsAction')}
                     </Button>
                   )}
                 </div>
@@ -473,13 +485,12 @@ export default function MyShiftsPage() {
               <Card className="mt-12 border border-line bg-surface p-5 sm:p-6 animate-fade-up">
                 <div className="flex flex-wrap items-center gap-2.5">
                   <CalendarSync className="size-5 text-accent-ink shrink-0" />
-                  <h2 className="font-display text-lg font-bold text-fg">Live-Kalender-Abo</h2>
-                  <Badge tone="accent">Automatischer Sync</Badge>
+                  <h2 className="font-display text-lg font-bold text-fg">{t('liveCalendarTitle')}</h2>
+                  <Badge tone="accent">{t('liveCalendarSyncBadge')}</Badge>
                 </div>
 
                 <p className="mt-2 max-w-2xl text-sm leading-relaxed text-fg-muted">
-                  Abonniere alle deine Schichten direkt in deiner Kalender-App. Zukünftige Einsätze, Verschiebungen und
-                  Abmeldungen werden vollautomatisch im Hintergrund synchronisiert.
+                  {t('liveCalendarDescription')}
                 </p>
 
                 <div className="mt-4 flex flex-wrap items-center gap-2.5">
@@ -488,18 +499,18 @@ export default function MyShiftsPage() {
                       <a
                         href={calData.webcalUrl}
                         className={buttonClasses({ variant: 'primary', size: 'sm' })}
-                        title="Direkt in Apple Kalender auf deinem iPhone oder Mac abonnieren"
+                        title={t('subscribeAppleTitle')}
                       >
-                        <CalendarSync className="size-4" /> In Apple Kalender abonnieren
+                        <CalendarSync className="size-4" /> {t('subscribeAppleAction')}
                       </a>
                       <a
                         href={googleCalendarSubscribeUrl(calData.webcalUrl)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={buttonClasses({ variant: 'secondary', size: 'sm' })}
-                        title="In Google Kalender abonnieren (1-Klick)"
+                        title={t('subscribeGoogleTitle')}
                       >
-                        <CalendarPlus className="size-4" /> Google Kalender
+                        <CalendarPlus className="size-4" /> {t('googleCalendarAction')}
                       </a>
                     </>
                   ) : (
@@ -509,16 +520,16 @@ export default function MyShiftsPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className={buttonClasses({ variant: 'primary', size: 'sm' })}
-                        title="In Google Kalender abonnieren (1-Klick)"
+                        title={t('subscribeGoogleTitle')}
                       >
-                        <CalendarPlus className="size-4" /> In Google Kalender abonnieren
+                        <CalendarPlus className="size-4" /> {t('subscribeGoogleAction')}
                       </a>
                       <a
                         href={calData.webcalUrl}
                         className={buttonClasses({ variant: 'secondary', size: 'sm' })}
-                        title="Direkt in Apple Kalender oder Outlook abonnieren"
+                        title={t('subscribeAppleTitle')}
                       >
-                        <CalendarSync className="size-4" /> Apple Kalender
+                        <CalendarSync className="size-4" /> {t('appleCalendarTitle')}
                       </a>
                     </>
                   )}
@@ -528,7 +539,7 @@ export default function MyShiftsPage() {
                     size="sm"
                     onClick={() => setCalDialogOpen(true)}
                   >
-                    <HelpCircle className="size-4" /> Andere Kalender, Anleitung &amp; .ics
+                    <HelpCircle className="size-4" /> {t('otherCalendarsAction')}
                   </Button>
                 </div>
               </Card>
@@ -537,7 +548,7 @@ export default function MyShiftsPage() {
             {/* 4. Erledigte Schichten */}
             {past.length > 0 && (
               <section className="mt-14">
-                <h2 className="mb-4 font-display text-2xl font-bold tracking-tight text-fg-subtle">Erledigt</h2>
+                <h2 className="mb-4 font-display text-2xl font-bold tracking-tight text-fg-subtle">{t('pastHeader')}</h2>
                 <Timeline shifts={past} muted onOpenCatering={(slug, title) => setCateringFor({ slug, title })} />
               </section>
             )}
@@ -578,6 +589,7 @@ export default function MyShiftsPage() {
 
 /** Kontakt-Pill für Schichtleitung, Tagesleitung oder Anlass-Kontakt (mit Direkt-Anruf / Mail) */
 function ContactPill({ person, roleLabel }: { person: ResponsiblePersonDto; roleLabel?: string }) {
+  const t = useTranslations('web.myShifts');
   return (
     <span className="inline-flex flex-wrap items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1 text-xs">
       <Shield className="size-3 text-accent-ink shrink-0" />
@@ -587,7 +599,7 @@ function ContactPill({ person, roleLabel }: { person: ResponsiblePersonDto; role
         <a
           href={`tel:${person.phone.replace(/\s+/g, '')}`}
           className="ml-1 inline-flex items-center gap-1 rounded-full bg-accent/12 px-2 py-0.5 font-mono text-2xs font-semibold text-accent-ink transition hover:bg-accent/20"
-          title={`${person.displayName} anrufen (${person.phone})`}
+          title={t('callPersonTitle', { name: person.displayName, phone: person.phone })}
         >
           <Phone className="size-2.5" /> {person.phone}
         </a>
@@ -596,9 +608,9 @@ function ContactPill({ person, roleLabel }: { person: ResponsiblePersonDto; role
         <a
           href={`mailto:${person.email}`}
           className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2 py-0.5 text-2xs font-medium text-fg-muted transition hover:text-fg"
-          title={`E-Mail an ${person.displayName} (${person.email})`}
+          title={t('mailPersonTitle', { name: person.displayName, email: person.email })}
         >
-          <Mail className="size-2.5" /> Mail
+          <Mail className="size-2.5" /> {t('mailShort')}
         </a>
       )}
     </span>
@@ -607,6 +619,7 @@ function ContactPill({ person, roleLabel }: { person: ResponsiblePersonDto; role
 
 /** Kompaktes Einsatz-Briefing (Beschreibung, Leitung mit Kontakt, eingeteiltes Team) – auch offline abrufbar */
 function ShiftBriefingPanel({ shift }: { shift: MyShift }) {
+  const t = useTranslations('web.myShifts');
   const responsibles = shift.responsibles ?? [];
   const respIds = new Set(responsibles.map((r) => r.id));
   const extraContact = shift.contactUser && !respIds.has(shift.contactUser.id) ? shift.contactUser : null;
@@ -623,18 +636,21 @@ function ShiftBriefingPanel({ shift }: { shift: MyShift }) {
 
       <div className="flex flex-wrap items-center gap-2">
         {responsibles.map((person) => (
-          <ContactPill key={person.id} person={person} roleLabel="Leitung" />
+          <ContactPill key={person.id} person={person} roleLabel={t('leaderRole')} />
         ))}
-        {extraContact && <ContactPill person={extraContact} roleLabel="OK-Kontakt" />}
+        {extraContact && <ContactPill person={extraContact} roleLabel={t('okContactRole')} />}
         {(coHelpers.length > 0 || shift.requiredSlots !== undefined) && (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1 text-xs text-fg-muted">
             <Users className="size-3 shrink-0 text-fg-subtle" />
             {coHelpers.length > 0 ? (
               <span>
-                Mit dir dabei: <strong className="font-semibold text-fg">{coHelpers.join(', ')}</strong>
+                {t.rich('teamWithYou', {
+                  helpers: coHelpers.join(', '),
+                  bold: (chunks) => <strong className="font-semibold text-fg">{chunks}</strong>,
+                })}
               </span>
             ) : (
-              <span>Noch niemand weiteres eingetragen</span>
+              <span>{t('teamNoneYet')}</span>
             )}
             {shift.requiredSlots !== undefined && shift.filledSlots !== undefined && (
               <span className="tabular text-fg-subtle">
@@ -650,6 +666,7 @@ function ShiftBriefingPanel({ shift }: { shift: MyShift }) {
 
 /** Berechnet die Pause oder den Übergang zwischen zwei aufeinanderfolgenden Schichten am selben Tag */
 function BreakIndicator({ prev, next }: { prev: MyShift; next: MyShift }) {
+  const t = useTranslations('web.myShifts');
   const prevEnd = new Date(prev.endTime).getTime();
   const nextStart = new Date(next.startTime).getTime();
   const diffMin = Math.round((nextStart - prevEnd) / 60000);
@@ -658,7 +675,7 @@ function BreakIndicator({ prev, next }: { prev: MyShift; next: MyShift }) {
     return (
       <div className="my-2 flex items-center gap-2 py-1">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent-ink">
-          <Zap className="size-3.5" /> Direkter Anschluss um {fmtTime(next.startTime)} Uhr (ohne Pause)
+          <Zap className="size-3.5" /> {t('directConnection', { time: fmtTime(next.startTime) })}
         </span>
       </div>
     );
@@ -668,7 +685,11 @@ function BreakIndicator({ prev, next }: { prev: MyShift; next: MyShift }) {
     return (
       <div className="my-2 flex items-center gap-2 py-1">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-semibold text-accent-ink">
-          <RefreshCw className="size-3.5" /> {Math.abs(diffMin)} Min. Übergabe / Überlappung ({fmtTime(next.startTime)}–{fmtTime(prev.endTime)})
+          <RefreshCw className="size-3.5" /> {t('overlapConnection', {
+            minutes: Math.abs(diffMin),
+            from: fmtTime(next.startTime),
+            to: fmtTime(prev.endTime),
+          })}
         </span>
       </div>
     );
@@ -677,7 +698,11 @@ function BreakIndicator({ prev, next }: { prev: MyShift; next: MyShift }) {
   return (
     <div className="my-2 flex items-center gap-2 py-1">
       <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface-2 px-3 py-1 text-xs font-medium text-fg-muted">
-        <Coffee className="size-3.5 text-fg-subtle" /> {fmtDuration(prev.endTime, next.startTime)} Pause dazwischen ({fmtTime(prev.endTime)}–{fmtTime(next.startTime)})
+        <Coffee className="size-3.5 text-fg-subtle" /> {t('breakDuration', {
+          duration: fmtDuration(prev.endTime, next.startTime),
+          from: fmtTime(prev.endTime),
+          to: fmtTime(next.startTime),
+        })}
       </span>
     </div>
   );
@@ -701,6 +726,7 @@ function Timeline({
   onWithdrawReplacement?: (shift: MyShift) => void;
   onOpenCatering?: (slug: string, title: string) => void;
 }) {
+  const t = useTranslations('web.myShifts');
   const { department } = usePortal();
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
 
@@ -727,7 +753,7 @@ function Timeline({
               </p>
               {isMultiShiftDay && (
                 <Badge size="sm" tone={muted ? 'neutral' : 'accent'}>
-                  {group.items.length} Einsätze an diesem Tag
+                  {t('multiShiftDayBadge', { count: group.items.length })}
                 </Badge>
               )}
             </div>
@@ -765,7 +791,7 @@ function Timeline({
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                         <div className="tabular shrink-0 font-mono sm:w-28">
                           <p className="text-xl font-semibold text-fg">{fmtTime(s.startTime)}</p>
-                          <p className="text-xs text-fg-subtle">bis {fmtTime(s.endTime)}</p>
+                          <p className="text-xs text-fg-subtle">{t('untilTime', { time: fmtTime(s.endTime) })}</p>
                           <p className="text-xs text-fg-subtle">{fmtDuration(s.startTime, s.endTime)}</p>
                         </div>
                         <div className="min-w-0 flex-1 space-y-1.5">
@@ -773,7 +799,7 @@ function Timeline({
                             {s.category && <Badge>{s.category}</Badge>}
                             {s.isResponsible && (
                               <Badge tone="accent">
-                                <Shield className="size-3" /> {s.responsibleRole || 'Schichtleitung'}
+                                <Shield className="size-3" /> {s.responsibleRole || t('roleLeader')}
                               </Badge>
                             )}
                             {s.taskTitle && s.taskTitle !== s.title && (
@@ -781,13 +807,13 @@ function Timeline({
                             )}
                             {s.replacementWantedAt && (
                               <Badge tone="warning">
-                                <Repeat className="size-3" /> Ersatz gesucht
+                                <Repeat className="size-3" /> {t('replacementWantedBadge')}
                               </Badge>
                             )}
                           </div>
                           <div>
                             <p className="font-bold text-base sm:text-lg text-fg">
-                              {s.title?.trim() || s.taskTitle || 'Schicht'}
+                              {s.title?.trim() || s.taskTitle || t('defaultShiftTitle')}
                             </p>
                             {isOtherDept(s) ? (
                               <a
@@ -808,13 +834,13 @@ function Timeline({
                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-fg-muted pt-1">
                               {leaders && (
                                 <span className="inline-flex items-center gap-1">
-                                  <Shield className="size-3 text-accent-ink" /> Leitung:{' '}
+                                  <Shield className="size-3 text-accent-ink" /> {t('responsibleLeader')}{' '}
                                   <strong className="font-medium text-fg">{leaders}</strong>
                                 </span>
                               )}
                               {s.coHelpers && s.coHelpers.length > 0 && (
                                 <span className="inline-flex items-center gap-1">
-                                  <Users className="size-3 text-fg-subtle" /> Mit:{' '}
+                                  <Users className="size-3 text-fg-subtle" /> {t('withHelpers')}{' '}
                                   <strong className="font-medium text-fg">{s.coHelpers.join(', ')}</strong>
                                 </span>
                               )}
@@ -824,7 +850,7 @@ function Timeline({
                                   onClick={() => toggleBriefing(s.signupId)}
                                   className="inline-flex items-center gap-1 font-semibold text-accent-ink hover:underline"
                                 >
-                                  Briefing &amp; Kontakt <ChevronDown className="size-3.5" />
+                                  {t('briefingAndContact')} <ChevronDown className="size-3.5" />
                                 </button>
                               )}
                             </div>
@@ -834,8 +860,7 @@ function Timeline({
 
                       {s.replacementWantedAt && (
                         <p className="mt-3 rounded-field border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-warning-ink">
-                          Du suchst Ersatz{s.replacementNote ? ` («${s.replacementNote}»)` : ''}. Bis jemand übernimmt,
-                          bist du eingetragen. Du bekommst eine Mail, sobald es so weit ist.
+                          {t('replacementNotice', { note: s.replacementNote ? ` («${s.replacementNote}»)` : '' })}
                         </p>
                       )}
 
@@ -847,10 +872,10 @@ function Timeline({
                               variant="secondary"
                               size="sm"
                               onClick={() => onOpenCatering(s.eventSlug, s.eventTitle)}
-                              title="Deine digitalen Verpflegungs- & Getränke-Bons öffnen"
+                              title={t('cateringTokensAction')}
                               className="border-accent/40 text-accent-ink hover:bg-accent/10 font-semibold"
                             >
-                              <UtensilsCrossed className="size-4" /> Verpflegungs-Bons
+                              <UtensilsCrossed className="size-4" /> {t('cateringTokensAction')}
                             </Button>
                           )}
                           {hasContactOrDesc && (
@@ -858,10 +883,10 @@ function Timeline({
                               variant="ghost"
                               size="sm"
                               onClick={() => toggleBriefing(s.signupId)}
-                              title="Einsatz-Briefing, Beschreibung und Kontakte ein-/ausblenden"
+                              title={t('briefingToggleTitle')}
                             >
                               <FileText className="size-4" />
-                              <span className="hidden sm:inline">Briefing</span>
+                              <span className="hidden sm:inline">{t('briefingLabel')}</span>
                               {isExpanded ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
                             </Button>
                           )}
@@ -873,7 +898,7 @@ function Timeline({
                             target="_blank"
                             rel="noopener noreferrer"
                             className={buttonClasses({ variant: 'ghost', size: 'icon-sm' })}
-                            title="Diesen Einzeleinsatz in Google Kalender eintragen"
+                            title={t('googleCalendarTitle')}
                           >
                             <CalendarPlus className="size-4" />
                           </a>
@@ -881,7 +906,7 @@ function Timeline({
                             variant="ghost"
                             size="icon-sm"
                             onClick={() => downloadIcs(`schicht-${s.shiftId.slice(0, 8)}.ics`, [toCalendar(s)])}
-                            title="Diesen Einzeleinsatz als .ics-Datei herunterladen"
+                            title={t('icsDownloadTitle')}
                           >
                             <Download className="size-4" />
                           </Button>
@@ -891,9 +916,9 @@ function Timeline({
                               size="sm"
                               loading={busy === s.signupId}
                               onClick={() => onWithdrawReplacement(s)}
-                              title="Du bleibst eingetragen"
+                              title={t('endReplacementSearchTitle')}
                             >
-                              Ersatz-Suche beenden
+                              {t('endReplacementSearchAction')}
                             </Button>
                           ) : s.isSignup !== false &&
                             onOfferReplacement &&
@@ -903,9 +928,9 @@ function Timeline({
                               variant="secondary"
                               size="sm"
                               onClick={() => onOfferReplacement(s)}
-                              title="Du bleibst eingetragen, bis jemand übernimmt"
+                              title={t('seekReplacementTitle')}
                             >
-                              <Repeat /> Ersatz suchen
+                              <Repeat /> {t('seekReplacementAction')}
                             </Button>
                           ) : null}
                           {s.isSignup !== false && onCancel ? (
@@ -915,21 +940,21 @@ function Timeline({
                               loading={busy === s.signupId}
                               onClick={() => onCancel(s)}
                             >
-                              <UserMinus /> Austragen
+                              <UserMinus /> {t('cancelAction')}
                             </Button>
                           ) : isOtherDept(s) ? (
                             <a
                               href={getDepartmentUrl(s.departmentSlug, `/events/${s.eventSlug}`, s.departmentOrganization)}
                               className={buttonClasses({ variant: 'secondary', size: 'sm' })}
                             >
-                              Zum Anlass <ExternalLink className="size-3" />
+                              {t('openEventAction')} <ExternalLink className="size-3" />
                             </a>
                           ) : (
                             <Link
                               href={`/events/${s.eventSlug}`}
                               className={buttonClasses({ variant: 'secondary', size: 'sm' })}
                             >
-                              Zum Anlass <ExternalLink className="size-3" />
+                              {t('openEventAction')} <ExternalLink className="size-3" />
                             </Link>
                           )}
                         </div>

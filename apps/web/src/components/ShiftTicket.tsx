@@ -1,6 +1,7 @@
 'use client';
 
 import { Check, ChevronRight, Edit } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { ShiftDto, ShiftTaskDto } from '@schichtplan/shared';
 import { Avatar, Badge, Button, SlotMeter, cn, slotStatus } from '@schichtplan/ui';
 import { fmtDuration, fmtTime, fmtTimeRange, isPast } from '@/lib/format';
@@ -21,12 +22,6 @@ export interface ShiftTicketProps {
   onSelect?: (shift: ShiftDto) => void;
 }
 
-const STATUS_TEXT = {
-  open: (free: number) => `Noch ${free} Plätze frei`,
-  last: () => 'Noch 1 Platz frei',
-  full: () => 'Voll besetzt',
-};
-
 /**
  * Eine Schicht als interaktives "Ticket" im Schweizer Präzisions-Design:
  * Links der Zeit-Abriss mit Perforations-Kerben.
@@ -43,12 +38,19 @@ export function ShiftTicket({
   onEdit,
   onSelect,
 }: ShiftTicketProps) {
+  const t = useTranslations('web.event.ticket');
   const signups = shift.signups ?? [];
   const filled = signups.length;
   const total = shift.requiredSlots;
   const status = slotStatus(filled, total);
   const free = Math.max(0, total - filled);
   const over = isPast(shift.endTime);
+
+  const statusText = {
+    open: (f: number) => t('statusOpen', { free: f }),
+    last: () => t('statusLast'),
+    full: () => t('statusFull'),
+  };
 
   const tasks =
     shift.tasks && shift.tasks.length > 0
@@ -76,7 +78,12 @@ export function ShiftTicket({
       type="button"
       style={{ '--i': index } as React.CSSProperties}
       onClick={handleCardClick}
-      aria-label={`Schicht ${shift.title?.trim() || fmtTimeRange(shift.startTime, shift.endTime)}, ${fmtTime(shift.startTime)} bis ${fmtTime(shift.endTime)}, ${STATUS_TEXT[status](free)}`}
+      aria-label={t('ariaLabel', {
+        title: shift.title?.trim() || fmtTimeRange(shift.startTime, shift.endTime),
+        from: fmtTime(shift.startTime),
+        to: fmtTime(shift.endTime),
+        status: statusText[status](free),
+      })}
       className={cn(
         'group relative grid w-full animate-fade-up stagger grid-cols-[5.25rem_1fr] cursor-pointer rounded-card border text-left',
         'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]',
@@ -93,7 +100,7 @@ export function ShiftTicket({
           {fmtTime(shift.startTime)}
         </span>
         <span className="tabular font-mono text-xs text-fg-subtle">
-          bis {fmtTime(shift.endTime)}
+          {t('until', { time: fmtTime(shift.endTime) })}
         </span>
         <span className="mt-2.5 rounded-full border border-line/60 bg-surface-2 px-2.5 py-0.5 font-mono text-2xs font-semibold text-fg-muted">
           {fmtDuration(shift.startTime, shift.endTime)}
@@ -123,24 +130,24 @@ export function ShiftTicket({
           <div className="flex flex-wrap items-center gap-1.5">
             {shift.isSetupTeardown && (
               <Badge tone="warning" className="border-warning/30 bg-warning/15 font-bold text-warning-ink">
-                🛠️ Aufbau / Abbau
+                {t('setupTeardownBadge')}
               </Badge>
             )}
             {shift.category ? <Badge>{shift.category}</Badge> : null}
             {responsibles && responsibles.length > 0 && (
               <Badge tone="neutral" className="max-w-[200px] truncate">
-                Leitung: {responsibles.map((r) => r.displayName).join(', ')}
+                {t('leaderBadge', { leaders: responsibles.map((r) => r.displayName).join(', ') })}
               </Badge>
             )}
             {shift.minAge ? (
-              <Badge tone="warning">Schicht ab {shift.minAge} J.</Badge>
+              <Badge tone="warning">{t('minAgeBadge', { age: shift.minAge })}</Badge>
             ) : null}
             {isMine && (
               <Badge tone="success">
-                <Check className="size-3" /> Du bist dabei
+                <Check className="size-3" /> {t('youAreInBadge')}
               </Badge>
             )}
-            {over && <Badge tone="neutral">Vergangen</Badge>}
+            {over && <Badge tone="neutral">{t('pastBadge')}</Badge>}
           </div>
 
           {canManage && onEdit && (
@@ -151,7 +158,7 @@ export function ShiftTicket({
                 e.stopPropagation();
                 onEdit();
               }}
-              aria-label="Schicht bearbeiten"
+              aria-label={t('editShiftAria')}
             >
               <Edit className="size-3.5" />
             </Button>
@@ -180,22 +187,22 @@ export function ShiftTicket({
         <div className="space-y-1.5 rounded-field border border-line/70 bg-surface-2/40 p-2.5">
           <div className="flex items-center justify-between text-2xs font-bold uppercase tracking-wider text-fg-subtle">
             <span>
-              {tasks.length} {tasks.length === 1 ? 'Arbeit' : 'Arbeiten'}:
+              {t('tasksHeading', { count: tasks.length })}
             </span>
             <span className="text-accent-ink font-semibold lowercase tracking-normal">
-              Klicken für Details &amp; Arbeiten
+              {t('clickForDetails')}
             </span>
           </div>
 
           <div className="flex flex-wrap gap-1.5">
-            {tasks.map((t) => {
+            {tasks.map((taskItem) => {
               const taskSignups = signups.filter(
-                (s) => s.taskId === t.id || (tasks.length === 1 && !s.taskId)
+                (s) => s.taskId === taskItem.id || (tasks.length === 1 && !s.taskId)
               );
-              const isTaskFull = taskSignups.length >= t.requiredSlots;
+              const isTaskFull = taskSignups.length >= taskItem.requiredSlots;
               return (
                 <span
-                  key={t.id}
+                  key={taskItem.id}
                   className={cn(
                     'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors',
                     isTaskFull
@@ -203,14 +210,14 @@ export function ShiftTicket({
                       : 'border-accent/30 bg-accent/10 text-accent-ink'
                   )}
                 >
-                  <span className="truncate max-w-[130px] sm:max-w-[180px]">{t.title}</span>
-                  {t.minAge && (
+                  <span className="truncate max-w-[130px] sm:max-w-[180px]">{taskItem.title}</span>
+                  {taskItem.minAge && (
                     <span className="rounded bg-warning/20 px-1 py-0.2 text-[10px] font-bold text-warning-ink">
-                      {t.minAge}+
+                      {taskItem.minAge}+
                     </span>
                   )}
                   <span className="tabular font-mono text-2xs text-fg-subtle">
-                    ({taskSignups.length}/{t.requiredSlots})
+                    ({taskSignups.length}/{taskItem.requiredSlots})
                   </span>
                 </span>
               );
@@ -233,10 +240,13 @@ export function ShiftTicket({
             </div>
             <span className="text-xs text-fg-muted">
               {signups.length === 1
-                ? `${signups[0].displayName} ist eingeteilt`
+                ? t('singleHelperSignedUp', { name: signups[0].displayName })
                 : signups.length <= 3
                 ? signups.map((s) => s.displayName).join(', ')
-                : `${signups.slice(0, 2).map((s) => s.displayName).join(', ')} +${signups.length - 2} weitere`}
+                : t('moreHelpersSignedUp', {
+                    firstNames: signups.slice(0, 2).map((s) => s.displayName).join(', '),
+                    count: signups.length - 2,
+                  })}
             </span>
           </div>
         )}
@@ -258,11 +268,11 @@ export function ShiftTicket({
               <span className="tabular font-mono">
                 {filled}/{total}
               </span>{' '}
-              · {STATUS_TEXT[status](free)}
+              · {statusText[status](free)}
             </p>
             {status === 'full' && contactUser && (
               <p className="mt-1 text-2xs font-semibold text-accent-ink">
-                Fragen an {contactUser.displayName}
+                {t('contactQuestion', { name: contactUser.displayName })}
               </p>
             )}
           </div>
@@ -277,7 +287,7 @@ export function ShiftTicket({
                 : 'bg-accent text-accent-fg shadow-sm group-hover:brightness-105'
             )}
           >
-            <span>Arbeiten anzeigen</span>
+            <span>{t('showTasks')}</span>
             <span
               className={cn(
                 'flex size-5 items-center justify-center rounded-full transition-transform duration-300 group-hover:translate-x-0.5',

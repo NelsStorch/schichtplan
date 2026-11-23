@@ -11,7 +11,6 @@ import {
   syncCeviDbHomeDepartment,
 } from '../../services/homeDepartment.js';
 import {
-  RATE_LIMIT_ERROR,
   tooManyRequests,
 } from '../../services/nicknameLogin.js';
 import { mergeCeviNameProfilesInto } from '../../services/mergeProfiles.js';
@@ -407,7 +406,7 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
         },
       },
       async (request, reply) => {
-        if (!simulationEnabled(request.hostname)) return reply.status(404).send({ error: 'Nicht gefunden' });
+        if (!simulationEnabled(request.hostname)) return reply.fail(404, 'generic.notFoundShort');
         const { code, state } = request.query;
 
         let returnTo: string | null = null;
@@ -725,12 +724,12 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
     reply.header('Cache-Control', 'no-store');
     const link = readPendingLink(request.cookies[PENDING_LINK_COOKIE]);
-    if (!link) return reply.status(404).send({ error: 'Keine offene Verknüpfung. Melde dich nochmals mit Cevi.DB an.' });
+    if (!link) return reply.fail(404, 'hitobito.noPendingLink');
     const user = await fastify.prisma.user.findUnique({
       where: { id: link.userId },
       select: { email: true, nickname: true, firstName: true, totpEnabledAt: true, totpOnProviderLogin: true },
     });
-    if (!user) return reply.status(404).send({ error: 'Das Konto gibt es nicht mehr.' });
+    if (!user) return reply.fail(404, 'hitobito.accountGone');
     return {
       email: user.email,
       name: user.nickname || user.firstName,
@@ -754,11 +753,11 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
     if (tooManyRequests(request.ip)) {
-      return reply.status(429).send({ error: RATE_LIMIT_ERROR });
+      return reply.status(429).send({ error: request.t('auth.rateLimited') });
     }
     const token = request.cookies[PENDING_LINK_COOKIE];
     const link = readPendingLink(token);
-    if (!link) return reply.status(404).send({ error: 'Die Verknüpfung ist abgelaufen. Melde dich nochmals mit Cevi.DB an.' });
+    if (!link) return reply.fail(404, 'hitobito.linkExpired');
 
     const body = (request.body as { password?: string; code?: string }) ?? {};
     const password = typeof body.password === 'string' ? body.password : '';
@@ -771,27 +770,21 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
       if (link.failedAttempts >= MAX_LINK_ATTEMPTS) {
         pendingLinks.delete(token!);
         reply.clearCookie(PENDING_LINK_COOKIE, { path: '/' });
-        return reply
-          .status(429)
-          .send({ error: 'Zu viele falsche Passwörter. Melde dich nochmals mit Cevi.DB an.', code: 'RATE_LIMITED' });
+        return reply.fail(429, 'hitobito.tooManyWrongPasswords', undefined, { code: 'RATE_LIMITED' });
       }
-      return reply.status(401).send({ error: 'Das Passwort stimmt nicht.' });
+      return reply.fail(401, 'auth.wrongPassword');
     }
 
     // Ist 2FA auf dem Passwort-Konto aktiv, muss der 2FA-Code VOR dem Speichern der Verknüpfung geprüft werden
     let secondFactorVerified = false;
     if (needsSecondFactor(user, 'password')) {
       if (!code) {
-        return reply.status(401).send({
-          error: 'Bitte gib zusätzlich den 6-stelligen Code aus deiner Authenticator-App (oder einen Wiederherstellungscode) ein.',
-          code: 'TWO_FACTOR_REQUIRED',
-          twoFactorRequired: true,
-        });
+        return reply.fail(401, 'hitobito.twoFactorRequired', undefined, { code: 'TWO_FACTOR_REQUIRED', twoFactorRequired: true });
       }
       const ipBlocked = twoFactorFailuresByIp.hit(request.ip);
       const userBlocked = twoFactorFailuresByUser.hit(user.id);
       if (ipBlocked || userBlocked) {
-        return reply.status(429).send({ error: RATE_LIMIT_ERROR, code: 'RATE_LIMITED' });
+        return reply.status(429).send({ error: request.t('auth.rateLimited'), code: 'RATE_LIMITED' });
       }
       const result = await consumeSecondFactor(fastify.prisma, user, code);
       if (!result.ok) {
@@ -800,15 +793,9 @@ const hitobitoAuthRoutes: FastifyPluginAsync = async (fastify) => {
         if (link.failedAttempts >= MAX_LINK_ATTEMPTS) {
           pendingLinks.delete(token!);
           reply.clearCookie(PENDING_LINK_COOKIE, { path: '/' });
-          return reply
-            .status(429)
-            .send({ error: 'Zu viele Fehlversuche. Melde dich nochmals an.', code: 'RATE_LIMITED' });
+          return reply.fail(429, 'auth.tooManyFailures', undefined, { code: 'RATE_LIMITED' });
         }
-        return reply.status(401).send({
-          error: 'Der Code stimmt nicht oder wurde schon verwendet.',
-          code: 'TWO_FACTOR_WRONG',
-          twoFactorRequired: true,
-        });
+        return reply.fail(401, 'twoFactor.codeInvalidOrUsed', undefined, { code: 'TWO_FACTOR_WRONG', twoFactorRequired: true });
       }
       twoFactorFailuresByIp.undo(request.ip);
       twoFactorFailuresByUser.reset(user.id);

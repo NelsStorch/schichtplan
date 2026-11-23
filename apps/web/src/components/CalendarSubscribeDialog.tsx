@@ -13,6 +13,7 @@ import {
   RefreshCw,
   Smartphone,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { helpUrl } from '@schichtplan/shared';
 import { Badge, Button, Dialog, buttonClasses, cn, useToast } from '@schichtplan/ui';
 import {
@@ -49,6 +50,7 @@ export function CalendarSubscribeDialog({
   onResetToken,
   resettingToken = false,
 }: CalendarSubscribeDialogProps) {
+  const t = useTranslations('web.calendarDialog');
   const toast = useToast();
   const [copied, setCopied] = useState(false);
   const [showManualGoogle, setShowManualGoogle] = useState(false);
@@ -59,13 +61,13 @@ export function CalendarSubscribeDialog({
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
       toast({
-        title: 'Abo-Link kopiert',
-        description: 'Füge den Link in Google Kalender oder deiner Kalender-App ein.',
+        title: t('copySuccessTitle'),
+        description: t('copySuccessDesc'),
       });
     } catch {
       toast({
-        title: 'Kopieren nicht möglich',
-        description: 'Bitte kopiere den Link manuell.',
+        title: t('copyErrorTitle'),
+        description: t('copyErrorDesc'),
         tone: 'error',
       });
     }
@@ -74,21 +76,22 @@ export function CalendarSubscribeDialog({
   const isApple = clientDevice === 'ios' || clientDevice === 'mac';
 
   return (
-    <Dialog open={open} onClose={onClose} size="md" title="Schichten im Kalender abonnieren">
+    <Dialog open={open} onClose={onClose} size="md" title={t('title')}>
       <div className="space-y-5 text-sm">
         {calData.resetNotice && (
           <div className="rounded-card border border-amber-500/40 bg-amber-500/10 p-3.5 text-xs text-fg">
-            <p className="font-semibold">Wichtig vor dem Einrichten:</p>
+            <p className="font-semibold">{t('resetWarningTitle')}</p>
             <p className="mt-1 text-fg-muted">
-              Dein alter Kalender-Link aus dem Schnelllogin wurde aus Sicherheitsgründen deaktiviert. Bitte{' '}
-              <strong>entferne zuerst das alte Kalender-Abo</strong> in deiner Kalender-App, bevor du den neuen Link
-              unten hinzufügst.
+              {t.rich('resetWarningText', {
+                bold: (chunks) => <strong>{chunks}</strong>,
+              })}
             </p>
           </div>
         )}
         <p className="text-fg-muted">
-          Abonniere alle deine Schichten direkt in deiner bevorzugten Kalender-App. Zukünftige Einsätze, Verschiebungen
-          oder Abmeldungen synchronisieren sich <strong>vollautomatisch</strong> im Hintergrund.
+          {t.rich('intro', {
+            bold: (chunks) => <strong>{chunks}</strong>,
+          })}
         </p>
 
         {/* 1. Google Kalender (1. Wahl / Standard) */}
@@ -104,15 +107,15 @@ export function CalendarSubscribeDialog({
                 G
               </div>
               <div>
-                <span className="font-semibold text-fg">Google Kalender</span>
-                {!isApple && <Badge tone="accent" className="ml-2">1. Wahl</Badge>}
+                <span className="font-semibold text-fg">{t('googleCalendarTitle')}</span>
+                {!isApple && <Badge tone="accent" className="ml-2">{t('firstChoiceBadge')}</Badge>}
               </div>
             </div>
-            <span className="text-2xs text-fg-subtle">Android, PC &amp; Web</span>
+            <span className="text-2xs text-fg-subtle">{t('googleDeviceHint')}</span>
           </div>
 
           <p className="mt-2 text-xs text-fg-muted">
-            Öffnet direkt Google Kalender mit deinem persönlichen Abo. Bestätige dort einfach mit «Hinzufügen».
+            {t('googleDescription')}
           </p>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -122,11 +125,11 @@ export function CalendarSubscribeDialog({
               rel="noopener noreferrer"
               className={buttonClasses({ size: 'sm', variant: !isApple ? 'primary' : 'secondary' })}
             >
-              <CalendarPlus className="size-4" /> In Google Kalender abonnieren (1-Klick)
+              <CalendarPlus className="size-4" /> {t('subscribeGoogleButton')}
             </a>
             <Button variant="ghost" size="sm" onClick={handleCopyUrl}>
               {copied ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
-              {copied ? 'Kopiert' : 'Link kopieren'}
+              {copied ? t('copiedAction') : t('copyLinkAction')}
             </Button>
           </div>
 
@@ -136,14 +139,32 @@ export function CalendarSubscribeDialog({
               onClick={() => setShowManualGoogle(!showManualGoogle)}
               className="text-2xs text-fg-subtle hover:text-fg underline underline-offset-2"
             >
-              {showManualGoogle ? 'Anleitung für manuelles Einfügen ausblenden' : 'Geht das auch manuell? (Anleitung)'}
+              {showManualGoogle ? t('toggleManualInstructionsHide') : t('toggleManualInstructionsShow')}
             </button>
+
             {showManualGoogle && (
               <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs text-fg-muted bg-surface-2 p-2.5 rounded-lg border border-line/60">
-                <li>Klicke oben auf «Link kopieren».</li>
-                <li>Öffne <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer" className="text-accent-ink underline">calendar.google.com</a>.</li>
-                <li>Links bei <em>«Weitere Kalender»</em> auf das <strong>+</strong> klicken.</li>
-                <li>Wähle <strong>«Per URL hinzufügen»</strong> und füge den kopierten Link ein.</li>
+                <li>{t('manualGoogleStep1')}</li>
+                <li>
+                  {t.rich('manualGoogleStep2', {
+                    link: (chunks) => (
+                      <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer" className="text-accent-ink underline">
+                        {chunks}
+                      </a>
+                    ),
+                  })}
+                </li>
+                <li>
+                  {t.rich('manualGoogleStep3', {
+                    italic: (chunks) => <em>{chunks}</em>,
+                    bold: (chunks) => <strong>{chunks}</strong>,
+                  })}
+                </li>
+                <li>
+                  {t.rich('manualGoogleStep4', {
+                    bold: (chunks) => <strong>{chunks}</strong>,
+                  })}
+                </li>
               </ol>
             )}
           </div>
@@ -160,15 +181,15 @@ export function CalendarSubscribeDialog({
             <div className="flex items-center gap-2">
               <Smartphone className="size-4 text-fg" />
               <div>
-                <span className="font-semibold text-fg">Apple Kalender</span>
-                {isApple && <Badge tone="accent" className="ml-2">Für dein Gerät</Badge>}
+                <span className="font-semibold text-fg">{t('appleCalendarTitle')}</span>
+                {isApple && <Badge tone="accent" className="ml-2">{t('appleForYourDevice')}</Badge>}
               </div>
             </div>
-            <span className="text-2xs text-fg-subtle">iPhone, iPad &amp; Mac</span>
+            <span className="text-2xs text-fg-subtle">{t('appleDeviceHint')}</span>
           </div>
 
           <p className="mt-2 text-xs text-fg-muted">
-            Öffnet direkt die integrierte Apple-Kalender-App. Dein iPhone oder Mac fragt sofort: «Möchtest du den Kalender abonnieren?».
+            {t('appleDescriptionDetailed')}
           </p>
 
           <div className="mt-3">
@@ -176,7 +197,7 @@ export function CalendarSubscribeDialog({
               href={calData.webcalUrl}
               className={buttonClasses({ size: 'sm', variant: isApple ? 'primary' : 'secondary' })}
             >
-              <CalendarSync className="size-4" /> In Apple Kalender abonnieren (1-Klick)
+              <CalendarSync className="size-4" /> {t('subscribeAppleButton')}
             </a>
           </div>
         </div>
@@ -186,13 +207,13 @@ export function CalendarSubscribeDialog({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <Mail className="size-4 text-sky-600" />
-              <span className="font-semibold text-fg">Microsoft Outlook</span>
+              <span className="font-semibold text-fg">{t('outlookCalendarTitle')}</span>
             </div>
-            <span className="text-2xs text-fg-subtle">Outlook 365, PC &amp; Web</span>
+            <span className="text-2xs text-fg-subtle">{t('outlookDeviceHint')}</span>
           </div>
 
           <p className="mt-2 text-xs text-fg-muted">
-            Für Outlook im Browser oder auf dem PC/Mac.
+            {t('outlookDescriptionDetailed')}
           </p>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -202,22 +223,22 @@ export function CalendarSubscribeDialog({
               rel="noopener noreferrer"
               className={buttonClasses({ size: 'sm', variant: 'secondary' })}
             >
-              <ExternalLink className="size-4" /> In Outlook Web abonnieren
+              <ExternalLink className="size-4" /> {t('subscribeOutlookWeb')}
             </a>
             <a
               href={calData.webcalUrl}
               className={buttonClasses({ size: 'sm', variant: 'ghost' })}
             >
-              Outlook App (Webcal)
+              {t('subscribeOutlookApp')}
             </a>
           </div>
         </div>
 
         {/* 4. Andere Kalender-Apps & Manuell */}
         <div className="rounded-card border border-line bg-surface p-4">
-          <span className="font-semibold text-fg">Andere Kalender-Apps (URL)</span>
+          <span className="font-semibold text-fg">{t('otherCalendarTitleDetailed')}</span>
           <p className="mt-1 text-xs text-fg-muted">
-            Unterstützt jede Kalender-App mit iCal/Webcal-Abonnement (z. B. Thunderbird, Fantastical).
+            {t('otherCalendarDescriptionDetailed')}
           </p>
           <div className="mt-3 flex items-center gap-2">
             <input
@@ -228,7 +249,7 @@ export function CalendarSubscribeDialog({
             />
             <Button size="sm" variant="secondary" onClick={handleCopyUrl} className="shrink-0">
               {copied ? <Check className="size-3.5 text-emerald-600" /> : <Copy className="size-3.5" />}
-              {copied ? 'Kopiert' : 'Kopieren'}
+              {copied ? t('copiedAction') : t('copyButton')}
             </Button>
           </div>
         </div>
@@ -238,10 +259,9 @@ export function CalendarSubscribeDialog({
           <div className="rounded-card border border-line/80 bg-surface-2/60 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <span className="text-xs font-semibold text-fg">Kein Abo gewünscht?</span>
+                <span className="text-xs font-semibold text-fg">{t('noSubTitle')}</span>
                 <p className="mt-0.5 text-2xs text-fg-subtle">
-                  Einmalige .ics-Kalenderdatei aller deiner aktuellen Schichten herunterladen.
-                  (Aktualisiert sich bei Änderungen nicht automatisch.)
+                  {t('noSubDescription')}
                 </p>
               </div>
               <Button
@@ -250,7 +270,7 @@ export function CalendarSubscribeDialog({
                 onClick={() => downloadIcs('meine-schichten.ics', shifts)}
                 className="shrink-0"
               >
-                <Download className="size-3.5" /> .ics herunterladen
+                <Download className="size-3.5" /> {t('downloadIcsAction')}
               </Button>
             </div>
           </div>
@@ -264,7 +284,7 @@ export function CalendarSubscribeDialog({
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-accent-ink hover:underline"
           >
-            <HelpCircle className="size-3.5" /> Anleitung im Hilfe-Center
+            <HelpCircle className="size-3.5" /> {t('helpCenterLink')}
           </a>
 
           {onResetToken && (
@@ -275,7 +295,7 @@ export function CalendarSubscribeDialog({
               className="inline-flex items-center gap-1.5 text-fg-subtle hover:text-fg underline underline-offset-2 transition"
             >
               <RefreshCw className={cn('size-3', resettingToken && 'animate-spin')} />
-              Abo-Link erneuern (Zugriff sperren)
+              {t('resetLinkAction')}
             </button>
           )}
         </div>

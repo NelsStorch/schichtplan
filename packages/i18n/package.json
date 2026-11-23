@@ -1,0 +1,38 @@
+{
+  "name": "@schichtplan/i18n",
+  "version": "1.0.0",
+  "private": true,
+  "license": "AGPL-3.0-or-later",
+  "description": "Sprachen, Sprachermittlung, Übersetzungskataloge und Prüfungen für alle Apps",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./check": {
+      "types": "./dist/check.d.ts",
+      "default": "./dist/check.js"
+    },
+    "./pseudo": {
+      "types": "./dist/pseudo.d.ts",
+      "default": "./dist/pseudo.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "tsc && vitest run",
+    "check": "tsc && node scripts/check-i18n.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.1"
+  },
+  "dependencies": {
+    "@formatjs/icu-messageformat-parser": "^3.5.23",
+    "use-intl": "^4.15.1"
+  }
+}

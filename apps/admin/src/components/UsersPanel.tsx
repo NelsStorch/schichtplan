@@ -17,6 +17,7 @@ import {
   useConfirm,
   useToast,
 } from '@schichtplan/ui';
+import { formatSwissNumber } from '@schichtplan/shared';
 import type {
   AdminDepartmentListItemDto,
   AdminOverviewDto,
@@ -628,7 +629,7 @@ export function UsersPanel({
       {data && data.total > 0 && (
         <nav aria-label="Seiten" className="flex items-center justify-between gap-3">
           <p className="tabular text-[13px] text-fg-muted">
-            {from.toLocaleString('de-CH')}–{to.toLocaleString('de-CH')} von {data.total.toLocaleString('de-CH')}
+            {formatSwissNumber(from)}–{formatSwissNumber(to)} von {formatSwissNumber(data.total)}
           </p>
           <div className="flex items-center gap-2">
             <Button

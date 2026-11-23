@@ -2,10 +2,9 @@
 
 import { useState, type FormEvent } from 'react';
 import { ClipboardList } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   PLACEHOLDER_LAST_NAME,
-  REQUIRED_PROFILE_FIELDS,
-  SENSITIVE_CONSENT_TEXT,
   retentionNotice,
   type EventQuestionDto,
   type RequiredProfileField,
@@ -42,18 +41,19 @@ export function ParticipationDialog({
   onClose: () => void;
   onSaved: (signupAnswers: Record<string, string>, sensitiveConsent: boolean) => void;
 }) {
+  const t = useTranslations('web.participationDialog');
   const hasOnceStuff = event.viewer.missingFields.length > 0 || extraMissingFields.length > 0 || showOnceQuestions;
   return (
     <Dialog
       open={open}
       onClose={onClose}
       icon={<ClipboardList />}
-      title={hasOnceStuff ? 'Noch ein paar Angaben' : 'Angaben zur Eintragung'}
+      title={hasOnceStuff ? t('titleOnce') : t('titleSignup')}
       description={
         hasOnceStuff
-          ? `Das OK von «${event.title}» braucht diese Angaben von dir.`
+          ? t('descOnce', { title: event.title })
           : shiftLabel
-            ? `Für ${shiftLabel}`
+            ? t('descSignup', { shiftLabel })
             : undefined
       }
     >
@@ -84,6 +84,7 @@ function ParticipationForm({
   onCancel: () => void;
   onSaved: (signupAnswers: Record<string, string>, sensitiveConsent: boolean) => void;
 }) {
+  const t = useTranslations('web.participationDialog');
   const { user, refresh } = usePortal();
   const missing = new Set<RequiredProfileField>([...event.viewer.missingFields, ...extraMissingFields]);
   const onceQuestions = showOnceQuestions ? event.questions.filter((q) => q.scope !== 'PER_SIGNUP') : [];
@@ -150,8 +151,8 @@ function ParticipationForm({
         {q.type === 'YES_NO' ? (
           <div role="radiogroup" aria-label={q.label} className="flex gap-2">
             {[
-              { v: 'JA', label: 'Ja' },
-              { v: 'NEIN', label: 'Nein' },
+              { v: 'JA', label: t('yes') },
+              { v: 'NEIN', label: t('no') },
             ].map((o) => (
               /* biome-ignore lint/a11y/useSemanticElements: Segmented Control mit ARIA-Radio-Pattern */
               <button
@@ -171,7 +172,7 @@ function ParticipationForm({
           </div>
         ) : q.type === 'CHOICE' ? (
           <Select value={value} onChange={(e) => set(e.target.value)} required={q.required}>
-            <option value="">Bitte wählen</option>
+            <option value="">{t('chooseOption')}</option>
             {q.options.map((o) => (
               <option key={o} value={o}>
                 {o}
@@ -191,7 +192,7 @@ function ParticipationForm({
 
       {missing.has('FULL_NAME') && (
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Vorname" required>
+          <Field label={t('firstName')} required>
             <Input
               value={profile.firstName}
               onChange={(e) => setField('firstName', e.target.value)}
@@ -200,7 +201,7 @@ function ParticipationForm({
               minLength={2}
             />
           </Field>
-          <Field label="Nachname" required>
+          <Field label={t('lastName')} required>
             <Input
               value={profile.lastName}
               onChange={(e) => setField('lastName', e.target.value)}
@@ -212,7 +213,7 @@ function ParticipationForm({
         </div>
       )}
       {missing.has('PHONE') && (
-        <Field label={REQUIRED_PROFILE_FIELDS.PHONE.label} required hint="Damit dich das OK kurzfristig erreicht.">
+        <Field label={t('phone')} required hint={t('phoneHint')}>
           <Input
             type="tel"
             value={profile.phone}
@@ -224,7 +225,7 @@ function ParticipationForm({
         </Field>
       )}
       {missing.has('EMAIL') && (
-        <Field label={REQUIRED_PROFILE_FIELDS.EMAIL.label} required>
+        <Field label={t('email')} required hint={t('emailHint')}>
           <Input
             type="email"
             value={profile.email}
@@ -235,7 +236,7 @@ function ParticipationForm({
         </Field>
       )}
       {missing.has('BIRTH_DATE') && (
-        <Field label={REQUIRED_PROFILE_FIELDS.BIRTH_DATE.label} required>
+        <Field label={t('birthDate')} required hint={t('birthDateHint')}>
           <Input
             type="date"
             value={profile.birthDate}
@@ -252,7 +253,7 @@ function ParticipationForm({
       {signupQuestions.length > 0 && (
         <div className="space-y-5 rounded-field border border-line bg-surface-2/60 p-4">
           <p className="text-xs font-semibold text-fg-subtle">
-            Zu dieser Eintragung{shiftLabel ? ` (${shiftLabel})` : ''}
+            {shiftLabel ? t('descSignup', { shiftLabel }) : t('titleSignup')}
           </p>
           {signupQuestions.map(renderQuestion)}
         </div>
@@ -267,13 +268,13 @@ function ParticipationForm({
             required
             className="mt-0.5 size-4 shrink-0 accent-[rgb(var(--accent))]"
           />
-          <span>{SENSITIVE_CONSENT_TEXT}</span>
+          <span>{t('sensitiveNoticeText')}</span>
         </label>
       )}
 
       <div className="flex flex-col-reverse gap-2 border-t border-line pt-5 sm:flex-row sm:justify-end">
         <Button variant="ghost" onClick={onCancel}>
-          Abbrechen
+          {t('cancelAction')}
         </Button>
         <Button
           type="submit"
@@ -283,7 +284,7 @@ function ParticipationForm({
             [...onceQuestions, ...signupQuestions].some((q) => q.required && q.type === 'YES_NO' && !answers[q.id])
           }
         >
-          Speichern und eintragen
+          {t('saveAndContinueAction')}
         </Button>
       </div>
     </form>

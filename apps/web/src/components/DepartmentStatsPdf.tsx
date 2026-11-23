@@ -1,5 +1,5 @@
 import { Document, Font, Image, Page, StyleSheet, Text, View, pdf } from '@react-pdf/renderer';
-import type { DepartmentDto, DepartmentStatsResponseDto } from '@schichtplan/shared';
+import { formatZurichDate, type DepartmentDto, type DepartmentStatsResponseDto } from '@schichtplan/shared';
 
 const INK = '#0f172a';
 const MUTED = '#64748b';
@@ -291,7 +291,7 @@ export function DepartmentStatsPdf({ data, department, logoUrl }: DepartmentStat
     data.filter.includeSetupTeardown ? 'inkl. Auf- & Abbau' : 'ohne Auf-/Abbau',
   ].join(' · ');
 
-  const footerText = `${deptName} · Helferstatistik ${yearText} · Stand ${new Date().toLocaleDateString('de-CH')}`;
+  const footerText = `${deptName} · Helferstatistik ${yearText} · Stand ${formatZurichDate(new Date())}`;
 
   // Top 3 für das Podest
   const top3 = data.topHelpers.slice(0, 3);
@@ -349,7 +349,7 @@ export function DepartmentStatsPdf({ data, department, logoUrl }: DepartmentStat
           </View>
           <View style={s.metaRight}>
             <Text style={s.metaLabel}>Stand</Text>
-            <Text style={s.metaValue}>{new Date().toLocaleDateString('de-CH')}</Text>
+            <Text style={s.metaValue}>{formatZurichDate(new Date())}</Text>
             <Text style={[s.metaLabel, { marginTop: 3 }]}>Anlässe</Text>
             <Text style={s.metaValue}>{data.summary.totalEvents}</Text>
           </View>
@@ -515,7 +515,7 @@ export function DepartmentStatsPdf({ data, department, logoUrl }: DepartmentStat
               <View key={ev.id} style={[s.tr, i % 2 === 1 ? s.trAlt : {}]}>
                 <Text style={[s.td, { flex: 1, fontWeight: 600 }]}>{ev.title}</Text>
                 <Text style={[s.td, { width: 70, color: MUTED, fontSize: 7 }]}>
-                  {new Date(ev.startDate).toLocaleDateString('de-CH')}
+                  {formatZurichDate(ev.startDate)}
                 </Text>
                 <Text style={[s.td, { width: 48, textAlign: 'right', color: MUTED }]}>{ev.helpersCount}</Text>
                 <Text style={[s.td, { width: 48, textAlign: 'right', color: MUTED }]}>

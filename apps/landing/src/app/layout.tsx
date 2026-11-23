@@ -1,5 +1,8 @@
 import './globals.css';
 import { fontVariables } from '@schichtplan/ui/fonts';
+import { LocaleSettingsProvider } from '@schichtplan/ui/i18n';
+import { getRequestLocale } from '@schichtplan/ui/i18n/server';
+import { NextIntlClientProvider } from 'next-intl';
 import {
   FeedbackProvider,
   OrganizationProvider,
@@ -92,10 +95,11 @@ export default async function RootLayout({
 }) {
   const { origin, host } = await getRequestOrigin();
   const org = getOrganization(host);
+  const i18n = await getRequestLocale(null);
 
   return (
     <html
-      lang="de-CH"
+      lang={i18n.intlLocale}
       className={`${fontVariables} scroll-smooth`}
       data-scroll-behavior="smooth"
       style={accentVars(org.primaryColor) as React.CSSProperties}
@@ -109,9 +113,13 @@ export default async function RootLayout({
       </head>
       <body className="min-h-[100dvh] bg-canvas text-fg antialiased flex flex-col selection:bg-accent selection:text-white grain">
         <SkipLink />
-        <OrganizationProvider slug={getOrganizationSlugFromHost(host)}>
-          <FeedbackProvider>{children}</FeedbackProvider>
-        </OrganizationProvider>
+        <NextIntlClientProvider>
+          <LocaleSettingsProvider enabled={i18n.enabled} pseudo={i18n.pseudo} pseudoAvailable={i18n.pseudoAvailable}>
+            <OrganizationProvider slug={getOrganizationSlugFromHost(host)}>
+              <FeedbackProvider>{children}</FeedbackProvider>
+            </OrganizationProvider>
+          </LocaleSettingsProvider>
+        </NextIntlClientProvider>
         <UsageTracker app="landing" />
         <UmamiScript host={host} />
         <ConsoleBanner />

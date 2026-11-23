@@ -20,15 +20,15 @@ import {
   Trash2,
   UserRound,
 } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   PLACEHOLDER_LAST_NAME,
   STUFE_ROLES,
-  SWISS_LOCALE,
-  SWISS_TIMEZONE,
   formatZurichTimeRange,
   getDepartmentSetupUrl,
   getDepartmentUrl,
   isPlaceholderEmail,
+  zurichDateTimeFormat,
   type MyHoursSummaryDto,
   type OrganizationType,
   type UserDto,
@@ -47,12 +47,19 @@ import { cn } from '../utils/cn';
 export const PROFILE_TABS = ['uebersicht', 'angaben', 'benachrichtigungen', 'sicherheit'] as const;
 export type ProfileTab = (typeof PROFILE_TABS)[number];
 
-/** `short` passt auf dem Handy in vier gleich breite Tabs */
-const TAB_META: Record<ProfileTab, { label: string; short: string; icon: typeof Bell }> = {
-  uebersicht: { label: 'Übersicht', short: 'Übersicht', icon: LayoutGrid },
-  angaben: { label: 'Angaben', short: 'Angaben', icon: UserRound },
-  benachrichtigungen: { label: 'Benachrichtigungen', short: 'Mitteilungen', icon: Bell },
-  sicherheit: { label: 'Sicherheit & Daten', short: 'Sicherheit', icon: KeyRound },
+/** Texte im Katalog ui.profile.tabs; `short` passt auf dem Handy in vier gleich breite Tabs */
+const TAB_META: Record<
+  ProfileTab,
+  {
+    label: 'overview' | 'details' | 'notifications' | 'security';
+    short: 'overview' | 'details' | 'notificationsShort' | 'securityShort';
+    icon: typeof Bell;
+  }
+> = {
+  uebersicht: { label: 'overview', short: 'overview', icon: LayoutGrid },
+  angaben: { label: 'details', short: 'details', icon: UserRound },
+  benachrichtigungen: { label: 'notifications', short: 'notificationsShort', icon: Bell },
+  sicherheit: { label: 'security', short: 'securityShort', icon: KeyRound },
 };
 
 /** Ausschnitt aus GET /api/shifts/my (Schichten über alle Abteilungen) */
@@ -77,12 +84,7 @@ interface CalendarTokenData {
   httpsUrl: string;
 }
 
-const dayFmt = new Intl.DateTimeFormat(SWISS_LOCALE, {
-  weekday: 'short',
-  day: 'numeric',
-  month: 'short',
-  timeZone: SWISS_TIMEZONE,
-});
+const DAY_OPTIONS = { weekday: 'short', day: 'numeric', month: 'short' } as const;
 
 const SHIFT_PREVIEW = 3;
 
@@ -111,6 +113,7 @@ export interface ProfileViewProps {
  */
 export function ProfileView({ user, onUserChange, currentDepartmentSlug, onLogout }: ProfileViewProps) {
   const org = useOrganization();
+  const tr = useTranslations('ui.profile');
   const [tab, setTab] = useState<ProfileTab>('uebersicht');
 
   useEffect(() => {
@@ -161,17 +164,17 @@ export function ProfileView({ user, onUserChange, currentDepartmentSlug, onLogou
           </p>
           {user.hasCeviDb && (
             <Badge size="sm" className="mt-2">
-              <Database className="size-3" /> {org.authProviderShort || 'Verband'}
+              <Database className="size-3" /> {org.authProviderShort || tr('providerFallback')}
             </Badge>
           )}
         </div>
-        <Button variant="ghost" size="sm" onClick={() => void logout()} aria-label="Abmelden" className="shrink-0">
-          <LogOut /> <span className="hidden sm:inline">Abmelden</span>
+        <Button variant="ghost" size="sm" onClick={() => void logout()} aria-label={tr('logout')} className="shrink-0">
+          <LogOut /> <span className="hidden sm:inline">{tr('logout')}</span>
         </Button>
       </section>
 
       <div
-        aria-label="Profilbereiche"
+        aria-label={tr('tablistLabel')}
         role="tablist"
         className="grid grid-cols-4 gap-1 rounded-card border border-line bg-surface p-1 sm:flex sm:rounded-full"
       >
@@ -194,8 +197,8 @@ export function ProfileView({ user, onUserChange, currentDepartmentSlug, onLogou
               )}
             >
               <Icon className="size-4 shrink-0" aria-hidden />
-              <span className="max-w-full truncate sm:hidden">{short}</span>
-              <span className="hidden sm:inline">{label}</span>
+              <span className="max-w-full truncate sm:hidden">{tr(`tabs.${short}`)}</span>
+              <span className="hidden sm:inline">{tr(`tabs.${label}`)}</span>
             </button>
           );
         })}
@@ -270,6 +273,8 @@ function OverviewTab({
 }) {
   const org = useOrganization();
   const toast = useToast();
+  const tr = useTranslations('ui.profile');
+  const intlLocale = useLocale();
   const [shifts, setShifts] = useState<ProfileShift[] | null>(null);
   const [hours, setHours] = useState<MyHoursSummaryDto | null>(null);
   const [calData, setCalData] = useState<CalendarTokenData | null>(null);
@@ -313,30 +318,30 @@ function OverviewTab({
       await navigator.clipboard.writeText(calData.httpsUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
-      toast({ title: 'Abo-Link kopiert', description: 'Füge den Link in deiner Kalender-App ein.' });
+      toast({ title: tr('calendarCopied'), description: tr('calendarCopiedHint') });
     } catch {
-      toast({ title: 'Kopieren fehlgeschlagen', description: 'Kopiere den Link von Hand.', tone: 'error' });
+      toast({ title: tr('copyFailed'), description: tr('copyFailedHint'), tone: 'error' });
     }
   };
 
   /** Offene Punkte, die das Profil vervollständigen */
   const todos: { key: string; text: string; tab?: ProfileTab; href?: string }[] = [];
   if (user.needsDepartmentSetup) {
-    todos.push({ key: 'dept', text: `${org.unitTerm} angeben`, href: setupHref });
+    todos.push({ key: 'dept', text: tr('todoUnit', { unit: org.unitTerm }), href: setupHref });
   }
   if (!hasRealEmail) {
-    todos.push({ key: 'email', text: 'E-Mail-Adresse eintragen', tab: 'angaben' });
+    todos.push({ key: 'email', text: tr('todoEmail'), tab: 'angaben' });
   } else if (!user.emailVerified) {
-    todos.push({ key: 'verify', text: 'E-Mail-Adresse bestätigen', tab: 'angaben' });
+    todos.push({ key: 'verify', text: tr('todoVerify'), tab: 'angaben' });
   }
   if ((user.pushSubscriptionCount ?? 0) === 0) {
-    todos.push({ key: 'push', text: 'Push-Erinnerungen aufs Handy einschalten', tab: 'benachrichtigungen' });
+    todos.push({ key: 'push', text: tr('todoPush'), tab: 'benachrichtigungen' });
   }
 
   return (
     <>
       <ProfileCard
-        title="Deine nächsten Schichten"
+        title={tr('nextShifts')}
         icon={CalendarDays}
         action={
           calData && (
@@ -346,7 +351,7 @@ function OverviewTab({
               aria-expanded={calendarOpen}
               onClick={() => setCalendarOpen((v) => !v)}
             >
-              <CalendarPlus /> Kalender abonnieren
+              <CalendarPlus /> {tr('subscribeCalendar')}
             </Button>
           )
         }
@@ -354,7 +359,7 @@ function OverviewTab({
         {calData && calendarOpen && (
           <div className="mb-4 space-y-2 rounded-field border border-line bg-surface-1 p-3">
             <p className="text-xs text-fg-muted">
-              Deine Schichten erscheinen automatisch in deinem Kalender und bleiben aktuell.
+              {tr('calendarInfo')}
             </p>
             <div className="flex flex-wrap gap-2">
               <a
@@ -363,13 +368,13 @@ function OverviewTab({
                 rel="noopener noreferrer"
                 className={buttonClasses({ variant: 'secondary', size: 'sm' })}
               >
-                <CalendarPlus /> Google Kalender
+                <CalendarPlus /> {tr('googleCalendar')}
               </a>
               <a href={calData.webcalUrl} className={buttonClasses({ variant: 'secondary', size: 'sm' })}>
                 <CalendarSync /> Apple / Outlook
               </a>
               <Button variant="ghost" size="sm" onClick={() => void copyCalendarUrl()}>
-                {copied ? <Check className="text-success-ink" /> : <Copy />} Link kopieren
+                {copied ? <Check className="text-success-ink" /> : <Copy />} {tr('copyLink')}
               </Button>
             </div>
           </div>
@@ -378,7 +383,7 @@ function OverviewTab({
         {shifts === null ? (
           <div className="h-16 animate-pulse rounded-field bg-surface-2" aria-busy />
         ) : upcoming.length === 0 ? (
-          <p className="text-sm text-fg-muted">Keine kommenden Schichten.</p>
+          <p className="text-sm text-fg-muted">{tr('noUpcoming')}</p>
         ) : (
           <ul className="-my-1 divide-y divide-line">
             {upcoming.slice(0, SHIFT_PREVIEW).map((s) => {
@@ -397,12 +402,13 @@ function OverviewTab({
                         </span>
                         {s.isResponsible && (
                           <Badge tone="accent" size="sm" className="shrink-0">
-                            {s.responsibleRole || 'Leitung'}
+                            {s.responsibleRole || tr('lead')}
                           </Badge>
                         )}
                       </span>
                       <span className="block truncate text-xs text-fg-subtle">
-                        {dayFmt.format(new Date(s.startTime))}, {formatZurichTimeRange(s.startTime, s.endTime)} ·{' '}
+                        {zurichDateTimeFormat(DAY_OPTIONS, intlLocale).format(new Date(s.startTime))},{' '}
+                        {formatZurichTimeRange(s.startTime, s.endTime, intlLocale)} ·{' '}
                         {s.eventTitle}
                         {s.departmentSlug !== currentDepartmentSlug ? ` · ${s.departmentName}` : ''}
                       </span>
@@ -420,19 +426,19 @@ function OverviewTab({
             href={allShiftsHref}
             className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-accent-ink hover:underline"
           >
-            {upcoming.length > SHIFT_PREVIEW ? `Alle ${upcoming.length} Schichten ansehen` : 'Meine Schichten'}
+            {upcoming.length > SHIFT_PREVIEW ? tr('allShifts', { count: upcoming.length }) : tr('myShifts')}
             <ChevronRight className="size-4" />
           </a>
         )}
       </ProfileCard>
 
       {hours && hours.shiftCount > 0 && (
-        <ProfileCard title="Deine Helferstunden" icon={Clock} description="Über alle Anlässe und Abteilungen, inkl. Schichtleitung">
+        <ProfileCard title={tr('hoursTitle')} icon={Clock} description={tr('hoursDescription')}>
           <div className="grid grid-cols-3 gap-2 text-center">
             {[
-              { value: `${hours.totalHours} Std.`, label: 'Gesamt' },
-              { value: `${hours.completedHours} Std.`, label: 'Geleistet' },
-              { value: `${hours.upcomingHours} Std.`, label: 'Geplant' },
+              { value: tr('hours', { hours: hours.totalHours }), label: tr('hoursTotal') },
+              { value: tr('hours', { hours: hours.completedHours }), label: tr('hoursDone') },
+              { value: tr('hours', { hours: hours.upcomingHours }), label: tr('hoursPlanned') },
             ].map((item) => (
               <div key={item.label} className="rounded-field bg-surface-2 px-2 py-3">
                 <div className="font-mono text-lg font-bold text-fg">{item.value}</div>
@@ -441,14 +447,13 @@ function OverviewTab({
             ))}
           </div>
           <p className="mt-3 text-xs text-fg-subtle">
-            {hours.shiftCount} {hours.shiftCount === 1 ? 'Einsatz' : 'Einsätze'} an {hours.eventCount}{' '}
-            {hours.eventCount === 1 ? 'Anlass' : 'Anlässen'}
+            {tr('hoursSummary', { shifts: hours.shiftCount, events: hours.eventCount })}
           </p>
         </ProfileCard>
       )}
 
       <ProfileCard
-        title={`${org.unitTerm} & Stufen`}
+        title={tr('unitAndGroups', { unit: org.unitTerm })}
         icon={Building2}
         action={
           <div className="flex flex-wrap gap-2">
@@ -457,17 +462,17 @@ function OverviewTab({
                 href={getDepartmentUrl(home.slug, '/', home.organization)}
                 className={buttonClasses({ size: 'sm', variant: 'secondary' })}
               >
-                Zum Schichtplan <ArrowUpRight />
+                {tr('toShiftPlan')} <ArrowUpRight />
               </a>
             )}
             <a href={setupHref} className={buttonClasses({ size: 'sm', variant: 'ghost' })}>
-              Ändern
+              {tr('change')}
             </a>
           </div>
         }
       >
         <p className="text-base font-semibold">
-          {home?.name ?? (user.needsDepartmentSetup ? 'Noch nicht angegeben' : `Keine ${org.unitTerm}`)}
+          {home?.name ?? (user.needsDepartmentSetup ? tr('notSet') : tr('noUnit', { org: org.slug, unit: org.unitTerm }))}
         </p>
         {user.stufen && user.stufen.length > 0 && (
           <p className="mt-0.5 text-sm text-fg-muted">
@@ -476,13 +481,13 @@ function OverviewTab({
         )}
         {user.homeDepartmentFromCeviDb && (
           <p className="mt-1 text-xs text-fg-subtle">
-            Aus {org.authProviderShort || 'der Verbands-DB'} übernommen.
+            {tr('fromProvider', { provider: org.authProviderShort || tr('providerDbFallback') })}
           </p>
         )}
       </ProfileCard>
 
       {todos.length > 0 && (
-        <ProfileCard title="Noch offen" className="border-dashed">
+        <ProfileCard title={tr('openItems')} className="border-dashed">
           <ul className="-my-1 divide-y divide-line">
             {todos.map((t) => {
               const inner = (
@@ -518,7 +523,8 @@ function OverviewTab({
 
 function DetailsTab({ user, onUserChange }: { user: UserDto; onUserChange: (user: UserDto) => void }) {
   const org = useOrganization();
-  const provider = org.authProviderShort || 'der Verbands-DB';
+  const tr = useTranslations('ui.profile');
+  const provider = org.authProviderShort || tr('providerDbFallback');
   const hasRealEmail = Boolean(user.email && !isPlaceholderEmail(user.email));
   // Wie canChangeOwnEmail im Backend: ohne echte Adresse, oder selbst eingetragen und noch unbestätigt
   const emailEditable = !hasRealEmail || Boolean(!user.emailVerified && !user.hasPassword && !user.hasCeviDb);
@@ -548,10 +554,10 @@ function DetailsTab({ user, onUserChange }: { user: UserDto; onUserChange: (user
         body: JSON.stringify({ email: user.email }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Fehler beim Senden.');
-      setMessage({ tone: 'success', text: data.message || 'Neuer Bestätigungslink gesendet.' });
+      if (!res.ok) throw new Error(data.error || tr('sendFailed'));
+      setMessage({ tone: 'success', text: data.message || tr('linkSent') });
     } catch (err) {
-      setMessage({ tone: 'danger', text: err instanceof Error ? err.message : 'Fehler beim Senden.' });
+      setMessage({ tone: 'danger', text: err instanceof Error ? err.message : tr('sendFailed') });
     } finally {
       setResending(false);
     }
@@ -576,11 +582,11 @@ function DetailsTab({ user, onUserChange }: { user: UserDto; onUserChange: (user
         body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Speichern hat nicht geklappt.');
+      if (!res.ok) throw new Error(data.error || tr('saveFailed'));
       onUserChange(data as UserDto);
-      setMessage({ tone: 'success', text: 'Angaben gespeichert.' });
+      setMessage({ tone: 'success', text: tr('detailsSaved') });
     } catch (err) {
-      setMessage({ tone: 'danger', text: err instanceof Error ? err.message : 'Speichern hat nicht geklappt.' });
+      setMessage({ tone: 'danger', text: err instanceof Error ? err.message : tr('saveFailed') });
     } finally {
       setSaving(false);
     }
@@ -588,32 +594,32 @@ function DetailsTab({ user, onUserChange }: { user: UserDto; onUserChange: (user
 
   return (
     <ProfileCard
-      title="Deine Angaben"
+      title={tr('detailsTitle')}
       icon={UserRound}
       description={
         user.hasCeviDb
-          ? `Manche Anlässe brauchen sie für die Eintragung. Name, E-Mail und Geburtsdatum kommen bei jedem Login aus ${provider}.`
-          : 'Manche Anlässe brauchen sie für die Eintragung.'
+          ? tr('detailsHintProvider', { provider })
+          : tr('detailsHint')
       }
     >
       <form onSubmit={save} className="space-y-5">
         {message && <Callout tone={message.tone}>{message.text}</Callout>}
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Vorname">
+          <Field label={tr('firstName')}>
             <Input
               value={form.firstName}
               onChange={(e) => setForm({ ...form, firstName: e.target.value })}
               autoComplete="given-name"
             />
           </Field>
-          <Field label="Nachname">
+          <Field label={tr('lastName')}>
             <Input
               value={form.lastName}
               onChange={(e) => setForm({ ...form, lastName: e.target.value })}
               autoComplete="family-name"
             />
           </Field>
-          <Field label="Handynummer">
+          <Field label={tr('phone')}>
             <Input
               type="tel"
               value={form.phone}
@@ -622,7 +628,7 @@ function DetailsTab({ user, onUserChange }: { user: UserDto; onUserChange: (user
               placeholder="+41 79 000 00 00"
             />
           </Field>
-          <Field label="Geburtsdatum" hint={birthDateFromCeviDb ? `Aus ${provider}, nur dort änderbar` : undefined}>
+          <Field label={tr('birthDate')} hint={birthDateFromCeviDb ? tr('birthDateFromProvider', { provider }) : undefined}>
             <Input
               type="date"
               value={form.birthDate}
@@ -633,17 +639,17 @@ function DetailsTab({ user, onUserChange }: { user: UserDto; onUserChange: (user
           </Field>
           {!emailEditable ? (
             <div className="sm:col-span-2">
-              <div className="text-xs font-medium text-fg-subtle">E-Mail</div>
+              <div className="text-xs font-medium text-fg-subtle">{tr('email')}</div>
               <div className="mt-1.5 flex flex-wrap items-center gap-2">
                 <span className="text-sm font-medium text-fg">{user.email}</span>
                 {user.emailVerified ? (
                   <Badge tone="success" size="sm">
-                    <Check className="size-3" /> Bestätigt
+                    <Check className="size-3" /> {tr('confirmed')}
                   </Badge>
                 ) : (
                   <>
                     <Badge tone="warning" size="sm">
-                      Nicht bestätigt
+                      {tr('notConfirmed')}
                     </Badge>
                     <button
                       type="button"
@@ -651,7 +657,7 @@ function DetailsTab({ user, onUserChange }: { user: UserDto; onUserChange: (user
                       disabled={resending}
                       className="text-xs font-medium text-accent-ink underline-offset-4 hover:underline"
                     >
-                      {resending ? 'Wird gesendet …' : 'Bestätigungslink anfordern'}
+                      {resending ? tr('sending') : tr('requestLink')}
                     </button>
                   </>
                 )}
@@ -660,10 +666,8 @@ function DetailsTab({ user, onUserChange }: { user: UserDto; onUserChange: (user
           ) : (
             <div className="sm:col-span-2">
               <Field
-                label="E-Mail"
-                hint={
-                  hasRealEmail ? 'Noch nicht bestätigt. Du kannst die Adresse korrigieren, bis du sie bestätigt hast.' : undefined
-                }
+                label={tr('email')}
+                hint={hasRealEmail ? tr('emailUnconfirmedHint') : undefined}
               >
                 <Input
                   type="email"
@@ -679,7 +683,7 @@ function DetailsTab({ user, onUserChange }: { user: UserDto; onUserChange: (user
                   disabled={resending}
                   className="mt-1.5 text-xs font-medium text-accent-ink underline-offset-4 hover:underline"
                 >
-                  {resending ? 'Wird gesendet …' : `Bestätigungslink an ${user.email} anfordern`}
+                  {resending ? tr('sending') : tr('requestLinkTo', { email: user.email ?? '' })}
                 </button>
               )}
             </div>
@@ -687,10 +691,10 @@ function DetailsTab({ user, onUserChange }: { user: UserDto; onUserChange: (user
         </div>
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-fg-subtle">
-            Deine Adresse speichern wir nicht. Braucht ein OK sie, fragt es beim Anlass danach.
+            {tr('addressNotStored')}
           </p>
           <Button type="submit" loading={saving} className="shrink-0">
-            Speichern
+            {tr('save')}
           </Button>
         </div>
       </form>
@@ -704,6 +708,8 @@ function SecurityTab({ user, onUserChange }: { user: UserDto; onUserChange: (use
   const org = useOrganization();
   const confirm = useConfirm();
   const toast = useToast();
+  const tr = useTranslations('ui.profile');
+  const tActions = useTranslations('common.actions');
   const [deleting, setDeleting] = useState(false);
   const [exporting, setExporting] = useState(false);
 
@@ -714,21 +720,21 @@ function SecurityTab({ user, onUserChange }: { user: UserDto; onUserChange: (use
       const res = await fetch('/api/auth/me/export', { cache: 'no-store' });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Download hat nicht geklappt.');
+        throw new Error(data.error || tr('downloadFailedFallback'));
       }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'schichtplan-meine-daten.json';
+      a.download = tr('exportFileName');
       document.body.appendChild(a);
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-      toast({ title: 'Daten heruntergeladen', tone: 'success' });
+      toast({ title: tr('downloaded'), tone: 'success' });
     } catch (err) {
       toast({
-        title: 'Download fehlgeschlagen',
+        title: tr('downloadFailed'),
         description: err instanceof Error ? err.message : undefined,
         tone: 'error',
       });
@@ -740,11 +746,10 @@ function SecurityTab({ user, onUserChange }: { user: UserDto; onUserChange: (use
   /** Konten nur mit Cevi-Name/Spitzname können sich nicht selbst löschen: Antrag an die Datenschutz-Kontaktadresse */
   const requestDeletion = async () => {
     const confirmed = await confirm({
-      title: 'Löschung beantragen?',
-      description:
-        'Dein Profil ist nur mit Name und Geburtsdatum geschützt und kann darum nicht direkt gelöscht werden. Wir erhalten deinen Antrag und löschen dein Konto innert 30 Tagen.',
-      confirmLabel: 'Löschung beantragen',
-      cancelLabel: 'Abbrechen',
+      title: tr('requestDeletionTitle'),
+      description: tr('requestDeletionText'),
+      confirmLabel: tr('requestDeletion'),
+      cancelLabel: tActions('cancel'),
       tone: 'danger',
     });
     if (!confirmed) return;
@@ -752,12 +757,12 @@ function SecurityTab({ user, onUserChange }: { user: UserDto; onUserChange: (use
     try {
       const res = await fetch('/api/auth/me/deletion-request', { method: 'POST' });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Antrag hat nicht geklappt.');
-      toast({ title: 'Antrag verschickt', description: data.message, tone: 'success' });
+      if (!res.ok) throw new Error(data.error || tr('requestFailedFallback'));
+      toast({ title: tr('requestSent'), description: data.message, tone: 'success' });
     } catch (err) {
       toast({
-        title: 'Antrag nicht verschickt',
-        description: err instanceof Error ? err.message : 'Antrag hat nicht geklappt.',
+        title: tr('requestNotSent'),
+        description: err instanceof Error ? err.message : tr('requestFailedFallback'),
         tone: 'error',
       });
     } finally {
@@ -767,11 +772,10 @@ function SecurityTab({ user, onUserChange }: { user: UserDto; onUserChange: (use
 
   const deleteAccount = async () => {
     const confirmed = await confirm({
-      title: 'Konto wirklich löschen?',
-      description:
-        'Möchtest du dein Konto wirklich unwiderruflich löschen? Alle deine Schichteintragungen und Verknüpfungen werden dabei vollständig entfernt. Diese Aktion kann nicht rückgängig gemacht werden.',
-      confirmLabel: 'Mein Konto endgültig löschen',
-      cancelLabel: 'Abbrechen',
+      title: tr('deleteTitle'),
+      description: tr('deleteText'),
+      confirmLabel: tr('deleteConfirm'),
+      cancelLabel: tActions('cancel'),
       tone: 'danger',
       countdownSeconds: 7,
     });
@@ -781,13 +785,13 @@ function SecurityTab({ user, onUserChange }: { user: UserDto; onUserChange: (use
     try {
       const res = await fetch('/api/auth/me', { method: 'DELETE' });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Löschen hat nicht geklappt.');
-      toast({ title: 'Konto gelöscht', tone: 'success' });
+      if (!res.ok) throw new Error(data.error || tr('deleteFailedFallback'));
+      toast({ title: tr('deleted'), tone: 'success' });
       window.location.href = '/';
     } catch (err) {
       toast({
-        title: 'Fehler beim Löschen',
-        description: err instanceof Error ? err.message : 'Löschen hat nicht geklappt.',
+        title: tr('deleteFailed'),
+        description: err instanceof Error ? err.message : tr('deleteFailedFallback'),
         tone: 'error',
       });
       setDeleting(false);
@@ -799,12 +803,12 @@ function SecurityTab({ user, onUserChange }: { user: UserDto; onUserChange: (use
       <PasswordSettings user={user} onUserChange={onUserChange} />
       <TwoFactorSettings user={user} onUserChange={onUserChange} />
       <ProfileCard
-        title="Deine Daten"
+        title={tr('dataTitle')}
         icon={Database}
-        description="Alle Personendaten, die der Schichtplan zu deinem Konto speichert, als JSON-Datei."
+        description={tr('dataDescription')}
         action={
           <Button variant="secondary" size="sm" loading={exporting} onClick={() => void downloadData()}>
-            <Download /> Meine Daten herunterladen
+            <Download /> {tr('downloadData')}
           </Button>
         }
       />
@@ -812,14 +816,14 @@ function SecurityTab({ user, onUserChange }: { user: UserDto; onUserChange: (use
         <section className="rounded-card border border-danger/30 bg-surface p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-base font-bold text-danger-ink">Konto löschen</h2>
+              <h2 className="text-base font-bold text-danger-ink">{tr('deleteAccount')}</h2>
               <p className="mt-1 text-sm text-fg-muted">
-                Löscht dein Konto und alle deine Eintragungen und Verknüpfungen unwiderruflich aus dem {org.name}.
+                {tr('deleteAccountText', { app: org.name })}
               </p>
             </div>
             <Button variant="danger" size="sm" onClick={() => void deleteAccount()} disabled={deleting} className="shrink-0">
               <Trash2 aria-hidden />
-              {deleting ? 'Wird gelöscht …' : 'Konto löschen'}
+              {deleting ? tr('deleting') : tr('deleteAccount')}
             </Button>
           </div>
         </section>
@@ -827,14 +831,14 @@ function SecurityTab({ user, onUserChange }: { user: UserDto; onUserChange: (use
         <section className="rounded-card border border-danger/30 bg-surface p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-base font-bold text-danger-ink">Konto löschen</h2>
+              <h2 className="text-base font-bold text-danger-ink">{tr('deleteAccount')}</h2>
               <p className="mt-1 text-sm text-fg-muted">
-                Dein Konto lässt sich nicht direkt löschen. Stell einen Antrag, wir löschen es innert 30 Tagen.
+                {tr('requestDeletionInfo')}
               </p>
             </div>
             <Button variant="danger" size="sm" onClick={() => void requestDeletion()} disabled={deleting} className="shrink-0">
               <Trash2 aria-hidden />
-              Löschung beantragen
+              {tr('requestDeletion')}
             </Button>
           </div>
         </section>

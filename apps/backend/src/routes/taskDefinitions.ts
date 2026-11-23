@@ -17,7 +17,7 @@ const taskDefinitionRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
       // «Nur für Mitglieder»: den Arbeitskatalog sehen nur Angehörige der Abteilung und wer dort plant
       if (request.tenant.membersOnly) {
@@ -26,7 +26,7 @@ const taskDefinitionRoutes: FastifyPluginAsync = async (fastify) => {
           (await isDepartmentInsider(fastify.prisma, request.tenant.id, userId)) ||
           (await canPlanInDepartment(fastify.prisma, request.tenant.id, userId));
         if (!allowed) {
-          return reply.status(userId ? 403 : 401).send({ error: 'Dieser Katalog ist nur für Mitglieder der Abteilung.' });
+          return reply.fail(userId ? 403 : 401, 'task.catalogMembersOnly');
         }
       }
 
@@ -65,11 +65,11 @@ const taskDefinitionRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
 
       if (!(await canPlanInDepartment(fastify.prisma, request.tenant.id, request.user.id))) {
-        return reply.status(403).send({ error: 'Keine Berechtigung zum Erstellen von Arbeiten' });
+        return reply.fail(403, 'task.createForbidden');
       }
 
       const input = request.body as z.output<typeof CreateTaskDefinitionSchema>;
@@ -85,7 +85,7 @@ const taskDefinitionRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (existing) {
-        return reply.status(409).send({ error: `Eine Arbeit mit dem Namen "${title}" existiert bereits.` });
+        return reply.status(409).send({ error: request.t('task.nameExists', { name: title }) });
       }
 
       const task = await fastify.prisma.taskDefinition.create({
@@ -129,11 +129,11 @@ const taskDefinitionRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
 
       if (!(await canPlanInDepartment(fastify.prisma, request.tenant.id, request.user.id))) {
-        return reply.status(403).send({ error: 'Keine Berechtigung zum Bearbeiten von Arbeiten' });
+        return reply.fail(403, 'task.editForbidden');
       }
 
       const input = request.body as z.output<typeof UpdateTaskDefinitionSchema>;
@@ -143,7 +143,7 @@ const taskDefinitionRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!task || task.departmentId !== request.tenant.id) {
-        return reply.status(404).send({ error: 'Arbeit nicht gefunden' });
+        return reply.fail(404, 'task.notFound');
       }
 
       const { title, description, minAge, ageRequirementType } = input;
@@ -157,7 +157,7 @@ const taskDefinitionRoutes: FastifyPluginAsync = async (fastify) => {
           },
         });
         if (conflict) {
-          return reply.status(409).send({ error: `Eine Arbeit mit dem Namen "${title.trim()}" existiert bereits.` });
+          return reply.status(409).send({ error: request.t('task.nameExists', { name: title.trim() }) });
         }
       }
 
@@ -201,11 +201,11 @@ const taskDefinitionRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
 
       if (!(await canPlanInDepartment(fastify.prisma, request.tenant.id, request.user.id))) {
-        return reply.status(403).send({ error: 'Keine Berechtigung zum Löschen dieser Arbeit' });
+        return reply.fail(403, 'task.deleteForbidden');
       }
 
       const task = await fastify.prisma.taskDefinition.findUnique({
@@ -213,7 +213,7 @@ const taskDefinitionRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!task || task.departmentId !== request.tenant.id) {
-        return reply.status(404).send({ error: 'Arbeit nicht gefunden' });
+        return reply.fail(404, 'task.notFound');
       }
 
       // Prüfen, ob die Arbeit aktuell noch in Schichten verwendet wird
@@ -223,7 +223,7 @@ const taskDefinitionRoutes: FastifyPluginAsync = async (fastify) => {
 
       if (usedCount > 0) {
         return reply.status(400).send({
-          error: `Diese Arbeit kann nicht gelöscht werden, da sie noch in ${usedCount} Schicht(en) verwendet wird.`,
+          error: request.t('task.inUse', { count: usedCount }),
         });
       }
 

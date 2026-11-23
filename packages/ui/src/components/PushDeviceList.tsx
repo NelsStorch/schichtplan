@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Smartphone, Trash2 } from 'lucide-react';
-import { SWISS_LOCALE, SWISS_TIMEZONE, type PushDeviceDto } from '@schichtplan/shared';
+import { useLocale, useTranslations } from 'next-intl';
+import { zurichDateTimeFormat, type PushDeviceDto } from '@schichtplan/shared';
 import { Badge } from './Badge';
 import { Button } from './Button';
 import { useConfirm, useToast } from './Feedback';
 
-const dateFmt = new Intl.DateTimeFormat(SWISS_LOCALE, { day: 'numeric', month: 'short', year: 'numeric', timeZone: SWISS_TIMEZONE });
+const DATE_OPTIONS = { day: 'numeric', month: 'short', year: 'numeric' } as const;
 
 export interface PushDeviceListProps {
   /** Endpoint des Abos dieses Browsers, damit «Dieses Gerät» auch ohne Cookie stimmt */
@@ -24,6 +25,9 @@ export interface PushDeviceListProps {
  */
 export function PushDeviceList({ localEndpoint, refreshKey = 0, onRemoved }: PushDeviceListProps) {
   const confirm = useConfirm();
+  const t = useTranslations('ui.push');
+  const tActions = useTranslations('common.actions');
+  const intlLocale = useLocale();
   const toast = useToast();
   const [devices, setDevices] = useState<PushDeviceDto[] | null>(null);
   const [removing, setRemoving] = useState<string | null>(null);
@@ -42,10 +46,10 @@ export function PushDeviceList({ localEndpoint, refreshKey = 0, onRemoved }: Pus
 
   const remove = async (device: PushDeviceDto) => {
     const ok = await confirm({
-      title: 'Gerät entfernen?',
-      description: `${device.label || 'Dieses Gerät'} bekommt danach keine Push-Mitteilungen mehr. Du kannst Push dort jederzeit wieder einschalten.`,
-      confirmLabel: 'Entfernen',
-      cancelLabel: 'Abbrechen',
+      title: t('removeTitle'),
+      description: t('removeDescription', { device: device.label || t('thisDevice') }),
+      confirmLabel: t('remove'),
+      cancelLabel: tActions('cancel'),
       tone: 'danger',
     });
     if (!ok) return;
@@ -53,12 +57,12 @@ export function PushDeviceList({ localEndpoint, refreshKey = 0, onRemoved }: Pus
     try {
       const res = await fetch(`/api/push/devices/${encodeURIComponent(device.id)}`, { method: 'DELETE' });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Entfernen hat nicht geklappt.');
+      if (!res.ok) throw new Error(data.error || t('removeFailedFallback'));
       setDevices((prev) => (prev ?? []).filter((d) => d.id !== device.id));
       onRemoved?.({ subscriptionCount: data.subscriptionCount ?? 0, wasCurrent: device.current });
-      toast({ title: 'Gerät entfernt' });
+      toast({ title: t('removed') });
     } catch (err) {
-      toast({ title: 'Entfernen fehlgeschlagen', description: err instanceof Error ? err.message : undefined, tone: 'error' });
+      toast({ title: t('removeFailed'), description: err instanceof Error ? err.message : undefined, tone: 'error' });
     } finally {
       setRemoving(null);
     }
@@ -68,7 +72,7 @@ export function PushDeviceList({ localEndpoint, refreshKey = 0, onRemoved }: Pus
 
   return (
     <div className="space-y-2 border-t border-line pt-3">
-      <div className="text-xs font-semibold text-fg-subtle">Geräte mit Push</div>
+      <div className="text-xs font-semibold text-fg-subtle">{t('devicesTitle')}</div>
       <ul className="divide-y divide-line">
         {devices.map((d) => (
           <li key={d.id} className="flex items-center justify-between gap-3 py-2">
@@ -76,16 +80,16 @@ export function PushDeviceList({ localEndpoint, refreshKey = 0, onRemoved }: Pus
               <Smartphone className="size-4 shrink-0 text-fg-subtle" aria-hidden />
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-1.5 text-sm font-medium text-fg">
-                  <span className="truncate">{d.label || 'Unbekanntes Gerät'}</span>
+                  <span className="truncate">{d.label || t('unknownDevice')}</span>
                   {d.current && (
                     <Badge tone="accent" size="sm">
-                      Dieses Gerät
+                      {t('thisDevice')}
                     </Badge>
                   )}
                 </div>
                 <div className="truncate text-xs text-fg-subtle">
-                  Seit {dateFmt.format(new Date(d.createdAt))}
-                  {d.origin ? ` · über ${d.origin}` : ''}
+                  {t('since', { date: zurichDateTimeFormat(DATE_OPTIONS, intlLocale).format(new Date(d.createdAt)) })}
+                  {d.origin ? t('via', { origin: d.origin }) : ''}
                 </div>
               </div>
             </div>
@@ -93,13 +97,13 @@ export function PushDeviceList({ localEndpoint, refreshKey = 0, onRemoved }: Pus
               type="button"
               variant="ghost"
               size="sm"
-              aria-label={`${d.label || 'Gerät'} entfernen`}
+              aria-label={t('removeDevice', { device: d.label || t('device') })}
               disabled={removing === d.id}
               onClick={() => void remove(d)}
               className="shrink-0 text-danger-ink hover:bg-danger/10"
             >
               <Trash2 className="size-3.5" aria-hidden />
-              <span className="hidden sm:inline">Entfernen</span>
+              <span className="hidden sm:inline">{t('remove')}</span>
             </Button>
           </li>
         ))}

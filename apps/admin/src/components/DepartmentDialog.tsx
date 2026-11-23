@@ -23,6 +23,7 @@ import {
 import {
   DEPARTMENT_PERMISSION_KEYS,
   DEPARTMENT_PERMISSIONS,
+  formatSwissNumber,
   isDepartmentPermission,
   normalizePermissions,
   getVocabulary,
@@ -77,7 +78,7 @@ function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="px-4 py-3">
       <dt className="text-2xs font-medium uppercase tracking-wider text-fg-subtle">{label}</dt>
-      <dd className="tabular mt-0.5 font-display text-xl font-bold text-fg">{value.toLocaleString('de-CH')}</dd>
+      <dd className="tabular mt-0.5 font-display text-xl font-bold text-fg">{formatSwissNumber(value)}</dd>
     </div>
   );
 }

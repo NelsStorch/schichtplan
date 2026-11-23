@@ -19,6 +19,14 @@ enum OrganizationType {
   OTHER
 }
 
+/// Sprache der Oberfläche (siehe @schichtplan/i18n)
+enum Locale {
+  DE
+  FR
+  IT
+  EN
+}
+
 model Department {
   id           String             @id @default(uuid())
   name         String
@@ -48,6 +56,8 @@ model Department {
   // Zustimmung zu den Nutzungsbedingungen (inkl. Auftragsbearbeitung) beim Erstellen der Abteilung
   termsAcceptedAt DateTime?       @map("terms_accepted_at")
   termsVersion    String?         @map("terms_version")
+  // Standardsprache für Personen ohne eigene Wahl, Sprache von Mails an sie (siehe docs/internal/i18n-konzept.md)
+  defaultLocale   Locale          @default(DE) @map("default_locale")
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
   events       Event[]
@@ -213,6 +223,8 @@ model User {
   emailNotifyReplacement   Boolean        @default(true) @map("email_notify_replacement")
   /// E-Mail bei neuen Mitteilungen vom OK
   emailNotifyMessages      Boolean        @default(true) @map("email_notify_messages")
+  /// Selbst gewählte Sprache; null = automatisch (Browser, sonst Standardsprache der Abteilung)
+  locale                   Locale?        @map("locale")
   /// Geheimer Token für den persönlichen Webcal/iCal-Kalenderfeed
   calendarToken       String?            @unique @map("calendar_token")
   /// Hinweis, dass nach dem Zusammenführen eines Spitznamen-Profils das alte Kalender-Abo gelöscht und neu eingerichtet werden muss

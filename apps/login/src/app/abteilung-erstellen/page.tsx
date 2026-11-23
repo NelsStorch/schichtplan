@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ArrowUpRight, Building2, Check, Copy, Share2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type {
   DepartmentCreationEligibilityDto,
   DepartmentCreationOwnGroupDto,
@@ -45,8 +46,9 @@ const joinNames = (names: string[]) =>
 
 /** Eigene Gruppen (Scharen …) mit Status: Link zum Schichtplan oder «noch kein Schichtplan» */
 function OwnGroups({ groups, org }: { groups: DepartmentCreationOwnGroupDto[]; org: OrganizationConfig }) {
+  const t = useTranslations('login.createDepartment');
   return (
-    <ul aria-label={`Deine Gruppen in ${org.authProviderShort}`} className="divide-y divide-line overflow-hidden rounded-card border border-line bg-surface">
+    <ul aria-label={t('ownGroupsAria', { authProviderShort: org.authProviderShort })} className="divide-y divide-line overflow-hidden rounded-card border border-line bg-surface">
       {groups.map((group) => (
         <li key={group.hitobitoGroupId} className="flex items-center justify-between gap-3 px-4 py-2.5">
           <span className="min-w-0">
@@ -58,10 +60,10 @@ function OwnGroups({ groups, org }: { groups: DepartmentCreationOwnGroupDto[]; o
               href={getDepartmentUrl(group.existingDepartment.slug, '/', org.dbType)}
               className="inline-flex shrink-0 items-center gap-0.5 text-[13px] font-medium text-accent-ink underline-offset-2 hover:underline"
             >
-              Zum Schichtplan <ArrowUpRight className="size-3.5" aria-hidden />
+              {t('toShiftPlan')} <ArrowUpRight className="size-3.5" aria-hidden />
             </a>
           ) : (
-            <span className="shrink-0 text-[12px] text-fg-subtle">noch kein Schichtplan</span>
+            <span className="shrink-0 text-[12px] text-fg-subtle">{t('noShiftPlanYet')}</span>
           )}
         </li>
       ))}
@@ -71,22 +73,26 @@ function OwnGroups({ groups, org }: { groups: DepartmentCreationOwnGroupDto[]; o
 
 /** Eigene Rollen aus der Verbands-DB: zeigt, welche als Leitung zählen und welche nicht */
 function MyRoles({ roles, org }: { roles: DepartmentCreationRoleDto[]; org: OrganizationConfig }) {
-  const rulesLink = (
+  const t = useTranslations('login.createDepartment');
+  const rulesLink = (chunks: React.ReactNode) => (
     <a
       href={helpUrl('/abteilung/gruppen-und-rollen/', org.domain)}
       className="inline-flex items-center gap-0.5 font-medium text-accent-ink underline-offset-2 hover:underline"
     >
-      Welche Rollen zählen? <ArrowUpRight className="size-3.5" aria-hidden />
+      {chunks} <ArrowUpRight className="size-3.5" aria-hidden />
     </a>
   );
   return (
     <section aria-labelledby="meine-rollen" className="space-y-2.5">
       <h2 id="meine-rollen" className="text-[13px] font-semibold text-fg">
-        Deine Rollen in {org.authProviderShort}
+        {t('myRolesTitle', { authProviderShort: org.authProviderShort })}
       </h2>
       {roles.length === 0 ? (
         <p className="text-[14px] leading-relaxed text-fg-muted">
-          Wir haben beim letzten Login keine Rollen gefunden. Melde dich nochmals mit {org.authProviderShort} an. {rulesLink}
+          {t.rich('noRolesFound', {
+            authProviderShort: org.authProviderShort,
+            rulesLink: () => rulesLink(t('whichRolesCount')),
+          })}
         </p>
       ) : (
         <>
@@ -99,17 +105,19 @@ function MyRoles({ roles, org }: { roles: DepartmentCreationRoleDto[]; org: Orga
                 </span>
                 {role.isLeader ? (
                   <span className="shrink-0 rounded-full bg-success/12 px-2 py-0.5 text-[12px] font-medium text-success-ink">
-                    Leitung
+                    {t('roleLeader')}
                   </span>
                 ) : (
-                  <span className="shrink-0 text-[12px] text-fg-subtle">keine Leitung</span>
+                  <span className="shrink-0 text-[12px] text-fg-subtle">{t('roleNotLeader')}</span>
                 )}
               </li>
             ))}
           </ul>
           <p className="text-[13px] leading-relaxed text-fg-muted">
-            Stimmt eine Rolle nicht, ändert sie die Mitgliederverwaltung in {org.authProviderShort}. Danach einmal ab- und
-            wieder anmelden. {rulesLink}
+            {t.rich('wrongRoleHint', {
+              authProviderShort: org.authProviderShort,
+              rulesLink: () => rulesLink(t('whichRolesCount')),
+            })}
           </p>
         </>
       )}
@@ -122,6 +130,7 @@ function MyRoles({ roles, org }: { roles: DepartmentCreationRoleDto[]; org: Orga
  * noch keinen Schichtplan hat. Die anlegende Person wird Hauptverantwortliche*r (Abteilungsleitung).
  */
 function CreateDepartment() {
+  const t = useTranslations('login.createDepartment');
   const searchParams = useSearchParams();
   const returnTo = cleanReturnTo(searchParams.get('return_to'));
 
@@ -156,8 +165,8 @@ function CreateDepartment() {
       const proposal = suggestedName(data, org);
       setName(proposal);
       setSlug(data.ortsgruppeName ? slugify(data.ortsgruppeName) : slugFromName(proposal, org));
-    })().catch(() => setError('Die Angaben konnten nicht geladen werden. Bitte lade die Seite neu.'));
-  }, [org]);
+    })().catch(() => setError(t('loadFailed')));
+  }, [org, t]);
 
   // Ebenen ohne Schichtplan, unter denen die Person wählen kann (die unterste zuerst)
   const choices = (eligibility?.options ?? []).filter((o) => o.existingDepartment === null);
@@ -189,8 +198,13 @@ function CreateDepartment() {
   const missingNames = joinNames(withoutPlan.map((g) => withOrgName(g.name, org)));
 
   const knownGroupName = eligibility?.ortsgruppeName ?? (withoutPlan.length === 1 ? withoutPlan[0].name : null);
-  const groupLabel = knownGroupName ? withOrgName(knownGroupName, org) : `unsere ${org.unitTerm}`;
-  const shareMessage = `Hey! Könntest du für ${groupLabel} kurz den Schichtplan auf ${org.name} einrichten? Als ${org.unitTerm}-Leitung in ${org.authProviderShort} geht das mit einem Klick:`;
+  const groupLabel = knownGroupName ? withOrgName(knownGroupName, org) : t('ourUnit', { unitTerm: org.unitTerm });
+  const shareMessage = t('shareMessage', {
+    group: groupLabel,
+    appName: org.name,
+    unitTerm: org.unitTerm,
+    authProviderShort: org.authProviderShort,
+  });
 
   const copyForLeader = async () => {
     if (typeof navigator === 'undefined' || !navigator.clipboard) return;
@@ -203,7 +217,7 @@ function CreateDepartment() {
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
         await navigator.share({
-          title: `${org.name} für ${groupLabel} einrichten`,
+          title: t('shareTitle', { appName: org.name, group: groupLabel }),
           text: shareMessage,
           url: shareUrl,
         });
@@ -231,10 +245,10 @@ function CreateDepartment() {
         }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Anlegen hat nicht geklappt.');
+      if (!res.ok) throw new Error(data.error || t('createFailed'));
       window.location.href = getDepartmentUrl(data.department.slug, '/', data.department?.organization ?? org.dbType);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Anlegen hat nicht geklappt.');
+      setError(err instanceof Error ? err.message : t('createFailed'));
       setSaving(false);
     }
   };
@@ -270,26 +284,26 @@ function CreateDepartment() {
             </span>
             <h1 className="font-display text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-fg text-balance">
               {org.slug === 'verein'
-                ? 'Neuen Verein anlegen'
+                ? t('titleVerein')
                 : choices.length > 1
-                  ? 'Für welche Ebene willst du einen Schichtplan anlegen?'
-                  : (chosenName ?? `Deine ${formOrg.unitTerm}`) + ' hat noch keinen Schichtplan'}
+                  ? t('titleLevelChoice')
+                  : t('titleNoPlanYet', { name: chosenName ?? `Deine ${formOrg.unitTerm}` })}
             </h1>
             <p className="mt-3 text-[15px] leading-relaxed text-fg-muted">
               {org.slug === 'verein'
-                ? 'Lege jetzt einen Schichtplan für deinen Verein an. Du wirst automatisch Vereinsleitung und kannst weitere Mitglieder einladen sowie Helferlisten verwalten.'
-                : `Du bist laut ${org.authProviderShort} Leitung${
-                    eligibility.leaderGroupName ? ` (${eligibility.leaderGroupName})` : ''
-                  }. Lege den Schichtplan für eure ${formOrg.unitTerm} jetzt an. Alle aus eurer ${
-                    formOrg.unitTerm
-                  }, die sich mit ${org.authProviderShort} anmelden, gehören automatisch dazu.`}
+                ? t('descVerein')
+                : t('descOrg', {
+                    authProviderShort: org.authProviderShort,
+                    groupName: eligibility.leaderGroupName ? ` (${eligibility.leaderGroupName})` : '',
+                    unitTerm: formOrg.unitTerm,
+                  })}
             </p>
 
             <div className="mt-8 space-y-5">
               {error && <Callout tone="danger">{error}</Callout>}
               {choices.length > 1 && (
                 <fieldset className="space-y-2">
-                  <legend className="mb-2 text-[13px] font-semibold text-fg">Du leitest mehrere Ebenen</legend>
+                  <legend className="mb-2 text-[13px] font-semibold text-fg">{t('multipleLevelsLegend')}</legend>
                   {choices.map((option) => (
                     <label
                       key={option.hitobitoGroupId}
@@ -312,7 +326,7 @@ function CreateDepartment() {
                   ))}
                 </fieldset>
               )}
-              <Field label={org.slug === 'verein' ? 'Name des Vereins' : `Name der ${formOrg.unitTerm}`} required>
+              <Field label={org.slug === 'verein' ? t('nameLabelVerein') : t('nameLabel', { unitTerm: formOrg.unitTerm })} required>
                 <Input
                   value={name}
                   onChange={(e) => {
@@ -326,9 +340,9 @@ function CreateDepartment() {
                 />
               </Field>
               <Field
-                label="Subdomain"
+                label={t('subdomainLabel')}
                 required
-                hint={`${slug || 'portal'}.${rootHost}. Lässt sich später nicht ändern.`}
+                hint={t('subdomainHint', { slug: slug || 'portal', rootHost })}
               >
                 <Input
                   value={slug}
@@ -346,9 +360,7 @@ function CreateDepartment() {
 
               <Callout tone="info">
                 <p>
-                  Du wirst Hauptverantwortliche*r ({formOrg.unitTerm}-Leitung im Schichtplan). Das lässt sich später unter
-                  «{formOrg.unitTerm} → Personen» ändern. Name, Logo, Farbe und Stufen kannst du jederzeit anpassen, nur die
-                  Subdomain bleibt fest.
+                  {t('calloutInfo', { unitTerm: formOrg.unitTerm })}
                 </p>
               </Callout>
 
@@ -361,12 +373,14 @@ function CreateDepartment() {
                   className="mt-0.5 size-4 shrink-0 accent-[rgb(var(--accent))]"
                 />
                 <span>
-                  Ich habe die{' '}
-                  <a href={termsUrl(org.domain)} target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">
-                    Nutzungsbedingungen
-                  </a>{' '}
-                  gelesen und stimme ihnen im Namen der {formOrg.unitTerm} zu, inklusive der Regeln zur
-                  Auftragsbearbeitung.
+                  {t.rich('acceptTerms', {
+                    unitTerm: formOrg.unitTerm,
+                    termsLink: (chunks) => (
+                      <a href={termsUrl(org.domain)} target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">
+                        {chunks}
+                      </a>
+                    ),
+                  })}
                 </span>
               </label>
 
@@ -377,48 +391,48 @@ function CreateDepartment() {
                 loading={saving}
                 disabled={!acceptTerms || name.trim().length < 2 || slug.length < 3}
               >
-                {formOrg.unitTerm} anlegen
+                {t('submit', { unitTerm: formOrg.unitTerm })}
               </Button>
               <Button type="button" variant="ghost" className="w-full" onClick={later}>
-                Später
+                {t('later')}
               </Button>
             </div>
           </form>
         ) : (
           <div className="animate-fade-up space-y-6">
             <h1 className="font-display text-[1.75rem] font-semibold leading-[1.15] tracking-tight text-fg text-balance">
-              {noPlanYet ? `Für ${missingNames} gibt es noch keinen Schichtplan` : `${org.unitTerm} anlegen`}
+              {noPlanYet ? t('noPlanYetTitle', { names: missingNames }) : t('unitTitle', { unitTerm: org.unitTerm })}
             </h1>
             {notLeader && withPlan.length > 0 && withoutPlan.length === 0 ? (
               <>
                 <p className="text-[15px] leading-relaxed text-fg-muted">
                   {withPlan.length === 1
-                    ? `Für eure ${org.unitTerm} gibt es schon einen Schichtplan.`
-                    : `Für alle deine ${org.unitTermPlural} gibt es schon einen Schichtplan.`}
+                    ? t('alreadyExistsSingle', { unitTerm: org.unitTerm })
+                    : t('alreadyExistsMultiple', { unitTermPlural: org.unitTermPlural })}
                 </p>
                 <OwnGroups groups={withPlan} org={org} />
               </>
             ) : eligibility.reason === 'EXISTS' && eligibility.existingDepartment ? (
               <>
                 <p className="text-[15px] leading-relaxed text-fg-muted">
-                  Für eure {org.unitTerm} gibt es schon einen Schichtplan: {eligibility.existingDepartment.name}.
+                  {t('existsForUnit', { unitTerm: org.unitTerm, name: eligibility.existingDepartment.name })}
                 </p>
                 <a
                   href={getDepartmentUrl(eligibility.existingDepartment.slug)}
                   className={buttonClasses({ size: 'lg', className: 'w-full justify-between' })}
                 >
-                  Zu {eligibility.existingDepartment.name} <ArrowUpRight />
+                  {t('goToExisting', { name: eligibility.existingDepartment.name })} <ArrowUpRight />
                 </a>
               </>
             ) : eligibility.reason === 'LIMIT' ? (
               <p className="text-[15px] leading-relaxed text-fg-muted">
-                Du leitest bereits 3 Vereine. Für einen weiteren Verein melde dich bitte beim Support.
+                {t('limitReached')}
               </p>
             ) : eligibility.reason === 'NOT_CEVIDB' ? (
               org.slug === 'verein' ? (
                 <>
                   <p className="text-[15px] leading-relaxed text-fg-muted">
-                    Einen neuen Verein kann nur eine angemeldete Person mit E-Mail-Adresse und Passwort anlegen.
+                    {t('onlyRegisteredCanCreateVerein')}
                   </p>
                   <a
                     href={`/?return_to=${encodeURIComponent(
@@ -426,7 +440,7 @@ function CreateDepartment() {
                     )}`}
                     className={buttonClasses({ size: 'lg', className: 'w-full justify-between' })}
                   >
-                    Anmelden oder Registrieren <ArrowUpRight />
+                    {t('loginOrRegister')} <ArrowUpRight />
                   </a>
                 </>
               ) : (
@@ -436,8 +450,10 @@ function CreateDepartment() {
                     <OtherProviderHint user={user} org={org} />
                   ) : (
                     <p className="text-[15px] leading-relaxed text-fg-muted">
-                      Eine neue {org.unitTerm} kann nur die Leitung anlegen. Melde dich dazu mit {org.authProviderShort} an,
-                      dort sehen wir deine Rolle und eure Gruppe.
+                      {t('onlyLeaderCanCreateOrg', {
+                        unitTerm: org.unitTerm,
+                        authProviderShort: org.authProviderShort,
+                      })}
                     </p>
                   )}
                   <a
@@ -446,17 +462,20 @@ function CreateDepartment() {
                     )}&org=${encodeURIComponent(org.slug)}`}
                     className={buttonClasses({ size: 'lg', className: 'w-full justify-between' })}
                   >
-                    Mit {org.authProviderShort} anmelden <ArrowUpRight />
+                    {t('loginWithProvider', { authProviderShort: org.authProviderShort })} <ArrowUpRight />
                   </a>
                 </>
               )
             ) : eligibility.reason === 'UNVERIFIED' ? (
               <p className="text-[15px] leading-relaxed text-fg-muted">
-                Wir konnten deine Gruppe in {org.authProviderShort} gerade nicht prüfen. Melde dich bitte nochmals mit {org.authProviderShort} an.
+                {t('unverifiedGroup', { authProviderShort: org.authProviderShort })}
               </p>
             ) : eligibility.reason === 'NO_ORTSGRUPPE' ? (
               <p className="text-[15px] leading-relaxed text-fg-muted">
-                In {org.authProviderShort} ist für dich keine Gruppe hinterlegt. Melde dich bei der Mitgliederverwaltung eurer {org.unitTerm}.
+                {t('noGroupInProvider', {
+                  authProviderShort: org.authProviderShort,
+                  unitTerm: org.unitTerm,
+                })}
               </p>
             ) : (
               <div className="space-y-5">
@@ -464,23 +483,29 @@ function CreateDepartment() {
                   tone="info"
                   title={
                     org.slug === 'verein'
-                      ? 'Verein anlegen'
+                      ? t('calloutCreateVereinTitle')
                       : noPlanYet
-                        ? `Einrichten kann ihn die ${org.unitTerm}-Leitung`
+                        ? t('calloutSetupByLeaderTitle', { unitTerm: org.unitTerm })
                         : eligibility.ortsgruppeName
-                          ? `${withOrgName(eligibility.ortsgruppeName, org)} hat noch keinen Schichtplan`
-                          : `Nur für die ${org.unitTerm}-Leitung`
+                          ? t('calloutGroupNoPlanTitle', { name: withOrgName(eligibility.ortsgruppeName, org) })
+                          : t('calloutOnlyLeaderTitle', { unitTerm: org.unitTerm })
                   }
                 >
                   {org.slug === 'verein' ? (
                     <p className="text-[14px] leading-relaxed">
-                      Um einen neuen Verein anzulegen, melde dich bitte mit deinem E-Mail- und Passwort-Konto an.
+                      {t('calloutCreateVereinText')}
                     </p>
                   ) : (
                     <p className="text-[14px] leading-relaxed">
                       {noPlanYet
-                        ? `Den Schichtplan richtet die ${org.unitTerm}-Leitung laut ${org.authProviderShort} ein. Du bist dort nicht als ${org.unitTerm}-Leitung eingetragen.`
-                        : `Du bist selbst nicht als ${org.unitTerm}-Leitung in ${org.authProviderShort} eingetragen – deshalb kannst du die ${org.unitTerm} nicht direkt selbst eröffnen.`}
+                        ? t('calloutSetupByLeaderText', {
+                            unitTerm: org.unitTerm,
+                            authProviderShort: org.authProviderShort,
+                          })
+                        : t('calloutOnlyLeaderText', {
+                            unitTerm: org.unitTerm,
+                            authProviderShort: org.authProviderShort,
+                          })}
                     </p>
                   )}
                 </Callout>
@@ -493,10 +518,14 @@ function CreateDepartment() {
 
                 {org.slug !== 'verein' && (
                   <p className="text-[14px] leading-relaxed text-fg-muted">
-                    <strong className="text-fg">So geht es weiter:</strong> Schicke deiner {org.unitTerm}-Leitung den
-                    Einrichtungslink. Sobald sie den Schichtplan mit einem Klick angelegt hat, gehörst du beim nächsten Login
-                    automatisch dazu. Willst du selbst Anlässe planen, kann sie dir unter <em>{org.unitTerm} → Personen</em>{' '}
-                    das Recht <strong className="text-fg">Anlässe erstellen</strong> geben.
+                    <strong className="text-fg">{t('nextStepsTitle')}</strong>{' '}
+                    {t.rich('nextStepsText', {
+                      unitTerm: org.unitTerm,
+                      personsPath: t('personsPath', { unitTerm: org.unitTerm }),
+                      createEventsPermission: t('createEventsPermission'),
+                      em: (chunks) => <em>{chunks}</em>,
+                      strong: (chunks) => <strong className="text-fg">{chunks}</strong>,
+                    })}
                   </p>
                 )}
 
@@ -504,11 +533,11 @@ function CreateDepartment() {
                   <div className="space-y-2.5">
                     <Button type="button" size="lg" className="w-full" onClick={shareWithLeader}>
                       <Share2 className="size-4" />
-                      <span>An {org.unitTerm}-Leitung senden</span>
+                      <span>{t('sendToLeader', { unitTerm: org.unitTerm })}</span>
                     </Button>
                     <Button type="button" variant="secondary" size="md" className="w-full" onClick={copyForLeader}>
                       {copiedShare ? <Check className="size-4" /> : <Copy className="size-4" />}
-                      <span>{copiedShare ? 'Nachricht & Link kopiert!' : 'Nachricht & Link kopieren'}</span>
+                      <span>{copiedShare ? t('copiedMessageAndLink') : t('copyMessageAndLink')}</span>
                     </Button>
                   </div>
                 )}
@@ -517,7 +546,7 @@ function CreateDepartment() {
             {/* Bei fehlender Leitung steht die Liste schon oben, direkt unter dem Grund */}
             {eligibility.myRoles && eligibility.reason !== 'NOT_LEADER' && <MyRoles roles={eligibility.myRoles} org={org} />}
             <Button variant="ghost" className="w-full" onClick={later}>
-              Weiter
+              {t('continueAction')}
             </Button>
           </div>
         )}

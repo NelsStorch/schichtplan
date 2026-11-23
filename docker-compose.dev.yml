@@ -63,6 +63,8 @@ services:
       SMTP_FROM: ${SMTP_FROM:-Cevi Schichtplan <admin@cevi-schichtplan.ch>}
       ADMIN_ALERT_WEBHOOK_URL: ${ADMIN_ALERT_WEBHOOK_URL:-}
       ADMIN_ALERT_EMAIL: ${ADMIN_ALERT_EMAIL:-}
+      # Sprachen zum Testen freischalten (gleicher Wert wie bei den Frontends), z. B. I18N_ENABLED_LOCALES=de,fr,en
+      I18N_ENABLED_LOCALES: ${I18N_ENABLED_LOCALES:-}
     ports:
       - "127.0.0.1:4000:4000"
     depends_on:
@@ -89,6 +91,8 @@ services:
       WATCHPACK_POLLING: "true"
       NEXT_PUBLIC_API_URL: http://localhost:4000
       INTERNAL_API_URL: http://backend:4000
+      # Sprachen zum Testen freischalten, z. B. I18N_ENABLED_LOCALES=de,fr,en (leer: Freischaltung aus @schichtplan/i18n)
+      I18N_ENABLED_LOCALES: ${I18N_ENABLED_LOCALES:-}
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:
@@ -139,6 +143,8 @@ services:
       WATCHPACK_POLLING: "true"
       NEXT_PUBLIC_API_URL: http://localhost:4000
       INTERNAL_API_URL: http://backend:4000
+      # Sprachen zum Testen freischalten, z. B. I18N_ENABLED_LOCALES=de,fr,en (leer: Freischaltung aus @schichtplan/i18n)
+      I18N_ENABLED_LOCALES: ${I18N_ENABLED_LOCALES:-}
     ports:
       - "127.0.0.1:3002:3002"
     depends_on:
@@ -163,6 +169,8 @@ services:
       # Bind-Mounts unter Windows/macOS liefern keine FS-Events -> Polling für HMR & Tailwind
       WATCHPACK_POLLING: "true"
       INTERNAL_API_URL: http://backend:4000
+      # Sprachen zum Testen freischalten, z. B. I18N_ENABLED_LOCALES=de,fr,en (leer: Freischaltung aus @schichtplan/i18n)
+      I18N_ENABLED_LOCALES: ${I18N_ENABLED_LOCALES:-}
     ports:
       - "127.0.0.1:3003:3003"
     depends_on:

@@ -106,7 +106,7 @@ const adminEventRoutes: FastifyPluginAsync = async (fastify) => {
         select: { id: true, title: true, department: { select: { name: true } } },
       })
       .catch(() => null);
-    if (!updated) return reply.status(404).send({ error: 'Anlass nicht gefunden' });
+    if (!updated) return reply.fail(404, 'event.notFoundAnlass');
 
     await recordAdminAction(fastify.prisma, request, {
       action: 'EVENT_UPDATE',
@@ -142,9 +142,9 @@ const adminEventRoutes: FastifyPluginAsync = async (fastify) => {
         select: { id: true, slug: true, title: true, departmentId: true, department: { select: { name: true } } },
       })
       .catch(() => null);
-    if (!event) return reply.status(404).send({ error: 'Anlass nicht gefunden' });
+    if (!event) return reply.fail(404, 'event.notFoundAnlass');
     if (input.confirm !== event.slug) {
-      return reply.status(400).send({ error: 'Zur Bestätigung das Kürzel des Anlasses genau eintippen.' });
+      return reply.fail(400, 'event.confirmSlug');
     }
 
     // Kaskadiert zu Schichten, Eintragungen, OK, Fragen, Zugangs-Links, Protokoll und Nachrichten

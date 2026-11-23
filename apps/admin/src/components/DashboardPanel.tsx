@@ -23,6 +23,7 @@ import {
   type AdminOverviewDto,
   type AdminUserListItemDto,
   type OrganizationType,
+  formatSwissNumber,
 } from '@schichtplan/shared';
 import { api, departmentUrl, errorMessage, send } from '../lib/api';
 import { formatDate, formatEventRange, fullName } from '../lib/format';
@@ -36,7 +37,7 @@ function Stat({ label, value, hint }: { label: string; value?: number; hint?: st
     <div className="px-5 py-4">
       <dt className="text-xs font-medium text-fg-subtle">{label}</dt>
       <dd className="mt-1 font-display text-2xl font-bold leading-none tracking-tight text-fg tabular">
-        {value === undefined ? <Skeleton className="h-6 w-12" /> : value.toLocaleString('de-CH')}
+        {value === undefined ? <Skeleton className="h-6 w-12" /> : formatSwissNumber(value)}
       </dd>
       {hint && <p className="mt-1 text-2xs text-fg-subtle">{hint}</p>}
     </div>
@@ -120,7 +121,7 @@ function OrganizationsOverview({
                 ).map(([label, value]) => (
                   <div key={label} className="rounded-tile bg-surface-2 px-1 py-2">
                     <dd className="font-display text-base font-bold leading-none text-fg">
-                      {value === undefined ? '–' : value.toLocaleString('de-CH')}
+                      {value === undefined ? '–' : formatSwissNumber(value)}
                     </dd>
                     <dt className="mt-1 truncate text-2xs text-fg-subtle">{label}</dt>
                   </div>

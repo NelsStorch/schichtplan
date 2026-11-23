@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   DEPARTMENT_PERMISSIONS,
+  formatZurichTime,
   isDepartmentPermission,
   type DepartmentAuditEntryDto,
   type OrganizationConfig,
@@ -25,8 +26,7 @@ const ACTION_LABELS: Record<string, string> = {
 
 const list = (value: unknown): string[] => (Array.isArray(value) ? value.filter((v) => typeof v === 'string') : []);
 const permLabel = (p: string) => (isDepartmentPermission(p) ? DEPARTMENT_PERMISSIONS[p].label : p);
-const time = (iso: string) =>
-  new Intl.DateTimeFormat('de-CH', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Zurich' }).format(new Date(iso));
+const time = (iso: string) => formatZurichTime(iso);
 
 /** Was sich geändert hat, in Worten: «+ Anlässe erstellen · − Anlässe löschen» */
 function changeText(entry: DepartmentAuditEntryDto, org: OrganizationConfig): string | null {

@@ -174,7 +174,7 @@ const jwtPlugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.decorate('authenticate', async (request: FastifyRequest, reply: FastifyReply) => {
     if (!(await verifyAndLoad(request))) {
-      return reply.status(401).send({ error: 'Nicht autorisiert' });
+      return reply.fail(401, 'auth.notAuthorized');
     }
   });
 
@@ -196,28 +196,22 @@ const jwtPlugin: FastifyPluginAsync = async (fastify) => {
         { problem: requestProblem, host: request.host, origin: header('origin'), url: request.url },
         'Admin-Schnittstelle: Anfrage von fremder Seite abgelehnt'
       );
-      return reply.status(403).send({ error: 'Kein Zugriff von dieser Seite', code: 'ADMIN_ORIGIN' });
+      return reply.fail(403, 'auth.adminWrongOrigin', undefined, { code: 'ADMIN_ORIGIN' });
     }
 
     if (!(await verifyAndLoad(request))) {
-      return reply.status(401).send({ error: 'Nicht autorisiert' });
+      return reply.fail(401, 'auth.notAuthorized');
     }
     if (!request.user.isGlobalAdmin) {
-      return reply.status(403).send({ error: 'Kein Zugriff' });
+      return reply.fail(403, 'auth.noAccess');
     }
 
     const sessionProblem = adminSessionProblem(tokenClaims.get(request) ?? {}, adminConfig);
     if (sessionProblem === 'NOT_CEVIDB') {
-      return reply.status(401).send({
-        error: 'Für den Admin-Bereich bitte mit Cevi.DB oder Hitobito anmelden.',
-        code: 'REAUTH_CEVIDB',
-      });
+      return reply.fail(401, 'auth.adminNeedsProvider', undefined, { code: 'REAUTH_CEVIDB' });
     }
     if (sessionProblem === 'STALE') {
-      return reply.status(401).send({
-        error: 'Deine Anmeldung ist zu alt für den Admin-Bereich. Bitte melde dich neu an.',
-        code: 'REAUTH_REQUIRED',
-      });
+      return reply.fail(401, 'auth.adminSessionTooOld', undefined, { code: 'REAUTH_REQUIRED' });
     }
     const claims = tokenClaims.get(request) ?? {};
     const issuedAt = new Date((claims.iat ?? 0) * 1000);
@@ -229,7 +223,7 @@ const jwtPlugin: FastifyPluginAsync = async (fastify) => {
 
     if (request.method !== 'GET' && request.method !== 'HEAD' && adminWriteLimiter.hit(request.user.id)) {
       request.log.warn({ adminId: request.user.id, url: request.url }, 'Admin-Schnittstelle: Versuchsbremse');
-      return reply.status(429).send({ error: 'Zu viele Änderungen in kurzer Zeit. Bitte warte ein paar Minuten.' });
+      return reply.fail(429, 'auth.adminTooManyChanges');
     }
   });
 

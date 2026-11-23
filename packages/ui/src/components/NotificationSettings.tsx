@@ -2,13 +2,13 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { BellRing, Check, Info, Send, Smartphone } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   DEFAULT_EMAIL_REMINDER_MINUTES,
   DEFAULT_PUSH_REMINDER_MINUTES,
   EMAIL_REMINDER_MINUTES,
   PLACEHOLDER_EMAIL_REGEX,
   PUSH_REMINDER_MINUTES,
-  REMINDER_MINUTE_LABELS,
   type UserDto,
 } from '@schichtplan/shared';
 import { Badge } from './Badge';
@@ -88,6 +88,8 @@ export interface NotificationSettingsProps {
 }
 
 type Channel = 'email' | 'push';
+/** Schlüssel für die Vorlaufzeiten (ui.notifications.lead.m15 …) */
+type LeadKey = `lead.m${15 | 30 | 60 | 120 | 360 | 720 | 1440 | 2880 | 10080}`;
 
 interface MatrixRow {
   key: string;
@@ -106,6 +108,7 @@ interface MatrixRow {
  */
 export function NotificationSettings({ user, onUserChange, compact = false, appUrl }: NotificationSettingsProps) {
   const toast = useToast();
+  const t = useTranslations('ui.notifications');
   const [pushSupported, setPushSupported] = useState(false);
   const [appleMobile, setAppleMobile] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>('default');
@@ -179,13 +182,13 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
         body: JSON.stringify(patch),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Speichern fehlgeschlagen');
+      if (!res.ok) throw new Error(data.error || t('saveFailedFallback'));
       onUserChange(data as UserDto);
       if (successMsg) toast({ title: successMsg });
     } catch (err) {
       onUserChange(previous);
       toast({
-        title: 'Speichern hat nicht geklappt',
+        title: t('saveFailed'),
         description: err instanceof Error ? err.message : undefined,
         tone: 'error',
       });
@@ -209,13 +212,13 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
       const nextMinutes = enabled ? (emailMinutes.length > 0 ? emailMinutes : [...DEFAULT_EMAIL_REMINDER_MINUTES]) : [];
       void patchProfile(
         { shiftReminders: enabled, emailReminderMinutes: nextMinutes },
-        enabled ? 'E-Mail-Erinnerung eingeschaltet' : 'E-Mail-Erinnerung ausgeschaltet'
+        enabled ? t('emailOn') : t('emailOff')
       );
     } else {
       const nextMinutes = enabled ? (pushMinutes.length > 0 ? pushMinutes : [...DEFAULT_PUSH_REMINDER_MINUTES]) : [];
       void patchProfile(
         { pushReminders: enabled, pushReminderMinutes: nextMinutes },
-        enabled ? 'Push-Erinnerung eingeschaltet' : 'Push-Erinnerung ausgeschaltet'
+        enabled ? t('pushOn') : t('pushOff')
       );
     }
   };
@@ -224,7 +227,7 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
     const keyRes = await fetch('/api/push/vapid-public-key', { cache: 'no-store' });
     const keyData = await keyRes.json();
     if (!keyRes.ok || !keyData.publicKey) {
-      throw new Error('Push-Schlüssel konnte nicht geladen werden');
+      throw new Error(t('keyFailed'));
     }
 
     let sub = await reg.pushManager.getSubscription();
@@ -248,7 +251,7 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
       }),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Aktivierung fehlgeschlagen');
+    if (!res.ok) throw new Error(data.error || t('activationFailed'));
     setLocalEndpoint(sub.endpoint);
     setDevicesKey((k) => k + 1);
     return data as { subscriptionCount?: number };
@@ -265,8 +268,8 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
         setPermission(perm);
         if (perm !== 'granted') {
           toast({
-            title: 'Berechtigung verweigert',
-            description: 'Erlaube Benachrichtigungen in den Browser-Einstellungen für diese Seite.',
+            title: t('permissionDenied'),
+            description: t('permissionDeniedHint'),
             tone: 'error',
           });
           return;
@@ -285,8 +288,8 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
         if (!swShown) {
           const displayName = user.ceviName || user.firstName;
           await reg
-            .showNotification(`Hallo ${displayName}! Browser-Benachrichtigungen sind aktiv`, {
-              body: 'Dieses Gerät empfängt jetzt Erinnerungen vor deinen Schichten und Infos vom OK.',
+            .showNotification(t('welcomeTitle', { name: displayName }), {
+              body: t('welcomeBody'),
               icon: '/images/cevi-logo.png',
               tag: `cevi-schichtplan-welcome-${Date.now()}`,
             })
@@ -294,8 +297,8 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
         }
 
         toast({
-          title: 'Push auf diesem Gerät aktiviert',
-          description: 'Gilt für dieses Gerät im ganzen Schichtplan, für alle Abteilungen.',
+          title: t('activated'),
+          description: t('activatedHint'),
           tone: 'success',
         });
       } else {
@@ -317,11 +320,11 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
           pushSubscriptionCount:
             typeof data.subscriptionCount === 'number' ? data.subscriptionCount : Math.max(0, subscriptionCount - 1),
         });
-        toast({ title: 'Push auf diesem Gerät ausgeschaltet' });
+        toast({ title: t('deactivated') });
       }
     } catch (err) {
       toast({
-        title: 'Push-Einrichtung fehlgeschlagen',
+        title: t('setupFailed'),
         description: err instanceof Error ? err.message : undefined,
         tone: 'error',
       });
@@ -343,14 +346,14 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
       const shownPromise = waitForSwPushShown(2500);
       const res = await fetch('/api/push/test', { method: 'POST' });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Test-Benachrichtigung fehlgeschlagen');
+      if (!res.ok) throw new Error(data.error || t('testFailedFallback'));
 
       const swShown = await shownPromise;
       if (!swShown && Notification.permission === 'granted') {
         const displayName = user.ceviName || user.firstName;
         await reg
-          .showNotification(`Hallo ${displayName}! Browser-Benachrichtigungen sind aktiv`, {
-            body: 'Du erhältst hier künftig Erinnerungen an deine Schichten und wichtige Infos vom OK.',
+          .showNotification(t('welcomeTitle', { name: displayName }), {
+            body: t('testBody'),
             icon: '/images/cevi-logo.png',
             tag: `cevi-schichtplan-test-local-${Date.now()}`,
           })
@@ -358,14 +361,13 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
       }
 
       toast({
-        title: 'Test-Benachrichtigung gesendet',
-        description:
-          'Falls kein Popup sichtbar ist, prüfe in den Windows-/macOS-Systemeinstellungen, ob Mitteilungen für deinen Browser erlaubt sind und «Nicht stören» aus ist.',
+        title: t('testSent'),
+        description: t('testSentHint'),
         tone: 'success',
       });
     } catch (err) {
       toast({
-        title: 'Test fehlgeschlagen',
+        title: t('testFailed'),
         description: err instanceof Error ? err.message : undefined,
         tone: 'error',
       });
@@ -377,15 +379,15 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
   const rows: MatrixRow[] = [
     {
       key: 'shift',
-      label: 'Schicht-Erinnerung',
-      description: 'Vor dem Beginn deiner Schichten',
+      label: t('rowShift'),
+      description: t('rowShiftHint'),
       email: { checked: emailReminderOn, toggle: (v) => setShiftReminder('email', v) },
       push: { checked: pushReminderOn, toggle: (v) => setShiftReminder('push', v) },
     },
     {
       key: 'catering',
-      label: 'Offene Verpflegungs-Bons',
-      description: 'Nach Schichtende und vor Festende',
+      label: t('rowCatering'),
+      description: t('rowCateringHint'),
       email: {
         checked: user.emailNotifyCateringTokens !== false,
         toggle: (v) => void patchProfile({ emailNotifyCateringTokens: v }),
@@ -397,8 +399,8 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
     },
     {
       key: 'replacement',
-      label: 'Ersatz gefunden',
-      description: 'Jemand übernimmt deine angebotene Schicht',
+      label: t('rowReplacement'),
+      description: t('rowReplacementHint'),
       email: {
         checked: user.emailNotifyReplacement !== false,
         toggle: (v) => void patchProfile({ emailNotifyReplacement: v }),
@@ -410,8 +412,8 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
     },
     {
       key: 'messages',
-      label: 'Mitteilungen vom OK',
-      description: 'Infos zu deinen eingetragenen Anlässen',
+      label: t('rowMessages'),
+      description: t('rowMessagesHint'),
       email: {
         checked: user.emailNotifyMessages !== false,
         toggle: (v) => void patchProfile({ emailNotifyMessages: v }),
@@ -441,26 +443,26 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-fg">
             <BellRing className="size-4 shrink-0 text-accent-ink" />
-            <span>Push auf diesem Gerät</span>
+            <span>{t('deviceTitle')}</span>
             {deviceSubscribed ? (
               <Badge tone="success" size="sm">
-                Aktiv
+                {t('active')}
               </Badge>
             ) : (
               <Badge tone="neutral" size="sm">
-                Aus
+                {t('off')}
               </Badge>
             )}
           </div>
           <p className="mt-0.5 text-xs text-fg-muted">
-            Auch bei geschlossenem Browser. Gilt für dieses Gerät im ganzen Schichtplan, für alle Abteilungen.
+            {t('deviceHint')}
           </p>
         </div>
         {showSwitch && (
           <Switch
             checked={deviceSubscribed}
             disabled={subscribing}
-            ariaLabel="Push auf diesem Gerät"
+            ariaLabel={t('deviceTitle')}
             onChange={(enable) => void handleToggleDevicePush(enable)}
           />
         )}
@@ -470,27 +472,27 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
         <Callout tone="info">
           {appleMobile ? (
             <>
-              Auf dem iPhone und iPad funktioniert Push nur in der App auf dem Home-Bildschirm.{' '}
+              {t('iosOnlyApp')}{' '}
               {appUrl ? (
                 <>
                   <a href={appUrl} className="font-semibold underline underline-offset-2">
-                    Öffne den Schichtplan deiner Abteilung
+                    {t('iosOpenApp')}
                   </a>
-                  , füge ihn über «Teilen → Zum Home-Bildschirm» hinzu und schalte Push dort ein.
+                  {t('iosAddAfterLink')}
                 </>
               ) : (
-                <>Füge den Schichtplan über «Teilen → Zum Home-Bildschirm» hinzu und schalte Push in der App ein.</>
+                t('iosAdd')
               )}
             </>
           ) : (
-            'Dieser Browser unterstützt keine Push-Mitteilungen.'
+            t('unsupported')
           )}
         </Callout>
       )}
 
       {showSwitch && permission === 'denied' && !deviceSubscribed && (
         <Callout tone="warning">
-          Du hast Benachrichtigungen im Browser blockiert. Erlaube sie über das Schloss-Symbol in der Adresszeile.
+          {t('blocked')}
         </Callout>
       )}
 
@@ -500,13 +502,13 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
             <Smartphone className="size-3.5" />
             {deviceSubscribed
               ? otherDevices > 0
-                ? `Hier und auf ${otherDevices} ${otherDevices === 1 ? 'weiterem Gerät' : 'weiteren Geräten'} aktiv`
-                : 'Nur auf diesem Gerät aktiv'
-              : `Auf ${subscriptionCount} ${subscriptionCount === 1 ? 'anderem Gerät' : 'anderen Geräten'} aktiv`}
+                ? t('activeHereAndOthers', { count: otherDevices })
+                : t('activeHereOnly')
+              : t('activeElsewhere', { count: subscriptionCount })}
           </span>
           {!compact && (
             <Button type="button" variant="secondary" size="sm" loading={testingPush} onClick={handleTestPush}>
-              <Send className="size-3.5" /> Test senden
+              <Send className="size-3.5" /> {t('sendTest')}
             </Button>
           )}
         </div>
@@ -530,13 +532,9 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
       <div
         className="grid grid-cols-[minmax(0,1fr)_3.5rem_3.5rem] items-center gap-2 border-b border-line bg-surface-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-fg-subtle sm:grid-cols-[minmax(0,1fr)_5rem_5rem]"
       >
-        <span>Was</span>
-        <span className="text-center">
-          E-Mail
-        </span>
-        <span className="text-center">
-          Push
-        </span>
+        <span>{t('colWhat')}</span>
+        <span className="text-center">{t('colEmail')}</span>
+        <span className="text-center">{t('colPush')}</span>
       </div>
       <div className="divide-y divide-line">
         {rows.map((row) => (
@@ -553,7 +551,7 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
                 size="sm"
                 checked={emailUsable && row.email.checked}
                 disabled={!emailUsable}
-                ariaLabel={`${row.label} per E-Mail`}
+                ariaLabel={t('viaEmail', { label: row.label })}
                 onChange={row.email.toggle}
               />
             </div>
@@ -562,7 +560,7 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
                 size="sm"
                 checked={pushUsable && row.push.checked}
                 disabled={!pushUsable}
-                ariaLabel={`${row.label} per Push`}
+                ariaLabel={t('viaPush', { label: row.label })}
                 onChange={row.push.toggle}
               />
             </div>
@@ -574,13 +572,13 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
           {!emailUsable && (
             <p className="flex items-start gap-1.5">
               <Info className="mt-0.5 size-3.5 shrink-0" />
-              E-Mails brauchen eine bestätigte E-Mail-Adresse (unter «Angaben»).
+              {t('emailNeedsConfirmed')}
             </p>
           )}
           {!pushUsable && (
             <p className="flex items-start gap-1.5">
               <Info className="mt-0.5 size-3.5 shrink-0" />
-              Für Push zuerst oben «Push auf diesem Gerät» einschalten.
+              {t('pushNeedsDevice')}
             </p>
           )}
         </div>
@@ -611,7 +609,7 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
                 )}
               >
                 {active && <Check className="size-3" />}
-                {REMINDER_MINUTE_LABELS[m]?.short || `${m} Min.`}
+                {t.has(`lead.m${m}` as LeadKey) ? t(`lead.m${m}` as LeadKey) : t('leadFallback', { minutes: m })}
               </button>
             );
           })}
@@ -630,14 +628,14 @@ export function NotificationSettings({ user, onUserChange, compact = false, appU
       {!compact && (showEmailTimes || showPushTimes) && (
         <div className={cn('space-y-3', box, pad)}>
           <div>
-            <div className="text-sm font-semibold text-fg">Wann erinnern?</div>
-            <p className="mt-0.5 text-xs text-fg-muted">Wie lange vor Schichtbeginn. Mehrere Zeitpunkte sind möglich.</p>
+            <div className="text-sm font-semibold text-fg">{t('whenTitle')}</div>
+            <p className="mt-0.5 text-xs text-fg-muted">{t('whenHint')}</p>
           </div>
-          {showEmailTimes && minuteChips('email', `E-Mail an ${user.email}`)}
-          {showPushTimes && minuteChips('push', 'Push')}
+          {showEmailTimes && minuteChips('email', t('emailTo', { email: user.email ?? '' }))}
+          {showPushTimes && minuteChips('push', t('colPush'))}
         </div>
       )}
-      {!compact && <p className="text-center text-xs text-fg-subtle">Änderungen werden sofort gespeichert.</p>}
+      {!compact && <p className="text-center text-xs text-fg-subtle">{t('savedInstantly')}</p>}
     </div>
   );
 }

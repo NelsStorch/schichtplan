@@ -20,7 +20,7 @@ import {
   managerFlags,
   type AccessUser,
 } from '../services/eventAccess.js';
-import { UNRELATED_PERSON_ERROR, allUsersRelatedToEvent, eventRelatedPeopleWhere } from '../services/departmentVisibility.js';
+import { allUsersRelatedToEvent, eventRelatedPeopleWhere } from '../services/departmentVisibility.js';
 import { personLabel } from '../services/profile.js';
 import {
   disambiguatePersonNames,
@@ -29,21 +29,23 @@ import {
 } from '../services/disambiguation.js';
 import { applyProfileUpdate } from '../services/profileUpdate.js';
 import { createRateLimiter } from '../services/rateLimit.js';
+import { errorTranslator, type ErrorTranslator } from '../plugins/i18n.js';
 
 const redeemLimiter = createRateLimiter(10 * 60 * 1000, 20);
 
 /** Fehlermeldung bei ungültiger Antwort (Auswahl nicht in den Optionen, Ja/Nein falsch), sonst null */
 export function validateAnswers(
   questions: { id: string; label: string; type: string; options: string[] }[],
-  answers: Record<string, string>
+  answers: Record<string, string>,
+  t: ErrorTranslator = errorTranslator('de')
 ): string | null {
   for (const question of questions) {
     const value = (answers[question.id] ?? '').trim();
     if (question.type === 'CHOICE' && value && !question.options.includes(value)) {
-      return `Ungültige Antwort bei «${question.label}»`;
+      return t('participation.invalidAnswer', { question: question.label });
     }
     if (question.type === 'YES_NO' && value && value !== 'JA' && value !== 'NEIN') {
-      return `Bitte Ja oder Nein bei «${question.label}»`;
+      return t('participation.yesNoRequired', { question: question.label });
     }
   }
   return null;
@@ -56,10 +58,11 @@ export function validateAnswers(
 export function missingSensitiveConsent(
   questions: { id: string; sensitive: boolean }[],
   answers: Record<string, string>,
-  consent: boolean | undefined
+  consent: boolean | undefined,
+  t: ErrorTranslator = errorTranslator('de')
 ): string | null {
   const answered = questions.some((q) => q.sensitive && (answers[q.id] ?? '').trim());
-  if (answered && !consent) return 'Bitte bestätige die Einwilligung zu den Gesundheitsangaben.';
+  if (answered && !consent) return t('participation.consentRequired');
   return null;
 }
 
@@ -70,7 +73,7 @@ const displayNameOf = (u: { nickname?: string | null; ceviName?: string | null; 
 const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
   async function loadEvent(request: FastifyRequest<{ Params: { slug: string } }>, reply: FastifyReply) {
     if (!request.tenant) {
-      reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+      reply.fail(400, 'department.missingContext');
       return null;
     }
     const event = await fastify.prisma.event.findUnique({
@@ -79,7 +82,7 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
     });
     // Entwürfe gibt es nur für die Abteilungsleitung und das OK
     if (!event || (!event.isPublished && !(await managerFlags(fastify.prisma, event, request.user ?? null)).isManager)) {
-      reply.status(404).send({ error: 'Event nicht gefunden' });
+      reply.fail(404, 'event.notFound');
       return null;
     }
     return event;
@@ -95,7 +98,7 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
     if (!event) return null;
     const flags = await managerFlags(fastify.prisma, event, request.user);
     if (!flags.can[capability]) {
-      reply.status(403).send({ error: 'Nur die Abteilungsleitung oder das Event-OK' });
+      reply.fail(403, 'event.onlyLeaderOrOk');
       return null;
     }
     return event;
@@ -241,9 +244,9 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
         where: { id: request.params.linkId, eventId: event.id },
       });
       if (deleted.count === 0) {
-        return reply.status(404).send({ error: 'Link nicht gefunden' });
+        return reply.fail(404, 'participation.linkNotFound');
       }
-      return { message: 'Link gelöscht' };
+      return { message: request.t('success.linkDeleted') };
     }
   );
 
@@ -265,7 +268,7 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (redeemLimiter.hit(`${request.ip}:${request.user.id}`)) {
-        return reply.status(429).send({ error: 'Zu viele Versuche. Bitte warte ein paar Minuten.' });
+        return reply.fail(429, 'generic.tooManyAttempts');
       }
       const event = await loadEvent(request, reply);
       if (!event) return;
@@ -274,10 +277,10 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
 
       const link = await fastify.prisma.eventAccessLink.findUnique({ where: { token: input.token } });
       if (!link || link.eventId !== event.id) {
-        return reply.status(404).send({ error: 'Dieser Link ist ungültig oder wurde gelöscht.' });
+        return reply.fail(404, 'participation.linkInvalid');
       }
       if (link.expiresAt && link.expiresAt <= new Date()) {
-        return reply.status(410).send({ error: 'Dieser Link ist abgelaufen. Melde dich beim OK.' });
+        return reply.fail(410, 'participation.linkExpired');
       }
 
       const userId = request.user.id;
@@ -288,9 +291,7 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
           data: { boundUserId: userId },
         });
         if (bound.count === 0) {
-          return reply.status(409).send({
-            error: 'Dieser persönliche Link wurde bereits von einer anderen Person verwendet.',
-          });
+          return reply.fail(409, 'participation.linkUsed');
         }
       }
 
@@ -300,7 +301,7 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
         create: { eventId: event.id, userId, linkId: link.id },
       });
 
-      return { message: `Zugang zu «${event.title}» freigeschaltet`, label: link.label };
+      return { message: request.t('success.accessGranted', { event: event.title }), label: link.label };
     }
   );
 
@@ -327,7 +328,7 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
       const input = request.body as z.output<typeof EventParticipationSchema>;
 
       if (input.profile) {
-        const result = await applyProfileUpdate(fastify.prisma, request.user.id, input.profile);
+        const result = await applyProfileUpdate(fastify.prisma, request.user.id, input.profile, request.t);
         if ('error' in result) return reply.status(result.status).send({ error: result.error });
       }
 
@@ -336,9 +337,9 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
       const questions = await fastify.prisma.eventQuestion.findMany({
         where: { eventId: event.id, id: { in: Object.keys(answers) }, scope: 'ONCE' },
       });
-      const invalid = validateAnswers(questions, answers);
+      const invalid = validateAnswers(questions, answers, request.t);
       if (invalid) return reply.status(400).send({ error: invalid });
-      const noConsent = missingSensitiveConsent(questions, answers, input.sensitiveConsent);
+      const noConsent = missingSensitiveConsent(questions, answers, input.sensitiveConsent, request.t);
       if (noConsent) return reply.status(400).send({ error: noConsent });
       const consentAt = new Date();
 
@@ -363,7 +364,7 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
         });
       }
 
-      return { message: 'Angaben gespeichert' };
+      return { message: request.t('success.detailsSaved') };
     }
   );
 
@@ -507,7 +508,7 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
 
       const event = await fastify.prisma.event.findUnique({
@@ -519,11 +520,11 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
           organizers: { select: { userId: true, role: true } },
         },
       });
-      if (!event) return reply.status(404).send({ error: 'Event nicht gefunden' });
+      if (!event) return reply.fail(404, 'event.notFound');
 
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.isManager) {
-        return reply.status(403).send({ error: 'Nur die Abteilungsleitung oder das Event-OK' });
+        return reply.fail(403, 'event.onlyLeaderOrOk');
       }
       reply.header('Cache-Control', 'no-store');
 
@@ -755,7 +756,7 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
 
       // Nur Personen der Abteilung oder des Anlasses (sonst verriete die Antwort beliebige Namen)
       if (!(await allUsersRelatedToEvent(fastify.prisma, event.id, [input.userId]))) {
-        return reply.status(400).send({ error: UNRELATED_PERSON_ERROR });
+        return reply.status(400).send({ error: request.t('people.unrelatedPerson') });
       }
 
       const user = await fastify.prisma.user.findUnique({
@@ -763,7 +764,7 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
         select: { id: true, firstName: true, lastName: true, nickname: true },
       });
       if (!user) {
-        return reply.status(404).send({ error: 'Person nicht gefunden' });
+        return reply.fail(404, 'generic.personNotFound');
       }
 
       const dereg = await fastify.prisma.eventDeregistration.upsert({
@@ -813,10 +814,10 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
         where: { eventId: event.id, userId: request.params.userId },
       });
       if (deleted.count === 0) {
-        return reply.status(404).send({ error: 'Keine Abmeldung für diese Person gefunden' });
+        return reply.fail(404, 'participation.noDeregistration');
       }
 
-      return { message: 'Abmeldung aufgehoben', isDeregistered: false };
+      return { message: request.t('success.deregistrationRevoked'), isDeregistered: false };
     }
   );
 };

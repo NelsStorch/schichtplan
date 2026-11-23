@@ -68,18 +68,18 @@ const attendanceRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
       const event = await findEvent(request.tenant.id, request.params.slug);
       if (!event) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.ATTENDANCE) {
-        return reply.status(403).send({ error: 'Nur das OK darf die Anwesenheit erfassen' });
+        return reply.fail(403, 'attendance.onlyOk');
       }
       if (event.attendanceMode === 'OFF') {
-        return reply.status(400).send({ error: 'Die Anwesenheitsliste ist für diesen Anlass ausgeschaltet' });
+        return reply.fail(400, 'attendance.disabled');
       }
 
       const input = request.body as z.output<typeof SetAttendanceSchema>;
@@ -94,7 +94,7 @@ const attendanceRoutes: FastifyPluginAsync = async (fastify) => {
         },
       });
       if (!signup || signup.shift.eventId !== event.id) {
-        return reply.status(404).send({ error: 'Eintragung nicht gefunden' });
+        return reply.fail(404, 'signup.signupNotFound');
       }
 
       const byName = await performerLabel(request.user.id);
@@ -174,27 +174,22 @@ const attendanceRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
       if (checkinIpLimiter.hit(`ip:${request.ip}`)) {
-        return reply.status(429).send({ error: 'Zu viele Versuche. Bitte warte ein paar Minuten.' });
+        return reply.fail(429, 'generic.tooManyAttempts');
       }
       const input = request.body as z.output<typeof CheckinSchema>;
 
       const event = await findEvent(request.tenant.id, request.params.slug);
       if (!event) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
       if (event.attendanceMode !== 'OK_AND_QR') {
-        return reply
-          .status(403)
-          .send({ error: 'Der Selbst-Check-in ist für diesen Anlass nicht aktiviert', code: 'CHECKIN_DISABLED' });
+        return reply.fail(403, 'attendance.selfCheckInDisabled', undefined, { code: 'CHECKIN_DISABLED' });
       }
       if (!event.checkinToken || !sameToken(input.code, event.checkinToken)) {
-        return reply.status(403).send({
-          error: 'Dieser QR-Code ist nicht (mehr) gültig. Frag beim OK nach dem aktuellen Code.',
-          code: 'INVALID_CODE',
-        });
+        return reply.fail(403, 'attendance.qrInvalid', undefined, { code: 'INVALID_CODE' });
       }
 
       const me = await fastify.prisma.user.findUnique({
@@ -310,20 +305,18 @@ const attendanceRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
       const event = await findEvent(request.tenant.id, request.params.slug);
       if (!event) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.SETTINGS) {
-        return reply
-          .status(403)
-          .send({ error: 'Nur die Abteilungsleitung oder die OK-Leitung dürfen den QR-Code erneuern' });
+        return reply.fail(403, 'attendance.qrRenewForbidden');
       }
       if (event.attendanceMode !== 'OK_AND_QR') {
-        return reply.status(400).send({ error: 'Der Selbst-Check-in ist für diesen Anlass nicht aktiviert' });
+        return reply.fail(400, 'attendance.selfCheckInDisabled');
       }
       const updated = await fastify.prisma.event.update({
         where: { id: event.id },
@@ -354,18 +347,18 @@ const attendanceRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
       const event = await findEvent(request.tenant.id, request.params.slug);
       if (!event) {
-        return reply.status(404).send({ error: 'Event nicht gefunden' });
+        return reply.fail(404, 'event.notFound');
       }
       const flags = await managerFlags(fastify.prisma, event, request.user);
       if (!flags.can.ATTENDANCE) {
-        return reply.status(403).send({ error: 'Nur das OK sieht den Check-in-QR-Code' });
+        return reply.fail(403, 'attendance.qrOnlyOk');
       }
       if (event.attendanceMode !== 'OK_AND_QR' || !event.checkinToken) {
-        return reply.status(400).send({ error: 'Der Selbst-Check-in ist für diesen Anlass nicht aktiviert' });
+        return reply.fail(400, 'attendance.selfCheckInDisabled');
       }
 
       const format = request.query.format === 'pdf' ? 'pdf' : 'svg';
@@ -394,7 +387,7 @@ const attendanceRoutes: FastifyPluginAsync = async (fastify) => {
         });
       } catch (err) {
         request.log.error(err, 'QR-Code konnte nicht erzeugt werden');
-        return reply.status(502).send({ error: 'Der QR-Code konnte gerade nicht erzeugt werden' });
+        return reply.fail(502, 'attendance.qrGenerationFailed');
       }
 
       // Enthält den geheimen Code: nicht zwischenspeichern

@@ -13,7 +13,7 @@ import {
   Ticket,
   UtensilsCrossed,
 } from 'lucide-react';
-import type { PhysicalCardScanResultDto } from '@schichtplan/shared';
+import { formatZurichTime, type PhysicalCardScanResultDto } from '@schichtplan/shared';
 import { Badge, Button, Card, Input, buttonClasses, cn, useToast } from '@schichtplan/ui';
 import { ApiError, api, errorMessage, useLoginHref } from '@/lib/api';
 
@@ -384,10 +384,7 @@ function BonScanContent() {
                           <h3 className="font-bold text-base text-fg">{item.title}</h3>
                           <p className="text-xs text-fg-muted">
                             {isRedeemed && item.redeemedAt
-                              ? `Entwertet um ${new Date(item.redeemedAt).toLocaleTimeString('de-CH', {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })} Uhr`
+                              ? `Entwertet um ${formatZurichTime(item.redeemedAt)} Uhr`
                               : isBlocked
                                 ? 'Gesperrt'
                                 : 'Einlösbar'}

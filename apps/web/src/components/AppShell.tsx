@@ -38,6 +38,8 @@ import {
   statusUrl,
   type MyHoursSummaryDto,
 } from '@schichtplan/shared';
+import { LocaleSwitcher } from '@schichtplan/ui/i18n';
+import { useTranslations } from 'next-intl';
 import { api, useDepartmentSetupHref, useLoginHref } from '@/lib/api';
 import { displayName, usePortal } from '@/lib/portal';
 import { useInstallPrompt } from '@/lib/offline';
@@ -53,6 +55,7 @@ const NAV = [
 export function AppShell({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   const pathname = usePathname();
   const { department, user } = usePortal();
+  const tFooter = useTranslations('common.footer');
   const org = useOrganization();
   const [accountOpen, setAccountOpen] = useState(false);
   const loginHref = useLoginHref();
@@ -160,17 +163,18 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
           </p>
           <div className="flex items-center gap-5">
             <a href={helpUrl('/', org.domain)} className="transition hover:text-fg">
-              Hilfe
+              {tFooter('help')}
             </a>
             <a href={statusUrl('/', org.domain)} className="transition hover:text-fg">
-              Status
+              {tFooter('status')}
             </a>
             <a href={privacyUrl(org.domain)} className="transition hover:text-fg">
-              Datenschutz
+              {tFooter('privacy')}
             </a>
             <a href={imprintUrl(org.domain)} className="transition hover:text-fg">
-              Impressum
+              {tFooter('imprint')}
             </a>
+            <LocaleSwitcher onPersist={user ? (locale) => api('/api/auth/me', { method: 'PATCH', json: { locale } }) : undefined} />
             <a
               href={getLandingUrl('/', org.domain)}
               className="transition hover:text-fg"

@@ -10,7 +10,7 @@ import {
   Sparkles,
   Unlock,
 } from 'lucide-react';
-import type { CateringBatchDto, CateringBatchMode } from '@schichtplan/shared';
+import { zurichDateTimeFormat, type CateringBatchDto, type CateringBatchMode } from '@schichtplan/shared';
 import { Badge, Button, Field, Input, cn, useToast } from '@schichtplan/ui';
 import { api, errorMessage } from '@/lib/api';
 
@@ -284,12 +284,9 @@ export function PhysicalBonsManager({
                   <p className="text-xs text-fg-muted mt-0.5">
                     {batch.cardCount} Karten ({batch.tokenCount} Artikel-Gutscheine) ·{' '}
                     <span className="font-medium text-fg">{batch.redeemedTokensCount} bereits eingelöst</span> ·{' '}
-                    {new Date(batch.createdAt).toLocaleDateString('de-CH', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+                    {zurichDateTimeFormat({ day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(
+                      new Date(batch.createdAt)
+                    )}
                   </p>
                 </div>
 

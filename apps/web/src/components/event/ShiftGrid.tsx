@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { ShiftDto } from '@schichtplan/shared';
 import { cn, slotStatus } from '@schichtplan/ui';
 import { fmtTime, fmtTimeRange } from '@/lib/format';
@@ -19,6 +20,7 @@ export function ShiftGrid({
   isMine: (shift: ShiftDto) => boolean;
   onOpen: (shift: ShiftDto) => void;
 }) {
+  const t = useTranslations('web.event');
   const columns = shifts.map((shift) => ({ shift, stats: shiftStats(shift), tasks: shiftTasks(shift) }));
 
   // Zeilen: Arbeiten in der Reihenfolge ihres ersten Auftretens (gleicher Titel = gleiche Zeile)
@@ -39,7 +41,7 @@ export function ShiftGrid({
               scope="col"
               className="sticky left-0 z-10 min-w-[8.5rem] border-b border-line bg-surface px-3 py-2.5 text-left text-xs font-semibold text-fg-subtle"
             >
-              Arbeit
+              {t('workCol')}
             </th>
             {columns.map(({ shift, stats }) => (
               <th
@@ -62,7 +64,7 @@ export function ShiftGrid({
                   {showShiftTitles && shift.title?.trim() && (
                     <span className="block max-w-[9rem] truncate text-2xs text-fg-subtle">{shift.title?.trim()}</span>
                   )}
-                  {isMine(shift) && <span className="block text-2xs font-semibold text-success-ink">Du bist dabei</span>}
+                  {isMine(shift) && <span className="block text-2xs font-semibold text-success-ink">{t('youAreIn')}</span>}
                 </button>
               </th>
             ))}
@@ -78,7 +80,7 @@ export function ShiftGrid({
                 {title}
               </th>
               {columns.map(({ shift, stats, tasks }) => {
-                const matching = tasks.filter((t) => t.title === title);
+                const matching = tasks.filter((item) => item.title === title);
                 if (matching.length === 0) {
                   return (
                     <td key={shift.id} className="border-b border-l border-line px-2 py-2 text-center text-fg-subtle/60">
@@ -86,15 +88,20 @@ export function ShiftGrid({
                     </td>
                   );
                 }
-                const filled = matching.reduce((s, t) => s + t.filled, 0);
-                const total = matching.reduce((s, t) => s + t.requiredSlots, 0);
+                const filled = matching.reduce((s, item) => s + item.filled, 0);
+                const total = matching.reduce((s, item) => s + item.requiredSlots, 0);
                 const style = STATUS_STYLES[slotStatus(filled, total)];
                 return (
                   <td key={shift.id} className="border-b border-l border-line p-1">
                     <button
                       type="button"
                       onClick={() => onOpen(shift)}
-                      aria-label={`${title}, ${fmtTime(shift.startTime)}: ${filled} von ${total} besetzt`}
+                      aria-label={t('gridCellAria', {
+                        title,
+                        time: fmtTime(shift.startTime),
+                        filled,
+                        total,
+                      })}
                       className={cn(
                         'tabular flex h-9 w-full items-center justify-center rounded-md text-[13px] font-bold transition hover:ring-2 hover:ring-line-strong',
                         style.soft,
@@ -114,7 +121,7 @@ export function ShiftGrid({
               scope="row"
               className="sticky left-0 z-10 bg-surface-2 px-3 py-2 text-left text-xs font-semibold text-fg-subtle"
             >
-              Total frei
+              {t('totalFree')}
             </th>
             {columns.map(({ shift, stats }) => (
               <td

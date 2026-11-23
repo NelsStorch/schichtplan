@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ConsoleBanner, OrganizationProvider, SkipLink, ThemeScript, UsageTracker, UmamiScript, accentVars } from '@schichtplan/ui';
 import { fontVariables } from '@schichtplan/ui/fonts';
+import { LocaleSettingsProvider } from '@schichtplan/ui/i18n';
+import { getRequestLocale } from '@schichtplan/ui/i18n/server';
+import { NextIntlClientProvider } from 'next-intl';
 import { getRequestOrigin, ogImage } from '@schichtplan/ui/og';
 import { getOrganization, getOrganizationSlugFromHost } from '@schichtplan/shared';
 
@@ -45,9 +48,10 @@ export default async function RootLayout({
   const { host } = await getRequestOrigin();
   const org = getOrganization(host);
   const orgSlug = getOrganizationSlugFromHost(host);
+  const i18n = await getRequestLocale(null);
   return (
     <html
-      lang="de-CH"
+      lang={i18n.intlLocale}
       className={fontVariables}
       style={accentVars(org.primaryColor) as React.CSSProperties}
       suppressHydrationWarning
@@ -57,7 +61,11 @@ export default async function RootLayout({
       </head>
       <body className="min-h-[100dvh]">
         <SkipLink />
-        <OrganizationProvider slug={orgSlug}>{children}</OrganizationProvider>
+        <NextIntlClientProvider>
+          <LocaleSettingsProvider enabled={i18n.enabled} pseudo={i18n.pseudo} pseudoAvailable={i18n.pseudoAvailable}>
+            <OrganizationProvider slug={orgSlug}>{children}</OrganizationProvider>
+          </LocaleSettingsProvider>
+        </NextIntlClientProvider>
         <UsageTracker app="login" />
         <UmamiScript host={host} />
         <ConsoleBanner />

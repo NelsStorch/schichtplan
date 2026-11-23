@@ -14,9 +14,12 @@
     "./fonts": "./src/fonts.ts",
     "./og": "./src/og.tsx",
     "./tailwind-preset": "./tailwind-preset.ts",
-    "./theme.css": "./theme.css"
+    "./theme.css": "./theme.css",
+    "./i18n": "./src/i18n/index.ts",
+    "./i18n/server": "./src/i18n/server.ts"
   },
   "dependencies": {
+    "@schichtplan/i18n": "*",
     "@schichtplan/shared": "*",
     "clsx": "^2.1.1",
     "lucide-react": "^1.66.0",
@@ -25,7 +28,8 @@
   "peerDependencies": {
     "next": "^16.4.3",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "next-intl": "^4.15.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",

@@ -7,6 +7,7 @@ import {
 } from '@schichtplan/shared';
 import { autoCreateCeviDbDepartmentStufen, ceviDbGroupPeople, NO_HOME_CONFIRMATION } from '../../services/homeDepartment.js';
 import { personLabel } from '../../services/profile.js';
+import { errorTranslator, type ErrorTranslator } from '../../plugins/i18n.js';
 
 // Gemeinsame Bausteine des Admin-Portals (routes/adminManage/*)
 
@@ -34,11 +35,11 @@ export const isUniqueViolation = (err: unknown) =>
   err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002';
 
 /** Welches Feld eine Unique-Verletzung ausgelöst hat (slug oder ceviDbGroupId/hitobitoGroupId) */
-export function uniqueConflictMessage(err: Prisma.PrismaClientKnownRequestError) {
+export function uniqueConflictMessage(err: Prisma.PrismaClientKnownRequestError, t: ErrorTranslator = errorTranslator('de')) {
   const target = JSON.stringify(err.meta ?? {});
-  if (target.includes('slug')) return 'Diese Subdomain ist bereits vergeben.';
-  if (/cevi_?db_?group|hitobito/i.test(target)) return 'Diese Verbands-Gruppe gehört bereits zu einer anderen Abteilung.';
-  return 'Ein Wert ist bereits vergeben.';
+  if (target.includes('slug')) return t('admin.uniqueSlug');
+  if (/cevi_?db_?group|hitobito/i.test(target)) return t('admin.uniqueGroup');
+  return t('admin.uniqueValue');
 }
 
 export const eventSelect = {

@@ -1,6 +1,7 @@
 import { Prisma, type PrismaClient } from '../db.js';
-import { isPlaceholderEmail, type UpdateProfileInput } from '@schichtplan/shared';
+import { isPlaceholderEmail, localeToDb, type UpdateProfileInput } from '@schichtplan/shared';
 import { findCeviNameMatches, isCeviNameProfile } from './nicknameLogin.js';
+import { errorTranslator, type ErrorTranslator } from '../plugins/i18n.js';
 
 /**
  * Darf die Person ihre E-Mail selbst setzen bzw. ändern? Wo noch keine echte steht immer. Eine selbst
@@ -28,7 +29,8 @@ export function canChangeOwnEmail(user: {
 export async function applyProfileUpdate(
   prisma: Pick<PrismaClient, 'user'>,
   userId: string,
-  input: UpdateProfileInput
+  input: UpdateProfileInput,
+  t: ErrorTranslator = errorTranslator('de')
 ): Promise<{ ok: true } | { error: string; status: number }> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -43,7 +45,7 @@ export async function applyProfileUpdate(
       memberships: { select: { departmentId: true } },
     },
   });
-  if (!user) return { error: 'Konto nicht gefunden', status: 404 };
+  if (!user) return { error: t('auth.accountNotFound'), status: 404 };
 
   const data: Prisma.UserUpdateInput = {};
   if (input.firstName !== undefined) data.firstName = input.firstName;
@@ -71,12 +73,13 @@ export async function applyProfileUpdate(
   if (input.pushNotifyCateringTokens !== undefined) data.pushNotifyCateringTokens = input.pushNotifyCateringTokens;
   if (input.emailNotifyReplacement !== undefined) data.emailNotifyReplacement = input.emailNotifyReplacement;
   if (input.emailNotifyMessages !== undefined) data.emailNotifyMessages = input.emailNotifyMessages;
+  if (input.locale !== undefined) data.locale = input.locale === null ? null : localeToDb(input.locale);
   if (input.birthDate !== undefined) {
     const date = new Date(`${input.birthDate}T00:00:00Z`);
-    if (isNaN(date.getTime()) || date > new Date()) return { error: 'Ungültiges Geburtsdatum', status: 400 };
+    if (isNaN(date.getTime()) || date > new Date()) return { error: t('account.invalidBirthDate'), status: 400 };
     // Bei Cevi.DB-Konten kommt das Geburtsdatum aus Cevi.DB (zählt für Altersgrenzen): dort ändern
     if (user.providerId !== null && user.birthDate && user.birthDate.getTime() !== date.getTime()) {
-      return { error: 'Dein Geburtsdatum kommt aus Cevi.DB. Ändere es bitte dort.', status: 400 };
+      return { error: t('account.birthDateFromCevidb'), status: 400 };
     }
     // Bei Cevi-Name-Profilen ist das Geburtsdatum Teil des Logins: pro Abteilung eindeutig mit dem Namen
     if (user.nickname && isCeviNameProfile(user)) {
@@ -89,7 +92,7 @@ export async function applyProfileUpdate(
         );
         if (clash) {
           return {
-            error: 'In deiner Abteilung gibt es schon ein Profil mit diesem Cevi-Namen und Geburtsdatum.',
+            error: t('account.ceviNameProfileExists'),
             status: 409,
           };
         }
@@ -122,7 +125,7 @@ export async function applyProfileUpdate(
     await prisma.user.update({ where: { id: userId }, data });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
-      return { error: 'Diese E-Mail gehört bereits zu einem anderen Konto.', status: 409 };
+      return { error: t('account.emailTaken'), status: 409 };
     }
     throw err;
   }

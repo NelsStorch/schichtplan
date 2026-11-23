@@ -109,10 +109,10 @@ const eventMessageRoutes: FastifyPluginAsync = async (fastify) => {
       preHandler: [fastify.authenticate],
     },
     async (request, reply) => {
-      if (!request.tenant) return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+      if (!request.tenant) return reply.fail(400, 'department.missingContext');
       const { event, canView: allowed } = await loadManagedEvent(request.tenant.id, request.params.slug, request.user);
-      if (!event) return reply.status(404).send({ error: 'Event nicht gefunden' });
-      if (!allowed) return reply.status(403).send({ error: 'Nur die Abteilungsleitung oder das Event-OK' });
+      if (!event) return reply.fail(404, 'event.notFound');
+      if (!allowed) return reply.fail(403, 'event.onlyLeaderOrOk');
       reply.header('Cache-Control', 'no-store');
 
       const messages = await fastify.prisma.eventMessage.findMany({
@@ -141,10 +141,10 @@ const eventMessageRoutes: FastifyPluginAsync = async (fastify) => {
       preHandler: [fastify.authenticate],
     },
     async (request, reply) => {
-      if (!request.tenant) return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+      if (!request.tenant) return reply.fail(400, 'department.missingContext');
       const { event, canSend: allowed } = await loadManagedEvent(request.tenant.id, request.params.slug, request.user);
-      if (!event) return reply.status(404).send({ error: 'Event nicht gefunden' });
-      if (!allowed) return reply.status(403).send({ error: 'Nur die Abteilungsleitung oder das Event-OK' });
+      if (!event) return reply.fail(404, 'event.notFound');
+      if (!allowed) return reply.fail(403, 'event.onlyLeaderOrOk');
 
       const input = request.body as z.output<typeof SendEventMessageSchema>;
       const { subject, body, target, dryRun } = input;
@@ -161,7 +161,7 @@ const eventMessageRoutes: FastifyPluginAsync = async (fastify) => {
             select: { id: true, startTime: true },
           });
           if (selectedShifts.length !== shiftIds.length) {
-            return reply.status(400).send({ error: 'Eine Schicht gehört nicht zu diesem Anlass' });
+            return reply.fail(400, 'event.shiftNotInEvent');
           }
           const cutoff = event.dayCutoffTime || '04:00';
           selectedDayKeys = [
@@ -319,7 +319,7 @@ const eventMessageRoutes: FastifyPluginAsync = async (fastify) => {
           select: userSelect,
         });
         if (users.length !== userIds.length) {
-          return reply.status(400).send({ error: 'Eine ausgewählte Person gehört nicht zu diesem Anlass' });
+          return reply.fail(400, 'message.personNotInEvent');
         }
         recipients = users.map((u) => ({
           id: u.id,
@@ -339,17 +339,17 @@ const eventMessageRoutes: FastifyPluginAsync = async (fastify) => {
       if (withEmail.length > MAX_MESSAGE_RECIPIENTS) {
         return reply
           .status(400)
-          .send({ error: `Höchstens ${MAX_MESSAGE_RECIPIENTS} Empfänger*innen pro Nachricht` });
+          .send({ error: request.t('message.tooManyRecipients', { max: MAX_MESSAGE_RECIPIENTS }) });
       }
 
       if (dryRun) {
         return { recipientCount: withEmail.length, withoutEmail, sent: 0, failed: 0 } satisfies EventMessageResultDto;
       }
       if (withEmail.length === 0) {
-        return reply.status(400).send({ error: 'Niemand in dieser Auswahl hat eine bestätigte E-Mail-Adresse' });
+        return reply.fail(400, 'message.noConfirmedEmail');
       }
       if (eventLimiter.isBlocked(event.id) || senderLimiter.isBlocked(request.user.id)) {
-        return reply.status(429).send({ error: 'Zu viele Nachrichten in kurzer Zeit. Bitte später nochmals versuchen.' });
+        return reply.fail(429, 'message.tooMany');
       }
       eventLimiter.hit(event.id);
       senderLimiter.hit(request.user.id);

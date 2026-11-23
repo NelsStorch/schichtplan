@@ -25,14 +25,14 @@ type Flow = z.output<typeof FlowQuery>;
 /** Rücksprung nur zum eigenen Callback auf demselben Host, «echt» nur zum eigenen Login-Start */
 function checkFlow(request: FastifyRequest, reply: FastifyReply, flow: Flow): URL | null {
   if (!simulationEnabled(request.hostname)) {
-    reply.status(404).send({ error: 'Nicht gefunden' });
+    reply.fail(404, 'generic.notFoundShort');
     return null;
   }
   let callback: URL;
   try {
     callback = new URL(flow.redirect_uri);
   } catch {
-    reply.status(400).send({ error: 'Ungültige redirect_uri' });
+    reply.fail(400, 'simulation.invalidRedirect');
     return null;
   }
   // Lokal kommt der Aufruf über den Proxy (anderer Hostname): dann nur ein lokaler Rücksprung
@@ -40,11 +40,11 @@ function checkFlow(request: FastifyRequest, reply: FastifyReply, flow: Flow): UR
     callback.hostname === request.hostname ||
     (process.env.NODE_ENV === 'development' && isDevOrLocalHost(callback.hostname));
   if (!sameHost || callback.pathname !== '/api/auth/cevidb/callback') {
-    reply.status(400).send({ error: 'Ungültige redirect_uri' });
+    reply.fail(400, 'simulation.invalidRedirect');
     return null;
   }
   if (!flow.real.startsWith('/api/auth/cevidb/login?')) {
-    reply.status(400).send({ error: 'Ungültiger Link' });
+    reply.fail(400, 'simulation.invalidLink');
     return null;
   }
   return callback;
@@ -212,7 +212,7 @@ ${flow.notice ? `<div class="notice" role="status">${escapeHtml(flow.notice)}</d
       const callback = checkFlow(request, reply, flow);
       if (!callback) return reply;
       if (flow.state !== request.cookies.cevidb_oauth_state) {
-        return reply.status(403).send({ error: 'Bitte starte die Anmeldung neu und setze dann zurück.' });
+        return reply.fail(403, 'simulation.restartFirst');
       }
       const result = await resetSimulation(fastify.prisma, flow.provider as OrganizationType);
       fastify.log.info({ provider: flow.provider, ...result }, 'Simulation zurückgesetzt');

@@ -594,3 +594,21 @@ export const RESERVED_SUBDOMAINS = [
 ] as const;
 
 export const SUBDOMAIN_REGEX = /^[a-z0-9]([a-z0-9-]{1,61}[a-z0-9])?$/;
+
+/**
+ * Sprachen der Oberfläche (API-Werte). Muss mit `LOCALES` in `@schichtplan/i18n` übereinstimmen
+ * (geprüft in apps/backend/src/services/locale.test.ts). In der Datenbank als Enum `Locale` (DE, FR, IT, EN).
+ */
+export const SUPPORTED_LOCALES = ['de', 'fr', 'it', 'en'] as const;
+export type AppLocale = (typeof SUPPORTED_LOCALES)[number];
+
+/** API-Wert → Datenbank-Enum */
+export function localeToDb(locale: AppLocale): 'DE' | 'FR' | 'IT' | 'EN' {
+  return locale.toUpperCase() as 'DE' | 'FR' | 'IT' | 'EN';
+}
+
+/** Datenbank-Enum → API-Wert (null bleibt null: Person hat keine Sprache gewählt) */
+export function localeFromDb(value: string | null | undefined): AppLocale | null {
+  const lower = value?.toLowerCase();
+  return (SUPPORTED_LOCALES as readonly string[]).includes(lower ?? '') ? (lower as AppLocale) : null;
+}

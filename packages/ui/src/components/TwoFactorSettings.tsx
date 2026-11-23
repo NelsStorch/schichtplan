@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { Copy, Download, Printer, Share2, ShieldCheck, Smartphone } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { UserDto } from '@schichtplan/shared';
 import { Badge } from './Badge';
 import { Button } from './Button';
@@ -29,7 +30,8 @@ async function post<T>(url: string, body: unknown, method = 'POST'): Promise<T> 
     body: JSON.stringify(body),
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || 'Das hat nicht geklappt.');
+  // Ohne Meldung vom Server setzt der Aufrufer einen übersetzten Text ein
+  if (!res.ok) throw new Error(data.error || '');
   return data as T;
 }
 
@@ -40,6 +42,8 @@ async function post<T>(url: string, body: unknown, method = 'POST'): Promise<T> 
 export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps) {
   const org = useOrganization();
   const toast = useToast();
+  const t = useTranslations('ui.twoFactor');
+  const tActions = useTranslations('common.actions');
   const status = user.twoFactor;
   const [mode, setMode] = useState<Mode>({ kind: 'idle' });
   const [password, setPassword] = useState('');
@@ -50,7 +54,7 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
 
   if (!status?.available) return null;
 
-  const provider = org.authProviderShort || 'Verbands-Login';
+  const provider = org.authProviderShort || t('providerFallback');
   const hasProvider = Boolean(user.hasProviderAuth);
 
   const reset = () => {
@@ -66,7 +70,7 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
     try {
       await fn();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Das hat nicht geklappt.');
+      setError((err instanceof Error && err.message) || t('failed'));
     } finally {
       setBusy(false);
     }
@@ -92,7 +96,7 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
       setCode('');
       setMode({ kind: 'codes', codes: data.recoveryCodes });
       onUserChange?.(data.user);
-      toast({ tone: 'success', title: 'Zwei-Faktor eingeschaltet' });
+      toast({ tone: 'success', title: t('enabledToast') });
     });
   };
 
@@ -103,7 +107,7 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
       if (mode.action === 'disable') {
         const data = await post<{ user: UserDto }>('/api/auth/2fa/disable', { code });
         onUserChange?.(data.user);
-        toast({ tone: 'success', title: 'Zwei-Faktor ausgeschaltet' });
+        toast({ tone: 'success', title: t('disabledToast') });
         reset();
       } else if (mode.action === 'recovery') {
         const data = await post<{ recoveryCodes: string[]; user: UserDto }>('/api/auth/2fa/recovery-codes', { code });
@@ -117,21 +121,21 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
           'PUT'
         );
         onUserChange?.(data.user);
-        toast({ tone: 'success', title: 'Einstellung gespeichert' });
+        toast({ tone: 'success', title: t('settingSaved') });
         reset();
       }
     });
   };
 
   const codesText = (codes: string[]) =>
-    `${org.name}: Wiederherstellungscodes für die Zwei-Faktor-Anmeldung\n${user.email ?? ''}\n\nJeder Code funktioniert einmal.\n\n${codes.join('\n')}\n`;
+    `${t('codesFileTitle', { app: org.name })}\n${user.email ?? ''}\n\n${t('codesOnce')}\n\n${codes.join('\n')}\n`;
 
   const copyCodes = async (codes: string[]) => {
     try {
       await navigator.clipboard.writeText(codesText(codes));
-      toast({ tone: 'success', title: 'Codes kopiert' });
+      toast({ tone: 'success', title: t('copied') });
     } catch {
-      toast({ tone: 'error', title: 'Kopieren nicht möglich', description: 'Bitte schreib die Codes von Hand ab.' });
+      toast({ tone: 'error', title: t('copyFailed'), description: t('copyFailedHint') });
     }
   };
 
@@ -140,7 +144,7 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'schichtplan-wiederherstellungscodes.txt';
+    a.download = t('codesFileName');
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -149,11 +153,11 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
   const shareCodes = async (codes: string[]) => {
     try {
-      await navigator.share({ title: `${org.name}: Wiederherstellungscodes`, text: codesText(codes) });
+      await navigator.share({ title: t('codesTitle', { app: org.name }), text: codesText(codes) });
     } catch (err) {
       // Abbrechen im Teilen-Menü ist kein Fehler
       if (err instanceof DOMException && err.name === 'AbortError') return;
-      toast({ tone: 'error', title: 'Teilen nicht möglich', description: 'Nutze «Kopieren» oder «Herunterladen».' });
+      toast({ tone: 'error', title: t('shareFailed'), description: t('shareFailedHint') });
     }
   };
 
@@ -161,19 +165,19 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
   const printCodes = (codes: string[]) => {
     const win = window.open('', '_blank', 'width=480,height=640');
     if (!win) {
-      toast({ tone: 'error', title: 'Druckfenster blockiert', description: 'Erlaube Pop-ups oder nutze «Herunterladen».' });
+      toast({ tone: 'error', title: t('printBlocked'), description: t('printBlockedHint') });
       return;
     }
     const doc = win.document;
-    doc.title = `${org.name}: Wiederherstellungscodes`;
+    doc.title = t('codesTitle', { app: org.name });
     const style = doc.createElement('style');
     style.textContent =
       'body{font-family:system-ui,sans-serif;padding:24px;color:#000}h1{font-size:18px}ul{font-family:ui-monospace,monospace;font-size:16px;columns:2;padding-left:20px}p{font-size:13px}';
     doc.head.appendChild(style);
     const h1 = doc.createElement('h1');
-    h1.textContent = `${org.name}: Wiederherstellungscodes`;
+    h1.textContent = t('codesTitle', { app: org.name });
     const info = doc.createElement('p');
-    info.textContent = `${user.email ?? ''} · Jeder Code funktioniert einmal. Sicher aufbewahren.`;
+    info.textContent = t('codesPrintInfo', { email: user.email ?? '' });
     const list = doc.createElement('ul');
     for (const c of codes) {
       const li = doc.createElement('li');
@@ -186,7 +190,7 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
   };
 
   const codeField = (
-    <Field label="Code aus der App" hint="Oder ein Wiederherstellungscode" required>
+    <Field label={t('codeLabel')} hint={t('codeHint')} required>
       <Input
         value={code}
         onChange={(e) => setCode(e.target.value)}
@@ -209,28 +213,32 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <h2 className="flex items-center gap-2 text-base font-bold text-fg">
-              <Smartphone className="size-4 text-accent-ink" /> Zwei-Faktor-Anmeldung
+              <Smartphone className="size-4 text-accent-ink" /> {t('title')}
             </h2>
             {status.enabled ? (
               <Badge tone="success" size="sm" className="gap-1">
-                <ShieldCheck className="size-3" /> Aktiv
+                <ShieldCheck className="size-3" /> {t('active')}
               </Badge>
             ) : (
               <Badge tone="neutral" size="sm">
-                Aus
+                {t('off')}
               </Badge>
             )}
           </div>
           <p className="mt-2 text-sm text-fg-muted">
             {status.enabled
               ? user.hasPassword
-                ? `Bei der Anmeldung mit Passwort fragen wir nach dem Code aus deiner Authenticator-App${status.onProviderLogin ? `, ebenso beim Login über ${provider}` : ''}.`
-                : `Beim Login über ${provider} fragen wir zusätzlich nach dem Code aus deiner Authenticator-App${status.onProviderLogin ? '' : ' (zurzeit ausgeschaltet)'}.`
-              : 'Schütze dein Konto zusätzlich mit einem Code aus einer Authenticator-App (z. B. Google Authenticator, Aegis, 2FAS, 1Password oder Bitwarden).'}
+                ? status.onProviderLogin
+                  ? t('infoPasswordAndProvider', { provider })
+                  : t('infoPassword')
+                : status.onProviderLogin
+                  ? t('infoProvider', { provider })
+                  : t('infoProviderOff', { provider })
+              : t('infoSetup')}
           </p>
           {status.enabled && (
             <p className={`mt-1 text-xs ${status.recoveryCodesLeft <= 3 ? 'font-medium text-danger-ink' : 'text-fg-subtle'}`}>
-              Noch {status.recoveryCodesLeft} von 10 Wiederherstellungscodes unbenutzt.
+              {t('codesLeft', { left: status.recoveryCodesLeft })}
             </p>
           )}
         </div>
@@ -244,14 +252,14 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
             loading={busy}
             onClick={() => (user.hasPassword ? setMode({ kind: 'password' }) : void startSetup())}
           >
-            Einrichten
+            {t('setUp')}
           </Button>
         )}
       </div>
 
       {!status.configured && !status.enabled && (
         <div className="mt-3">
-          <Callout tone="info">Die Zwei-Faktor-Anmeldung ist auf diesem Server noch nicht eingerichtet.</Callout>
+          <Callout tone="info">{t('notConfigured')}</Callout>
         </div>
       )}
 
@@ -272,11 +280,11 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
                 setCode('');
                 setMode({ kind: 'confirm', action: 'provider', onProviderLogin: checked });
               }}
-              label={`Auch beim Login über ${provider} nach dem Code fragen`}
+              label={t('askOnProvider', { provider })}
               description={
                 user.hasPassword
-                  ? `Sonst gilt der Code nur für das Passwort. Am besten schaltest du die Zwei-Faktor-Anmeldung auch direkt in ${provider} ein.`
-                  : `Ohne diese Einstellung schützt der Code nur ein späteres Notfall-Passwort.`
+                  ? t('askOnProviderHintPassword', { provider })
+                  : t('askOnProviderHintNoPassword')
               }
             />
           )}
@@ -290,7 +298,7 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
                 setMode({ kind: 'confirm', action: 'recovery' });
               }}
             >
-              Neue Wiederherstellungscodes
+              {t('newCodes')}
             </Button>
             <Button
               size="sm"
@@ -301,7 +309,7 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
                 setMode({ kind: 'confirm', action: 'disable' });
               }}
             >
-              Ausschalten
+              {t('turnOff')}
             </Button>
           </div>
         </div>
@@ -317,7 +325,7 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
           className="mt-5 space-y-4 border-t border-line pt-4"
         >
           {error && <Callout tone="danger">{error}</Callout>}
-          <Field label="Aktuelles Passwort" hint="Zur Bestätigung, dass du es bist" required>
+          <Field label={t('currentPassword')} hint={t('currentPasswordHint')} required>
             <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -328,10 +336,10 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
           </Field>
           <div className="flex items-center justify-end gap-2">
             <Button type="button" variant="ghost" onClick={reset} disabled={busy}>
-              Abbrechen
+              {tActions('cancel')}
             </Button>
             <Button type="submit" loading={busy} disabled={!password}>
-              Weiter
+              {t('next')}
             </Button>
           </div>
         </form>
@@ -342,30 +350,30 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
         <form onSubmit={enable} className="mt-5 space-y-4 border-t border-line pt-4">
           {error && <Callout tone="danger">{error}</Callout>}
           <ol className="list-decimal space-y-1 pl-5 text-sm text-fg-muted">
-            <li>Öffne deine Authenticator-App und füge ein neues Konto hinzu.</li>
-            <li>Scanne den QR-Code oder tippe den Schlüssel ab.</li>
-            <li>Gib den 6-stelligen Code ein, den die App anzeigt.</li>
+            <li>{t('step1')}</li>
+            <li>{t('step2')}</li>
+            <li>{t('step3')}</li>
           </ol>
           <div className="flex flex-wrap items-center gap-4">
             {/* Ist ein data:-Bild vom eigenen Server, nicht über einen externen QR-Dienst */}
             <img
               src={mode.qrDataUrl}
-              alt="QR-Code für die Authenticator-App"
+              alt={t('qrAlt')}
               width={180}
               height={180}
               className="rounded-field border border-line bg-white p-1"
             />
             <div className="min-w-0 flex-1 space-y-2 text-sm">
-              <p className="text-fg-subtle">Schlüssel zum Abtippen:</p>
+              <p className="text-fg-subtle">{t('keyLabel')}</p>
               <code className="block break-all rounded-field bg-surface-2 px-3 py-2 font-mono text-[13px] text-fg">
                 {mode.secret}
               </code>
               <a href={mode.otpauthUrl} className="inline-block text-[13px] font-medium text-accent-ink hover:underline">
-                Auf diesem Gerät in der App öffnen
+                {t('openInApp')}
               </a>
             </div>
           </div>
-          <Field label="Code aus der App" required>
+          <Field label={t('codeLabel')} required>
             <Input
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -381,20 +389,20 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
             <Switch
               checked={onProviderLogin}
               onChange={setOnProviderLogin}
-              label={`Auch beim Login über ${provider} nach dem Code fragen`}
+              label={t('askOnProvider', { provider })}
               description={
                 user.hasPassword
-                  ? 'Sonst nur beim Login mit Passwort.'
-                  : 'Ohne Passwort ist das der Login, den der Code schützt.'
+                  ? t('providerHintPassword')
+                  : t('providerHintNoPassword')
               }
             />
           )}
           <div className="flex items-center justify-end gap-2">
             <Button type="button" variant="ghost" onClick={reset} disabled={busy}>
-              Abbrechen
+              {tActions('cancel')}
             </Button>
             <Button type="submit" loading={busy} disabled={code.length !== 6}>
-              Einschalten
+              {t('turnOn')}
             </Button>
           </div>
         </form>
@@ -404,8 +412,7 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
       {mode.kind === 'codes' && (
         <div className="mt-5 space-y-4 border-t border-line pt-4">
           <Callout tone="warning">
-            Speichere diese Codes an einem sicheren Ort, z. B. als Notiz im Passwort-Manager (Google, Apple, 1Password, Bitwarden …) oder ausgedruckt. Damit kommst du in
-            dein Konto, wenn du das Handy verlierst. Jeder Code funktioniert einmal. Wir zeigen sie nur jetzt an.
+            {t('codesWarning')}
           </Callout>
           <ul className="grid grid-cols-2 gap-2 rounded-field bg-surface-2 p-3 font-mono text-sm text-fg">
             {mode.codes.map((c) => (
@@ -415,20 +422,20 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
           <div className="flex flex-wrap items-center justify-end gap-2">
             {canShare && (
               <Button type="button" size="sm" variant="secondary" onClick={() => void shareCodes(mode.codes)}>
-                <Share2 className="size-3.5" aria-hidden /> Teilen / Speichern
+                <Share2 className="size-3.5" aria-hidden /> {t('share')}
               </Button>
             )}
             <Button type="button" size="sm" variant="secondary" onClick={() => void copyCodes(mode.codes)}>
-              <Copy className="size-3.5" aria-hidden /> Kopieren
+              <Copy className="size-3.5" aria-hidden /> {t('copy')}
             </Button>
             <Button type="button" size="sm" variant="secondary" onClick={() => downloadCodes(mode.codes)}>
-              <Download className="size-3.5" aria-hidden /> Herunterladen
+              <Download className="size-3.5" aria-hidden /> {t('download')}
             </Button>
             <Button type="button" size="sm" variant="secondary" onClick={() => printCodes(mode.codes)}>
-              <Printer className="size-3.5" aria-hidden /> Drucken
+              <Printer className="size-3.5" aria-hidden /> {t('print')}
             </Button>
             <Button type="button" size="sm" onClick={reset}>
-              Ich habe die Codes gespeichert
+              {t('codesSaved')}
             </Button>
           </div>
         </div>
@@ -440,17 +447,17 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
           {error && <Callout tone="danger">{error}</Callout>}
           <p className="text-sm text-fg-muted">
             {mode.action === 'disable'
-              ? 'Zum Ausschalten brauchen wir einen aktuellen Code. Danach reicht wieder das Passwort allein.'
+              ? t('confirmDisable')
               : mode.action === 'recovery'
-                ? 'Die bisherigen Wiederherstellungscodes werden ungültig. Bestätige mit einem aktuellen Code.'
+                ? t('confirmRecovery')
                 : mode.onProviderLogin
-                  ? `Künftig auch beim Login über ${provider} nach dem Code fragen. Bestätige mit einem aktuellen Code.`
-                  : `Beim Login über ${provider} nicht mehr nach dem Code fragen. Bestätige mit einem aktuellen Code.`}
+                  ? t('confirmProviderOn', { provider })
+                  : t('confirmProviderOff', { provider })}
           </p>
           {codeField}
           <div className="flex items-center justify-end gap-2">
             <Button type="button" variant="ghost" onClick={reset} disabled={busy}>
-              Abbrechen
+              {tActions('cancel')}
             </Button>
             <Button
               type="submit"
@@ -458,7 +465,7 @@ export function TwoFactorSettings({ user, onUserChange }: TwoFactorSettingsProps
               disabled={!code.trim()}
               variant={mode.action === 'disable' ? 'danger' : undefined}
             >
-              {mode.action === 'disable' ? 'Ausschalten' : 'Bestätigen'}
+              {mode.action === 'disable' ? t('turnOff') : t('confirm')}
             </Button>
           </div>
         </form>

@@ -9,7 +9,7 @@ import {
   type EventTemplateData,
 } from '@schichtplan/shared';
 import { cleanRequiredFields } from '../services/profile.js';
-import { UNRELATED_PERSON_ERROR, allUsersRelatedTo, isDepartmentManager } from '../services/departmentVisibility.js';
+import { allUsersRelatedTo, isDepartmentManager } from '../services/departmentVisibility.js';
 import { hasDepartmentPermission } from '../services/permissions.js';
 import { generateCheckinToken } from '../services/attendance.js';
 import { syncEventRange } from '../services/eventRange.js';
@@ -30,11 +30,11 @@ const eventTemplateRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
       // Vorlagen (mit Fragen und Freigaben) nur für wer hier plant
       if (!(await isDepartmentManager(fastify.prisma, request.tenant.id, request.user.id))) {
-        return reply.status(403).send({ error: 'Nur die Abteilungsleitung oder ein Event-OK' });
+        return reply.fail(403, 'people.onlyLeaderOrAnyOk');
       }
 
       const templates = await fastify.prisma.eventTemplate.findMany({
@@ -82,10 +82,10 @@ const eventTemplateRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
       if (!(await isDepartmentManager(fastify.prisma, request.tenant.id, request.user.id))) {
-        return reply.status(403).send({ error: 'Nur die Abteilungsleitung oder ein Event-OK' });
+        return reply.fail(403, 'people.onlyLeaderOrAnyOk');
       }
 
       const template = await fastify.prisma.eventTemplate.findUnique({
@@ -93,7 +93,7 @@ const eventTemplateRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!template || template.departmentId !== request.tenant.id) {
-        return reply.status(404).send({ error: 'Vorlage nicht gefunden' });
+        return reply.fail(404, 'template.notFound');
       }
 
       const data = template.data as unknown as EventTemplateData;
@@ -134,11 +134,11 @@ const eventTemplateRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
 
       if (!(await hasDepartmentPermission(fastify.prisma, request.tenant.id, request.user.id, 'EVENTS_CREATE'))) {
-        return reply.status(403).send({ error: 'Anlässe aus Vorlagen erstellen braucht das Recht «Anlässe erstellen»' });
+        return reply.fail(403, 'template.useForbidden');
       }
 
       const template = await fastify.prisma.eventTemplate.findUnique({
@@ -146,12 +146,12 @@ const eventTemplateRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!template || template.departmentId !== request.tenant.id) {
-        return reply.status(404).send({ error: 'Vorlage nicht gefunden' });
+        return reply.fail(404, 'template.notFound');
       }
 
       const input = request.body as z.output<typeof InstantiateTemplateSchema>;
       if (!(await allUsersRelatedTo(fastify.prisma, { departmentIds: [request.tenant.id] }, [input.contactUserId]))) {
-        return reply.status(400).send({ error: UNRELATED_PERSON_ERROR });
+        return reply.status(400).send({ error: request.t('people.unrelatedPerson') });
       }
 
       const {
@@ -180,9 +180,7 @@ const eventTemplateRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (existing) {
-        return reply
-          .status(409)
-          .send({ error: 'Ein Event mit diesem Slug existiert bereits in dieser Abteilung' });
+        return reply.fail(409, 'event.slugExists');
       }
 
       const lists = await resolveAccessLists(
@@ -190,7 +188,7 @@ const eventTemplateRoutes: FastifyPluginAsync = async (fastify) => {
         request.tenant.id,
         accessType,
         allowedDepartmentIds,
-        allowedStufeIds
+        allowedStufeIds, request.t
       );
       if ('error' in lists) {
         return reply.status(400).send({ error: lists.error });
@@ -312,7 +310,7 @@ const eventTemplateRoutes: FastifyPluginAsync = async (fastify) => {
         slug: createdEvent.slug,
         startDate: createdEvent.startDate.toISOString(),
         endDate: createdEvent.endDate.toISOString(),
-        message: 'Event erfolgreich aus Vorlage erstellt!',
+        message: request.t('success.eventFromTemplate'),
       };
     }
   );
@@ -334,11 +332,11 @@ const eventTemplateRoutes: FastifyPluginAsync = async (fastify) => {
     },
     async (request, reply) => {
       if (!request.tenant) {
-        return reply.status(400).send({ error: 'Keine Abteilung im Kontext' });
+        return reply.fail(400, 'department.missingContext');
       }
 
       if (!(await hasDepartmentPermission(fastify.prisma, request.tenant.id, request.user.id, 'TEMPLATES_MANAGE'))) {
-        return reply.status(403).send({ error: 'Vorlagen löschen braucht das Recht «Vorlagen verwalten»' });
+        return reply.fail(403, 'template.deleteForbidden');
       }
 
       const template = await fastify.prisma.eventTemplate.findUnique({
@@ -346,14 +344,14 @@ const eventTemplateRoutes: FastifyPluginAsync = async (fastify) => {
       });
 
       if (!template || template.departmentId !== request.tenant.id) {
-        return reply.status(404).send({ error: 'Vorlage nicht gefunden' });
+        return reply.fail(404, 'template.notFound');
       }
 
       await fastify.prisma.eventTemplate.delete({
         where: { id: template.id },
       });
 
-      return { message: 'Vorlage erfolgreich gelöscht' };
+      return { message: request.t('success.templateDeleted') };
     }
   );
 };

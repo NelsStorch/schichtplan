@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { DepartmentDto, DepartmentPermission, UserDto } from '@schichtplan/shared';
 import { applyAccent } from '@schichtplan/ui';
+import { useProfileLocaleSync } from '@schichtplan/ui/i18n';
 import { ApiError, api, errorMessage } from './api';
 import { clearOfflineData, syncOfflineOwner } from './offline';
 import { updateFavicon } from './favicon';
@@ -33,6 +34,8 @@ export function PortalProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Profilsprache auf ein neues Gerät übernehmen (ein vorhandenes Sprach-Cookie gewinnt)
+  useProfileLocaleSync(user?.locale);
 
   const refresh = useCallback(async () => {
     try {
