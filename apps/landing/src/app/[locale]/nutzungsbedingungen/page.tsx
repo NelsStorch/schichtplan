@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { DEFAULT_LOCALE, type Locale } from "@schichtplan/i18n";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getOrganization } from "@schichtplan/shared";
 import { getRequestOrigin } from "@schichtplan/ui/og";
 import { LEGAL_ROBOTS, LegalPage, List, Section } from "@/components/LegalPage";
@@ -22,8 +23,8 @@ export async function generateMetadata({
   };
 }
 
-/** Bei inhaltlichen Änderungen auch TERMS_VERSION in packages/shared/src/constants.ts erhöhen */
-const STAND = "19. November 2026";
+// Texte und Stand-Datum (`landing.terms.stand`) stehen in den Katalogen aller Sprachen.
+// Bei inhaltlichen Änderungen auch TERMS_VERSION in packages/shared/src/constants.ts erhöhen.
 
 export default async function NutzungsbedingungenPage({
   params,
@@ -33,162 +34,97 @@ export default async function NutzungsbedingungenPage({
   const { locale: rawLocale } = await params;
   const locale = (routing.locales.includes(rawLocale as Locale) ? rawLocale : DEFAULT_LOCALE) as Locale;
   setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "landing.terms" });
 
   const { host } = await getRequestOrigin();
   const org = getOrganization(host, locale);
-  const isVerein = org.slug === "verein";
-  const unit = org.unitTerm;
-  const units = org.unitTermPlural;
-  /** «die Abteilung», «die Schar», «der Verein» */
-  const the = isVerein ? "der Verein" : `die ${unit}`;
-  const The = isVerein ? "Der Verein" : `Die ${unit}`;
-  /** «der Abteilung», «des Vereins» */
-  const ofThe = isVerein ? "des Vereins" : `der ${unit}`;
+
+  // Deutsch bleibt gross geschrieben, andere Sprachen mitten im Satz klein
+  const lower = (term: string) => (locale === "de" ? term : term.toLowerCase());
+  const base = {
+    org: org.slug,
+    name: org.name,
+    unit: lower(org.unitTerm),
+    units: lower(org.unitTermPlural),
+    notice: org.independentNotice ? ` ${org.independentNotice}` : "",
+  };
+  // Satzteile mit Artikel, Fall und Geschlecht (je Sprache und Verband verschieden)
+  const p = {
+    ...base,
+    the: t("term.the", base),
+    theCap: t("term.theCap", base),
+    theAcc: t("term.theAcc", base),
+    aUnit: t("term.aUnit", base),
+    ofThe: t("term.ofThe", base),
+    she: t("term.she", base),
+    poss: t("term.poss", base),
+    onBehalf: t("term.onBehalf", base),
+    byUnits: t("term.byUnits", base),
+    ofUnits: t("term.ofUnits", base),
+  };
+
+  const tags = {
+    privacy: (chunks: ReactNode) => <Link href="/datenschutz">{chunks}</Link>,
+    imprint: (chunks: ReactNode) => <Link href="/impressum">{chunks}</Link>,
+    p7: (chunks: ReactNode) => <Link href={{ pathname: "/datenschutz", hash: "dritte" }}>{chunks}</Link>,
+    p8: (chunks: ReactNode) => <Link href={{ pathname: "/datenschutz", hash: "dauer" }}>{chunks}</Link>,
+    p9: (chunks: ReactNode) => <Link href={{ pathname: "/datenschutz", hash: "sicherheit" }}>{chunks}</Link>,
+  };
 
   return (
     <LegalPage
       org={org}
-      title="Nutzungsbedingungen"
-      stand={STAND}
-      intro={
-        <p>
-          Diese Bedingungen regeln die Nutzung des {org.name}s durch {units} und
-          ihre Planenden. Wer eine {unit} anlegt, stimmt ihnen im Namen{" "}
-          {ofThe} zu. Für Helfende, die sich nur eintragen, gilt vor allem die{" "}
-          <Link href="/datenschutz">Datenschutzerklärung</Link>.
-        </p>
-      }
+      title={t("title")}
+      stand={t("stand")}
+      intro={<p>{t.rich("intro", { ...tags, ...p })}</p>}
     >
-      <Section id="angebot" title="1. Angebot">
-        <p>
-          Der {org.name} ist ein unabhängiges, ehrenamtliches Projekt.
-          {org.independentNotice && <> {org.independentNotice}</>} Die Nutzung
-          ist kostenlos. Wir bemühen uns um einen zuverlässigen Betrieb,
-          können aber keine bestimmte Verfügbarkeit zusagen. Funktionen können
-          sich ändern oder wegfallen; grössere Änderungen kündigen wir
-          rechtzeitig an.
-        </p>
+      <Section id="angebot" title={t("s1.title")}>
+        <p>{t("s1.p1", p)}</p>
       </Section>
 
-      <Section id="rollen" title={`2. Rollen: ${the} und wir`}>
-        <p>
-          {The} entscheidet selbst, welche Anlässe sie anlegt, welche Angaben sie
-          von Helfenden verlangt und wen sie einteilt. Für diese Personendaten
-          ist {the} datenschutzrechtlich verantwortlich. Wir bearbeiten sie in
-          ihrem Auftrag (Auftragsbearbeitung nach Art. 9 DSG). Für Konten,
-          Anmeldung, Sicherheit und die anonyme Nutzungsstatistik sind wir selbst
-          verantwortlich.
-        </p>
+      <Section id="rollen" title={t("s2.title", p)}>
+        <p>{t("s2.p1", p)}</p>
       </Section>
 
-      <Section id="auftragsbearbeitung" title="3. Auftragsbearbeitung">
-        <p>Für die Daten, die wir im Auftrag {ofThe} bearbeiten, gilt:</p>
+      <Section id="auftragsbearbeitung" title={t("s3.title")}>
+        <p>{t("s3.intro", p)}</p>
         <List>
-          <li>
-            Wir bearbeiten sie nur, um den Schichtplan bereitzustellen, und nicht
-            für eigene Zwecke.
-          </li>
-          <li>
-            Wir schützen sie mit angemessenen technischen und organisatorischen
-            Massnahmen (siehe{" "}
-            <Link href={{ pathname: "/datenschutz", hash: "sicherheit" }}>Datenschutzerklärung, Abschnitt 9</Link>
-            ).
-          </li>
-          <li>
-            Wir setzen nur die Dienstleister ein, die in der{" "}
-            <Link href={{ pathname: "/datenschutz", hash: "dritte" }}>Datenschutzerklärung, Abschnitt 7</Link>{" "}
-            genannt sind. Neue Dienstleister nehmen wir dort auf, bevor wir sie
-            einsetzen.
-          </li>
-          <li>
-            Zugriff haben nur die wenigen Personen, die den Schichtplan betreiben;
-            sie sind zur Vertraulichkeit verpflichtet.
-          </li>
-          <li>
-            Wir unterstützen {the}, wenn jemand Auskunft, Berichtigung oder
-            Löschung verlangt.
-          </li>
-          <li>
-            Erfahren wir von einer Verletzung der Datensicherheit, die die Daten{" "}
-            {ofThe} betrifft, informieren wir {the} so rasch wie möglich.
-          </li>
-          <li>
-            Löscht {the} Anlässe oder wird sie aufgelöst, löschen wir die Daten
-            nach den Fristen in der{" "}
-            <Link href={{ pathname: "/datenschutz", hash: "dauer" }}>Datenschutzerklärung, Abschnitt 8</Link>
-            , auch aus den Sicherungen.
-          </li>
+          <li>{t("s3.i1")}</li>
+          <li>{t.rich("s3.i2", tags)}</li>
+          <li>{t.rich("s3.i3", tags)}</li>
+          <li>{t("s3.i4")}</li>
+          <li>{t("s3.i5", p)}</li>
+          <li>{t("s3.i6", p)}</li>
+          <li>{t.rich("s3.i7", { ...tags, ...p })}</li>
         </List>
       </Section>
 
-      <Section id="pflichten" title="4. Pflichten der Planenden">
+      <Section id="pflichten" title={t("s4.title")}>
         <List>
-          <li>
-            Erfragt nur Angaben, die ihr für den Anlass wirklich braucht, und
-            wählt für Antworten eine kurze Löschfrist.
-          </li>
-          <li>
-            Gesundheitsangaben (z.&nbsp;B. Allergien) nur über Fragen, die als
-            «Gesundheitsangaben» markiert sind. Dann willigen die Helfenden
-            ausdrücklich ein.
-          </li>
-          <li>
-            Wenn ihr Personen ohne eigenes Konto von Hand eintragt, informiert
-            sie darüber und darüber, wofür ihr ihre Angaben braucht.
-          </li>
-          <li>
-            Exportierte Listen (PDF, Excel) bewahrt ihr sicher auf und löscht
-            sie nach dem Anlass.
-          </li>
-          <li>
-            Ladet keine Bilder von erkennbaren Personen ohne deren Einverständnis
-            hoch und keine Inhalte, an denen ihr keine Rechte habt.
-          </li>
-          <li>
-            Haltet eure Zugänge geheim und gebt Rechte nur Personen, die sie
-            brauchen.
-          </li>
-          <li>
-            Bei Schichten mit Mindestalter (z.&nbsp;B. Bar ab 18) prüft der
-            Schichtplan nur das selbst angegebene Geburtsdatum. Ausweiskontrollen
-            und der Jugendschutz vor Ort bleiben Sache des OK.
-          </li>
+          <li>{t("s4.i1")}</li>
+          <li>{t("s4.i2")}</li>
+          <li>{t("s4.i3")}</li>
+          <li>{t("s4.i4")}</li>
+          <li>{t("s4.i5")}</li>
+          <li>{t("s4.i6")}</li>
+          <li>{t("s4.i7")}</li>
         </List>
       </Section>
 
-      <Section id="missbrauch" title="5. Missbrauch">
-        <p>
-          Der Schichtplan dient der Organisation von Helfereinsätzen. Bei
-          Missbrauch, etwa Spam, rechtswidrigen Inhalten oder Angriffen auf die
-          Plattform, können wir Inhalte entfernen und Konten oder {units}{" "}
-          sperren oder löschen.
-        </p>
+      <Section id="missbrauch" title={t("s5.title")}>
+        <p>{t("s5.p1", p)}</p>
       </Section>
 
-      <Section id="haftung" title="6. Haftung">
-        <p>
-          Wir stellen den Schichtplan unentgeltlich zur Verfügung. Soweit das
-          Gesetz es zulässt, haften wir nicht für Schäden aus der Nutzung oder
-          aus Ausfällen, etwa für verpasste Schichten oder verlorene Daten.
-          Für Vorsatz und grobe Fahrlässigkeit haften wir nach Gesetz. Bewahrt
-          wichtige Listen zusätzlich selbst auf (z.&nbsp;B. als PDF).
-        </p>
+      <Section id="haftung" title={t("s6.title")}>
+        <p>{t("s6.p1")}</p>
       </Section>
 
-      <Section id="ende" title="7. Ende der Nutzung">
-        <p>
-          {The} kann den Schichtplan jederzeit nicht mehr nutzen und ihre
-          Anlässe löschen. Möchte sie {isVerein ? "den Verein" : `die ${unit}`}{" "}
-          ganz entfernen, genügt eine Nachricht an die Kontaktadresse im{" "}
-          <Link href="/impressum">Impressum</Link>.
-        </p>
+      <Section id="ende" title={t("s7.title")}>
+        <p>{t.rich("s7.p1", { ...tags, ...p })}</p>
       </Section>
 
-      <Section id="aenderungen" title="8. Änderungen und anwendbares Recht">
-        <p>
-          Ändern sich diese Bedingungen wesentlich, informieren wir die
-          Leitungen der {units} vorher. Es gilt Schweizer Recht.
-        </p>
+      <Section id="aenderungen" title={t("s8.title")}>
+        <p>{t("s8.p1", p)}</p>
       </Section>
     </LegalPage>
   );

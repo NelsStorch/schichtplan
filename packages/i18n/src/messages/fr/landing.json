@@ -215,8 +215,298 @@
     "privacy": "Protection des données",
     "terms": "Conditions d’utilisation",
     "imprint": "Mentions légales",
-    "originalTitle": "Version en langue originale",
-    "originalText": "La version originale allemande fait foi. Cette page sera prochainement disponible avec une traduction juridique vérifiée."
+    "translationTitle": "Traduction",
+    "translationText": "Cette traduction facilite la compréhension. Seule la version originale allemande fait foi ; tu y accèdes via le sélecteur de langue (Deutsch)."
+  },
+  "privacy": {
+    "title": "Protection des données",
+    "stand": "19 novembre 2026",
+    "intro": "La présente déclaration décrit quelles données personnelles nous traitons lors de l’exploitation de {name}, dans quel but et quels sont tes droits. Elle se fonde sur la loi fédérale suisse sur la protection des données (LPD) et sur l’ordonnance sur la protection des données (OPDo).",
+    "term": {
+      "the": "{org, select, pfadi {le {unit}} jubla {le {unit}} verein {l’{unit}} other {la {unit}}}",
+      "ofThe": "{org, select, pfadi {du {unit}} jubla {du {unit}} verein {de l’{unit}} other {de la {unit}}}",
+      "inThe": "{org, select, pfadi {dans le {unit}} jubla {dans le {unit}} verein {dans l’{unit}} other {dans la {unit}}}",
+      "respective": "{org, select, pfadi {le {unit} concerné} jubla {le {unit} concerné} verein {l’{unit} concernée} other {la {unit} concernée}}",
+      "inConcerned": "{org, select, pfadi {dans le {unit} concerné} jubla {dans le {unit} concerné} verein {dans l’{unit} concernée} other {dans la {unit} concernée}}",
+      "ofYourUnit": "{org, select, pfadi {de ton {unit}} jubla {de ton {unit}} verein {de ton {unit}} other {de ta {unit}}}",
+      "ofAUnit": "{org, select, pfadi {d’un {unit}} jubla {d’un {unit}} verein {d’une {unit}} other {d’une {unit}}}",
+      "inOrg": "{org, select, cevi {Chez Cevi} pfadi {Chez les scouts} jubla {Chez Jubla} other {Dans les associations}}",
+      "ofUnits": "{org, select, other {des {units}}}",
+      "theUnits": "{org, select, other {Les {units}}}",
+      "toUnits": "{org, select, other {aux {units}}}",
+      "theGroups": "{org, select, other {les {groups}}}",
+      "homeUnit": "{unitLower} d’origine",
+      "fedUnit": "{org, select, cevi {groupe local} other {indication {ofYourUnit}}}",
+      "fedStructure": "{org, select, cevi {quel groupe appartient à quelle Jungschar et à quel groupe local} other {quel groupe appartient à quel groupe de niveau supérieur}}",
+      "loginMethods": "{org, select, verein {un mot de passe} other {{db} ou un mot de passe}}"
+    },
+    "fed": {
+      "operator": "{org, select, cevi {par l’association faîtière Cevi Suisse} pfadi {par le Mouvement Scout de Suisse (MSdS)} jubla {par Jungwacht Blauring Suisse} other {}}",
+      "where": "{org, select, cevi {, serveur en Suisse} other {}}",
+      "policyLabel": "{org, select, cevi {Déclaration de protection des données de Cevi Suisse} pfadi {Protection des données du Mouvement Scout de Suisse} jubla {Déclaration de protection des données de Jungwacht Blauring Suisse} other {}}"
+    },
+    "contact": {
+      "show": "Afficher les coordonnées",
+      "loading": "Chargement …",
+      "noscript": "Pour éviter une lecture automatique, les coordonnées ne sont chargées qu’au clic. JavaScript est nécessaire pour cela.",
+      "error": "Les coordonnées n’ont pas pu être chargées.",
+      "missing": "Les coordonnées n’ont pas encore été renseignées.",
+      "email": "E-mail :"
+    },
+    "table": {
+      "name": "Nom",
+      "purpose": "Finalité",
+      "duration": "Durée"
+    },
+    "s1": {
+      "title": "1. Responsable du traitement",
+      "p1": "Le responsable du traitement des données sur cette plateforme est :",
+      "p2": "Pour toute question relative à la protection des données et à l’exercice de tes droits, tu peux nous joindre à cette adresse."
+    },
+    "s2": {
+      "title": "2. Champ d’application",
+      "intro": "La présente déclaration s’applique à toutes les parties de {name} :",
+      "landing": "la page d’accueil <b>{domain}</b> avec la page de profil,",
+      "login": "la connexion centrale <b>login.{domain}</b>,",
+      "plans": "les plannings {ofUnits} <b>{subdomain}</b>,",
+      "help": "le centre d’aide <b>hilfe.{domain}</b>,",
+      "admin": "le portail d’administration <b>admin.cevi-schichtplan.ch</b>, utilisé en commun pour les quatre offres et accessible uniquement aux administrateurs et administratrices globaux.",
+      "domainsIntro": "La même plateforme fonctionne sous quatre domaines :",
+      "domainsOutro": ". La présente déclaration s’applique aux quatre.",
+      "roles": "{theUnits} et les comités d’organisation (CO) de leurs événements décident eux-mêmes quels événements ils créent, quelles informations ils demandent aux bénévoles et qui ils affectent. Pour ces décisions et pour l’utilisation des données en dehors de la plateforme (p. ex. une liste de bénévoles exportée), {respective} est responsable. Nous traitons ces données pour leur compte ; les règles à ce sujet figurent dans les <terms>conditions d’utilisation</terms>."
+    },
+    "s3": {
+      "title": "3. Quelles données nous traitons",
+      "account": {
+        "title": "Compte et profil",
+        "intro": "Selon le mode de connexion, nous enregistrons :",
+        "email": "<b>E-mail et mot de passe :</b> adresse e-mail, mot de passe (uniquement sous forme de hash bcrypt, jamais en clair), prénom et nom, et si l’adresse e-mail est confirmée. Si tu actives l’authentification à deux facteurs, s’y ajoutent une clé secrète (enregistrée chiffrée) et des codes de récupération (uniquement sous forme de hash).",
+        "fed": "<b>{db} :</b> identifiant de personne {db}, prénom et nom, {nickname}, e-mail, date de naissance, {fedUnit} ainsi que tes rôles dans {db}, dans la mesure où nous en déduisons {the}, {theGroups} et une éventuelle {lead}. Pour cela, nous lisons aussi lors de la connexion la structure des groupes liés à tes rôles ({fedStructure}). De tes rôles, nous n’enregistrons que le type de rôle et le groupe, dans l’état de la dernière connexion (pas d’historique). Ils servent à comprendre pourquoi tu as un droit ou non, et ne sont visibles que des administrateurs globaux du planning. Nous ne reprenons ni n’enregistrons ton adresse postale issue de {db}.",
+        "nickname": "<b>{Nickname} (sans mot de passe) :</b> {nickname} et date de naissance, ainsi que, facultativement, prénom et nom, numéro de portable et {groups}.",
+        "optional": "S’y ajoutent, à titre facultatif ou à la demande d’un événement : numéro de portable, date de naissance, {homeUnit} et {groups} (avec le rôle de responsable ou de participant·e), ainsi que le réglage indiquant si tu souhaites recevoir des rappels de créneau.",
+        "noAddress": "Conformément au principe de minimisation des données, nous n’enregistrons <b>aucune adresse postale</b> dans ton profil. Si un CO en a besoin pour un événement (p. ex. pour un envoi), il te la demande dans le cadre de l’événement ; la réponse n’appartient qu’à cet événement et est supprimée à l’échéance indiquée (voir section 8)."
+      },
+      "planning": {
+        "title": "Planification des créneaux",
+        "i1": "inscriptions à des créneaux et à des tâches, avec la date et l’heure et une éventuelle note,",
+        "i2": "réponses aux questions qu’un CO pose pour son événement (p. ex. adresse, allergies, contact d’urgence ou taille de T-shirt). Au moment de remplir, chaque question indique quand la réponse sera supprimée. Les questions portant sur la santé (p. ex. allergies) sont signalées comme telles : nous ne traitons ces données personnelles sensibles qu’avec ton consentement explicite, que nous enregistrons avec la date et l’heure, et elles sont toujours supprimées à l’échéance d’un délai,",
+        "i3": "désinscriptions d’un événement avec un motif facultatif. Merci de n’y indiquer aucune information de santé ; un motif général comme « empêché » suffit,",
+        "i4": "rôles et droits {inThe} et au CO ({lead}, droits individuels comme « Créer des événements », direction du CO, membre du CO) ainsi qu’un journal indiquant qui a accordé quels droits à qui,",
+        "i5": "personnes qu’un CO saisit à la main (nom, éventuellement e-mail et téléphone), même sans compte propre,",
+        "i6": "liens d’accès aux événements et personnes qui les ont utilisés,",
+        "i7": "journal des inscriptions et désinscriptions, des reprises et de la présence (qui, quand, par qui),",
+        "i8": "messages que le CO envoie aux bénévoles via le planning, avec l’historique indiquant qui les a reçus,",
+        "i9": "bons de repas et de boissons : quels bons sont liés à ton inscription et quand ils ont été utilisés."
+      },
+      "content": {
+        "title": "Contenus des organisateurs",
+        "text": "Logos, bannières et images que les organisateurs téléversent, ainsi que les textes relatifs {toUnits}, aux événements, aux créneaux et aux modèles. Merci de ne téléverser aucune image sur laquelle des personnes sont reconnaissables sans leur accord."
+      },
+      "tech": {
+        "title": "Données techniques",
+        "p1": "À chaque accès, nos serveurs traitent les informations techniquement nécessaires : adresse IP, date et heure, adresse consultée, méthode HTTP, code d’état, volume de données transféré, page précédemment consultée (référent) et identifiant de ton navigateur (User-Agent). Nous n’utilisons ces journaux que pour la recherche d’erreurs et la protection contre les abus. Le journal du serveur web (reverse proxy) est renouvelé chaque jour et supprimé après 14 jours. Les journaux de l’application ont une taille limitée et sont supprimés au plus tard lors de la prochaine mise à jour du logiciel. Pour nous protéger contre les tentatives de deviner des mots de passe, nous comptons les échecs de connexion par adresse IP et par e-mail ou {nickname} uniquement dans la mémoire vive ; ces entrées valent au plus une heure et sont perdues à chaque redémarrage.",
+        "p2": "Pour la protection contre les attaques, un pare-feu applicatif web (Coraza) et le système de détection d’intrusion CrowdSec examinent automatiquement chaque accès sur notre serveur afin de repérer des schémas d’attaque connus. Les données restent sur notre serveur et sont conservées 14 jours au plus. Si nous détectons une tentative d’attaque, nous bloquons temporairement l’adresse IP (voir section 7)."
+      },
+      "stats": {
+        "title": "Statistiques d’utilisation anonymes",
+        "p1": "Pour voir si le planning fonctionne bien et quelles fonctions sont utilisées, nous comptons les utilisations sous forme de <b>totaux par jour</b>, p. ex. « 12 connexions avec {db} », « 3 plannings PDF imprimés » ou « 40 consultations de l’aide pour l’inscription ». Seuls sont enregistrés le type d’utilisation, une subdivision fixe (p. ex. le mode de connexion), {the} et le jour. Pour l’exploitation, nous comptons en outre, par heure, combien de requêtes une fonction du serveur a reçues, combien de temps la réponse a pris et si des erreurs sont survenues ; nous n’enregistrons alors que le modèle de l’adresse (p. ex. « consulter un événement »), jamais l’adresse réelle avec les noms d’événements, les codes d’accès ou de check-in. De même, le serveur compte combien de fois des pages sont chargées, sous forme de total journalier par domaine (page d’accueil, connexion, pages {ofThe}). Comme rien n’est enregistré à ton sujet, cela vaut aussi si tu as activé « ne pas suivre ».",
+        "p2": "Nous n’enregistrons <b>aucune</b> adresse IP, aucun identifiant de ton navigateur ou de ton appareil, aucun cookie et rien qui puisse être attribué à une personne. Ton navigateur ne signale que des utilisations qui ne sont pas visibles sur le serveur (p. ex. un export PDF, la taille de la fenêtre sous forme de « mobile », « tablette » ou « ordinateur » et si l’affichage sombre est actif). Si tu as activé « ne pas suivre » dans ton navigateur (Global Privacy Control ou Do Not Track), il n’envoie aucun de ces signalements.",
+        "p3": "Par compte, nous n’enregistrons que le <b>dernier jour</b> où tu as utilisé le planning en étant connecté·e (seulement la date, sans l’heure). Nous en déduisons combien de personnes sont actives par jour, par semaine et par mois, et repérons les comptes inutilisés depuis longtemps."
+      },
+      "web": {
+        "title": "Statistiques web",
+        "text": "Pour voir quelles pages sont consultées et à quelle fréquence, nous utilisons en outre <b>Umami</b>, un logiciel de statistiques que nous exploitons nous-mêmes sur notre serveur. Aucune donnée n’est transmise à des tiers. Sont enregistrés la page consultée avec son titre (sans paramètres, donc sans codes ni liens issus d’e-mails), la page précédemment consultée, le navigateur, le système d’exploitation, le type d’appareil, la taille d’écran, la langue et le pays déduit de l’adresse IP. Umami n’enregistre pas l’adresse IP elle-même. Pour compter les visites, Umami calcule à partir de l’adresse IP et du navigateur une somme de contrôle qui change chaque mois et ne permet aucune identification. Umami ne dépose aucun cookie. Si tu as activé « ne pas suivre » dans ton navigateur, rien n’est enregistré."
+      }
+    },
+    "s4": {
+      "title": "4. Dans quel but nous traitons les données",
+      "i1": "créer le compte, connexion (authentification unique sur tous les sous-domaines) et protection du compte,",
+      "i2": "planifier des créneaux, affecter des bénévoles et mener des événements,",
+      "i3": "vérifier l’accès aux événements (p. ex. uniquement les membres {ofThe}, uniquement les responsables, ou selon les {groups}),",
+      "i4": "vérifier l’âge minimum : pour les créneaux soumis à une limite d’âge (p. ex. bar dès 18 ans), nous vérifions ton âge à l’aide de la date de naissance,",
+      "i5": "contact entre le CO et les bénévoles, par exemple en cas de modifications de dernière minute,",
+      "i6": "e-mails et, si tu les autorises, notifications push : confirmation de l’adresse e-mail, réinitialisation du mot de passe, rappels avant tes créneaux, messages du CO et informations sur les reprises et les bons (désactivables individuellement dans le profil),",
+      "i7": "exploitation, sécurité et résolution des erreurs de la plateforme,",
+      "i8": "statistiques d’utilisation anonymes, pour améliorer le planning (voir section 3).",
+      "closing": "Nous n’utilisons pas les données à des fins publicitaires, ne les vendons pas et n’établissons aucun profil de ton comportement."
+    },
+    "s5": {
+      "title": "5. Qui voit tes données",
+      "i1": "<b>Les autres bénévoles</b> d’un événement voient dans le planning qui est inscrit à quel créneau ({nickname} ou nom). Quiconque n’est pas autorisé pour un événement voit le planning sans les noms.",
+      "i2": "<b>CO, {lead} et personnes disposant du droit « Voir tous les événements »</b> {inConcerned} voient en plus les coordonnées (e-mail et téléphone, si disponibles), l’âge ainsi que les réponses et les désinscriptions relatives à leurs événements.",
+      "i3": "<b>Les administrateurs et administratrices globaux</b> de l’exploitant voient dans le portail d’administration tous les comptes des quatre offres et toutes les sections, tous les groupes et toutes les associations (profil, mode de connexion, appartenance, rôles, inscriptions et jour de la dernière utilisation) ainsi que les statistiques d’utilisation anonymes, et peuvent supprimer des comptes. Cet accès est limité à quelques personnes et sert au support et à la lutte contre les abus."
+    },
+    "s6": {
+      "title": "6. Cookies et stockage local",
+      "p1": "Nous n’utilisons que <b>des cookies techniquement nécessaires</b>. Il n’y a aucun cookie d’analyse, de suivi ou publicitaire, et aucune intégration de services tels que Google Analytics, Facebook ou YouTube. Les polices sont hébergées par nos soins : aucune connexion à Google n’est donc établie lors de l’accès. Les statistiques d’utilisation anonymes (section 3) se passent de cookies et de stockage local{umami}.",
+      "umami": ", tout comme les statistiques web avec Umami, que nous exploitons nous-mêmes",
+      "dur": {
+        "token": "30 jours ou jusqu’à la déconnexion",
+        "min10": "10 minutes",
+        "min15": "15 minutes",
+        "days14": "14 jours",
+        "reset": "jusqu’à ce que tu le réinitialises",
+        "delete": "jusqu’à ce que tu le supprimes",
+        "logout": "jusqu’à la déconnexion"
+      },
+      "cookie": {
+        "token": "Connexion (jeton de session signé, illisible pour les scripts), valable pour tous les sous-domaines de {domain}",
+        "oauth": "Protection de la connexion via {db} contre la falsification",
+        "link": "Confirmation lorsqu’un compte existant est lié à {db}",
+        "mfa": "Connexion en cours avec un code à deux facteurs (uniquement si activé)",
+        "pwa": "Mémorise que l’invitation à installer l’application a été fermée (pour tous les sous-domaines)"
+      },
+      "localIntro": "Dans le stockage local de ton navigateur (Local Storage), nous enregistrons :",
+      "local": {
+        "theme": "Thème de couleurs choisi (clair/sombre)",
+        "eventView": "Affichage choisi pour un événement",
+        "unitTheme": "Thème de couleurs dans le planning {ofAUnit}",
+        "pwa": "Mémorise que l’invitation à installer l’application (« Sur l’écran d’accueil ») a été fermée",
+        "shiftView": "Affichage choisi des créneaux dans l’espace CO",
+        "commands": "Dernières commandes utilisées de la recherche rapide",
+        "hint": "Mémorise qu’une indication a été fermée",
+        "offlineOwner": "Identifiant de ton compte, afin que les données hors ligne soient supprimées en cas de changement de personne",
+        "lastSync": "Moment de la dernière synchronisation pour l’affichage hors ligne",
+        "staffPin": "PIN pour l’encaissement des bons au poste de distribution (uniquement sur les appareils du CO)",
+        "orgFilter": "Fédération choisie dans le portail d’administration (uniquement administrateurs globaux)"
+      },
+      "session": "Dans le stockage de session (Session Storage), <code>schichtplan.pwa_dismissed_session</code> mémorise jusqu’à la fermeture de l’onglet que l’invitation à installer l’application a été fermée.",
+      "offline": "Pour que tu puisses voir tes créneaux même sans Internet, le planning enregistre une copie de tes événements, de tes créneaux et de ton profil dans la mémoire du navigateur (cache hors ligne). Elle est supprimée à la déconnexion, ainsi que lorsqu’une autre personne se connecte sur le même appareil.",
+      "outro": "Ces données ne quittent pas ton navigateur. Tu peux supprimer les cookies et le Local Storage dans les paramètres du navigateur ; sans le cookie <code>token</code>, aucune connexion n’est possible."
+    },
+    "s7": {
+      "title": "7. Prestataires et transmission",
+      "intro": "Pour l’exploitation, nous collaborons avec les prestataires suivants :",
+      "hosting": "<b>Hébergement :</b> Avoro, une offre de dataforest GmbH, Kriftel, Allemagne. Le serveur se trouve dans un centre de calcul à Francfort-sur-le-Main. C’est là que fonctionnent toutes les applications et la base de données avec ses sauvegardes.",
+      "google": "<b>Google Drive</b> (Google Ireland Limited, Dublin, Irlande) : lieu de stockage d’une copie de sauvegarde supplémentaire en dehors du centre de calcul. Les sauvegardes sont chiffrées sur notre serveur avant d’être téléversées. Seuls nous détenons la clé de déchiffrement, pas Google. Google ne peut donc pas lire le contenu.",
+      "infomaniak": "<b>Infomaniak Network SA</b>, Genève, Suisse : envoi des e-mails (SMTP), gestion des domaines (DNS) et lieu de stockage d’une copie de sauvegarde chiffrée de la base de données en Suisse. Comme pour Google Drive, nous chiffrons la sauvegarde avant le téléversement ; Infomaniak ne peut pas la lire.",
+      "fed": "<b>{authName}</b>, exploitée {fedOperator}{fedWhere} : lorsque tu te connectes via {db}, nous recevons, avec ton accord, ton profil avec e-mail, nom et rôles. Nous n’écrivons rien dans {db}. Pour les données dans {db}, la déclaration de protection des données de la fédération s’applique (<fedlink>{policyLabel}</fedlink>).",
+      "crowdsec": "<b>CrowdSec SAS</b>, Fontenay-aux-Roses, France : uniquement en cas d’attaque détectée, nous signalons à CrowdSec l’adresse IP de l’attaquant, le moment et le type d’attaque, afin que les listes de blocage communes restent à jour. Les données des visiteurs normaux ne quittent alors pas notre serveur (<crowdsec>déclaration de protection des données de CrowdSec</crowdsec>).",
+      "letsencrypt": "<b>Let’s Encrypt</b> (ISRG, États-Unis) : délivre les certificats TLS. Seuls des noms de domaine sont transmis, aucune donnée personnelle.",
+      "push": "<b>Services push des navigateurs</b> (Google Firebase Cloud Messaging, Mozilla, Apple, Microsoft) : uniquement si tu actives les notifications push, notre serveur les envoie via le service push de ton navigateur. Le contenu est chiffré de bout en bout ; le service ne voit que l’adresse d’appareil générée à cet effet par ton navigateur et le moment. Tu peux les désactiver dans le profil ou dans les paramètres du navigateur.",
+      "discord": "<b>Discord</b> (Discord Inc., États-Unis) : en cas de graves pannes, le serveur envoie un message d’alerte aux exploitants. Il ne contient que des indications techniques (type d’erreur, fonction du serveur, moment), aucun nom, adresse e-mail, numéro de téléphone ni adresse réelle d’événement.",
+      "other": "Au-delà, nous ne transmettons des données personnelles que si la loi nous y oblige.",
+      "transfer": "Du fait de l’hébergement, tes données sont stockées en Allemagne. Selon la liste du Conseil fédéral (annexe 1 de l’ordonnance sur la protection des données), l’Allemagne offre un niveau de protection adéquat, de même que l’Irlande. Google peut aussi stocker la copie de sauvegarde chiffrée dans des centres de calcul hors d’Europe, par exemple aux États-Unis ; il n’y a là que des données chiffrées, illisibles sans notre clé. Let’s Encrypt et Discord, aux États-Unis, ne reçoivent aucune donnée personnelle. Les services push peuvent aussi exploiter leurs serveurs hors d’Europe ; ils n’y voient aucun contenu."
+    },
+    "s8": {
+      "title": "8. Durée de conservation des données",
+      "i1": "Nous conservons les données du compte tant que ton compte existe. Avec {loginMethods}, tu peux supprimer toi-même ton compte à tout moment (profil sur {domain} ou menu du compte dans le planning). Tes inscriptions, rôles et réponses sont alors supprimés aussi. Dans les journaux et l’historique des messages, nous remplaçons ton nom par la mention « Gelöschte Person » (« personne supprimée »).",
+      "i2": "Les profils connectés uniquement avec le {nickname} peuvent demander la suppression dans le menu du compte (« Demander la suppression ») ; nous les supprimons alors sous 30 jours.",
+      "i3": "Les comptes inutilisés pendant 24 mois sont supprimés automatiquement. Si nous avons une adresse e-mail, nous envoyons un avertissement au préalable ; si tu te connectes dans les 30 jours, le compte est conservé. Tes inscriptions aux événements restent alors, sans nom ni coordonnées, sous la mention « Gelöschte Person » (« personne supprimée »), afin que la planification de l’événement reste cohérente. Sont exclus la seule direction {ofThe} et les administrateurs et administratrices globaux.",
+      "i4": "Les événements avec leurs inscriptions sont conservés jusqu’à ce que {the} les supprime.",
+      "i5": "Nous supprimons automatiquement les réponses aux questions d’un événement à l’échéance du délai que le CO fixe pour chaque question : immédiatement après l’événement ou 10, 30, 90 ou 365 jours plus tard (à compter de la fin du dernier créneau). Le délai figure à côté de la question au moment de remplir. Ce n’est que si le CO choisit expressément « Nie löschen » (« ne jamais supprimer ») que les réponses sont conservées jusqu’à la suppression de l’événement ou de ton compte.",
+      "i6": "Nous supprimons le journal des inscriptions et désinscriptions et l’historique des messages du CO un an après la fin de l’événement.",
+      "i7": "Nous supprimons les journaux des droits {inThe} et dans le portail d’administration après deux ans. L’adresse IP dans le journal du portail d’administration est supprimée dès 90 jours.",
+      "i8": "Les liens de confirmation de l’e-mail et de réinitialisation du mot de passe expirent après peu de temps. Nous supprimons les comptes avec e-mail et mot de passe dont l’adresse n’a pas été confirmée dans les 24 heures.",
+      "i9": "Nous conservons les statistiques d’utilisation anonymes pendant deux ans, les valeurs horaires relatives à l’exploitation du serveur pendant 90 jours (ensuite uniquement sous forme de total journalier). Le jour de la dernière utilisation est supprimé avec le compte.",
+      "i10": "Nous sauvegardons la base de données chaque nuit et conservons ces sauvegardes 14 jours. Nous la sauvegardons en outre avant chaque mise à jour du logiciel et conservons les dix dernières de ces sauvegardes, mais 40 jours au plus.",
+      "i11": "Nous déposons en outre chaque nuit une copie chiffrée de la base de données et des images téléversées dans Google Drive (voir section 7). Nous conservons les sauvegardes des sept derniers jours, une par semaine pendant quatre semaines et une par mois pendant six mois. Les sauvegardes plus anciennes sont supprimées, puis définitivement retirées de la corbeille après 30 jours supplémentaires.",
+      "i12": "Chaque nuit également, nous déposons une copie chiffrée de la base de données chez Infomaniak, en Suisse (voir section 7). Nous conservons les sauvegardes des 14 derniers jours, celles des dimanches des huit dernières semaines et celles du premier jour des six derniers mois. Une fois par mois, nous restaurons à titre d’essai l’une de ces sauvegardes dans une base de données temporaire sur notre serveur, afin de vérifier qu’elle peut être restaurée ; cette base est supprimée aussitôt après.",
+      "i13": "Les données supprimées peuvent encore figurer dans ces sauvegardes jusqu’à la suppression de la sauvegarde concernée, soit environ sept mois au plus. Nous n’utilisons les sauvegardes que pour rétablir l’exploitation après une erreur ou une panne."
+    },
+    "s9": {
+      "title": "9. Sécurité des données",
+      "p1": "Toutes les connexions sont chiffrées avec TLS (HTTPS). Nous n’enregistrons les mots de passe que sous forme de hash, le cookie de connexion est illisible pour les scripts, les tentatives de connexion sont limitées et la base de données est séparée d’Internet au niveau du réseau. Seules les personnes responsables de l’exploitant ont accès aux serveurs. Personne ne peut toutefois garantir une sécurité absolue."
+    },
+    "s10": {
+      "title": "10. Enfants et adolescents",
+      "p1": "{inOrg}, des adolescents participent aussi comme bénévoles. Nous traitons leurs données uniquement dans la mesure décrite ci-dessus. Les adolescents de moins de 14 ans ne devraient créer un compte qu’avec l’accord de leurs parents.",
+      "p2": "Pour les créneaux soumis à un âge minimum, le planning ne vérifie que la date de naissance indiquée par la personne elle-même. Les contrôles d’identité et la protection de la jeunesse sur place relèvent de la responsabilité du CO."
+    },
+    "s11": {
+      "title": "11. Tes droits",
+      "intro": "Dans le cadre de la loi sur la protection des données, tu as notamment le droit :",
+      "i1": "de demander quelles données nous traitons à ton sujet,",
+      "i2": "de faire rectifier des données inexactes (tu peux modifier beaucoup de choses directement dans le profil),",
+      "i3": "de demander la suppression de tes données ou de t’opposer à un traitement,",
+      "i4": "de recevoir tes données dans un format électronique courant ou de les faire transmettre, dans la mesure où elles reposent sur ton consentement ou sur un contrat.",
+      "download": "Tu peux télécharger tes données à tout moment toi-même : dans le menu du compte du planning, sous « Télécharger mes données » (sous forme de fichier JSON).",
+      "contact": "Pour tout le reste, écris-nous à l’adresse e-mail indiquée au point 1. Nous répondons dans un délai de 30 jours et pouvons exiger que tu justifies de ton identité. Tu peux en outre déposer une plainte auprès du Préposé fédéral à la protection des données et à la transparence (PFPDT) : <edoeb>www.edoeb.admin.ch</edoeb>."
+    },
+    "s12": {
+      "title": "12. Modifications",
+      "p1": "Nous adaptons la présente déclaration lorsque la plateforme ou la situation juridique change. C’est la version publiée ici à chaque moment qui fait foi. Le <help>centre d’aide</help> répond aux questions sur l’utilisation."
+    }
+  },
+  "terms": {
+    "title": "Conditions d’utilisation",
+    "stand": "19 novembre 2026",
+    "term": {
+      "the": "{org, select, pfadi {le {unit}} jubla {le {unit}} verein {l’{unit}} other {la {unit}}}",
+      "theCap": "{org, select, pfadi {Le {unit}} jubla {Le {unit}} verein {L’{unit}} other {La {unit}}}",
+      "theAcc": "{org, select, pfadi {le {unit}} jubla {le {unit}} verein {l’{unit}} other {la {unit}}}",
+      "aUnit": "{org, select, pfadi {un {unit}} jubla {un {unit}} verein {une {unit}} other {une {unit}}}",
+      "ofThe": "{org, select, pfadi {du {unit}} jubla {du {unit}} verein {de l’{unit}} other {de la {unit}}}",
+      "she": "{org, select, pfadi {il} jubla {il} other {elle}}",
+      "poss": "{org, select, other {ses}}",
+      "onBehalf": "{org, select, other {pour son compte}}",
+      "byUnits": "{org, select, other {les {units}}}",
+      "ofUnits": "{org, select, other {des {units}}}"
+    },
+    "intro": "Les présentes conditions régissent l’utilisation de {name} par {byUnits} et leurs organisateurs. Quiconque crée {aUnit} les accepte au nom {ofThe}. Pour les bénévoles qui ne font que s’inscrire, c’est surtout la <privacy>déclaration de protection des données</privacy> qui s’applique.",
+    "s1": {
+      "title": "1. Offre",
+      "p1": "{name} est un projet indépendant et bénévole.{notice} L’utilisation est gratuite. Nous nous efforçons d’assurer un fonctionnement fiable, mais ne pouvons promettre aucune disponibilité déterminée. Des fonctions peuvent changer ou disparaître ; nous annonçons à temps les changements plus importants."
+    },
+    "s2": {
+      "title": "2. Rôles : {the} et nous",
+      "p1": "{theCap} décide librement quels événements {she} crée, quelles informations {she} demande aux bénévoles et qui {she} affecte. Pour ces données personnelles, {the} est responsable du traitement au sens de la protection des données. Nous les traitons {onBehalf} (sous-traitance au sens de l’art. 9 LPD). Pour les comptes, la connexion, la sécurité et les statistiques d’utilisation anonymes, nous sommes nous-mêmes responsables."
+    },
+    "s3": {
+      "title": "3. Sous-traitance du traitement",
+      "intro": "Pour les données que nous traitons pour le compte {ofThe}, les règles suivantes s’appliquent :",
+      "i1": "Nous ne les traitons que pour fournir le planning, et non pour nos propres fins.",
+      "i2": "Nous les protégeons par des mesures techniques et organisationnelles appropriées (voir <p9>déclaration de protection des données, section 9</p9>).",
+      "i3": "Nous ne faisons appel qu’aux prestataires mentionnés dans la <p7>déclaration de protection des données, section 7</p7>. Nous y ajoutons les nouveaux prestataires avant de les utiliser.",
+      "i4": "Seules les quelques personnes qui exploitent le planning y ont accès ; elles sont tenues à la confidentialité.",
+      "i5": "Nous assistons {theAcc} lorsque quelqu’un demande l’accès à ses données, leur rectification ou leur suppression.",
+      "i6": "Si nous apprenons qu’une violation de la sécurité des données concerne les données {ofThe}, nous en informons {theAcc} dans les meilleurs délais.",
+      "i7": "Si {the} supprime des événements ou si {she} cesse d’exister, nous supprimons les données selon les délais de la <p8>déclaration de protection des données, section 8</p8>, y compris dans les sauvegardes."
+    },
+    "s4": {
+      "title": "4. Obligations des organisateurs",
+      "i1": "Ne demandez que les informations dont vous avez vraiment besoin pour l’événement, et choisissez un court délai de suppression pour les réponses.",
+      "i2": "Ne recueillez des informations de santé (p. ex. allergies) que par des questions marquées comme « Données de santé ». Les bénévoles y consentent alors expressément.",
+      "i3": "Si vous inscrivez à la main des personnes sans compte propre, informez-les-en et informez-les de l’usage que vous faites de leurs données.",
+      "i4": "Conservez en lieu sûr les listes exportées (PDF, Excel) et supprimez-les après l’événement.",
+      "i5": "Ne téléversez pas d’images de personnes reconnaissables sans leur accord, ni de contenus sur lesquels vous n’avez pas de droits.",
+      "i6": "Gardez vos accès secrets et n’accordez des droits qu’aux personnes qui en ont besoin.",
+      "i7": "Pour les créneaux soumis à un âge minimum (p. ex. bar dès 18 ans), le planning ne vérifie que la date de naissance indiquée par la personne elle-même. Les contrôles d’identité et la protection de la jeunesse sur place restent du ressort du CO."
+    },
+    "s5": {
+      "title": "5. Abus",
+      "p1": "Le planning sert à organiser des engagements de bénévoles. En cas d’abus, par exemple spam, contenus illicites ou attaques contre la plateforme, nous pouvons supprimer des contenus et bloquer ou supprimer des comptes ou des {units}."
+    },
+    "s6": {
+      "title": "6. Responsabilité",
+      "p1": "Nous mettons le planning à disposition gratuitement. Dans la mesure permise par la loi, nous déclinons toute responsabilité pour les dommages résultant de l’utilisation ou de pannes, par exemple pour des créneaux manqués ou des données perdues. Nous répondons de l’intention et de la négligence grave conformément à la loi. Conservez en outre vous-mêmes les listes importantes (p. ex. en PDF)."
+    },
+    "s7": {
+      "title": "7. Fin de l’utilisation",
+      "p1": "{theCap} peut à tout moment cesser d’utiliser le planning et supprimer {poss} événements. Si {she} souhaite supprimer entièrement {theAcc}, un message à l’adresse de contact figurant dans les <imprint>mentions légales</imprint> suffit."
+    },
+    "s8": {
+      "title": "8. Modifications et droit applicable",
+      "p1": "Si les présentes conditions changent de manière importante, nous en informons au préalable les directions {ofUnits}. Le droit suisse s’applique."
+    }
+  },
+  "imprint": {
+    "title": "Mentions légales",
+    "term": {
+      "theUnits": "{org, select, other {les {units}}}"
+    },
+    "operation": {
+      "title": "Exploitation et contact",
+      "p1": "{name} est un projet indépendant, bénévole et non commercial.{notice}"
+    },
+    "source": {
+      "title": "Code source",
+      "p1": "Le code source est public sur <github>GitHub</github> et est placé sous licence GNU AGPL v3."
+    },
+    "more": {
+      "title": "Autres informations",
+      "p1": "La manière dont nous traitons les données personnelles figure dans la <privacy>déclaration de protection des données</privacy>. Pour {theUnits}, ce sont les <terms>conditions d’utilisation</terms> qui s’appliquent."
+    }
   },
   "profile": {
     "loadError": "Impossible de charger le profil.",

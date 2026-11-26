@@ -215,8 +215,298 @@
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "imprint": "Legal Notice",
-    "originalTitle": "Original language version",
-    "originalText": "The original German version is legally binding. This page will soon be available with a verified legal translation."
+    "translationTitle": "Translation",
+    "translationText": "This translation is provided for convenience. The German original is authoritative; you can reach it via the language selector (Deutsch)."
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "stand": "19 November 2026",
+    "intro": "This policy describes which personal data we process in operating {name}, why we do so and what rights you have. It is based on the Swiss Federal Act on Data Protection (FADP) and the Data Protection Ordinance (DPO).",
+    "term": {
+      "the": "{org, select, other {the {unit}}}",
+      "ofThe": "{org, select, other {of the {unit}}}",
+      "inThe": "{org, select, other {in the {unit}}}",
+      "respective": "{org, select, other {the {unit} concerned}}",
+      "inConcerned": "{org, select, other {in the {unit} concerned}}",
+      "ofYourUnit": "{org, select, other {of your {unit}}}",
+      "ofAUnit": "{org, select, other {of a {unit}}}",
+      "inOrg": "{org, select, cevi {In Cevi} pfadi {In scouting} jubla {In Jubla} other {In clubs}}",
+      "ofUnits": "{org, select, other {of the {units}}}",
+      "theUnits": "{org, select, other {The {units}}}",
+      "toUnits": "{org, select, other {about {units}}}",
+      "theGroups": "{org, select, other {the {groups}}}",
+      "homeUnit": "home {unitLower}",
+      "fedUnit": "{org, select, cevi {local group} other {details {ofYourUnit}}}",
+      "fedStructure": "{org, select, cevi {which group belongs to which Jungschar and local group} other {which group belongs to which higher-level group}}",
+      "loginMethods": "{org, select, verein {a password} other {{db} or a password}}"
+    },
+    "fed": {
+      "operator": "{org, select, cevi {by the umbrella organisation Cevi Switzerland} pfadi {by the Swiss Guide and Scout Movement (PBS)} jubla {by Jungwacht Blauring Switzerland} other {}}",
+      "where": "{org, select, cevi {, server in Switzerland} other {}}",
+      "policyLabel": "{org, select, cevi {Privacy policy of Cevi Switzerland} pfadi {Privacy policy of the Swiss Guide and Scout Movement} jubla {Privacy policy of Jungwacht Blauring Switzerland} other {}}"
+    },
+    "contact": {
+      "show": "Show contact details",
+      "loading": "Loading …",
+      "noscript": "To protect against automated scraping, the contact details are only loaded on click. This requires JavaScript.",
+      "error": "The contact details could not be loaded.",
+      "missing": "The contact details have not been added yet.",
+      "email": "Email:"
+    },
+    "table": {
+      "name": "Name",
+      "purpose": "Purpose",
+      "duration": "Duration"
+    },
+    "s1": {
+      "title": "1. Controller",
+      "p1": "The controller responsible for data processing on this platform is:",
+      "p2": "For questions about data protection and to exercise your rights, you can reach us at this address."
+    },
+    "s2": {
+      "title": "2. Scope",
+      "intro": "This policy applies to all parts of {name}:",
+      "landing": "the landing page <b>{domain}</b> with its profile page,",
+      "login": "the central login <b>login.{domain}</b>,",
+      "plans": "the shift plans {ofUnits} <b>{subdomain}</b>,",
+      "help": "the help centre <b>hilfe.{domain}</b>,",
+      "admin": "the admin portal <b>admin.cevi-schichtplan.ch</b>, which is shared by all four services and is open only to global administrators.",
+      "domainsIntro": "The same platform runs under four domains:",
+      "domainsOutro": ". This policy applies to all four.",
+      "roles": "{theUnits} and the organising committees (OCs) of their events decide for themselves which events they create, what information they ask volunteers for and whom they assign. Responsibility for these decisions and for the use of the data outside the platform (e.g. an exported volunteer list) lies with {respective}. We process this data on their behalf; the rules for this are set out in the <terms>terms of service</terms>."
+    },
+    "s3": {
+      "title": "3. What data we process",
+      "account": {
+        "title": "Account and profile",
+        "intro": "Depending on how you sign in, we store:",
+        "email": "<b>Email and password:</b> email address, password (only as a bcrypt hash, never in plain text), first and last name, and whether the email is confirmed. If you turn on two-factor authentication, we also store a secret key (stored encrypted) and recovery codes (only as a hash).",
+        "fed": "<b>{db}:</b> {db} person ID, first and last name, {nickname}, email, date of birth, {fedUnit} and your roles in {db}, insofar as we derive {the}, {theGroups} and any {lead} from them. For this we also read the group structure of your roles at login ({fedStructure}). Of your roles we only store the role type and group, as at your last login (no history). They serve to understand why you do or do not have a right, and are visible only to the global admins of the shift planner. We do not take over or store your postal address from {db}.",
+        "nickname": "<b>{Nickname} (no password):</b> {nickname} and date of birth, plus, optionally, first and last name, mobile number and {groups}.",
+        "optional": "Optionally, or at the request of an event, we also store: mobile number, date of birth, {homeUnit} and {groups} (with the role of leader or participant), and the setting for whether you want to receive shift reminders.",
+        "noAddress": "In line with the principle of data minimisation, we store <b>no postal address</b> in your profile. If an OC needs one for an event (e.g. for a mailing), it asks for it at the event; the answer belongs only to that event and is deleted after the stated period (see section 8)."
+      },
+      "planning": {
+        "title": "Shift planning",
+        "i1": "sign-ups for shifts and tasks, with the time and any note,",
+        "i2": "answers to questions that an OC asks for its event (e.g. address, allergies, emergency contact or T-shirt size). When you fill them in, each question shows when the answer will be deleted. Questions about health information (e.g. allergies) are marked as such: we process this sensitive personal data only with your explicit consent, which we store with a timestamp, and it is always deleted after a set period,",
+        "i3": "withdrawals from an event with an optional reason. Please do not give any health information there; a general reason such as “unavailable” is enough,",
+        "i4": "roles and rights {inThe} and in the OC ({lead}, individual rights such as “Create events”, OC lead, OC member) and a log of who gave which rights to whom,",
+        "i5": "people whom an OC enters by hand (name, possibly email and phone), even without their own account,",
+        "i6": "access links to events and who redeemed them,",
+        "i7": "a log of sign-ups and withdrawals, takeovers and attendance (who, when, by whom),",
+        "i8": "messages that the OC sends to volunteers through the shift planner, including the history of who received them,",
+        "i9": "meal and drink vouchers: which vouchers belong to your sign-up and when they were redeemed."
+      },
+      "content": {
+        "title": "Content from organisers",
+        "text": "Logos, banners and images uploaded by organisers, as well as texts {toUnits}, events, shifts and templates. Please do not upload images in which people can be recognised without their consent."
+      },
+      "tech": {
+        "title": "Technical data",
+        "p1": "On every request, our servers process technically necessary information: IP address, date and time, requested address, HTTP method, status code, amount of data transferred, the page visited before (referrer) and your browser identifier (user agent). We use these logs only for troubleshooting and for protection against abuse. The web server log (reverse proxy) is rotated daily and deleted after 14 days. The application logs are limited in size and are deleted at the latest at the next software update. To protect against password guessing, we count failed attempts per IP address and per email or {nickname} only in working memory; these entries are valid for one hour at most and are lost on every restart.",
+        "p2": "To protect against attacks, a web application firewall (Coraza) and the intrusion detection system CrowdSec on our server automatically check every request for known attack patterns. The data stays on our server and is kept for 14 days at most. If we detect an attempted attack, we block the IP address temporarily (see section 7)."
+      },
+      "stats": {
+        "title": "Anonymous usage statistics",
+        "p1": "To see whether the shift planner is running well and which functions are used, we count usage as <b>totals per day</b>, e.g. “12 sign-ins with {db}”, “3 PDF shift plans printed” or “40 views of the sign-up help”. We only store the type of usage, a fixed breakdown (e.g. the sign-in method), {the} and the day. For operations, we also count per hour how many requests a server function received, how long the response took and whether errors occurred; in doing so we only store the pattern of the address (e.g. “view event”), never the real address with names of events, access or check-in codes. The server likewise counts how often pages are loaded, as a daily total per area (home page, login, pages {ofThe}). Because nothing about you is stored in the process, this also applies if you have turned on “do not track”.",
+        "p2": "We store <b>no</b> IP address, no identifier of your browser or device, no cookie and nothing that could be assigned to a person. Your browser only reports usage that is not visible on the server (e.g. a PDF export, the window size as “phone”, “tablet” or “computer” and whether dark mode is active). If you have turned on “do not track” in your browser (Global Privacy Control or Do Not Track), it sends no such reports.",
+        "p3": "Per account, we store only the <b>last day</b> on which you used the shift planner while signed in (the date only, without the time). From this we count how many people are active per day, week and month, and we identify accounts that have been unused for a long time."
+      },
+      "web": {
+        "title": "Web statistics",
+        "text": "To see which pages are visited and how often, we also use <b>Umami</b>, statistics software that we run ourselves on our own server. No data flows to third parties. We record the page visited including its title (without parameters, so without codes or links from emails), the page visited before, browser, operating system, device type, screen size, language and the country derived from the IP address. Umami does not store the IP address itself. To count visits, Umami forms a checksum from the IP address and browser that changes every month and does not allow any conclusions about you. Umami sets no cookies. If you have turned on “do not track” in your browser, nothing is recorded."
+      }
+    },
+    "s4": {
+      "title": "4. Why we process the data",
+      "i1": "creating the account, sign-in (single sign-on across all subdomains) and protecting the account,",
+      "i2": "planning shifts, assigning volunteers and running events,",
+      "i3": "checking access to events (e.g. only members {ofThe}, only leaders, specific {groups}),",
+      "i4": "checking the minimum age: for shifts with an age limit (e.g. bar from 18) we check your age using your date of birth,",
+      "i5": "contact between the OC and volunteers, for example in case of short-notice changes,",
+      "i6": "emails and, if you allow them, push notifications: confirming the email address, resetting the password, reminders before your shifts, messages from the OC and notices about takeovers and vouchers (each can be switched off in your profile),",
+      "i7": "operation, security and troubleshooting of the platform,",
+      "i8": "anonymous usage statistics, to improve the shift planner (see section 3).",
+      "closing": "We do not use the data for advertising, we do not sell it and we do not build profiles of your behaviour."
+    },
+    "s5": {
+      "title": "5. Who sees your data",
+      "i1": "<b>Other volunteers</b> of an event see in the shift plan who is signed up for which shift ({nickname} or name). Anyone who is not authorised for an event sees the plan without names.",
+      "i2": "<b>The OC, the {lead} and anyone with the right “View all events”</b> {inConcerned} also see contact details (email and phone, where available), age, as well as answers and withdrawals for their events.",
+      "i3": "<b>Global administrators</b> of the operator see in the admin portal all accounts across all four services and all departments, groups and clubs (profile, sign-in method, affiliation, roles, sign-ups and the day of last use), as well as the anonymous usage statistics, and can delete accounts. This access is limited to a few people and serves support and abuse prevention."
+    },
+    "s6": {
+      "title": "6. Cookies and local storage",
+      "p1": "We set <b>only technically necessary cookies</b>. There are no analytics, tracking or advertising cookies and no integration of services such as Google Analytics, Facebook or YouTube. The fonts are self-hosted, so no connection to Google is made when you open a page. The anonymous usage statistics (section 3) work without cookies and without local storage{umami}.",
+      "umami": ", as does the web statistics with Umami, which we run ourselves",
+      "dur": {
+        "token": "30 days or until you sign out",
+        "min10": "10 minutes",
+        "min15": "15 minutes",
+        "days14": "14 days",
+        "reset": "until you reset it",
+        "delete": "until you delete it",
+        "logout": "until you sign out"
+      },
+      "cookie": {
+        "token": "Sign-in (signed session token, not readable by scripts), valid for all subdomains of {domain}",
+        "oauth": "Protects signing in via {db} against forgery",
+        "link": "Confirmation when an existing account is linked to {db}",
+        "mfa": "Sign-in in progress with a two-factor code (only if turned on)",
+        "pwa": "Remembers that the notice to install the app was dismissed (for all subdomains)"
+      },
+      "localIntro": "In your browser’s local storage (Local Storage) we store:",
+      "local": {
+        "theme": "Chosen colour scheme (light/dark)",
+        "eventView": "Chosen view of an event",
+        "unitTheme": "Colour scheme in the shift planner {ofAUnit}",
+        "pwa": "Remembers that the notice to install the app (“Add to Home Screen”) was dismissed",
+        "shiftView": "Chosen view of the shifts in the OC area",
+        "commands": "Most recently used commands of the quick search",
+        "hint": "Remembers that a notice was dismissed",
+        "offlineOwner": "Identifier of your account, so that offline data is deleted when the person changes",
+        "lastSync": "Time of the last sync for the offline view",
+        "staffPin": "PIN for redeeming vouchers at the counter (only on OC devices)",
+        "orgFilter": "Chosen federation in the admin portal (global admins only)"
+      },
+      "session": "In session storage (Session Storage), <code>schichtplan.pwa_dismissed_session</code> remembers until the tab is closed that the install notice was dismissed.",
+      "offline": "So that you can see your shifts even without internet, the shift planner stores a copy of your events, shifts and profile in the browser’s storage (offline cache). It is deleted when you sign out and also when another person signs in on the same device.",
+      "outro": "These entries do not leave your browser. You can delete cookies and Local Storage in your browser settings; without the <code>token</code> cookie, signing in is not possible."
+    },
+    "s7": {
+      "title": "7. Service providers and disclosure",
+      "intro": "For operations, we work with the following service providers:",
+      "hosting": "<b>Hosting:</b> Avoro, a service of dataforest GmbH, Kriftel, Germany. The server is located in a data centre in Frankfurt am Main. All applications and the database with its backups run there.",
+      "google": "<b>Google Drive</b> (Google Ireland Limited, Dublin, Ireland): storage location for an additional backup copy outside the data centre. The backups are already encrypted on our server before they are uploaded. Only we hold the key to decrypt them, not Google. Google therefore cannot read the contents.",
+      "infomaniak": "<b>Infomaniak Network SA</b>, Geneva, Switzerland: sending of emails (SMTP), management of the domains (DNS) and storage location of an encrypted backup copy of the database in Switzerland. As with Google Drive, we encrypt the backup before uploading it; Infomaniak cannot read it.",
+      "fed": "<b>{authName}</b>, operated {fedOperator}{fedWhere}: if you sign in via {db}, we receive your profile there with email, name and roles, after your consent. We do not write anything back to {db}. The federation’s privacy policy applies to the data in {db} (<fedlink>{policyLabel}</fedlink>).",
+      "crowdsec": "<b>CrowdSec SAS</b>, Fontenay-aux-Roses, France: only when an attack is detected do we report the attacker’s IP address, the time and the type of attack to CrowdSec, so that shared block lists stay up to date. Data of normal visitors does not leave our server in the process (<crowdsec>CrowdSec’s privacy policy</crowdsec>).",
+      "letsencrypt": "<b>Let’s Encrypt</b> (ISRG, USA): issues the TLS certificates. Only domain names are transmitted, no personal data.",
+      "push": "<b>Browser push services</b> (Google Firebase Cloud Messaging, Mozilla, Apple, Microsoft): only if you turn on push notifications does our server send them via your browser’s push service. The content is end-to-end encrypted; the service only sees the device address that your browser generated for this and the time. You can turn this off in your profile or in your browser settings.",
+      "discord": "<b>Discord</b> (Discord Inc., USA): in the event of serious outages, the server sends an alert message to the operators. It contains only technical information (type of error, server function, time), no names, email addresses, phone numbers or real addresses of events.",
+      "other": "Beyond that, we disclose personal data only if we are legally required to do so.",
+      "transfer": "Because of the hosting, your data is stored in Germany. According to the Federal Council’s list (Annex 1 of the Data Protection Ordinance), Germany offers an adequate level of data protection, as does Ireland. Google may also store the encrypted backup copy in data centres outside Europe, for example in the USA; only encrypted data is held there, which cannot be read without our key. Let’s Encrypt and Discord in the USA do not receive any personal data. The push services may also operate their servers outside Europe; they do not see any content."
+    },
+    "s8": {
+      "title": "8. How long we keep data",
+      "i1": "We keep account data for as long as your account exists. With {loginMethods}, you can delete your account yourself at any time (profile on {domain} or account menu in the shift planner). Your sign-ups, roles and answers are deleted as well. In the logs and in the message history, we replace your name with “Gelöschte Person” (“deleted person”).",
+      "i2": "Profiles that sign in only via the {nickname} can request deletion in the account menu (“Request deletion”); we then delete them within 30 days.",
+      "i3": "Accounts that have not been used for 24 months are deleted automatically. If we have an email address, we send a notice beforehand; if you sign in within 30 days, the account stays. Your sign-ups in events then remain, without name and without contact details, as “Gelöschte Person” (“deleted person”), so that the planning of the event remains accurate. The sole leadership {ofThe} and global administrators are excluded.",
+      "i4": "Events with their sign-ups remain until {the} deletes them.",
+      "i5": "We automatically delete answers to an event’s questions after the period that the OC sets for each question: directly after the event or 10, 30, 90 or 365 days later (counted from the end of the last shift). The period is shown next to the question when you fill it in. Only if the OC expressly chooses “Nie löschen” (“never delete”) do the answers remain until the event or your account is deleted.",
+      "i6": "We delete the log of sign-ups and withdrawals and the OC’s message history one year after the end of the event.",
+      "i7": "We delete the logs of rights {inThe} and in the admin portal after two years. We remove the IP address in the admin portal log after just 90 days.",
+      "i8": "Links for confirming the email and for resetting the password expire after a short time. We delete accounts with email and password whose address was not confirmed within 24 hours.",
+      "i9": "We keep the anonymous usage statistics for two years and the hourly values for operating the server for 90 days (after that only as a daily total). The day of last use is deleted together with the account.",
+      "i10": "We back up the database every night and keep these backups for 14 days. We also back it up before every software update and keep the last ten of these, but for 40 days at most.",
+      "i11": "In addition, every night we store an encrypted copy of the database and the uploaded images in Google Drive (see section 7). Of these we keep the backups of the last seven days, one per week for four weeks and one per month for six months. Older backups are deleted and, after a further 30 days, permanently removed from the trash.",
+      "i12": "Likewise every night, we store an encrypted copy of the database at Infomaniak in Switzerland (see section 7). Of these we keep the backups of the last 14 days, the Sundays of the last eight weeks and the first day of each of the last six months. Once a month, we restore one of these backups as a test into a temporary database on our server to check that it can be restored; this database is deleted right afterwards.",
+      "i13": "Deleted data may still be contained in these backups until the respective backup is deleted, that is, for about seven months at most. We use backups only to restore operations after an error or outage."
+    },
+    "s9": {
+      "title": "9. Data security",
+      "p1": "All connections are encrypted with TLS (HTTPS). We store passwords only as a hash, the sign-in cookie is not readable by scripts, sign-in attempts are limited, and the database is separated from the internet on the network. Only the responsible persons of the operator have access to the servers. Nobody can nevertheless guarantee absolute security."
+    },
+    "s10": {
+      "title": "10. Children and teenagers",
+      "p1": "{inOrg}, teenagers help out too. We process their data only to the extent described above. Teenagers under 14 should create an account only with their parents’ consent.",
+      "p2": "For shifts with a minimum age, the shift planner only checks the date of birth that the person gave themselves. ID checks and youth protection on site are the responsibility of the OC."
+    },
+    "s11": {
+      "title": "11. Your rights",
+      "intro": "Under the data protection law, you have in particular the right to:",
+      "i1": "request information about what data we process about you,",
+      "i2": "have inaccurate data corrected (you can change a lot of it directly in your profile),",
+      "i3": "request the deletion of your data or object to processing,",
+      "i4": "receive your data in a common electronic format or have it transferred, insofar as it is based on your consent or a contract.",
+      "download": "You can download your data yourself at any time: in the account menu of the shift planner under “Download my data” (as a JSON file).",
+      "contact": "For anything else, write to us at the email address under point 1. We reply within 30 days and may ask you to identify yourself. You can also lodge a complaint with the Federal Data Protection and Information Commissioner (FDPIC): <edoeb>www.edoeb.admin.ch</edoeb>."
+    },
+    "s12": {
+      "title": "12. Changes",
+      "p1": "We adapt this policy when the platform or the legal situation changes. The version published here at any given time applies. The <help>help centre</help> answers questions about how to use the service."
+    }
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "stand": "19 November 2026",
+    "term": {
+      "the": "{org, select, other {the {unit}}}",
+      "theCap": "{org, select, other {The {unit}}}",
+      "theAcc": "{org, select, other {the {unit}}}",
+      "aUnit": "{org, select, other {a {unit}}}",
+      "ofThe": "{org, select, other {of the {unit}}}",
+      "she": "{org, select, other {it}}",
+      "poss": "{org, select, other {its}}",
+      "onBehalf": "{org, select, other {on its behalf}}",
+      "byUnits": "{org, select, other {{units}}}",
+      "ofUnits": "{org, select, other {of the {units}}}"
+    },
+    "intro": "These terms govern the use of {name} by {byUnits} and their organisers. Anyone who creates {aUnit} accepts them on behalf {ofThe}. For volunteers who only sign up, the <privacy>privacy policy</privacy> is what mainly applies.",
+    "s1": {
+      "title": "1. Service",
+      "p1": "{name} is an independent, volunteer-run project.{notice} Use is free of charge. We strive for reliable operation but cannot promise any particular availability. Features may change or be discontinued; we announce major changes in good time."
+    },
+    "s2": {
+      "title": "2. Roles: {the} and us",
+      "p1": "{theCap} decides for itself which events {she} creates, what information {she} asks volunteers for and whom {she} assigns. For this personal data, {the} is the controller under data protection law. We process it {onBehalf} (processing on behalf under Art. 9 FADP). For accounts, sign-in, security and the anonymous usage statistics, we are responsible ourselves."
+    },
+    "s3": {
+      "title": "3. Processing on behalf",
+      "intro": "For the data that we process on behalf {ofThe}, the following applies:",
+      "i1": "We process it only to provide the shift planner, and not for our own purposes.",
+      "i2": "We protect it with appropriate technical and organisational measures (see <p9>privacy policy, section 9</p9>).",
+      "i3": "We use only the service providers named in the <p7>privacy policy, section 7</p7>. We add new service providers there before we use them.",
+      "i4": "Only the few people who run the shift planner have access; they are bound to confidentiality.",
+      "i5": "We support {theAcc} when someone requests access to, correction of or deletion of their data.",
+      "i6": "If we learn of a data security breach that affects the data {ofThe}, we inform {theAcc} as soon as possible.",
+      "i7": "If {the} deletes events or {she} is dissolved, we delete the data within the periods set out in the <p8>privacy policy, section 8</p8>, including from backups."
+    },
+    "s4": {
+      "title": "4. Obligations of organisers",
+      "i1": "Ask only for information that you really need for the event, and choose a short deletion period for answers.",
+      "i2": "Collect health information (e.g. allergies) only through questions marked as “Health information”. Volunteers then give their explicit consent.",
+      "i3": "If you enter people without their own account by hand, inform them of this and of what you need their details for.",
+      "i4": "Keep exported lists (PDF, Excel) safe and delete them after the event.",
+      "i5": "Do not upload images of recognisable people without their consent, nor content that you have no rights to.",
+      "i6": "Keep your access details secret and give rights only to people who need them.",
+      "i7": "For shifts with a minimum age (e.g. bar from 18), the shift planner only checks the date of birth that the person gave themselves. ID checks and youth protection on site remain the responsibility of the OC."
+    },
+    "s5": {
+      "title": "5. Abuse",
+      "p1": "The shift planner is for organising volunteer work. In the event of abuse, such as spam, unlawful content or attacks on the platform, we may remove content and block or delete accounts or {units}."
+    },
+    "s6": {
+      "title": "6. Liability",
+      "p1": "We provide the shift planner free of charge. To the extent permitted by law, we are not liable for damage arising from use or from outages, for example missed shifts or lost data. We are liable by law for intent and gross negligence. Please also keep important lists yourselves (e.g. as a PDF)."
+    },
+    "s7": {
+      "title": "7. End of use",
+      "p1": "{theCap} can stop using the shift planner at any time and delete {poss} events. If {she} wants {theAcc} removed completely, a message to the contact address in the <imprint>legal notice</imprint> is enough."
+    },
+    "s8": {
+      "title": "8. Changes and applicable law",
+      "p1": "If these terms change materially, we will inform the leaders {ofUnits} beforehand. Swiss law applies."
+    }
+  },
+  "imprint": {
+    "title": "Legal Notice",
+    "term": {
+      "theUnits": "{org, select, other {the {units}}}"
+    },
+    "operation": {
+      "title": "Operation and contact",
+      "p1": "{name} is an independent, volunteer-run and non-commercial project.{notice}"
+    },
+    "source": {
+      "title": "Source code",
+      "p1": "The source code is public on <github>GitHub</github> and is licensed under the GNU AGPL v3."
+    },
+    "more": {
+      "title": "Further information",
+      "p1": "How we handle personal data is set out in the <privacy>privacy policy</privacy>. For {theUnits}, the <terms>terms of service</terms> apply."
+    }
   },
   "profile": {
     "loadError": "Could not load profile.",

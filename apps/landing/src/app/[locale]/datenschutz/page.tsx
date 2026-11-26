@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { DEFAULT_LOCALE, type Locale } from "@schichtplan/i18n";
-import { setRequestLocale } from "next-intl/server";
+import { DEFAULT_LOCALE, INTL_LOCALES, type Locale } from "@schichtplan/i18n";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import {
   ORGANIZATIONS,
   getOrganization,
   getVocabulary,
   helpUrl,
-  type OrganizationConfig,
   type OrganizationSlug,
 } from "@schichtplan/shared";
 import { umamiEnabled } from "@schichtplan/ui";
@@ -16,6 +16,7 @@ import { getRequestOrigin } from "@schichtplan/ui/og";
 import { LEGAL_ROBOTS, LegalPage, List, Section } from "@/components/LegalPage";
 import { ContactReveal } from "./ContactReveal";
 import { landingPageMetadata } from "@/lib/ogPages";
+import { termInSentence } from "@/lib/landingVocab";
 
 export async function generateMetadata({
   params,
@@ -31,65 +32,23 @@ export async function generateMetadata({
   };
 }
 
-const STAND = "19. November 2026";
-
 /**
- * Betreiber der Verbandsdatenbank (Hitobito), über die man sich anmelden kann, samt deren Datenschutz-Seite.
- * Vereine haben keine Verbandsdatenbank (Anmeldung mit E-Mail und Passwort).
+ * Datenbank des Verbands (Hitobito), über die man sich anmelden kann, samt Link auf deren Datenschutz-Seite.
+ * Die Beschreibungen («betrieben vom …») stehen im Katalog (`landing.privacy.fed`). Vereine haben keine
+ * Verbandsdatenbank (Anmeldung mit E-Mail und Passwort).
  */
-const FEDERATION_DB: Record<
-  OrganizationSlug,
-  { operator: string; where: string; policyLabel: string; policyUrl: string } | null
-> = {
-  cevi: {
-    operator: "vom Dachverband Cevi Schweiz",
-    where: ", Server in der Schweiz",
-    policyLabel: "Datenschutzerklärung des Cevi Schweiz",
-    policyUrl: "https://www.cevi.ch/datenschutz/",
-  },
-  pfadi: {
-    operator: "von der Pfadibewegung Schweiz (PBS)",
-    where: "",
-    policyLabel: "Datenschutz der Pfadibewegung Schweiz",
-    policyUrl: "https://pfadi.swiss/de/verband/datenschutz/",
-  },
-  jubla: {
-    operator: "von Jungwacht Blauring Schweiz",
-    where: "",
-    policyLabel: "Datenschutzerklärung von Jungwacht Blauring Schweiz",
-    policyUrl: "https://www.jubla.ch/datenschutz",
-  },
+const FEDERATION_POLICY_URL: Record<OrganizationSlug, string | null> = {
+  cevi: "https://www.cevi.ch/datenschutz/",
+  pfadi: "https://pfadi.swiss/de/verband/datenschutz/",
+  jubla: "https://www.jubla.ch/datenschutz",
   verein: null,
 };
 
-/** Begriffe der Verbandsdomain: Abteilung, Schar oder Verein samt passendem Artikel */
-function wording(org: OrganizationConfig) {
-  const vocab = getVocabulary(org.dbType);
-  const isVerein = org.slug === "verein";
-  const unit = org.unitTerm;
-  return {
-    vocab,
-    unit,
-    units: org.unitTermPlural,
-    leadership: vocab.departmentLeader,
-    nickname: org.nicknameTerm,
-    /** «die Abteilung», «die Schar», «der Verein» */
-    the: isVerein ? "der Verein" : `die ${unit}`,
-    /** «der Abteilung», «der Schar», «des Vereins» */
-    ofThe: isVerein ? "des Vereins" : `der ${unit}`,
-    /** «die jeweilige Abteilung», «der jeweilige Verein» */
-    respective: isVerein ? "der jeweilige Verein" : `die jeweilige ${unit}`,
-    /** «in der betreffenden Abteilung», «im betreffenden Verein» */
-    inConcerned: isVerein ? "im betreffenden Verein" : `in der betreffenden ${unit}`,
-    /** «Im Cevi», «In der Pfadi», «In der Jubla», «In Vereinen» */
-    inOrg: { cevi: "Im Cevi", pfadi: "In der Pfadi", jubla: "In der Jubla", verein: "In Vereinen" }[org.slug],
-    federation: FEDERATION_DB[org.slug],
-  };
-}
-
 function StorageTable({
+  headers,
   rows,
 }: {
+  headers: [name: string, purpose: string, duration: string];
   rows: [name: string, purpose: string, duration: string][];
 }) {
   // Mobil als Karten untereinander, ab sm als dreispaltige Tabelle
@@ -99,9 +58,9 @@ function StorageTable({
         aria-hidden
         className="hidden border-b border-line bg-surface-2 px-3 py-2 font-semibold text-fg sm:grid sm:grid-cols-[11rem_1fr_9rem] sm:gap-4"
       >
-        <span>Name</span>
-        <span>Zweck</span>
-        <span>Dauer</span>
+        <span>{headers[0]}</span>
+        <span>{headers[1]}</span>
+        <span>{headers[2]}</span>
       </div>
       <dl className="divide-y divide-line">
         {rows.map(([name, purpose, duration]) => (
@@ -121,6 +80,12 @@ function StorageTable({
   );
 }
 
+const externalLink = (href: string) => (chunks: ReactNode) => (
+  <a href={href} target="_blank" rel="noopener noreferrer">
+    {chunks}
+  </a>
+);
+
 export default async function DatenschutzPage({
   params,
 }: {
@@ -129,728 +94,288 @@ export default async function DatenschutzPage({
   const { locale: rawLocale } = await params;
   const locale = (routing.locales.includes(rawLocale as Locale) ? rawLocale : DEFAULT_LOCALE) as Locale;
   setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: "landing.privacy" });
 
   const { host } = await getRequestOrigin();
   const org = getOrganization(host, locale);
-  const w = wording(org);
-  const fed = w.federation;
-  const dbShort = org.authProviderShort;
+  const vocab = getVocabulary(org.dbType, locale);
+  const policyUrl = FEDERATION_POLICY_URL[org.slug];
+  const hasFederationDb = policyUrl !== null;
   // Web-Statistik (Umami) nur erwähnen, wenn sie für diese Domain eingerichtet ist
   const webStats = umamiEnabled(host);
+
+  // Begriffe der Verbandsdomain. Deutsch bleibt gross geschrieben, andere Sprachen mitten im Satz klein.
+  const isGerman = locale === "de";
+  const lower = (term: string) => (isGerman ? term : term.toLowerCase());
+  const unitLower = org.unitTerm.toLowerCase();
+  const base = {
+    org: org.slug,
+    name: org.name,
+    domain: org.domain,
+    db: org.authProviderShort,
+    authName: org.authProviderName,
+    unit: lower(org.unitTerm),
+    unitLower,
+    units: lower(org.unitTermPlural),
+    lead: lower(vocab.departmentLeader),
+    groups: lower(vocab.groupPlural),
+    nickname: termInSentence(org.nicknameTerm, locale, org.orgName),
+    Nickname: org.nicknameTerm,
+    subdomain: `<${unitLower}>.${org.domain}`,
+  };
+
+  // Satzteile mit Artikel und Fall, die je Sprache und Verband (Geschlecht des Begriffs) anders lauten
+  const ofYourUnit = t("term.ofYourUnit", base);
+  const p = {
+    ...base,
+    the: t("term.the", base),
+    ofThe: t("term.ofThe", base),
+    inThe: t("term.inThe", base),
+    respective: t("term.respective", base),
+    inConcerned: t("term.inConcerned", base),
+    ofAUnit: t("term.ofAUnit", base),
+    inOrg: t("term.inOrg", base),
+    ofUnits: t("term.ofUnits", base),
+    theUnits: t("term.theUnits", base),
+    toUnits: t("term.toUnits", base),
+    theGroups: t("term.theGroups", base),
+    homeUnit: t("term.homeUnit", base),
+    fedUnit: t("term.fedUnit", { ...base, ofYourUnit }),
+    fedStructure: t("term.fedStructure", base),
+    loginMethods: t("term.loginMethods", base),
+    umami: webStats ? t("s6.umami") : "",
+    fedOperator: t("fed.operator", base),
+    fedWhere: t("fed.where", base),
+    policyLabel: t("fed.policyLabel", base),
+  };
+
+  const tags = {
+    b: (chunks: ReactNode) => <strong>{chunks}</strong>,
+    code: (chunks: ReactNode) => <code>{chunks}</code>,
+    terms: (chunks: ReactNode) => <Link href="/nutzungsbedingungen">{chunks}</Link>,
+    help: (chunks: ReactNode) => <a href={helpUrl("/", host, locale)}>{chunks}</a>,
+    crowdsec: externalLink("https://www.crowdsec.net/privacy-policy"),
+    edoeb: externalLink("https://www.edoeb.admin.ch"),
+    fedlink: externalLink(policyUrl ?? ""),
+  };
+
+  // Domainliste in der Sprache der Seite («a, b, c und d»), die Domains fett
+  const domainParts = new Intl.ListFormat(INTL_LOCALES[locale], {
+    style: "long",
+    type: "conjunction",
+  }).formatToParts(Object.values(ORGANIZATIONS).map((o) => o.domain));
+  // Schlüssel: Domain bzw. «nach <Domain>» für die Trennzeichen dazwischen (stabil, ohne Listenposition)
+  let previousDomain = "";
+  const domainNodes = domainParts.map((part) => {
+    if (part.type === "element") {
+      previousDomain = part.value;
+      return <strong key={part.value}>{part.value}</strong>;
+    }
+    return <span key={`after-${previousDomain}`}>{part.value}</span>;
+  });
+
+  const durations = {
+    token: t("s6.dur.token"),
+    min10: t("s6.dur.min10"),
+    min15: t("s6.dur.min15"),
+    days14: t("s6.dur.days14"),
+    reset: t("s6.dur.reset"),
+    delete: t("s6.dur.delete"),
+    logout: t("s6.dur.logout"),
+  };
+
   return (
     <LegalPage
       org={org}
-      title="Datenschutzerklärung"
-      stand={STAND}
-      intro={
-        <p>
-          Diese Erklärung beschreibt, welche Personendaten wir beim Betrieb des{" "}
-          {org.name}s bearbeiten, wozu wir das tun und welche Rechte du hast.
-          Sie richtet sich nach dem Schweizer Bundesgesetz über den Datenschutz
-          (DSG) und der Datenschutzverordnung (DSV).
-        </p>
-      }
+      title={t("title")}
+      stand={t("stand")}
+      intro={<p>{t("intro", p)}</p>}
     >
+      <Section id="verantwortlich" title={t("s1.title")}>
+        <p>{t("s1.p1")}</p>
+        <ContactReveal />
+        <p>{t("s1.p2")}</p>
+      </Section>
 
-        <Section id="verantwortlich" title="1. Verantwortliche Stelle">
-          <p>
-            Verantwortlich für die Datenbearbeitung auf dieser Plattform ist:
-          </p>
-          <ContactReveal />
-          <p>
-            Für Fragen zum Datenschutz und zur Ausübung deiner Rechte erreichst
-            du uns unter dieser Adresse.
-          </p>
-        </Section>
+      <Section id="geltung" title={t("s2.title")}>
+        <p>{t("s2.intro", p)}</p>
+        <List>
+          <li>{t.rich("s2.landing", { ...tags, ...p })}</li>
+          <li>{t.rich("s2.login", { ...tags, ...p })}</li>
+          <li>{t.rich("s2.plans", { ...tags, ...p })}</li>
+          <li>{t.rich("s2.help", { ...tags, ...p })}</li>
+          <li>{t.rich("s2.admin", tags)}</li>
+        </List>
+        <p>
+          {t("s2.domainsIntro")}{" "}
+          {domainNodes}
+          {t("s2.domainsOutro")}
+        </p>
+        <p>{t.rich("s2.roles", { ...tags, ...p })}</p>
+      </Section>
 
-        <Section id="geltung" title="2. Geltungsbereich">
-          <p>Diese Erklärung gilt für alle Teile des {org.name}s:</p>
-          <List>
-            <li>
-              die Landingpage <strong>{org.domain}</strong> mit Profilseite,
-            </li>
-            <li>
-              das zentrale Login <strong>login.{org.domain}</strong>,
-            </li>
-            <li>
-              die Schichtpläne der {w.units}{" "}
-              <strong>
-                &lt;{w.unit.toLowerCase()}&gt;.{org.domain}
-              </strong>
-              ,
-            </li>
-            <li>
-              das Hilfe-Center <strong>hilfe.{org.domain}</strong>,
-            </li>
-            <li>
-              das Admin-Portal <strong>admin.cevi-schichtplan.ch</strong>, das
-              für alle vier Angebote gemeinsam genutzt wird und nur globalen
-              Administrator*innen offensteht.
-            </li>
-          </List>
-          <p>
-            Dieselbe Plattform läuft unter vier Domains:{" "}
-            {Object.values(ORGANIZATIONS).map((o, i, all) => (
-              <span key={o.slug}>
-                <strong>{o.domain}</strong>
-                {i < all.length - 2 ? ", " : i === all.length - 2 ? " und " : ""}
-              </span>
-            ))}
-            . Diese Erklärung gilt für alle vier.
-          </p>
-          <p>
-            Die {w.units} und die Organisationskomitees (OK) ihrer Anlässe
-            entscheiden selbst, welche Anlässe sie anlegen, welche Angaben sie
-            von Helfenden verlangen und wen sie einteilen. Für diese Entscheide
-            und für die Verwendung der Daten ausserhalb der Plattform
-            (z.&nbsp;B. eine exportierte Helferliste) ist {w.respective}{" "}
-            verantwortlich. Wir bearbeiten diese Daten in ihrem Auftrag; die
-            Regeln dazu stehen in den{" "}
-            <Link href="/nutzungsbedingungen">Nutzungsbedingungen</Link>.
-          </p>
-        </Section>
+      <Section id="daten" title={t("s3.title")}>
+        <h3 className="font-semibold text-fg">{t("s3.account.title")}</h3>
+        <p>{t("s3.account.intro")}</p>
+        <List>
+          <li>{t.rich("s3.account.email", tags)}</li>
+          {hasFederationDb && <li>{t.rich("s3.account.fed", { ...tags, ...p })}</li>}
+          <li>{t.rich("s3.account.nickname", { ...tags, ...p })}</li>
+        </List>
+        <p>{t("s3.account.optional", p)}</p>
+        <p>{t.rich("s3.account.noAddress", tags)}</p>
 
-        <Section id="daten" title="3. Welche Daten wir bearbeiten">
-          <h3 className="font-semibold text-fg">Konto und Profil</h3>
-          <p>Je nach Anmeldeart speichern wir:</p>
-          <List>
-            <li>
-              <strong>E-Mail und Passwort:</strong> E-Mail-Adresse, Passwort
-              (nur als bcrypt-Hash, nie im Klartext), Vor- und Nachname, ob die
-              E-Mail bestätigt ist. Wer die Zwei-Faktor-Anmeldung einschaltet,
-              hat zusätzlich einen geheimen Schlüssel (verschlüsselt gespeichert)
-              und Wiederherstellungscodes (nur als Hash).
-            </li>
-            {fed && (
-              <li>
-                <strong>{dbShort}:</strong> {dbShort}-Personen-ID, Vor- und
-                Nachname, {w.nickname}, E-Mail, Geburtsdatum,{" "}
-                {org.slug === "cevi" ? "Ortsgruppe" : `Angabe deiner ${w.unit}`}{" "}
-                sowie deine Rollen
-                in der {dbShort}, soweit wir daraus {w.unit},{" "}
-                {w.vocab.groupPlural} und eine allfällige {w.leadership}{" "}
-                ableiten. Dafür lesen wir beim Login auch die Gruppenstruktur zu
-                deinen Rollen (
-                {org.slug === "cevi"
-                  ? "welche Gruppe zu welcher Jungschar und Ortsgruppe gehört"
-                  : "welche Gruppe zu welcher übergeordneten Gruppe gehört"}
-                ). Von deinen Rollen speichern wir nur Rollentyp und Gruppe,
-                jeweils den Stand vom letzten Login (keine Historie). Sie
-                dienen dazu, nachzuvollziehen, warum du ein Recht hast oder
-                nicht, und sind nur für die globalen Admins des Schichtplans
-                sichtbar. Deine Postadresse aus der {dbShort} übernehmen und
-                speichern wir nicht.
-              </li>
-            )}
-            <li>
-              <strong>{w.nickname} (ohne Passwort):</strong> {w.nickname} und
-              Geburtsdatum, dazu freiwillig Vor- und Nachname, Handynummer und{" "}
-              {w.vocab.groupPlural}.
-            </li>
-          </List>
-          <p>
-            Freiwillig oder auf Verlangen eines Anlasses kommen dazu:
-            Handynummer, Geburtsdatum, Heim{w.unit.toLowerCase()} und{" "}
-            {w.vocab.groupPlural} (mit Rolle Leitung oder Teilnehmer*in) sowie die Einstellung, ob du
-            Schicht-Erinnerungen erhalten möchtest.
-          </p>
-          <p>
-            Nach dem Grundsatz der Datensparsamkeit speichern wir in deinem
-            Profil <strong>keine Postadresse</strong>. Braucht ein OK sie für
-            einen Anlass (z.&nbsp;B. für einen Versand), fragt es beim Anlass
-            danach; die Antwort gehört nur zu diesem Anlass und wird nach der
-            angegebenen Frist gelöscht (siehe Abschnitt 8).
-          </p>
+        <h3 className="pt-2 font-semibold text-fg">{t("s3.planning.title")}</h3>
+        <List>
+          <li>{t("s3.planning.i1")}</li>
+          <li>{t("s3.planning.i2")}</li>
+          <li>{t("s3.planning.i3")}</li>
+          <li>{t("s3.planning.i4", p)}</li>
+          <li>{t("s3.planning.i5")}</li>
+          <li>{t("s3.planning.i6")}</li>
+          <li>{t("s3.planning.i7")}</li>
+          <li>{t("s3.planning.i8")}</li>
+          <li>{t("s3.planning.i9")}</li>
+        </List>
 
-          <h3 className="pt-2 font-semibold text-fg">Schichtplanung</h3>
-          <List>
-            <li>
-              Eintragungen in Schichten und Arbeiten, mit Zeitpunkt und
-              allfälliger Notiz,
-            </li>
-            <li>
-              Antworten auf Fragen, die ein OK zu seinem Anlass stellt
-              (z.&nbsp;B. Adresse, Allergien, Notfallkontakt oder
-              T-Shirt-Grösse). Beim Ausfüllen steht bei jeder Frage, wann die
-              Antwort gelöscht wird. Fragen nach Gesundheitsangaben
-              (z.&nbsp;B. Allergien) sind als solche markiert: Diese besonders
-              schützenswerten Daten bearbeiten wir nur mit deiner ausdrücklichen
-              Einwilligung, die wir mit Zeitpunkt speichern, und sie werden immer
-              nach einer Frist gelöscht,
-            </li>
-            <li>
-              Abmeldungen von einem Anlass mit freiwilligem Grund. Bitte gib
-              dort keine Gesundheitsangaben an, ein allgemeiner Grund wie
-              «verhindert» reicht,
-            </li>
-            <li>
-              Rollen und Rechte in {w.unit} und OK ({w.leadership},
-              einzelne Rechte wie «Anlässe erstellen», OK-Leitung,
-              OK-Mitglied) sowie ein Protokoll, wer wem welche Rechte gegeben
-              hat,
-            </li>
-            <li>
-              Personen, die ein OK von Hand einträgt (Name, allenfalls E-Mail
-              und Telefon), auch ohne eigenes Konto,
-            </li>
-            <li>Zugangs-Links zu Anlässen und wer sie eingelöst hat,</li>
-            <li>
-              ein Protokoll der Ein- und Austragungen, Übernahmen und der
-              Anwesenheit (wer, wann, durch wen),
-            </li>
-            <li>
-              Nachrichten, die das OK über den Schichtplan an Helfende schickt,
-              samt Verlauf, wer sie erhalten hat,
-            </li>
-            <li>
-              Verpflegungs- und Getränke-Bons: welche Bons zu deiner Eintragung
-              gehören und wann sie eingelöst wurden.
-            </li>
-          </List>
+        <h3 className="pt-2 font-semibold text-fg">{t("s3.content.title")}</h3>
+        <p>{t("s3.content.text", p)}</p>
 
-          <h3 className="pt-2 font-semibold text-fg">Inhalte von Planenden</h3>
-          <p>
-            Logos, Banner und Bilder, die Planende hochladen, sowie Texte zu
-            {w.unit === "Verein" ? "Vereinen" : w.units}, Anlässen, Schichten
-            und Vorlagen. Lade bitte keine
-            Bilder hoch, auf denen Personen ohne deren Einverständnis erkennbar
-            sind.
-          </p>
+        <h3 className="pt-2 font-semibold text-fg">{t("s3.tech.title")}</h3>
+        <p>{t("s3.tech.p1", p)}</p>
+        <p>{t("s3.tech.p2")}</p>
 
-          <h3 className="pt-2 font-semibold text-fg">Technische Daten</h3>
-          <p>
-            Bei jedem Aufruf verarbeiten unsere Server technisch nötige Angaben:
-            IP-Adresse, Datum und Uhrzeit, aufgerufene Adresse, HTTP-Methode,
-            Statuscode, übertragene Datenmenge, die zuvor besuchte Seite
-            (Referrer) und die Kennung deines Browsers (User-Agent). Diese
-            Protokolle nutzen wir nur zur Fehlersuche und zum Schutz vor
-            Missbrauch. Das Protokoll des Webservers (Reverse Proxy) wird
-            täglich gewechselt und nach 14 Tagen gelöscht. Die Protokolle der
-            Anwendung sind in der Grösse begrenzt und werden spätestens bei der
-            nächsten Aktualisierung der Software gelöscht. Zum Schutz vor
-            Passwort-Erraten zählen wir Fehlversuche pro IP-Adresse und pro
-            E-Mail bzw. {w.nickname} nur im Arbeitsspeicher; diese Einträge gelten
-            höchstens eine Stunde und gehen bei jedem Neustart verloren.
-          </p>
-          <p>
-            Zum Schutz vor Angriffen prüfen eine Web Application Firewall
-            (Coraza) und das Angriffserkennungssystem CrowdSec auf unserem Server
-            jeden Zugriff automatisch auf bekannte Angriffsmuster. Die Angaben
-            bleiben dabei auf unserem Server und werden höchstens 14 Tage
-            gespeichert. Erkennen wir einen Angriffsversuch, sperren wir die
-            IP-Adresse vorübergehend (siehe Abschnitt 7).
-          </p>
+        <h3 className="pt-2 font-semibold text-fg">{t("s3.stats.title")}</h3>
+        <p>{t.rich("s3.stats.p1", { ...tags, ...p })}</p>
+        <p>{t.rich("s3.stats.p2", tags)}</p>
+        <p>{t.rich("s3.stats.p3", tags)}</p>
 
-          <h3 className="pt-2 font-semibold text-fg">Anonyme Nutzungsstatistik</h3>
-          <p>
-            Um zu sehen, ob der Schichtplan gut läuft und welche Funktionen
-            gebraucht werden, zählen wir Nutzungen als{" "}
-            <strong>Summen pro Tag</strong>, z.&nbsp;B. «12 Anmeldungen mit{" "}
-            {dbShort}», «3 PDF-Schichtpläne gedruckt» oder «40 Aufrufe der Hilfe
-            zum Eintragen». Gespeichert werden nur die Art der Nutzung, eine
-            feste Unterteilung (z.&nbsp;B. die Anmeldeart), {w.the} und
-            der Tag. Für den Betrieb zählen wir zusätzlich pro Stunde, wie viele
-            Anfragen eine Funktion des Servers bekam, wie lange die Antwort
-            dauerte und ob Fehler auftraten; dabei speichern wir nur das Muster
-            der Adresse (z.&nbsp;B. «Anlass ansehen»), nie die echte Adresse
-            mit Namen von Anlässen, Zugangs- oder Check-in-Codes. Ebenso
-            zählt der Server, wie oft Seiten geladen werden, als Tagessumme pro
-            Bereich (Startseite, Login, Seiten {w.ofThe}). Weil dabei nichts
-            über dich gespeichert wird, gilt das auch, wenn du «nicht verfolgen»
-            eingestellt hast.
-          </p>
-          <p>
-            Dafür speichern wir <strong>keine</strong> IP-Adresse, keine
-            Kennung deines Browsers oder Geräts, kein Cookie und nichts, was
-            einer Person zugeordnet werden kann. Dein Browser meldet nur
-            Nutzungen, die auf dem Server nicht sichtbar sind (z.&nbsp;B. ein
-            PDF-Export, die Fenstergrösse als «Handy», «Tablet» oder «Computer»
-            und ob die dunkle Darstellung aktiv ist). Hast du in deinem Browser
-            «nicht verfolgen» eingestellt (Global Privacy Control oder Do Not
-            Track), schickt er keine solchen Meldungen.
-          </p>
-          <p>
-            Pro Konto speichern wir einzig den <strong>letzten Tag</strong>,
-            an dem du den Schichtplan angemeldet genutzt hast (nur das Datum,
-            ohne Uhrzeit). Daraus zählen wir, wie viele Personen pro Tag, Woche
-            und Monat aktiv sind, und erkennen lange unbenutzte Konten.
-          </p>
+        {webStats && (
+          <>
+            <h3 className="pt-2 font-semibold text-fg">{t("s3.web.title")}</h3>
+            <p>{t.rich("s3.web.text", tags)}</p>
+          </>
+        )}
+      </Section>
 
-          {webStats && (
-            <>
-              <h3 className="pt-2 font-semibold text-fg">Web-Statistik</h3>
-              <p>
-                Um zu sehen, welche Seiten wie oft besucht werden, nutzen wir
-                zusätzlich <strong>Umami</strong>, eine Statistik-Software, die
-                wir selbst auf unserem Server betreiben. Es fliessen keine Daten
-                an Dritte. Erfasst werden die aufgerufene Seite samt Titel (ohne
-                Parameter, also ohne Codes oder Links aus E-Mails), die zuvor
-                besuchte Seite, Browser, Betriebssystem, Gerätetyp,
-                Bildschirmgrösse, Sprache und das aus der IP-Adresse
-                abgeleitete Land. Die IP-Adresse selbst speichert Umami nicht.
-                Um Besuche zu zählen, bildet Umami aus IP-Adresse und Browser
-                eine Prüfsumme, die jeden Monat wechselt und keinen Rückschluss auf
-                dich zulässt. Umami setzt keine Cookies. Hast du in deinem
-                Browser «nicht verfolgen» eingestellt, wird nichts erfasst.
-              </p>
-            </>
-          )}
-        </Section>
+      <Section id="zweck" title={t("s4.title")}>
+        <List>
+          <li>{t("s4.i1")}</li>
+          <li>{t("s4.i2")}</li>
+          <li>{t("s4.i3", p)}</li>
+          <li>{t("s4.i4")}</li>
+          <li>{t("s4.i5")}</li>
+          <li>{t("s4.i6")}</li>
+          <li>{t("s4.i7")}</li>
+          <li>{t("s4.i8")}</li>
+        </List>
+        <p>{t("s4.closing")}</p>
+      </Section>
 
-        <Section id="zweck" title="4. Wozu wir die Daten bearbeiten">
-          <List>
-            <li>
-              Konto anlegen, Anmeldung (Single Sign-On über alle Subdomains) und
-              Schutz des Kontos,
-            </li>
-            <li>
-              Schichten planen, Helfende einteilen und Anlässe durchführen,
-            </li>
-            <li>
-              Zugang zu Anlässen prüfen (z.&nbsp;B. nur Mitglieder{" "}
-              {w.ofThe}, nur Leitende, bestimmte {w.vocab.groupPlural}),
-            </li>
-            <li>
-              Mindestalter prüfen: Bei Schichten mit Altersgrenze (z.&nbsp;B.
-              Bar ab 18) prüfen wir dein Alter anhand des Geburtsdatums,
-            </li>
-            <li>
-              Kontakt zwischen OK und Helfenden, etwa bei kurzfristigen
-              Änderungen,
-            </li>
-            <li>
-              E-Mails und, wenn du sie erlaubst, Push-Mitteilungen: Bestätigung
-              der E-Mail-Adresse, Zurücksetzen des Passworts, Erinnerungen vor
-              deinen Schichten, Nachrichten des OK und Hinweise zu Übernahmen und
-              Bons (im Profil einzeln abschaltbar),
-            </li>
-            <li>Betrieb, Sicherheit und Fehlerbehebung der Plattform,</li>
-            <li>
-              anonyme Nutzungsstatistik, um den Schichtplan zu verbessern
-              (siehe Abschnitt 3).
-            </li>
-          </List>
-          <p>
-            Wir verwenden die Daten nicht für Werbung, verkaufen sie nicht und
-            erstellen keine Profile über dein Verhalten.
-          </p>
-        </Section>
+      <Section id="sichtbarkeit" title={t("s5.title")}>
+        <List>
+          <li>{t.rich("s5.i1", { ...tags, ...p })}</li>
+          <li>{t.rich("s5.i2", { ...tags, ...p })}</li>
+          <li>{t.rich("s5.i3", tags)}</li>
+        </List>
+      </Section>
 
-        <Section id="sichtbarkeit" title="5. Wer deine Daten sieht">
-          <List>
-            <li>
-              <strong>Andere Helfende</strong> eines Anlasses sehen im
-              Schichtplan, wer in welcher Schicht eingetragen ist ({w.nickname}
-              bzw. Name). Wer für einen Anlass nicht berechtigt ist, sieht den
-              Plan ohne Namen.
-            </li>
-            <li>
-              <strong>OK, {w.leadership} und wer das Recht «Alle Anlässe
-              sehen» hat</strong> {w.inConcerned} sehen zusätzlich
-              Kontaktdaten (E-Mail und Telefon, soweit vorhanden), das Alter sowie Antworten und
-              Abmeldungen zu ihren Anlässen.
-            </li>
-            <li>
-              <strong>Globale Administrator*innen</strong> des Betreibers sehen
-              im Admin-Portal alle Konten über alle vier Angebote und alle
-              Abteilungen, Scharen und Vereine (Profil, Anmeldeart,
-              Zugehörigkeit, Rollen, Eintragungen und den Tag der
-              letzten Nutzung) sowie die anonyme Nutzungsstatistik und können
-              Konten löschen. Dieser Zugriff ist auf wenige Personen beschränkt
-              und dient Support und Missbrauchsbekämpfung.
-            </li>
-          </List>
-        </Section>
+      <Section id="speicher" title={t("s6.title")}>
+        <p>{t.rich("s6.p1", { ...tags, ...p })}</p>
+        <StorageTable
+          headers={[t("table.name"), t("table.purpose"), t("table.duration")]}
+          rows={[
+            ["token", t("s6.cookie.token", p), durations.token],
+            ...(hasFederationDb
+              ? ([
+                  ["cevidb_oauth_state", t("s6.cookie.oauth", p), durations.min10],
+                  ["cevidb_link", t("s6.cookie.link", p), durations.min15],
+                ] as [string, string, string][])
+              : []),
+            ["mfa_challenge", t("s6.cookie.mfa"), durations.min10],
+            ["schichtplan_pwa_dismissed", t("s6.cookie.pwa"), durations.days14],
+          ]}
+        />
+        <p>{t("s6.localIntro")}</p>
+        <StorageTable
+          headers={[t("table.name"), t("table.purpose"), t("table.duration")]}
+          rows={[
+            ["cevi-theme", t("s6.local.theme"), durations.reset],
+            ["schichtplan.eventView", t("s6.local.eventView"), durations.delete],
+            ["schichtplan.theme", t("s6.local.unitTheme", p), durations.reset],
+            ["schichtplan.pwa_install_dismissed", t("s6.local.pwa"), durations.days14],
+            ["ok-shift-view", t("s6.local.shiftView"), durations.delete],
+            ["schichtplan.recent_commands", t("s6.local.commands"), durations.delete],
+            ["schichtplan:other-levels-hint-dismissed", t("s6.local.hint"), durations.delete],
+            ["schichtplan.offline_owner", t("s6.local.offlineOwner"), durations.logout],
+            ["schichtplan.last_online_sync", t("s6.local.lastSync"), durations.logout],
+            ["sp_staff_pin_<anlass>", t("s6.local.staffPin"), durations.delete],
+            ["admin.orgFilter", t("s6.local.orgFilter"), durations.delete],
+          ]}
+        />
+        <p>{t.rich("s6.session", tags)}</p>
+        <p>{t("s6.offline")}</p>
+        <p>{t.rich("s6.outro", tags)}</p>
+      </Section>
 
-        <Section id="speicher" title="6. Cookies und lokaler Speicher">
-          <p>
-            Wir setzen <strong>nur technisch notwendige Cookies</strong>. Es
-            gibt keine Analyse-, Tracking- oder Werbe-Cookies und keine
-            Einbindung von Diensten wie Google Analytics, Facebook oder YouTube.
-            Die Schriften sind selbst gehostet, beim Aufruf entsteht also keine
-            Verbindung zu Google. Die anonyme Nutzungsstatistik (Abschnitt 3)
-            kommt ohne Cookies und ohne lokalen Speicher aus
-            {webStats ? ", ebenso die Web-Statistik mit Umami, die wir selbst betreiben" : ""}.
-          </p>
-          <StorageTable
-            rows={[
-              [
-                "token",
-                `Anmeldung (signiertes Sitzungs-Token, für Skripte nicht lesbar),gilt für alle Subdomains von ${org.domain}`,
-                "30 Tage oder bis zur Abmeldung",
-              ],
-              ...(fed
-                ? ([
-                    [
-                      "cevidb_oauth_state",
-                      `Schutz der Anmeldung über die ${dbShort} vor Fälschung`,
-                      "10 Minuten",
-                    ],
-                    [
-                      "cevidb_link",
-                      `Bestätigung, wenn ein bestehendes Konto mit der ${dbShort} verknüpft wird`,
-                      "15 Minuten",
-                    ],
-                  ] as [string, string, string][])
-                : []),
-              [
-                "mfa_challenge",
-                "Angefangene Anmeldung mit Zwei-Faktor-Code (nur wenn eingeschaltet)",
-                "10 Minuten",
-              ],
-              [
-                "schichtplan_pwa_dismissed",
-                "Merkt sich, wenn der Installationshinweis für die App weggeklickt wurde (für alle Subdomains)",
-                "14 Tage",
-              ],
-            ]}
-          />
-          <p>
-            Im lokalen Speicher deines Browsers (Local Storage) legen wir ab:
-          </p>
-          <StorageTable
-            rows={[
-              [
-                "cevi-theme",
-                "Gewähltes Farbschema (hell/dunkel)",
-                "bis du es zurücksetzt",
-              ],
-              [
-                "schichtplan.eventView",
-                "Gewählte Ansicht eines Anlasses",
-                "bis du es löschst",
-              ],
-              [
-                "schichtplan.theme",
-                "Farbschema im Schichtplan einer " + w.unit,
-                "bis du es zurücksetzt",
-              ],
-              [
-                "schichtplan.pwa_install_dismissed",
-                "Merkt sich, wenn der Installationshinweis für die App («Zum Home-Bildschirm») weggeklickt wurde",
-                "14 Tage",
-              ],
-              [
-                "ok-shift-view",
-                "Gewählte Ansicht der Schichten im OK-Bereich",
-                "bis du es löschst",
-              ],
-              [
-                "schichtplan.recent_commands",
-                "Zuletzt verwendete Befehle der Schnellsuche",
-                "bis du es löschst",
-              ],
-              [
-                "schichtplan:other-levels-hint-dismissed",
-                "Merkt sich, dass ein Hinweis weggeklickt wurde",
-                "bis du es löschst",
-              ],
-              [
-                "schichtplan.offline_owner",
-                "Kennung deines Kontos, damit Offline-Daten beim Wechsel der Person gelöscht werden",
-                "bis zur Abmeldung",
-              ],
-              [
-                "schichtplan.last_online_sync",
-                "Zeitpunkt des letzten Abgleichs für die Offline-Ansicht",
-                "bis zur Abmeldung",
-              ],
-              [
-                "sp_staff_pin_<anlass>",
-                "PIN fürs Einlösen von Bons an der Ausgabe (nur auf Geräten des OK)",
-                "bis du es löschst",
-              ],
-              [
-                "admin.orgFilter",
-                "Gewählter Verband im Admin-Portal (nur globale Admins)",
-                "bis du es löschst",
-              ],
-            ]}
-          />
-          <p>
-            Im Sitzungsspeicher (Session Storage) merkt sich{" "}
-            <code>schichtplan.pwa_dismissed_session</code> bis zum Schliessen
-            des Tabs, dass der Installationshinweis weggeklickt wurde.
-          </p>
-          <p>
-            Damit du deine Schichten auch ohne Internet sehen kannst, legt der
-            Schichtplan eine Kopie deiner Anlässe, Schichten und deines Profils
-            im Speicher des Browsers ab (Offline-Cache). Sie wird beim Abmelden
-            gelöscht und auch dann, wenn sich auf demselben Gerät eine andere
-            Person anmeldet.
-          </p>
-          <p>
-            Diese Einträge verlassen deinen Browser nicht. Du kannst Cookies und
-            Local Storage in den Browser-Einstellungen löschen; ohne das Cookie{" "}
-            <code>token</code> ist keine Anmeldung möglich.
-          </p>
-        </Section>
+      <Section id="dritte" title={t("s7.title")}>
+        <p>{t("s7.intro")}</p>
+        <List>
+          <li>{t.rich("s7.hosting", tags)}</li>
+          <li>{t.rich("s7.google", tags)}</li>
+          <li>{t.rich("s7.infomaniak", tags)}</li>
+          {hasFederationDb && <li>{t.rich("s7.fed", { ...tags, ...p })}</li>}
+          <li>{t.rich("s7.crowdsec", tags)}</li>
+          <li>{t.rich("s7.letsencrypt", tags)}</li>
+          <li>{t.rich("s7.push", tags)}</li>
+          <li>{t.rich("s7.discord", tags)}</li>
+        </List>
+        <p>{t("s7.other")}</p>
+        <p>{t("s7.transfer")}</p>
+      </Section>
 
-        <Section id="dritte" title="7. Dienstleister und Weitergabe">
-          <p>
-            Für den Betrieb arbeiten wir mit folgenden Dienstleistern zusammen:
-          </p>
-          <List>
-            <li>
-              <strong>Hosting:</strong> Avoro, ein Angebot der dataforest GmbH,
-              Kriftel, Deutschland. Der Server steht in einem Rechenzentrum in
-              Frankfurt am Main. Dort laufen alle Anwendungen und die Datenbank
-              mit ihren Sicherungen.
-            </li>
-            <li>
-              <strong>Google Drive</strong> (Google Ireland Limited, Dublin,
-              Irland): Speicherort für eine zusätzliche Sicherungskopie
-              ausserhalb des Rechenzentrums. Die Sicherungen werden schon auf
-              unserem Server verschlüsselt, bevor sie hochgeladen werden. Den
-              Schlüssel zum Entschlüsseln haben nur wir, nicht Google. Google
-              kann die Inhalte deshalb nicht lesen.
-            </li>
-            <li>
-              <strong>Infomaniak Network AG</strong>, Genf, Schweiz: Versand der
-              E-Mails (SMTP), Verwaltung der Domains (DNS) und Speicherort einer
-              verschlüsselten Sicherungskopie der Datenbank in der Schweiz. Wie
-              bei Google Drive verschlüsseln wir die Sicherung vor dem Hochladen;
-              Infomaniak kann sie nicht lesen.
-            </li>
-            {fed && (
-              <li>
-                <strong>{org.authProviderName}</strong>, betrieben{" "}
-                {fed.operator}
-                {fed.where}: Wenn du dich über die {dbShort} anmeldest, erhalten
-                wir nach deiner Zustimmung dort dein Profil mit E-Mail, Namen
-                und Rollen. Wir schreiben nichts in die {dbShort} zurück. Für
-                die Daten in der {dbShort} gilt die Datenschutzerklärung des
-                Verbands (
-                <a
-                  href={fed.policyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {fed.policyLabel}
-                </a>
-                ).
-              </li>
-            )}
-            <li>
-              <strong>CrowdSec SAS</strong>, Fontenay-aux-Roses, Frankreich:
-              Nur bei einem erkannten Angriff melden wir die IP-Adresse des
-              Angreifers, den Zeitpunkt und die Art des Angriffs an CrowdSec,
-              damit gemeinsame Sperrlisten aktuell bleiben. Daten normaler
-              Besucher*innen verlassen unseren Server dabei nicht (
-              <a
-                href="https://www.crowdsec.net/privacy-policy"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Datenschutzerklärung von CrowdSec
-              </a>
-              ).
-            </li>
-            <li>
-              <strong>Let&apos;s Encrypt</strong> (ISRG, USA): stellt die
-              TLS-Zertifikate aus. Dabei werden nur Domainnamen übermittelt,
-              keine Personendaten.
-            </li>
-            <li>
-              <strong>Push-Dienste der Browser</strong> (Google Firebase Cloud
-              Messaging, Mozilla, Apple, Microsoft): Nur wenn du Push-Mitteilungen
-              einschaltest, schickt unser Server sie über den Push-Dienst deines
-              Browsers. Der Inhalt ist Ende-zu-Ende verschlüsselt; der Dienst
-              sieht nur die Geräteadresse, die dein Browser dafür erzeugt hat, und
-              den Zeitpunkt. Ausschalten kannst du das im Profil oder in den
-              Browser-Einstellungen.
-            </li>
-            <li>
-              <strong>Discord</strong> (Discord Inc., USA): Bei schweren
-              Betriebsstörungen schickt der Server eine Alarmmeldung an die
-              Betreiber. Sie enthält nur technische Angaben (Art des Fehlers,
-              Funktion des Servers, Zeitpunkt), keine Namen, E-Mail-Adressen,
-              Telefonnummern oder echten Adressen von Anlässen.
-            </li>
-          </List>
-          <p>
-            Darüber hinaus geben wir Personendaten nur weiter, wenn wir
-            gesetzlich dazu verpflichtet sind.
-          </p>
-          <p>
-            Durch das Hosting werden deine Daten in Deutschland gespeichert.
-            Deutschland bietet nach der Liste des Bundesrats (Anhang 1 der
-            Datenschutzverordnung) einen angemessenen Datenschutz, ebenso
-            Irland. Google kann die verschlüsselte Sicherungskopie auch in
-            Rechenzentren ausserhalb Europas, etwa in den USA, speichern; dort
-            liegen nur verschlüsselte Daten, die ohne unseren Schlüssel nicht
-            lesbar sind. Let&apos;s Encrypt und Discord in den USA erhalten
-            keine Personendaten. Die Push-Dienste können ihre Server auch
-            ausserhalb Europas betreiben; sie sehen dabei keine Inhalte.
-          </p>
-        </Section>
+      <Section id="dauer" title={t("s8.title")}>
+        <List>
+          <li>{t("s8.i1", p)}</li>
+          <li>{t("s8.i2", p)}</li>
+          <li>{t("s8.i3", p)}</li>
+          <li>{t("s8.i4", p)}</li>
+          <li>{t("s8.i5")}</li>
+          <li>{t("s8.i6")}</li>
+          <li>{t("s8.i7", p)}</li>
+          <li>{t("s8.i8")}</li>
+          <li>{t("s8.i9")}</li>
+          <li>{t("s8.i10")}</li>
+          <li>{t("s8.i11")}</li>
+          <li>{t("s8.i12")}</li>
+          <li>{t("s8.i13")}</li>
+        </List>
+      </Section>
 
-        <Section id="dauer" title="8. Wie lange wir Daten aufbewahren">
-          <List>
-            <li>
-              Kontodaten bewahren wir auf, solange dein Konto besteht. Mit{" "}
-              {fed ? `${dbShort} oder Passwort` : "Passwort"} kannst du dein
-              Konto jederzeit selbst löschen (Profil auf {org.domain} oder
-              Konto-Menü im Schichtplan). Dabei werden auch deine Eintragungen, Rollen und
-              Antworten gelöscht. In den Protokollen und im Nachrichtenverlauf
-              ersetzen wir deinen Namen durch «Gelöschte Person».
-            </li>
-            <li>
-              Profile, die nur über den {w.nickname}n angemeldet sind, können
-              die Löschung im Konto-Menü beantragen («Löschung beantragen»); wir
-              löschen sie dann innert 30 Tagen.
-            </li>
-            <li>
-              Konten, die 24 Monate nicht genutzt wurden, löschen wir
-              automatisch. Haben wir eine E-Mail-Adresse, schicken wir vorher
-              einen Hinweis; meldest du dich innert 30 Tagen an, bleibt das
-              Konto bestehen. Deine Eintragungen in Anlässen bleiben dabei ohne
-              Namen und ohne Kontaktdaten als «Gelöschte Person» stehen, damit
-              die Planung des Anlasses stimmt. Ausgenommen sind die einzige
-              Leitung {w.ofThe} und globale Administrator*innen.
-            </li>
-            <li>
-              Anlässe mit ihren Eintragungen bleiben bestehen, bis {w.the} sie
-              löscht.
-            </li>
-            <li>
-              Antworten auf die Fragen eines Anlasses löschen wir automatisch
-              nach der Frist, die das OK pro Frage festlegt: direkt nach dem
-              Anlass oder 10, 30, 90 bzw. 365 Tage danach (gezählt ab dem Ende
-              der letzten Schicht). Die Frist steht beim Ausfüllen neben der
-              Frage. Nur wenn das OK ausdrücklich «Nie löschen» wählt, bleiben
-              die Antworten bis zur Löschung des Anlasses oder deines Kontos
-              bestehen.
-            </li>
-            <li>
-              Das Protokoll der Ein- und Austragungen und den Nachrichtenverlauf
-              des OK löschen wir ein Jahr nach dem Ende des Anlasses.
-            </li>
-            <li>
-              Die Protokolle der Rechte in {w.unit} und im Admin-Portal löschen
-              wir nach zwei Jahren. Die IP-Adresse im Protokoll des Admin-Portals
-              entfernen wir schon nach 90 Tagen.
-            </li>
-            <li>
-              Links zum Bestätigen der E-Mail und zum Zurücksetzen des Passworts
-              verfallen nach kurzer Zeit. Konten mit E-Mail und Passwort, deren
-              Adresse nicht innert 24 Stunden bestätigt wurde, löschen wir.
-            </li>
-            <li>
-              Die anonyme Nutzungsstatistik bewahren wir zwei Jahre auf, die
-              Stundenwerte zum Betrieb des Servers 90 Tage (danach nur noch als
-              Tagessumme). Der Tag der letzten Nutzung wird mit dem Konto
-              gelöscht.
-            </li>
-            <li>
-              Wir sichern die Datenbank jede Nacht und bewahren diese
-              Sicherungen 14 Tage auf. Zusätzlich sichern wir sie vor jeder
-              Aktualisierung der Software und behalten davon die letzten zehn,
-              höchstens aber 40 Tage.
-            </li>
-            <li>
-              Zusätzlich legen wir jede Nacht eine verschlüsselte Kopie der
-              Datenbank und der hochgeladenen Bilder in Google Drive ab (siehe
-              Abschnitt 7). Davon behalten wir die Sicherungen der letzten
-              sieben Tage, je eine pro Woche für vier Wochen und je eine pro
-              Monat für sechs Monate. Ältere Sicherungen werden gelöscht und
-              nach weiteren 30 Tagen endgültig aus dem Papierkorb entfernt.
-            </li>
-            <li>
-              Ebenfalls jede Nacht legen wir eine verschlüsselte Kopie der
-              Datenbank bei Infomaniak in der Schweiz ab (siehe Abschnitt 7).
-              Davon behalten wir die Sicherungen der letzten 14 Tage, die
-              Sonntage der letzten acht Wochen und die Monatsersten der letzten
-              sechs Monate. Einmal im Monat spielen wir eine dieser Sicherungen
-              probeweise in eine vorübergehende Datenbank auf unserem Server
-              ein, um zu prüfen, ob sie sich wiederherstellen lässt; diese
-              Datenbank wird gleich danach gelöscht.
-            </li>
-            <li>
-              Gelöschte Daten können in diesen Sicherungen noch enthalten sein,
-              bis die jeweilige Sicherung gelöscht wird, also höchstens rund
-              sieben Monate. Wir verwenden Sicherungen nur, um nach einem Fehler
-              oder Ausfall den Betrieb wiederherzustellen.
-            </li>
-          </List>
-        </Section>
+      <Section id="sicherheit" title={t("s9.title")}>
+        <p>{t("s9.p1")}</p>
+      </Section>
 
-        <Section id="sicherheit" title="9. Datensicherheit">
-          <p>
-            Alle Verbindungen sind mit TLS (HTTPS) verschlüsselt. Passwörter
-            speichern wir nur als Hash, das Anmelde-Cookie ist für Skripte nicht
-            lesbar, Anmeldeversuche sind begrenzt, und die Datenbank ist im
-            Netzwerk vom Internet getrennt. Zugriff auf die Server haben nur die
-            verantwortlichen Personen des Betreibers. Eine absolute Sicherheit
-            kann trotzdem niemand garantieren.
-          </p>
-        </Section>
+      <Section id="kinder" title={t("s10.title")}>
+        <p>{t("s10.p1", p)}</p>
+        <p>{t("s10.p2")}</p>
+      </Section>
 
-        <Section id="kinder" title="10. Kinder und Jugendliche">
-          <p>
-            {w.inOrg} helfen auch Jugendliche mit. Wir bearbeiten ihre Daten nur
-            im oben beschriebenen Umfang. Jugendliche unter 14 Jahren sollten
-            ein Konto nur mit Einverständnis ihrer Eltern anlegen.
-          </p>
-          <p>
-            Bei Schichten mit Mindestalter prüft der Schichtplan nur das selbst
-            angegebene Geburtsdatum. Ausweiskontrollen und den Jugendschutz vor
-            Ort verantwortet das OK.
-          </p>
-        </Section>
+      <Section id="rechte" title={t("s11.title")}>
+        <p>{t("s11.intro")}</p>
+        <List>
+          <li>{t("s11.i1")}</li>
+          <li>{t("s11.i2")}</li>
+          <li>{t("s11.i3")}</li>
+          <li>{t("s11.i4")}</li>
+        </List>
+        <p>{t("s11.download")}</p>
+        <p>{t.rich("s11.contact", tags)}</p>
+      </Section>
 
-        <Section id="rechte" title="11. Deine Rechte">
-          <p>
-            Im Rahmen des Datenschutzgesetzes hast du insbesondere das Recht,
-          </p>
-          <List>
-            <li>
-              Auskunft darüber zu verlangen, welche Daten wir über dich
-              bearbeiten,
-            </li>
-            <li>
-              unrichtige Daten berichtigen zu lassen (vieles kannst du direkt im
-              Profil ändern),
-            </li>
-            <li>
-              die Löschung deiner Daten zu verlangen oder einer Bearbeitung zu
-              widersprechen,
-            </li>
-            <li>
-              deine Daten in einem gängigen elektronischen Format zu erhalten
-              oder übertragen zu lassen, soweit sie auf deiner Zustimmung oder
-              einem Vertrag beruhen.
-            </li>
-          </List>
-          <p>
-            Deine Daten kannst du jederzeit selbst herunterladen: im Konto-Menü
-            des Schichtplans unter «Meine Daten herunterladen» (als JSON-Datei).
-          </p>
-          <p>
-            Für alles andere schreib uns an die E-Mail-Adresse unter Punkt 1.
-            Wir antworten innert 30 Tagen und können verlangen, dass du dich
-            ausweist. Ausserdem kannst du dich beim
-            Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten (EDÖB)
-            beschweren:{" "}
-            <a
-              href="https://www.edoeb.admin.ch"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              www.edoeb.admin.ch
-            </a>
-            .
-          </p>
-        </Section>
-
-        <Section id="aenderungen" title="12. Änderungen">
-          <p>
-            Wir passen diese Erklärung an, wenn sich die Plattform oder die
-            Rechtslage ändert. Es gilt die jeweils hier veröffentlichte Fassung.
-            Fragen zur Bedienung beantwortet das{" "}
-            <a href={helpUrl("/", host)}>Hilfe-Center</a>.
-          </p>
-        </Section>
+      <Section id="aenderungen" title={t("s12.title")}>
+        <p>{t.rich("s12.p1", tags)}</p>
+      </Section>
     </LegalPage>
   );
 }

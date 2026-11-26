@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@schichtplan/ui";
 
 interface Contact {
@@ -12,6 +13,7 @@ interface Contact {
 
 /** Zeigt die Kontaktdaten erst auf Klick (Schutz vor Scrapern und KI-Crawlern) */
 export function ContactReveal() {
+  const t = useTranslations("landing.privacy.contact");
   const [contact, setContact] = useState<Contact | null>(null);
   const [state, setState] = useState<"idle" | "loading" | "error">("idle");
 
@@ -38,19 +40,12 @@ export function ContactReveal() {
           onClick={reveal}
           disabled={state === "loading"}
         >
-          {state === "loading" ? "Wird geladen …" : "Kontaktdaten anzeigen"}
+          {state === "loading" ? t("loading") : t("show")}
         </Button>
         <noscript>
-          <p className="mt-2 text-sm">
-            Die Kontaktdaten werden zum Schutz vor automatischem Auslesen erst
-            per Klick geladen. Dafür braucht es JavaScript.
-          </p>
+          <p className="mt-2 text-sm">{t("noscript")}</p>
         </noscript>
-        {state === "error" && (
-          <p className="mt-2 text-sm">
-            Die Kontaktdaten konnten nicht geladen werden.
-          </p>
-        )}
+        {state === "error" && <p className="mt-2 text-sm">{t("error")}</p>}
       </div>
     );
   }
@@ -58,7 +53,7 @@ export function ContactReveal() {
   if (!contact.name && !contact.email) {
     return (
       <p className="rounded-card border border-line bg-surface p-4">
-        Die Kontaktdaten sind noch nicht hinterlegt.
+        {t("missing")}
       </p>
     );
   }
@@ -81,7 +76,7 @@ export function ContactReveal() {
       {contact.email && (
         <>
           <br />
-          E-Mail: <a href={`mailto:${contact.email}`}>{contact.email}</a>
+          {t("email")} <a href={`mailto:${contact.email}`}>{contact.email}</a>
         </>
       )}
     </address>

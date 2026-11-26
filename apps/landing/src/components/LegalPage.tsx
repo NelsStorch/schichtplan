@@ -57,17 +57,17 @@ export function LegalPage({
             <AlertTriangle className="size-5 text-amber-500 shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold text-amber-600 dark:text-amber-400">
-                {t('originalTitle')}
+                {t('translationTitle')}
               </p>
               <p className="mt-0.5 text-fg-muted">
-                {t('originalText')}
+                {t('translationText')}
               </p>
             </div>
           </div>
         )}
 
-        {/* Rechtstext nur auf Deutsch: Sprache auszeichnen (Screenreader, Übersetzungsfunktion des Browsers) */}
-        <div lang="de" className="space-y-10">
+        {/* Sprache des Rechtstexts auszeichnen (Screenreader, Übersetzungsfunktion des Browsers) */}
+        <div lang={locale} className="space-y-10">
         <div className="space-y-3">
           <h1 className="font-display text-3xl font-extrabold tracking-tight text-fg sm:text-4xl">
             {title}

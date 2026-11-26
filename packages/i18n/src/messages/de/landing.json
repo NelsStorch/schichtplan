@@ -215,8 +215,298 @@
     "privacy": "Datenschutzerklärung",
     "terms": "Nutzungsbedingungen",
     "imprint": "Impressum",
-    "originalTitle": "Originalfassung",
-    "originalText": "Massgebend ist die deutsche Originalfassung."
+    "translationTitle": "Übersetzung",
+    "translationText": "Diese Übersetzung dient dem besseren Verständnis. Massgebend ist die deutsche Originalfassung; du erreichst sie über den Sprachwähler (Deutsch)."
+  },
+  "privacy": {
+    "title": "Datenschutzerklärung",
+    "stand": "19. November 2026",
+    "intro": "Diese Erklärung beschreibt, welche Personendaten wir beim Betrieb des {name}s bearbeiten, wozu wir das tun und welche Rechte du hast. Sie richtet sich nach dem Schweizer Bundesgesetz über den Datenschutz (DSG) und der Datenschutzverordnung (DSV).",
+    "term": {
+      "the": "{org, select, verein {der Verein} other {die {unit}}}",
+      "ofThe": "{org, select, verein {des Vereins} other {der {unit}}}",
+      "inThe": "{org, select, verein {im Verein} other {in der {unit}}}",
+      "respective": "{org, select, verein {der jeweilige Verein} other {die jeweilige {unit}}}",
+      "inConcerned": "{org, select, verein {im betreffenden Verein} other {in der betreffenden {unit}}}",
+      "ofYourUnit": "{org, select, verein {deines Vereins} other {deiner {unit}}}",
+      "ofAUnit": "{org, select, verein {eines Vereins} other {einer {unit}}}",
+      "inOrg": "{org, select, cevi {Im Cevi} pfadi {In der Pfadi} jubla {In der Jubla} other {In Vereinen}}",
+      "ofUnits": "{org, select, other {der {units}}}",
+      "theUnits": "{org, select, other {Die {units}}}",
+      "toUnits": "{org, select, verein {zu Vereinen} other {zu {units}}}",
+      "theGroups": "{org, select, other {die {groups}}}",
+      "homeUnit": "Heim{unitLower}",
+      "fedUnit": "{org, select, cevi {Ortsgruppe} other {Angabe {ofYourUnit}}}",
+      "fedStructure": "{org, select, cevi {welche Gruppe zu welcher Jungschar und Ortsgruppe gehört} other {welche Gruppe zu welcher übergeordneten Gruppe gehört}}",
+      "loginMethods": "{org, select, verein {Passwort} other {{db} oder Passwort}}"
+    },
+    "fed": {
+      "operator": "{org, select, cevi {vom Dachverband Cevi Schweiz} pfadi {von der Pfadibewegung Schweiz (PBS)} jubla {von Jungwacht Blauring Schweiz} other {}}",
+      "where": "{org, select, cevi {, Server in der Schweiz} other {}}",
+      "policyLabel": "{org, select, cevi {Datenschutzerklärung des Cevi Schweiz} pfadi {Datenschutz der Pfadibewegung Schweiz} jubla {Datenschutzerklärung von Jungwacht Blauring Schweiz} other {}}"
+    },
+    "contact": {
+      "show": "Kontaktdaten anzeigen",
+      "loading": "Wird geladen …",
+      "noscript": "Die Kontaktdaten werden zum Schutz vor automatischem Auslesen erst per Klick geladen. Dafür braucht es JavaScript.",
+      "error": "Die Kontaktdaten konnten nicht geladen werden.",
+      "missing": "Die Kontaktdaten sind noch nicht hinterlegt.",
+      "email": "E-Mail:"
+    },
+    "table": {
+      "name": "Name",
+      "purpose": "Zweck",
+      "duration": "Dauer"
+    },
+    "s1": {
+      "title": "1. Verantwortliche Stelle",
+      "p1": "Verantwortlich für die Datenbearbeitung auf dieser Plattform ist:",
+      "p2": "Für Fragen zum Datenschutz und zur Ausübung deiner Rechte erreichst du uns unter dieser Adresse."
+    },
+    "s2": {
+      "title": "2. Geltungsbereich",
+      "intro": "Diese Erklärung gilt für alle Teile des {name}s:",
+      "landing": "die Landingpage <b>{domain}</b> mit Profilseite,",
+      "login": "das zentrale Login <b>login.{domain}</b>,",
+      "plans": "die Schichtpläne {ofUnits} <b>{subdomain}</b>,",
+      "help": "das Hilfe-Center <b>hilfe.{domain}</b>,",
+      "admin": "das Admin-Portal <b>admin.cevi-schichtplan.ch</b>, das für alle vier Angebote gemeinsam genutzt wird und nur globalen Administrator*innen offensteht.",
+      "domainsIntro": "Dieselbe Plattform läuft unter vier Domains:",
+      "domainsOutro": ". Diese Erklärung gilt für alle vier.",
+      "roles": "{theUnits} und die Organisationskomitees (OK) ihrer Anlässe entscheiden selbst, welche Anlässe sie anlegen, welche Angaben sie von Helfenden verlangen und wen sie einteilen. Für diese Entscheide und für die Verwendung der Daten ausserhalb der Plattform (z. B. eine exportierte Helferliste) ist {respective} verantwortlich. Wir bearbeiten diese Daten in ihrem Auftrag; die Regeln dazu stehen in den <terms>Nutzungsbedingungen</terms>."
+    },
+    "s3": {
+      "title": "3. Welche Daten wir bearbeiten",
+      "account": {
+        "title": "Konto und Profil",
+        "intro": "Je nach Anmeldeart speichern wir:",
+        "email": "<b>E-Mail und Passwort:</b> E-Mail-Adresse, Passwort (nur als bcrypt-Hash, nie im Klartext), Vor- und Nachname, ob die E-Mail bestätigt ist. Wer die Zwei-Faktor-Anmeldung einschaltet, hat zusätzlich einen geheimen Schlüssel (verschlüsselt gespeichert) und Wiederherstellungscodes (nur als Hash).",
+        "fed": "<b>{db}:</b> {db}-Personen-ID, Vor- und Nachname, {nickname}, E-Mail, Geburtsdatum, {fedUnit} sowie deine Rollen in der {db}, soweit wir daraus {the}, {theGroups} und eine allfällige {lead} ableiten. Dafür lesen wir beim Login auch die Gruppenstruktur zu deinen Rollen ({fedStructure}). Von deinen Rollen speichern wir nur Rollentyp und Gruppe, jeweils den Stand vom letzten Login (keine Historie). Sie dienen dazu, nachzuvollziehen, warum du ein Recht hast oder nicht, und sind nur für die globalen Admins des Schichtplans sichtbar. Deine Postadresse aus der {db} übernehmen und speichern wir nicht.",
+        "nickname": "<b>{Nickname} (ohne Passwort):</b> {nickname} und Geburtsdatum, dazu freiwillig Vor- und Nachname, Handynummer und {groups}.",
+        "optional": "Freiwillig oder auf Verlangen eines Anlasses kommen dazu: Handynummer, Geburtsdatum, {homeUnit} und {groups} (mit Rolle Leitung oder Teilnehmer*in) sowie die Einstellung, ob du Schicht-Erinnerungen erhalten möchtest.",
+        "noAddress": "Nach dem Grundsatz der Datensparsamkeit speichern wir in deinem Profil <b>keine Postadresse</b>. Braucht ein OK sie für einen Anlass (z. B. für einen Versand), fragt es beim Anlass danach; die Antwort gehört nur zu diesem Anlass und wird nach der angegebenen Frist gelöscht (siehe Abschnitt 8)."
+      },
+      "planning": {
+        "title": "Schichtplanung",
+        "i1": "Eintragungen in Schichten und Arbeiten, mit Zeitpunkt und allfälliger Notiz,",
+        "i2": "Antworten auf Fragen, die ein OK zu seinem Anlass stellt (z. B. Adresse, Allergien, Notfallkontakt oder T-Shirt-Grösse). Beim Ausfüllen steht bei jeder Frage, wann die Antwort gelöscht wird. Fragen nach Gesundheitsangaben (z. B. Allergien) sind als solche markiert: Diese besonders schützenswerten Daten bearbeiten wir nur mit deiner ausdrücklichen Einwilligung, die wir mit Zeitpunkt speichern, und sie werden immer nach einer Frist gelöscht,",
+        "i3": "Abmeldungen von einem Anlass mit freiwilligem Grund. Bitte gib dort keine Gesundheitsangaben an, ein allgemeiner Grund wie «verhindert» reicht,",
+        "i4": "Rollen und Rechte {inThe} und im OK ({lead}, einzelne Rechte wie «Anlässe erstellen», OK-Leitung, OK-Mitglied) sowie ein Protokoll, wer wem welche Rechte gegeben hat,",
+        "i5": "Personen, die ein OK von Hand einträgt (Name, allenfalls E-Mail und Telefon), auch ohne eigenes Konto,",
+        "i6": "Zugangs-Links zu Anlässen und wer sie eingelöst hat,",
+        "i7": "ein Protokoll der Ein- und Austragungen, Übernahmen und der Anwesenheit (wer, wann, durch wen),",
+        "i8": "Nachrichten, die das OK über den Schichtplan an Helfende schickt, samt Verlauf, wer sie erhalten hat,",
+        "i9": "Verpflegungs- und Getränke-Bons: welche Bons zu deiner Eintragung gehören und wann sie eingelöst wurden."
+      },
+      "content": {
+        "title": "Inhalte von Planenden",
+        "text": "Logos, Banner und Bilder, die Planende hochladen, sowie Texte {toUnits}, Anlässen, Schichten und Vorlagen. Lade bitte keine Bilder hoch, auf denen Personen ohne deren Einverständnis erkennbar sind."
+      },
+      "tech": {
+        "title": "Technische Daten",
+        "p1": "Bei jedem Aufruf verarbeiten unsere Server technisch nötige Angaben: IP-Adresse, Datum und Uhrzeit, aufgerufene Adresse, HTTP-Methode, Statuscode, übertragene Datenmenge, die zuvor besuchte Seite (Referrer) und die Kennung deines Browsers (User-Agent). Diese Protokolle nutzen wir nur zur Fehlersuche und zum Schutz vor Missbrauch. Das Protokoll des Webservers (Reverse Proxy) wird täglich gewechselt und nach 14 Tagen gelöscht. Die Protokolle der Anwendung sind in der Grösse begrenzt und werden spätestens bei der nächsten Aktualisierung der Software gelöscht. Zum Schutz vor Passwort-Erraten zählen wir Fehlversuche pro IP-Adresse und pro E-Mail bzw. {nickname} nur im Arbeitsspeicher; diese Einträge gelten höchstens eine Stunde und gehen bei jedem Neustart verloren.",
+        "p2": "Zum Schutz vor Angriffen prüfen eine Web Application Firewall (Coraza) und das Angriffserkennungssystem CrowdSec auf unserem Server jeden Zugriff automatisch auf bekannte Angriffsmuster. Die Angaben bleiben dabei auf unserem Server und werden höchstens 14 Tage gespeichert. Erkennen wir einen Angriffsversuch, sperren wir die IP-Adresse vorübergehend (siehe Abschnitt 7)."
+      },
+      "stats": {
+        "title": "Anonyme Nutzungsstatistik",
+        "p1": "Um zu sehen, ob der Schichtplan gut läuft und welche Funktionen gebraucht werden, zählen wir Nutzungen als <b>Summen pro Tag</b>, z. B. «12 Anmeldungen mit {db}», «3 PDF-Schichtpläne gedruckt» oder «40 Aufrufe der Hilfe zum Eintragen». Gespeichert werden nur die Art der Nutzung, eine feste Unterteilung (z. B. die Anmeldeart), {the} und der Tag. Für den Betrieb zählen wir zusätzlich pro Stunde, wie viele Anfragen eine Funktion des Servers bekam, wie lange die Antwort dauerte und ob Fehler auftraten; dabei speichern wir nur das Muster der Adresse (z. B. «Anlass ansehen»), nie die echte Adresse mit Namen von Anlässen, Zugangs- oder Check-in-Codes. Ebenso zählt der Server, wie oft Seiten geladen werden, als Tagessumme pro Bereich (Startseite, Login, Seiten {ofThe}). Weil dabei nichts über dich gespeichert wird, gilt das auch, wenn du «nicht verfolgen» eingestellt hast.",
+        "p2": "Dafür speichern wir <b>keine</b> IP-Adresse, keine Kennung deines Browsers oder Geräts, kein Cookie und nichts, was einer Person zugeordnet werden kann. Dein Browser meldet nur Nutzungen, die auf dem Server nicht sichtbar sind (z. B. ein PDF-Export, die Fenstergrösse als «Handy», «Tablet» oder «Computer» und ob die dunkle Darstellung aktiv ist). Hast du in deinem Browser «nicht verfolgen» eingestellt (Global Privacy Control oder Do Not Track), schickt er keine solchen Meldungen.",
+        "p3": "Pro Konto speichern wir einzig den <b>letzten Tag</b>, an dem du den Schichtplan angemeldet genutzt hast (nur das Datum, ohne Uhrzeit). Daraus zählen wir, wie viele Personen pro Tag, Woche und Monat aktiv sind, und erkennen lange unbenutzte Konten."
+      },
+      "web": {
+        "title": "Web-Statistik",
+        "text": "Um zu sehen, welche Seiten wie oft besucht werden, nutzen wir zusätzlich <b>Umami</b>, eine Statistik-Software, die wir selbst auf unserem Server betreiben. Es fliessen keine Daten an Dritte. Erfasst werden die aufgerufene Seite samt Titel (ohne Parameter, also ohne Codes oder Links aus E-Mails), die zuvor besuchte Seite, Browser, Betriebssystem, Gerätetyp, Bildschirmgrösse, Sprache und das aus der IP-Adresse abgeleitete Land. Die IP-Adresse selbst speichert Umami nicht. Um Besuche zu zählen, bildet Umami aus IP-Adresse und Browser eine Prüfsumme, die jeden Monat wechselt und keinen Rückschluss auf dich zulässt. Umami setzt keine Cookies. Hast du in deinem Browser «nicht verfolgen» eingestellt, wird nichts erfasst."
+      }
+    },
+    "s4": {
+      "title": "4. Wozu wir die Daten bearbeiten",
+      "i1": "Konto anlegen, Anmeldung (Single Sign-On über alle Subdomains) und Schutz des Kontos,",
+      "i2": "Schichten planen, Helfende einteilen und Anlässe durchführen,",
+      "i3": "Zugang zu Anlässen prüfen (z. B. nur Mitglieder {ofThe}, nur Leitende, bestimmte {groups}),",
+      "i4": "Mindestalter prüfen: Bei Schichten mit Altersgrenze (z. B. Bar ab 18) prüfen wir dein Alter anhand des Geburtsdatums,",
+      "i5": "Kontakt zwischen OK und Helfenden, etwa bei kurzfristigen Änderungen,",
+      "i6": "E-Mails und, wenn du sie erlaubst, Push-Mitteilungen: Bestätigung der E-Mail-Adresse, Zurücksetzen des Passworts, Erinnerungen vor deinen Schichten, Nachrichten des OK und Hinweise zu Übernahmen und Bons (im Profil einzeln abschaltbar),",
+      "i7": "Betrieb, Sicherheit und Fehlerbehebung der Plattform,",
+      "i8": "anonyme Nutzungsstatistik, um den Schichtplan zu verbessern (siehe Abschnitt 3).",
+      "closing": "Wir verwenden die Daten nicht für Werbung, verkaufen sie nicht und erstellen keine Profile über dein Verhalten."
+    },
+    "s5": {
+      "title": "5. Wer deine Daten sieht",
+      "i1": "<b>Andere Helfende</b> eines Anlasses sehen im Schichtplan, wer in welcher Schicht eingetragen ist ({nickname} bzw. Name). Wer für einen Anlass nicht berechtigt ist, sieht den Plan ohne Namen.",
+      "i2": "<b>OK, {lead} und wer das Recht «Alle Anlässe sehen» hat</b> {inConcerned} sehen zusätzlich Kontaktdaten (E-Mail und Telefon, soweit vorhanden), das Alter sowie Antworten und Abmeldungen zu ihren Anlässen.",
+      "i3": "<b>Globale Administrator*innen</b> des Betreibers sehen im Admin-Portal alle Konten über alle vier Angebote und alle Abteilungen, Scharen und Vereine (Profil, Anmeldeart, Zugehörigkeit, Rollen, Eintragungen und den Tag der letzten Nutzung) sowie die anonyme Nutzungsstatistik und können Konten löschen. Dieser Zugriff ist auf wenige Personen beschränkt und dient Support und Missbrauchsbekämpfung."
+    },
+    "s6": {
+      "title": "6. Cookies und lokaler Speicher",
+      "p1": "Wir setzen <b>nur technisch notwendige Cookies</b>. Es gibt keine Analyse-, Tracking- oder Werbe-Cookies und keine Einbindung von Diensten wie Google Analytics, Facebook oder YouTube. Die Schriften sind selbst gehostet, beim Aufruf entsteht also keine Verbindung zu Google. Die anonyme Nutzungsstatistik (Abschnitt 3) kommt ohne Cookies und ohne lokalen Speicher aus{umami}.",
+      "umami": ", ebenso die Web-Statistik mit Umami, die wir selbst betreiben",
+      "dur": {
+        "token": "30 Tage oder bis zur Abmeldung",
+        "min10": "10 Minuten",
+        "min15": "15 Minuten",
+        "days14": "14 Tage",
+        "reset": "bis du es zurücksetzt",
+        "delete": "bis du es löschst",
+        "logout": "bis zur Abmeldung"
+      },
+      "cookie": {
+        "token": "Anmeldung (signiertes Sitzungs-Token, für Skripte nicht lesbar), gilt für alle Subdomains von {domain}",
+        "oauth": "Schutz der Anmeldung über die {db} vor Fälschung",
+        "link": "Bestätigung, wenn ein bestehendes Konto mit der {db} verknüpft wird",
+        "mfa": "Angefangene Anmeldung mit Zwei-Faktor-Code (nur wenn eingeschaltet)",
+        "pwa": "Merkt sich, wenn der Installationshinweis für die App weggeklickt wurde (für alle Subdomains)"
+      },
+      "localIntro": "Im lokalen Speicher deines Browsers (Local Storage) legen wir ab:",
+      "local": {
+        "theme": "Gewähltes Farbschema (hell/dunkel)",
+        "eventView": "Gewählte Ansicht eines Anlasses",
+        "unitTheme": "Farbschema im Schichtplan {ofAUnit}",
+        "pwa": "Merkt sich, wenn der Installationshinweis für die App («Zum Home-Bildschirm») weggeklickt wurde",
+        "shiftView": "Gewählte Ansicht der Schichten im OK-Bereich",
+        "commands": "Zuletzt verwendete Befehle der Schnellsuche",
+        "hint": "Merkt sich, dass ein Hinweis weggeklickt wurde",
+        "offlineOwner": "Kennung deines Kontos, damit Offline-Daten beim Wechsel der Person gelöscht werden",
+        "lastSync": "Zeitpunkt des letzten Abgleichs für die Offline-Ansicht",
+        "staffPin": "PIN fürs Einlösen von Bons an der Ausgabe (nur auf Geräten des OK)",
+        "orgFilter": "Gewählter Verband im Admin-Portal (nur globale Admins)"
+      },
+      "session": "Im Sitzungsspeicher (Session Storage) merkt sich <code>schichtplan.pwa_dismissed_session</code> bis zum Schliessen des Tabs, dass der Installationshinweis weggeklickt wurde.",
+      "offline": "Damit du deine Schichten auch ohne Internet sehen kannst, legt der Schichtplan eine Kopie deiner Anlässe, Schichten und deines Profils im Speicher des Browsers ab (Offline-Cache). Sie wird beim Abmelden gelöscht und auch dann, wenn sich auf demselben Gerät eine andere Person anmeldet.",
+      "outro": "Diese Einträge verlassen deinen Browser nicht. Du kannst Cookies und Local Storage in den Browser-Einstellungen löschen; ohne das Cookie <code>token</code> ist keine Anmeldung möglich."
+    },
+    "s7": {
+      "title": "7. Dienstleister und Weitergabe",
+      "intro": "Für den Betrieb arbeiten wir mit folgenden Dienstleistern zusammen:",
+      "hosting": "<b>Hosting:</b> Avoro, ein Angebot der dataforest GmbH, Kriftel, Deutschland. Der Server steht in einem Rechenzentrum in Frankfurt am Main. Dort laufen alle Anwendungen und die Datenbank mit ihren Sicherungen.",
+      "google": "<b>Google Drive</b> (Google Ireland Limited, Dublin, Irland): Speicherort für eine zusätzliche Sicherungskopie ausserhalb des Rechenzentrums. Die Sicherungen werden schon auf unserem Server verschlüsselt, bevor sie hochgeladen werden. Den Schlüssel zum Entschlüsseln haben nur wir, nicht Google. Google kann die Inhalte deshalb nicht lesen.",
+      "infomaniak": "<b>Infomaniak Network AG</b>, Genf, Schweiz: Versand der E-Mails (SMTP), Verwaltung der Domains (DNS) und Speicherort einer verschlüsselten Sicherungskopie der Datenbank in der Schweiz. Wie bei Google Drive verschlüsseln wir die Sicherung vor dem Hochladen; Infomaniak kann sie nicht lesen.",
+      "fed": "<b>{authName}</b>, betrieben {fedOperator}{fedWhere}: Wenn du dich über die {db} anmeldest, erhalten wir nach deiner Zustimmung dort dein Profil mit E-Mail, Namen und Rollen. Wir schreiben nichts in die {db} zurück. Für die Daten in der {db} gilt die Datenschutzerklärung des Verbands (<fedlink>{policyLabel}</fedlink>).",
+      "crowdsec": "<b>CrowdSec SAS</b>, Fontenay-aux-Roses, Frankreich: Nur bei einem erkannten Angriff melden wir die IP-Adresse des Angreifers, den Zeitpunkt und die Art des Angriffs an CrowdSec, damit gemeinsame Sperrlisten aktuell bleiben. Daten normaler Besucher*innen verlassen unseren Server dabei nicht (<crowdsec>Datenschutzerklärung von CrowdSec</crowdsec>).",
+      "letsencrypt": "<b>Let’s Encrypt</b> (ISRG, USA): stellt die TLS-Zertifikate aus. Dabei werden nur Domainnamen übermittelt, keine Personendaten.",
+      "push": "<b>Push-Dienste der Browser</b> (Google Firebase Cloud Messaging, Mozilla, Apple, Microsoft): Nur wenn du Push-Mitteilungen einschaltest, schickt unser Server sie über den Push-Dienst deines Browsers. Der Inhalt ist Ende-zu-Ende verschlüsselt; der Dienst sieht nur die Geräteadresse, die dein Browser dafür erzeugt hat, und den Zeitpunkt. Ausschalten kannst du das im Profil oder in den Browser-Einstellungen.",
+      "discord": "<b>Discord</b> (Discord Inc., USA): Bei schweren Betriebsstörungen schickt der Server eine Alarmmeldung an die Betreiber. Sie enthält nur technische Angaben (Art des Fehlers, Funktion des Servers, Zeitpunkt), keine Namen, E-Mail-Adressen, Telefonnummern oder echten Adressen von Anlässen.",
+      "other": "Darüber hinaus geben wir Personendaten nur weiter, wenn wir gesetzlich dazu verpflichtet sind.",
+      "transfer": "Durch das Hosting werden deine Daten in Deutschland gespeichert. Deutschland bietet nach der Liste des Bundesrats (Anhang 1 der Datenschutzverordnung) einen angemessenen Datenschutz, ebenso Irland. Google kann die verschlüsselte Sicherungskopie auch in Rechenzentren ausserhalb Europas, etwa in den USA, speichern; dort liegen nur verschlüsselte Daten, die ohne unseren Schlüssel nicht lesbar sind. Let’s Encrypt und Discord in den USA erhalten keine Personendaten. Die Push-Dienste können ihre Server auch ausserhalb Europas betreiben; sie sehen dabei keine Inhalte."
+    },
+    "s8": {
+      "title": "8. Wie lange wir Daten aufbewahren",
+      "i1": "Kontodaten bewahren wir auf, solange dein Konto besteht. Mit {loginMethods} kannst du dein Konto jederzeit selbst löschen (Profil auf {domain} oder Konto-Menü im Schichtplan). Dabei werden auch deine Eintragungen, Rollen und Antworten gelöscht. In den Protokollen und im Nachrichtenverlauf ersetzen wir deinen Namen durch «Gelöschte Person».",
+      "i2": "Profile, die nur über den {nickname}n angemeldet sind, können die Löschung im Konto-Menü beantragen («Löschung beantragen»); wir löschen sie dann innert 30 Tagen.",
+      "i3": "Konten, die 24 Monate nicht genutzt wurden, löschen wir automatisch. Haben wir eine E-Mail-Adresse, schicken wir vorher einen Hinweis; meldest du dich innert 30 Tagen an, bleibt das Konto bestehen. Deine Eintragungen in Anlässen bleiben dabei ohne Namen und ohne Kontaktdaten als «Gelöschte Person» stehen, damit die Planung des Anlasses stimmt. Ausgenommen sind die einzige Leitung {ofThe} und globale Administrator*innen.",
+      "i4": "Anlässe mit ihren Eintragungen bleiben bestehen, bis {the} sie löscht.",
+      "i5": "Antworten auf die Fragen eines Anlasses löschen wir automatisch nach der Frist, die das OK pro Frage festlegt: direkt nach dem Anlass oder 10, 30, 90 bzw. 365 Tage danach (gezählt ab dem Ende der letzten Schicht). Die Frist steht beim Ausfüllen neben der Frage. Nur wenn das OK ausdrücklich «Nie löschen» wählt, bleiben die Antworten bis zur Löschung des Anlasses oder deines Kontos bestehen.",
+      "i6": "Das Protokoll der Ein- und Austragungen und den Nachrichtenverlauf des OK löschen wir ein Jahr nach dem Ende des Anlasses.",
+      "i7": "Die Protokolle der Rechte {inThe} und im Admin-Portal löschen wir nach zwei Jahren. Die IP-Adresse im Protokoll des Admin-Portals entfernen wir schon nach 90 Tagen.",
+      "i8": "Links zum Bestätigen der E-Mail und zum Zurücksetzen des Passworts verfallen nach kurzer Zeit. Konten mit E-Mail und Passwort, deren Adresse nicht innert 24 Stunden bestätigt wurde, löschen wir.",
+      "i9": "Die anonyme Nutzungsstatistik bewahren wir zwei Jahre auf, die Stundenwerte zum Betrieb des Servers 90 Tage (danach nur noch als Tagessumme). Der Tag der letzten Nutzung wird mit dem Konto gelöscht.",
+      "i10": "Wir sichern die Datenbank jede Nacht und bewahren diese Sicherungen 14 Tage auf. Zusätzlich sichern wir sie vor jeder Aktualisierung der Software und behalten davon die letzten zehn, höchstens aber 40 Tage.",
+      "i11": "Zusätzlich legen wir jede Nacht eine verschlüsselte Kopie der Datenbank und der hochgeladenen Bilder in Google Drive ab (siehe Abschnitt 7). Davon behalten wir die Sicherungen der letzten sieben Tage, je eine pro Woche für vier Wochen und je eine pro Monat für sechs Monate. Ältere Sicherungen werden gelöscht und nach weiteren 30 Tagen endgültig aus dem Papierkorb entfernt.",
+      "i12": "Ebenfalls jede Nacht legen wir eine verschlüsselte Kopie der Datenbank bei Infomaniak in der Schweiz ab (siehe Abschnitt 7). Davon behalten wir die Sicherungen der letzten 14 Tage, die Sonntage der letzten acht Wochen und die Monatsersten der letzten sechs Monate. Einmal im Monat spielen wir eine dieser Sicherungen probeweise in eine vorübergehende Datenbank auf unserem Server ein, um zu prüfen, ob sie sich wiederherstellen lässt; diese Datenbank wird gleich danach gelöscht.",
+      "i13": "Gelöschte Daten können in diesen Sicherungen noch enthalten sein, bis die jeweilige Sicherung gelöscht wird, also höchstens rund sieben Monate. Wir verwenden Sicherungen nur, um nach einem Fehler oder Ausfall den Betrieb wiederherzustellen."
+    },
+    "s9": {
+      "title": "9. Datensicherheit",
+      "p1": "Alle Verbindungen sind mit TLS (HTTPS) verschlüsselt. Passwörter speichern wir nur als Hash, das Anmelde-Cookie ist für Skripte nicht lesbar, Anmeldeversuche sind begrenzt, und die Datenbank ist im Netzwerk vom Internet getrennt. Zugriff auf die Server haben nur die verantwortlichen Personen des Betreibers. Eine absolute Sicherheit kann trotzdem niemand garantieren."
+    },
+    "s10": {
+      "title": "10. Kinder und Jugendliche",
+      "p1": "{inOrg} helfen auch Jugendliche mit. Wir bearbeiten ihre Daten nur im oben beschriebenen Umfang. Jugendliche unter 14 Jahren sollten ein Konto nur mit Einverständnis ihrer Eltern anlegen.",
+      "p2": "Bei Schichten mit Mindestalter prüft der Schichtplan nur das selbst angegebene Geburtsdatum. Ausweiskontrollen und den Jugendschutz vor Ort verantwortet das OK."
+    },
+    "s11": {
+      "title": "11. Deine Rechte",
+      "intro": "Im Rahmen des Datenschutzgesetzes hast du insbesondere das Recht,",
+      "i1": "Auskunft darüber zu verlangen, welche Daten wir über dich bearbeiten,",
+      "i2": "unrichtige Daten berichtigen zu lassen (vieles kannst du direkt im Profil ändern),",
+      "i3": "die Löschung deiner Daten zu verlangen oder einer Bearbeitung zu widersprechen,",
+      "i4": "deine Daten in einem gängigen elektronischen Format zu erhalten oder übertragen zu lassen, soweit sie auf deiner Zustimmung oder einem Vertrag beruhen.",
+      "download": "Deine Daten kannst du jederzeit selbst herunterladen: im Konto-Menü des Schichtplans unter «Meine Daten herunterladen» (als JSON-Datei).",
+      "contact": "Für alles andere schreib uns an die E-Mail-Adresse unter Punkt 1. Wir antworten innert 30 Tagen und können verlangen, dass du dich ausweist. Ausserdem kannst du dich beim Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten (EDÖB) beschweren: <edoeb>www.edoeb.admin.ch</edoeb>."
+    },
+    "s12": {
+      "title": "12. Änderungen",
+      "p1": "Wir passen diese Erklärung an, wenn sich die Plattform oder die Rechtslage ändert. Es gilt die jeweils hier veröffentlichte Fassung. Fragen zur Bedienung beantwortet das <help>Hilfe-Center</help>."
+    }
+  },
+  "terms": {
+    "title": "Nutzungsbedingungen",
+    "stand": "19. November 2026",
+    "term": {
+      "the": "{org, select, verein {der Verein} other {die {unit}}}",
+      "theCap": "{org, select, verein {Der Verein} other {Die {unit}}}",
+      "theAcc": "{org, select, verein {den Verein} other {die {unit}}}",
+      "aUnit": "{org, select, verein {einen Verein} other {eine {unit}}}",
+      "ofThe": "{org, select, verein {des Vereins} other {der {unit}}}",
+      "she": "{org, select, verein {er} other {sie}}",
+      "poss": "{org, select, verein {seine} other {ihre}}",
+      "onBehalf": "{org, select, verein {in seinem Auftrag} other {in ihrem Auftrag}}",
+      "byUnits": "{org, select, other {{units}}}",
+      "ofUnits": "{org, select, other {der {units}}}"
+    },
+    "intro": "Diese Bedingungen regeln die Nutzung des {name}s durch {byUnits} und ihre Planenden. Wer {aUnit} anlegt, stimmt ihnen im Namen {ofThe} zu. Für Helfende, die sich nur eintragen, gilt vor allem die <privacy>Datenschutzerklärung</privacy>.",
+    "s1": {
+      "title": "1. Angebot",
+      "p1": "Der {name} ist ein unabhängiges, ehrenamtliches Projekt.{notice} Die Nutzung ist kostenlos. Wir bemühen uns um einen zuverlässigen Betrieb, können aber keine bestimmte Verfügbarkeit zusagen. Funktionen können sich ändern oder wegfallen; grössere Änderungen kündigen wir rechtzeitig an."
+    },
+    "s2": {
+      "title": "2. Rollen: {the} und wir",
+      "p1": "{theCap} entscheidet selbst, welche Anlässe {she} anlegt, welche Angaben {she} von Helfenden verlangt und wen {she} einteilt. Für diese Personendaten ist {the} datenschutzrechtlich verantwortlich. Wir bearbeiten sie {onBehalf} (Auftragsbearbeitung nach Art. 9 DSG). Für Konten, Anmeldung, Sicherheit und die anonyme Nutzungsstatistik sind wir selbst verantwortlich."
+    },
+    "s3": {
+      "title": "3. Auftragsbearbeitung",
+      "intro": "Für die Daten, die wir im Auftrag {ofThe} bearbeiten, gilt:",
+      "i1": "Wir bearbeiten sie nur, um den Schichtplan bereitzustellen, und nicht für eigene Zwecke.",
+      "i2": "Wir schützen sie mit angemessenen technischen und organisatorischen Massnahmen (siehe <p9>Datenschutzerklärung, Abschnitt 9</p9>).",
+      "i3": "Wir setzen nur die Dienstleister ein, die in der <p7>Datenschutzerklärung, Abschnitt 7</p7> genannt sind. Neue Dienstleister nehmen wir dort auf, bevor wir sie einsetzen.",
+      "i4": "Zugriff haben nur die wenigen Personen, die den Schichtplan betreiben; sie sind zur Vertraulichkeit verpflichtet.",
+      "i5": "Wir unterstützen {theAcc}, wenn jemand Auskunft, Berichtigung oder Löschung verlangt.",
+      "i6": "Erfahren wir von einer Verletzung der Datensicherheit, die die Daten {ofThe} betrifft, informieren wir {theAcc} so rasch wie möglich.",
+      "i7": "Löscht {the} Anlässe oder wird {she} aufgelöst, löschen wir die Daten nach den Fristen in der <p8>Datenschutzerklärung, Abschnitt 8</p8>, auch aus den Sicherungen."
+    },
+    "s4": {
+      "title": "4. Pflichten der Planenden",
+      "i1": "Erfragt nur Angaben, die ihr für den Anlass wirklich braucht, und wählt für Antworten eine kurze Löschfrist.",
+      "i2": "Gesundheitsangaben (z. B. Allergien) nur über Fragen, die als «Gesundheitsangaben» markiert sind. Dann willigen die Helfenden ausdrücklich ein.",
+      "i3": "Wenn ihr Personen ohne eigenes Konto von Hand eintragt, informiert sie darüber und darüber, wofür ihr ihre Angaben braucht.",
+      "i4": "Exportierte Listen (PDF, Excel) bewahrt ihr sicher auf und löscht sie nach dem Anlass.",
+      "i5": "Ladet keine Bilder von erkennbaren Personen ohne deren Einverständnis hoch und keine Inhalte, an denen ihr keine Rechte habt.",
+      "i6": "Haltet eure Zugänge geheim und gebt Rechte nur Personen, die sie brauchen.",
+      "i7": "Bei Schichten mit Mindestalter (z. B. Bar ab 18) prüft der Schichtplan nur das selbst angegebene Geburtsdatum. Ausweiskontrollen und der Jugendschutz vor Ort bleiben Sache des OK."
+    },
+    "s5": {
+      "title": "5. Missbrauch",
+      "p1": "Der Schichtplan dient der Organisation von Helfereinsätzen. Bei Missbrauch, etwa Spam, rechtswidrigen Inhalten oder Angriffen auf die Plattform, können wir Inhalte entfernen und Konten oder {units} sperren oder löschen."
+    },
+    "s6": {
+      "title": "6. Haftung",
+      "p1": "Wir stellen den Schichtplan unentgeltlich zur Verfügung. Soweit das Gesetz es zulässt, haften wir nicht für Schäden aus der Nutzung oder aus Ausfällen, etwa für verpasste Schichten oder verlorene Daten. Für Vorsatz und grobe Fahrlässigkeit haften wir nach Gesetz. Bewahrt wichtige Listen zusätzlich selbst auf (z. B. als PDF)."
+    },
+    "s7": {
+      "title": "7. Ende der Nutzung",
+      "p1": "{theCap} kann den Schichtplan jederzeit nicht mehr nutzen und {poss} Anlässe löschen. Möchte {she} {theAcc} ganz entfernen, genügt eine Nachricht an die Kontaktadresse im <imprint>Impressum</imprint>."
+    },
+    "s8": {
+      "title": "8. Änderungen und anwendbares Recht",
+      "p1": "Ändern sich diese Bedingungen wesentlich, informieren wir die Leitungen {ofUnits} vorher. Es gilt Schweizer Recht."
+    }
+  },
+  "imprint": {
+    "title": "Impressum",
+    "term": {
+      "theUnits": "{org, select, other {die {units}}}"
+    },
+    "operation": {
+      "title": "Betrieb und Kontakt",
+      "p1": "Der {name} ist ein unabhängiges, ehrenamtliches und nicht kommerzielles Projekt.{notice}"
+    },
+    "source": {
+      "title": "Quellcode",
+      "p1": "Der Quellcode ist öffentlich auf <github>GitHub</github> und steht unter der Lizenz GNU AGPL v3."
+    },
+    "more": {
+      "title": "Weiteres",
+      "p1": "Wie wir mit Personendaten umgehen, steht in der <privacy>Datenschutzerklärung</privacy>. Für {theUnits} gelten die <terms>Nutzungsbedingungen</terms>."
+    }
   },
   "profile": {
     "loadError": "Profil konnte nicht geladen werden.",

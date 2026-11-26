@@ -215,8 +215,298 @@
     "privacy": "Protezione dei dati",
     "terms": "Condizioni di utilizzo",
     "imprint": "Note legali",
-    "originalTitle": "Versione in lingua originale",
-    "originalText": "Fa fede la versione originale in lingua tedesca. Questa pagina sarà presto disponibile con una traduzione giuridica verificata."
+    "translationTitle": "Traduzione",
+    "translationText": "Questa traduzione serve a facilitare la comprensione. Fa fede la versione originale tedesca, che puoi raggiungere tramite il selettore della lingua (Deutsch)."
+  },
+  "privacy": {
+    "title": "Protezione dei dati",
+    "stand": "19 novembre 2026",
+    "intro": "La presente informativa descrive quali dati personali trattiamo nella gestione di {name}, per quale scopo lo facciamo e quali diritti hai. Si basa sulla legge federale svizzera sulla protezione dei dati (LPD) e sull’ordinanza sulla protezione dei dati (OPDa).",
+    "term": {
+      "the": "{org, select, jubla {il {unit}} verein {l’{unit}} other {la {unit}}}",
+      "ofThe": "{org, select, jubla {del {unit}} verein {dell’{unit}} other {della {unit}}}",
+      "inThe": "{org, select, jubla {nel {unit}} verein {nell’{unit}} other {nella {unit}}}",
+      "respective": "{org, select, jubla {il {unit} interessato} verein {l’{unit} interessata} other {la {unit} interessata}}",
+      "inConcerned": "{org, select, jubla {nel {unit} interessato} verein {nell’{unit} interessata} other {nella {unit} interessata}}",
+      "ofYourUnit": "{org, select, jubla {del tuo {unit}} verein {della tua {unit}} other {della tua {unit}}}",
+      "ofAUnit": "{org, select, jubla {di un {unit}} verein {di un’{unit}} other {di una {unit}}}",
+      "inOrg": "{org, select, cevi {Nel Cevi} pfadi {Negli scout} jubla {Nella Jubla} other {Nelle associazioni}}",
+      "ofUnits": "{org, select, jubla {dei {units}} other {delle {units}}}",
+      "theUnits": "{org, select, jubla {I {units}} other {Le {units}}}",
+      "toUnits": "{org, select, jubla {ai {units}} other {alle {units}}}",
+      "theGroups": "{org, select, cevi {i {groups}} jubla {i {groups}} other {le {groups}}}",
+      "homeUnit": "{unitLower} di appartenenza",
+      "fedUnit": "{org, select, cevi {gruppo locale} other {indicazione {ofYourUnit}}}",
+      "fedStructure": "{org, select, cevi {quale gruppo appartiene a quale Jungschar e a quale gruppo locale} other {quale gruppo appartiene a quale gruppo di livello superiore}}",
+      "loginMethods": "{org, select, verein {password} other {{db} o password}}"
+    },
+    "fed": {
+      "operator": "{org, select, cevi {dall’associazione mantello Cevi Svizzera} pfadi {dal Movimento Scout Svizzero (MSS)} jubla {da Jungwacht Blauring Svizzera} other {}}",
+      "where": "{org, select, cevi {, server in Svizzera} other {}}",
+      "policyLabel": "{org, select, cevi {Informativa sulla protezione dei dati di Cevi Svizzera} pfadi {Protezione dei dati del Movimento Scout Svizzero} jubla {Informativa sulla protezione dei dati di Jungwacht Blauring Svizzera} other {}}"
+    },
+    "contact": {
+      "show": "Mostra i dati di contatto",
+      "loading": "Caricamento …",
+      "noscript": "Per proteggerli dalla lettura automatica, i dati di contatto vengono caricati solo con un clic. Per questo serve JavaScript.",
+      "error": "Non è stato possibile caricare i dati di contatto.",
+      "missing": "I dati di contatto non sono ancora stati inseriti.",
+      "email": "E-mail:"
+    },
+    "table": {
+      "name": "Nome",
+      "purpose": "Scopo",
+      "duration": "Durata"
+    },
+    "s1": {
+      "title": "1. Titolare del trattamento",
+      "p1": "Titolare del trattamento dei dati su questa piattaforma è:",
+      "p2": "Per domande sulla protezione dei dati e per esercitare i tuoi diritti puoi contattarci a questo indirizzo."
+    },
+    "s2": {
+      "title": "2. Ambito di applicazione",
+      "intro": "La presente informativa si applica a tutte le parti di {name}:",
+      "landing": "la landing page <b>{domain}</b> con la pagina del profilo,",
+      "login": "il login centrale <b>login.{domain}</b>,",
+      "plans": "i piani turni {ofUnits} <b>{subdomain}</b>,",
+      "help": "il centro assistenza <b>hilfe.{domain}</b>,",
+      "admin": "il portale di amministrazione <b>admin.cevi-schichtplan.ch</b>, usato in comune per tutte e quattro le offerte e accessibile solo agli amministratori e alle amministratrici globali.",
+      "domainsIntro": "La stessa piattaforma è disponibile con quattro domini:",
+      "domainsOutro": ". La presente informativa si applica a tutti e quattro.",
+      "roles": "{theUnits} e i comitati organizzativi (CO) dei loro eventi decidono autonomamente quali eventi creare, quali informazioni richiedere ai volontari e chi assegnare ai turni. Per queste decisioni e per l’uso dei dati al di fuori della piattaforma (p. es. un elenco di volontari esportato) è responsabile {respective}. Trattiamo questi dati per loro conto; le regole in merito sono contenute nelle <terms>condizioni di utilizzo</terms>."
+    },
+    "s3": {
+      "title": "3. Quali dati trattiamo",
+      "account": {
+        "title": "Account e profilo",
+        "intro": "A seconda del tipo di accesso salviamo:",
+        "email": "<b>E-mail e password:</b> indirizzo e-mail, password (solo come hash bcrypt, mai in chiaro), nome e cognome, e se l’indirizzo e-mail è confermato. Chi attiva l’autenticazione a due fattori ha inoltre una chiave segreta (salvata in forma cifrata) e codici di recupero (solo come hash).",
+        "fed": "<b>{db}:</b> ID personale {db}, nome e cognome, {nickname}, e-mail, data di nascita, {fedUnit} nonché i tuoi ruoli in {db}, nella misura in cui ne ricaviamo {the}, {theGroups} e un’eventuale {lead}. A tal fine, al login leggiamo anche la struttura dei gruppi relativa ai tuoi ruoli ({fedStructure}). Dei tuoi ruoli salviamo solo il tipo di ruolo e il gruppo, nello stato dell’ultimo login (nessuna cronologia). Servono a capire perché hai un diritto oppure no e sono visibili solo agli amministratori globali del piano turni. Il tuo indirizzo postale da {db} non lo prendiamo né lo salviamo.",
+        "nickname": "<b>{Nickname} (senza password):</b> {nickname} e data di nascita, inoltre, facoltativamente, nome e cognome, numero di cellulare e {groups}.",
+        "optional": "Si aggiungono, facoltativamente o su richiesta di un evento: numero di cellulare, data di nascita, {homeUnit} e {groups} (con il ruolo di responsabile o partecipante) nonché l’impostazione che indica se vuoi ricevere promemoria dei turni.",
+        "noAddress": "Secondo il principio della minimizzazione dei dati, nel tuo profilo <b>non salviamo alcun indirizzo postale</b>. Se un CO ne ha bisogno per un evento (p. es. per una spedizione), lo chiede nell’ambito dell’evento; la risposta appartiene solo a quell’evento e viene eliminata allo scadere del termine indicato (vedi sezione 8)."
+      },
+      "planning": {
+        "title": "Pianificazione dei turni",
+        "i1": "iscrizioni a turni e mansioni, con data e ora ed eventuale nota,",
+        "i2": "risposte alle domande che un CO pone per il proprio evento (p. es. indirizzo, allergie, contatto di emergenza o taglia della maglietta). Al momento della compilazione, accanto a ogni domanda è indicato quando la risposta viene eliminata. Le domande sulla salute (p. es. allergie) sono contrassegnate come tali: questi dati particolarmente degni di protezione li trattiamo solo con il tuo consenso esplicito, che salviamo con data e ora, e vengono sempre eliminati dopo un termine,",
+        "i3": "cancellazioni da un evento con motivo facoltativo. Ti preghiamo di non indicare lì informazioni sulla salute: basta un motivo generico come «impedito»,",
+        "i4": "ruoli e diritti {inThe} e nel CO ({lead}, singoli diritti come «Creare eventi», direzione del CO, membro del CO) nonché un registro che indica chi ha concesso quali diritti a chi,",
+        "i5": "persone che un CO inserisce a mano (nome, eventualmente e-mail e telefono), anche senza un account proprio,",
+        "i6": "link di accesso agli eventi e chi li ha utilizzati,",
+        "i7": "un registro delle iscrizioni e cancellazioni, dei subentri e della presenza (chi, quando, da chi),",
+        "i8": "messaggi che il CO invia ai volontari tramite il piano turni, con la cronologia di chi li ha ricevuti,",
+        "i9": "buoni pasto e bevande: quali buoni sono collegati alla tua iscrizione e quando sono stati riscossi."
+      },
+      "content": {
+        "title": "Contenuti degli organizzatori",
+        "text": "Loghi, banner e immagini caricati dagli organizzatori, nonché i testi relativi {toUnits}, agli eventi, ai turni e ai modelli. Ti preghiamo di non caricare immagini in cui sono riconoscibili persone senza il loro consenso."
+      },
+      "tech": {
+        "title": "Dati tecnici",
+        "p1": "A ogni accesso i nostri server elaborano le informazioni tecnicamente necessarie: indirizzo IP, data e ora, indirizzo richiamato, metodo HTTP, codice di stato, volume di dati trasferito, pagina visitata in precedenza (referrer) e identificativo del tuo browser (user agent). Utilizziamo questi registri solo per la ricerca di errori e per la protezione da abusi. Il registro del server web (reverse proxy) viene sostituito ogni giorno e cancellato dopo 14 giorni. I registri dell’applicazione hanno dimensioni limitate e vengono cancellati al più tardi al successivo aggiornamento del software. Per la protezione dal tentativo di indovinare le password contiamo i tentativi falliti per indirizzo IP e per e-mail o {nickname} solo nella memoria di lavoro; queste voci valgono al massimo un’ora e vanno perse a ogni riavvio.",
+        "p2": "Per la protezione dagli attacchi, un web application firewall (Coraza) e il sistema di rilevamento degli attacchi CrowdSec controllano automaticamente sul nostro server ogni accesso alla ricerca di schemi di attacco noti. I dati restano sul nostro server e vengono conservati per al massimo 14 giorni. Se rileviamo un tentativo di attacco, blocchiamo temporaneamente l’indirizzo IP (vedi sezione 7)."
+      },
+      "stats": {
+        "title": "Statistica d’uso anonima",
+        "p1": "Per vedere se il piano turni funziona bene e quali funzioni vengono usate, contiamo gli utilizzi come <b>totali giornalieri</b>, p. es. «12 accessi con {db}», «3 piani turni in PDF stampati» o «40 consultazioni dell’aiuto per l’iscrizione». Vengono salvati solo il tipo di utilizzo, una suddivisione fissa (p. es. il tipo di accesso), {the} e il giorno. Per la gestione contiamo inoltre, ogni ora, quante richieste ha ricevuto una funzione del server, quanto tempo ha richiesto la risposta e se si sono verificati errori; salviamo solo lo schema dell’indirizzo (p. es. «visualizzare un evento»), mai l’indirizzo reale con i nomi degli eventi, i codici di accesso o di check-in. Allo stesso modo il server conta quanto spesso vengono caricate le pagine, come totale giornaliero per area (pagina iniziale, login, pagine {ofThe}). Poiché in questo modo non viene salvato nulla su di te, ciò vale anche se hai attivato «non tracciare».",
+        "p2": "In questo contesto <b>non</b> salviamo alcun indirizzo IP, alcun identificativo del tuo browser o dispositivo, alcun cookie e nulla che possa essere attribuito a una persona. Il tuo browser segnala solo utilizzi non visibili sul server (p. es. un’esportazione in PDF, la dimensione della finestra come «cellulare», «tablet» o «computer» e se la visualizzazione scura è attiva). Se nel tuo browser hai attivato «non tracciare» (Global Privacy Control o Do Not Track), non invia alcuna segnalazione di questo tipo.",
+        "p3": "Per ogni account salviamo soltanto l’<b>ultimo giorno</b> in cui hai usato il piano turni da connesso/a (solo la data, senza l’ora). Da questo ricaviamo quante persone sono attive per giorno, settimana e mese e riconosciamo gli account inutilizzati da molto tempo."
+      },
+      "web": {
+        "title": "Statistica web",
+        "text": "Per vedere quali pagine vengono visitate e con quale frequenza, utilizziamo inoltre <b>Umami</b>, un software di statistica che gestiamo noi stessi sul nostro server. Nessun dato viene trasmesso a terzi. Vengono rilevati la pagina richiamata con il titolo (senza parametri, quindi senza codici o link provenienti da e-mail), la pagina visitata in precedenza, il browser, il sistema operativo, il tipo di dispositivo, la dimensione dello schermo, la lingua e il Paese ricavato dall’indirizzo IP. L’indirizzo IP in sé non viene salvato da Umami. Per contare le visite, Umami ricava dall’indirizzo IP e dal browser un valore di controllo che cambia ogni mese e non consente di risalire a te. Umami non imposta cookie. Se nel tuo browser hai attivato «non tracciare», non viene rilevato nulla."
+      }
+    },
+    "s4": {
+      "title": "4. Per quale scopo trattiamo i dati",
+      "i1": "creare l’account, accesso (single sign-on su tutti i sottodomini) e protezione dell’account,",
+      "i2": "pianificare i turni, assegnare i volontari e svolgere gli eventi,",
+      "i3": "verificare l’accesso agli eventi (p. es. solo membri {ofThe}, solo responsabili, oppure in base a {groups}),",
+      "i4": "verificare l’età minima: per i turni con limite di età (p. es. bar dai 18 anni) verifichiamo la tua età in base alla data di nascita,",
+      "i5": "contatto tra CO e volontari, ad esempio in caso di modifiche all’ultimo minuto,",
+      "i6": "e-mail e, se li consenti, notifiche push: conferma dell’indirizzo e-mail, reimpostazione della password, promemoria prima dei tuoi turni, messaggi del CO e avvisi su subentri e buoni (disattivabili singolarmente nel profilo),",
+      "i7": "gestione, sicurezza ed eliminazione degli errori della piattaforma,",
+      "i8": "statistica d’uso anonima, per migliorare il piano turni (vedi sezione 3).",
+      "closing": "Non utilizziamo i dati per pubblicità, non li vendiamo e non creiamo profili del tuo comportamento."
+    },
+    "s5": {
+      "title": "5. Chi vede i tuoi dati",
+      "i1": "<b>Gli altri volontari</b> di un evento vedono nel piano turni chi è iscritto a quale turno ({nickname} o nome). Chi non è autorizzato per un evento vede il piano senza nomi.",
+      "i2": "<b>CO, {lead} e chi ha il diritto «Vedere tutti gli eventi»</b> {inConcerned} vedono inoltre i dati di contatto (e-mail e telefono, se disponibili), l’età nonché le risposte e le cancellazioni relative ai loro eventi.",
+      "i3": "<b>Gli amministratori e le amministratrici globali</b> del gestore vedono nel portale di amministrazione tutti gli account di tutte e quattro le offerte e tutte le sezioni, i gruppi e le associazioni (profilo, tipo di accesso, appartenenza, ruoli, iscrizioni e giorno dell’ultimo utilizzo) nonché la statistica d’uso anonima e possono eliminare account. Questo accesso è limitato a poche persone e serve all’assistenza e al contrasto degli abusi."
+    },
+    "s6": {
+      "title": "6. Cookie e memoria locale",
+      "p1": "Utilizziamo <b>solo cookie tecnicamente necessari</b>. Non ci sono cookie di analisi, di tracciamento o pubblicitari né integrazioni di servizi come Google Analytics, Facebook o YouTube. I caratteri sono ospitati da noi: all’apertura non viene quindi stabilita alcuna connessione con Google. La statistica d’uso anonima (sezione 3) funziona senza cookie e senza memoria locale{umami}.",
+      "umami": ", così come la statistica web con Umami, che gestiamo noi stessi",
+      "dur": {
+        "token": "30 giorni o fino alla disconnessione",
+        "min10": "10 minuti",
+        "min15": "15 minuti",
+        "days14": "14 giorni",
+        "reset": "finché non lo reimposti",
+        "delete": "finché non lo elimini",
+        "logout": "fino alla disconnessione"
+      },
+      "cookie": {
+        "token": "Accesso (token di sessione firmato, non leggibile dagli script), valido per tutti i sottodomini di {domain}",
+        "oauth": "Protezione dell’accesso tramite {db} dalla falsificazione",
+        "link": "Conferma quando un account esistente viene collegato a {db}",
+        "mfa": "Accesso iniziato con codice a due fattori (solo se attivato)",
+        "pwa": "Ricorda che l’avviso di installazione dell’app è stato chiuso (per tutti i sottodomini)"
+      },
+      "localIntro": "Nella memoria locale del tuo browser (Local Storage) salviamo:",
+      "local": {
+        "theme": "Tema colori scelto (chiaro/scuro)",
+        "eventView": "Visualizzazione scelta di un evento",
+        "unitTheme": "Tema colori nel piano turni {ofAUnit}",
+        "pwa": "Ricorda che l’avviso di installazione dell’app («Aggiungi alla schermata Home») è stato chiuso",
+        "shiftView": "Visualizzazione scelta dei turni nell’area CO",
+        "commands": "Comandi usati più di recente della ricerca rapida",
+        "hint": "Ricorda che un avviso è stato chiuso",
+        "offlineOwner": "Identificativo del tuo account, affinché i dati offline vengano eliminati al cambio di persona",
+        "lastSync": "Momento dell’ultima sincronizzazione per la visualizzazione offline",
+        "staffPin": "PIN per la riscossione dei buoni al punto di distribuzione (solo sui dispositivi del CO)",
+        "orgFilter": "Federazione scelta nel portale di amministrazione (solo amministratori globali)"
+      },
+      "session": "Nella memoria di sessione (Session Storage), <code>schichtplan.pwa_dismissed_session</code> ricorda fino alla chiusura della scheda che l’avviso di installazione è stato chiuso.",
+      "offline": "Perché tu possa vedere i tuoi turni anche senza Internet, il piano turni salva una copia dei tuoi eventi, dei tuoi turni e del tuo profilo nella memoria del browser (cache offline). Viene eliminata alla disconnessione e anche quando sullo stesso dispositivo si connette un’altra persona.",
+      "outro": "Queste voci non lasciano il tuo browser. Puoi eliminare i cookie e il Local Storage nelle impostazioni del browser; senza il cookie <code>token</code> non è possibile accedere."
+    },
+    "s7": {
+      "title": "7. Fornitori di servizi e comunicazione dei dati",
+      "intro": "Per la gestione collaboriamo con i seguenti fornitori di servizi:",
+      "hosting": "<b>Hosting:</b> Avoro, un’offerta di dataforest GmbH, Kriftel, Germania. Il server si trova in un centro dati a Francoforte sul Meno. Qui funzionano tutte le applicazioni e il database con i relativi backup.",
+      "google": "<b>Google Drive</b> (Google Ireland Limited, Dublino, Irlanda): luogo di conservazione di una copia di backup aggiuntiva al di fuori del centro dati. I backup vengono già cifrati sul nostro server prima di essere caricati. La chiave per decifrarli ce l’abbiamo solo noi, non Google. Google non può quindi leggerne il contenuto.",
+      "infomaniak": "<b>Infomaniak Network SA</b>, Ginevra, Svizzera: invio delle e-mail (SMTP), gestione dei domini (DNS) e luogo di conservazione di una copia di backup cifrata del database in Svizzera. Come per Google Drive, cifriamo il backup prima del caricamento; Infomaniak non può leggerlo.",
+      "fed": "<b>{authName}</b>, gestito {fedOperator}{fedWhere}: se accedi tramite {db}, riceviamo da lì, con il tuo consenso, il tuo profilo con e-mail, nome e ruoli. Non scriviamo nulla in {db}. Per i dati in {db} vale l’informativa sulla protezione dei dati della federazione (<fedlink>{policyLabel}</fedlink>).",
+      "crowdsec": "<b>CrowdSec SAS</b>, Fontenay-aux-Roses, Francia: solo in caso di attacco rilevato comunichiamo a CrowdSec l’indirizzo IP dell’attaccante, il momento e il tipo di attacco, affinché gli elenchi di blocco condivisi restino aggiornati. I dati dei normali visitatori non lasciano il nostro server (<crowdsec>informativa sulla protezione dei dati di CrowdSec</crowdsec>).",
+      "letsencrypt": "<b>Let’s Encrypt</b> (ISRG, USA): rilascia i certificati TLS. Vengono trasmessi solo nomi di dominio, nessun dato personale.",
+      "push": "<b>Servizi push dei browser</b> (Google Firebase Cloud Messaging, Mozilla, Apple, Microsoft): solo se attivi le notifiche push, il nostro server le invia tramite il servizio push del tuo browser. Il contenuto è cifrato end-to-end; il servizio vede solo l’indirizzo del dispositivo generato a tal fine dal tuo browser e il momento. Puoi disattivarle nel profilo o nelle impostazioni del browser.",
+      "discord": "<b>Discord</b> (Discord Inc., USA): in caso di gravi guasti, il server invia un messaggio di allarme ai gestori. Contiene solo indicazioni tecniche (tipo di errore, funzione del server, momento), nessun nome, indirizzo e-mail, numero di telefono o indirizzo reale degli eventi.",
+      "other": "Al di là di questo, comunichiamo dati personali solo se siamo obbligati per legge.",
+      "transfer": "A causa dell’hosting, i tuoi dati vengono conservati in Germania. Secondo l’elenco del Consiglio federale (allegato 1 dell’ordinanza sulla protezione dei dati), la Germania offre una protezione dei dati adeguata, così come l’Irlanda. Google può conservare la copia di backup cifrata anche in centri dati al di fuori dell’Europa, ad esempio negli USA; lì si trovano solo dati cifrati, illeggibili senza la nostra chiave. Let’s Encrypt e Discord, negli USA, non ricevono alcun dato personale. I servizi push possono gestire i loro server anche al di fuori dell’Europa; non vedono alcun contenuto."
+    },
+    "s8": {
+      "title": "8. Per quanto tempo conserviamo i dati",
+      "i1": "Conserviamo i dati dell’account finché il tuo account esiste. Con {loginMethods} puoi eliminare il tuo account in qualsiasi momento (profilo su {domain} o menu dell’account nel piano turni). In tal caso vengono eliminati anche le tue iscrizioni, i tuoi ruoli e le tue risposte. Nei registri e nella cronologia dei messaggi sostituiamo il tuo nome con «Gelöschte Person» («persona eliminata»).",
+      "i2": "I profili che accedono solo tramite il {nickname} possono richiedere l’eliminazione nel menu dell’account («Richiedi l’eliminazione»); li eliminiamo poi entro 30 giorni.",
+      "i3": "Gli account non utilizzati per 24 mesi vengono eliminati automaticamente. Se abbiamo un indirizzo e-mail, inviamo prima un avviso; se accedi entro 30 giorni, l’account resta. Le tue iscrizioni agli eventi restano così, senza nome e senza dati di contatto, come «Gelöschte Person» («persona eliminata»), affinché la pianificazione dell’evento resti corretta. Sono esclusi l’unica direzione {ofThe} e gli amministratori e le amministratrici globali.",
+      "i4": "Gli eventi con le relative iscrizioni restano finché {the} non li elimina.",
+      "i5": "Eliminiamo automaticamente le risposte alle domande di un evento allo scadere del termine che il CO stabilisce per ogni domanda: subito dopo l’evento oppure 10, 30, 90 o 365 giorni dopo (a partire dalla fine dell’ultimo turno). Il termine è indicato accanto alla domanda al momento della compilazione. Solo se il CO sceglie espressamente «Nie löschen» («non eliminare mai») le risposte restano fino all’eliminazione dell’evento o del tuo account.",
+      "i6": "Eliminiamo il registro delle iscrizioni e cancellazioni e la cronologia dei messaggi del CO un anno dopo la fine dell’evento.",
+      "i7": "Eliminiamo i registri dei diritti {inThe} e nel portale di amministrazione dopo due anni. L’indirizzo IP nel registro del portale di amministrazione lo rimuoviamo già dopo 90 giorni.",
+      "i8": "I link per confermare l’e-mail e per reimpostare la password scadono dopo breve tempo. Eliminiamo gli account con e-mail e password il cui indirizzo non è stato confermato entro 24 ore.",
+      "i9": "Conserviamo la statistica d’uso anonima per due anni, i valori orari relativi alla gestione del server per 90 giorni (poi solo come totale giornaliero). Il giorno dell’ultimo utilizzo viene eliminato insieme all’account.",
+      "i10": "Eseguiamo il backup del database ogni notte e conserviamo questi backup per 14 giorni. Inoltre lo salviamo prima di ogni aggiornamento del software e ne conserviamo gli ultimi dieci, ma al massimo per 40 giorni.",
+      "i11": "Inoltre, ogni notte depositiamo una copia cifrata del database e delle immagini caricate su Google Drive (vedi sezione 7). Ne conserviamo i backup degli ultimi sette giorni, uno a settimana per quattro settimane e uno al mese per sei mesi. I backup più vecchi vengono eliminati e, dopo altri 30 giorni, rimossi definitivamente dal cestino.",
+      "i12": "Anche ogni notte depositiamo una copia cifrata del database presso Infomaniak in Svizzera (vedi sezione 7). Ne conserviamo i backup degli ultimi 14 giorni, le domeniche delle ultime otto settimane e i primi giorni del mese degli ultimi sei mesi. Una volta al mese ripristiniamo a titolo di prova uno di questi backup in un database temporaneo sul nostro server, per verificare che sia ripristinabile; questo database viene eliminato subito dopo.",
+      "i13": "I dati eliminati possono essere ancora contenuti in questi backup fino all’eliminazione del backup in questione, quindi per al massimo circa sette mesi. Utilizziamo i backup solo per ripristinare il funzionamento dopo un errore o un’interruzione."
+    },
+    "s9": {
+      "title": "9. Sicurezza dei dati",
+      "p1": "Tutte le connessioni sono cifrate con TLS (HTTPS). Salviamo le password solo come hash, il cookie di accesso non è leggibile dagli script, i tentativi di accesso sono limitati e il database è separato da Internet a livello di rete. Hanno accesso ai server solo le persone responsabili del gestore. Nessuno può comunque garantire una sicurezza assoluta."
+    },
+    "s10": {
+      "title": "10. Bambini e adolescenti",
+      "p1": "{inOrg} collaborano anche adolescenti. Trattiamo i loro dati solo nella misura descritta sopra. Gli adolescenti sotto i 14 anni dovrebbero creare un account solo con il consenso dei genitori.",
+      "p2": "Per i turni con età minima, il piano turni verifica solo la data di nascita indicata dalla persona stessa. I controlli d’identità e la protezione dei minori sul posto sono responsabilità del CO."
+    },
+    "s11": {
+      "title": "11. I tuoi diritti",
+      "intro": "Nell’ambito della legge sulla protezione dei dati hai in particolare il diritto di:",
+      "i1": "chiedere quali dati trattiamo su di te,",
+      "i2": "far rettificare i dati inesatti (molte cose puoi modificarle direttamente nel profilo),",
+      "i3": "chiedere l’eliminazione dei tuoi dati od opporti a un trattamento,",
+      "i4": "ricevere i tuoi dati in un formato elettronico di uso comune o farli trasmettere, nella misura in cui si basano sul tuo consenso o su un contratto.",
+      "download": "Puoi scaricare i tuoi dati in qualsiasi momento da solo/a: nel menu dell’account del piano turni, alla voce «Scarica i miei dati» (come file JSON).",
+      "contact": "Per tutto il resto scrivici all’indirizzo e-mail indicato al punto 1. Rispondiamo entro 30 giorni e possiamo chiedere che tu ti identifichi. Puoi inoltre presentare reclamo all’Incaricato federale della protezione dei dati e della trasparenza (IFPDT): <edoeb>www.edoeb.admin.ch</edoeb>."
+    },
+    "s12": {
+      "title": "12. Modifiche",
+      "p1": "Adeguiamo la presente informativa quando cambiano la piattaforma o la situazione giuridica. Vale la versione di volta in volta pubblicata qui. Il <help>centro assistenza</help> risponde alle domande sull’utilizzo."
+    }
+  },
+  "terms": {
+    "title": "Condizioni di utilizzo",
+    "stand": "19 novembre 2026",
+    "term": {
+      "the": "{org, select, jubla {il {unit}} verein {l’{unit}} other {la {unit}}}",
+      "theCap": "{org, select, jubla {Il {unit}} verein {L’{unit}} other {La {unit}}}",
+      "theAcc": "{org, select, jubla {il {unit}} verein {l’{unit}} other {la {unit}}}",
+      "aUnit": "{org, select, jubla {un {unit}} verein {un’{unit}} other {una {unit}}}",
+      "ofThe": "{org, select, jubla {del {unit}} verein {dell’{unit}} other {della {unit}}}",
+      "she": "{org, select, jubla {esso} other {essa}}",
+      "poss": "{org, select, other {i suoi}}",
+      "onBehalf": "{org, select, other {per suo conto}}",
+      "byUnits": "{org, select, jubla {da parte dei {units}} other {da parte delle {units}}}",
+      "ofUnits": "{org, select, jubla {dei {units}} other {delle {units}}}"
+    },
+    "intro": "Le presenti condizioni disciplinano l’utilizzo di {name} {byUnits} e dei loro organizzatori. Chi crea {aUnit} le accetta a nome {ofThe}. Per i volontari che si limitano a iscriversi vale soprattutto l’<privacy>informativa sulla protezione dei dati</privacy>.",
+    "s1": {
+      "title": "1. Offerta",
+      "p1": "{name} è un progetto indipendente e a titolo volontario.{notice} L’utilizzo è gratuito. Ci impegniamo a garantire un funzionamento affidabile, ma non possiamo promettere una disponibilità determinata. Le funzioni possono cambiare o venire meno; le modifiche più importanti le annunciamo per tempo."
+    },
+    "s2": {
+      "title": "2. Ruoli: {the} e noi",
+      "p1": "{theCap} decide autonomamente quali eventi {she} crea, quali informazioni {she} richiede ai volontari e chi {she} assegna ai turni. Per questi dati personali, {the} è responsabile ai sensi della protezione dei dati. Noi li trattiamo {onBehalf} (trattamento su mandato ai sensi dell’art. 9 LPD). Per gli account, l’accesso, la sicurezza e la statistica d’uso anonima siamo noi stessi responsabili."
+    },
+    "s3": {
+      "title": "3. Trattamento su mandato",
+      "intro": "Per i dati che trattiamo per conto {ofThe} valgono le seguenti regole:",
+      "i1": "Li trattiamo solo per mettere a disposizione il piano turni e non per scopi propri.",
+      "i2": "Li proteggiamo con misure tecniche e organizzative adeguate (vedi <p9>informativa sulla protezione dei dati, sezione 9</p9>).",
+      "i3": "Ci avvaliamo solo dei fornitori di servizi indicati nell’<p7>informativa sulla protezione dei dati, sezione 7</p7>. I nuovi fornitori li aggiungiamo lì prima di utilizzarli.",
+      "i4": "Hanno accesso solo le poche persone che gestiscono il piano turni; sono tenute alla riservatezza.",
+      "i5": "Assistiamo {theAcc} quando qualcuno chiede l’accesso ai propri dati, la loro rettifica o la loro cancellazione.",
+      "i6": "Se veniamo a conoscenza di una violazione della sicurezza dei dati che riguarda i dati {ofThe}, informiamo {theAcc} il più rapidamente possibile.",
+      "i7": "Se {the} elimina eventi o se {she} cessa di esistere, eliminiamo i dati secondo i termini dell’<p8>informativa sulla protezione dei dati, sezione 8</p8>, anche dai backup."
+    },
+    "s4": {
+      "title": "4. Obblighi degli organizzatori",
+      "i1": "Chiedete solo le informazioni di cui avete davvero bisogno per l’evento e scegliete un termine di eliminazione breve per le risposte.",
+      "i2": "Raccogliete informazioni sulla salute (p. es. allergie) solo tramite domande contrassegnate come «Dati sanitari». I volontari vi acconsentono allora espressamente.",
+      "i3": "Se iscrivete a mano persone senza un account proprio, informatele di questo e di ciò per cui usate i loro dati.",
+      "i4": "Conservate in modo sicuro gli elenchi esportati (PDF, Excel) ed eliminateli dopo l’evento.",
+      "i5": "Non caricate immagini di persone riconoscibili senza il loro consenso né contenuti sui quali non avete diritti.",
+      "i6": "Tenete segreti i vostri accessi e concedete diritti solo alle persone che ne hanno bisogno.",
+      "i7": "Per i turni con età minima (p. es. bar dai 18 anni) il piano turni verifica solo la data di nascita indicata dalla persona stessa. I controlli d’identità e la protezione dei minori sul posto restano di competenza del CO."
+    },
+    "s5": {
+      "title": "5. Abuso",
+      "p1": "Il piano turni serve a organizzare gli impieghi dei volontari. In caso di abuso, ad esempio spam, contenuti illeciti o attacchi alla piattaforma, possiamo rimuovere contenuti e bloccare o eliminare account o {units}."
+    },
+    "s6": {
+      "title": "6. Responsabilità",
+      "p1": "Mettiamo a disposizione il piano turni gratuitamente. Nella misura consentita dalla legge, non rispondiamo dei danni derivanti dall’utilizzo o da interruzioni, ad esempio per turni mancati o dati persi. Rispondiamo per dolo e colpa grave secondo la legge. Conservate inoltre voi stessi gli elenchi importanti (p. es. in PDF)."
+    },
+    "s7": {
+      "title": "7. Fine dell’utilizzo",
+      "p1": "{theCap} può in qualsiasi momento smettere di usare il piano turni ed eliminare {poss} eventi. Se {she} desidera rimuovere completamente {theAcc}, basta un messaggio all’indirizzo di contatto riportato nelle <imprint>note legali</imprint>."
+    },
+    "s8": {
+      "title": "8. Modifiche e diritto applicabile",
+      "p1": "Se le presenti condizioni cambiano in modo sostanziale, informiamo prima le direzioni {ofUnits}. Si applica il diritto svizzero."
+    }
+  },
+  "imprint": {
+    "title": "Note legali",
+    "term": {
+      "theUnits": "{org, select, jubla {i {units}} other {le {units}}}"
+    },
+    "operation": {
+      "title": "Gestione e contatto",
+      "p1": "{name} è un progetto indipendente, a titolo volontario e senza scopo commerciale.{notice}"
+    },
+    "source": {
+      "title": "Codice sorgente",
+      "p1": "Il codice sorgente è pubblico su <github>GitHub</github> ed è rilasciato con la licenza GNU AGPL v3."
+    },
+    "more": {
+      "title": "Altre informazioni",
+      "p1": "Come trattiamo i dati personali è spiegato nell’<privacy>informativa sulla protezione dei dati</privacy>. Per {theUnits} valgono le <terms>condizioni di utilizzo</terms>."
+    }
   },
   "profile": {
     "loadError": "Impossibile caricare il profilo.",
