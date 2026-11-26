@@ -3,7 +3,7 @@ import { createRequestConfig } from '@schichtplan/ui/i18n/server';
 import { routing } from './routing';
 
 /**
- * Sprache und Texte pro Anfrage mit Sprach-Routing (Konzept: docs/internal/i18n-konzept.md, Schritt 9).
+ * Sprache und Texte pro Anfrage mit Sprach-Routing (Konzept: docs/public/i18n.md, Schritt 9).
  * Liest `requestLocale` aus der Route (z. B. 'fr' aus /fr/...) und initialisiert die Kataloge.
  */
 export default getRequestConfig(async ({ requestLocale }) => {

@@ -1,7 +1,7 @@
 /**
  * Sprache einer Anfrage in den Next.js-Apps (nur Server: Cookies, Header). Gleiche Prioritätenkette wie im
  * Backend (`resolveLocale` aus @schichtplan/i18n): Cookie → Browser → Standardsprache der Abteilung → Deutsch,
- * jeweils nur freigeschaltete Sprachen des Verbands. Konzept: docs/internal/i18n-konzept.md
+ * jeweils nur freigeschaltete Sprachen des Verbands. Konzept: docs/public/i18n.md
  *
  * Nutzung in `src/i18n/request.ts` jeder App:
  *   export default getRequestConfig(() => createRequestConfig({ namespaces: ['common'] }));

@@ -1,5 +1,5 @@
 /**
- * Sprache pro Anfrage und übersetzte Fehlermeldungen (Konzept: docs/internal/i18n-konzept.md).
+ * Sprache pro Anfrage und übersetzte Fehlermeldungen (Konzept: docs/public/i18n.md).
  *
  * - `request.locale` / `request.intlLocale`: Sprache nach derselben Kette wie in den Apps
  *   (Cookie `NEXT_LOCALE` → Browser → Standardsprache der Abteilung → Deutsch), nur freigeschaltete Sprachen.

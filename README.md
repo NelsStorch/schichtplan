@@ -155,35 +155,7 @@ schichtplan_v2/
 
 ## 💻 Lokale Entwicklung
 
-### Voraussetzungen
-
-* **Node.js** `>= 26` (siehe `.nvmrc`) und **npm** `>= 11`
-* **Docker** & **Docker Compose**
-
-### 1. Repository klonen & Abhängigkeiten installieren
-
-```bash
-git clone https://github.com/NelsStorch/schichtplan_v2.git
-cd schichtplan_v2
-
-# Abhängigkeiten für alle Workspaces installieren
-npm ci
-
-# Gemeinsame Pakete kompilieren
-npm run build --workspace=packages/shared
-```
-
-### 2. Entwicklungsumgebung mit Docker starten
-
-Am einfachsten startet man den vollständigen Stack inklusive PostgreSQL über Docker Compose:
-
-```bash
-# Lokale Container starten (Hot-Reload aktiviert)
-npm run dev:docker
-# oder: docker compose -f docker-compose.dev.yml up --build
-```
-
-Nach dem Start stehen folgende Dienste lokal zur Verfügung:
+Voraussetzungen und die Schritte zum Starten (klonen, installieren, `npm run dev:docker`, Datenbank und Demo-Daten) stehen in [CONTRIBUTING.md](CONTRIBUTING.md#setup). Nach dem Start laufen folgende Dienste lokal:
 
 | Dienst | Lokale URL |
 |---|---|
@@ -199,20 +171,7 @@ Nach dem Start stehen folgende Dienste lokal zur Verfügung:
 >
 > **Verbände lokal testen:** Enthält der Hostname die Verbandskennung (`pfadi`, `jubla`, `verein`), gilt dieser Verband, z. B. `pfadi.localhost:3001` (Startseite Pfadi) oder `demo.jubla.localhost:3000` (Schar auf Jubla). Ohne Kennung gilt Cevi.
 
-### 3. Datenbank initialisieren & Seeden
-
-```bash
-# Prisma-Migrationen anwenden
-npm run db:migrate
-
-# Neutrale Demo-Daten (Demo-Abteilung, Beispiel-Events & Schichten) einspielen
-npm run db:seed
-
-# Optional: Prisma Studio zur visuellen Datenprüfung öffnen
-npm run db:studio
-```
-
-*Der Seed legt neutrale Beispieldaten an (`admin@example.com` mit generiertem oder per `SEED_PASSWORD` gesetztem Kennwort).*
+*Der Seed (`npm run db:seed`) legt neutrale Beispieldaten an: eine Demo-Abteilung mit Anlässen und Schichten sowie `admin@example.com` mit generiertem oder per `SEED_PASSWORD` gesetztem Kennwort. `npm run db:studio` öffnet Prisma Studio.*
 
 ---
 

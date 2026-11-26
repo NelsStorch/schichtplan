@@ -1,6 +1,6 @@
 /**
  * Sprachen des Schichtplans. Deutsch (de-CH, «ss» statt «ß») ist Quellsprache, immer vollständig und
- * letzte Stufe jedes Fallbacks. Konzept: docs/internal/i18n-konzept.md
+ * letzte Stufe jedes Fallbacks. Konzept: docs/public/i18n.md
  */
 
 export const LOCALES = ['de', 'fr', 'it', 'en'] as const;

@@ -56,7 +56,7 @@ model Department {
   // Zustimmung zu den Nutzungsbedingungen (inkl. Auftragsbearbeitung) beim Erstellen der Abteilung
   termsAcceptedAt DateTime?       @map("terms_accepted_at")
   termsVersion    String?         @map("terms_version")
-  // Standardsprache für Personen ohne eigene Wahl, Sprache von Mails an sie (siehe docs/internal/i18n-konzept.md)
+  // Standardsprache für Personen ohne eigene Wahl, Sprache von Mails an sie (siehe docs/public/i18n.md)
   defaultLocale   Locale          @default(DE) @map("default_locale")
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
