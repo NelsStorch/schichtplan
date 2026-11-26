@@ -175,7 +175,7 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
             <a href={imprintUrl(org.domain)} className="transition hover:text-fg">
               {tFooter('imprint')}
             </a>
-            <LocaleSwitcher onPersist={user ? (locale) => api('/api/auth/me', { method: 'PATCH', json: { locale } }) : undefined} />
+            <LocaleSwitcher placement="top" onPersist={user ? (locale) => api('/api/auth/me', { method: 'PATCH', json: { locale } }) : undefined} />
             <a
               href={getLandingUrl('/', org.domain)}
               className="transition hover:text-fg"

@@ -531,7 +531,7 @@ export default async function LandingPage({
             </div>
 
             <div className="flex flex-wrap items-center justify-center sm:justify-end gap-4 sm:gap-5">
-              <LandingLocaleSwitcher />
+              <LandingLocaleSwitcher placement="top" />
               <a href={createDepartmentUrl} className="hover:text-fg transition font-medium text-fg">
                 {t('header.createUnit', vocab)}
               </a>

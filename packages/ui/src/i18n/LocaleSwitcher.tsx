@@ -9,7 +9,6 @@
 import { createContext, useContext, useEffect, useRef, useTransition, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { Languages } from 'lucide-react';
 import {
   INTL_LOCALES,
   LOCALE_COOKIE,
@@ -21,6 +20,7 @@ import {
 } from '@schichtplan/i18n';
 import { getRootDomain, setDefaultIntlLocale } from '@schichtplan/shared';
 import { cn } from '../utils/cn';
+import { LocaleMenu, type LocaleMenuOption } from './LocaleMenu';
 
 interface LocaleSettings {
   enabled: readonly Locale[];
@@ -84,10 +84,12 @@ function readLocaleCookie(): string | null {
 export interface LocaleSwitcherProps {
   /** Angemeldet: Wahl auch im Profil speichern (PATCH /api/auth/me) */
   onPersist?: (locale: Locale) => Promise<unknown>;
+  /** Liste öffnet nach oben (z. B. im Footer) */
+  placement?: 'bottom' | 'top';
   className?: string;
 }
 
-export function LocaleSwitcher({ onPersist, className }: LocaleSwitcherProps) {
+export function LocaleSwitcher({ onPersist, placement, className }: LocaleSwitcherProps) {
   const t = useTranslations('common.language');
   const current = useAppLocale();
   const { enabled, pseudo, pseudoAvailable } = useLocaleSettings();
@@ -110,24 +112,26 @@ export function LocaleSwitcher({ onPersist, className }: LocaleSwitcherProps) {
     startTransition(() => router.refresh());
   };
 
+  const options: LocaleMenuOption[] = [
+    ...enabled.map((locale) => ({
+      value: locale,
+      label: LOCALE_LABELS[locale],
+      lang: locale,
+      code: locale.toUpperCase(),
+    })),
+    ...(pseudoAvailable ? [{ value: PSEUDO_LOCALE, label: 'Pseudo (Dev)', code: '··' }] : []),
+  ];
+
   return (
-    <label className={cn('inline-flex items-center gap-1.5', pending && 'opacity-60', className)}>
-      <Languages className="size-3.5 shrink-0" aria-hidden="true" />
-      <span className="sr-only">{t('switch')}</span>
-      <select
-        value={value}
-        onChange={(e) => void change(e.target.value)}
-        disabled={pending}
-        className="cursor-pointer appearance-none bg-transparent font-medium text-fg-muted transition hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 rounded"
-      >
-        {enabled.map((locale) => (
-          <option key={locale} value={locale} lang={locale}>
-            {LOCALE_LABELS[locale]}
-          </option>
-        ))}
-        {pseudoAvailable && <option value={PSEUDO_LOCALE}>Pseudo (Dev)</option>}
-      </select>
-    </label>
+    <LocaleMenu
+      value={value}
+      options={options}
+      onChange={(next) => void change(next)}
+      disabled={pending}
+      ariaLabel={t('switch')}
+      placement={placement}
+      className={cn(pending && 'opacity-60', className)}
+    />
   );
 }
 

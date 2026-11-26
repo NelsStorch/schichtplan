@@ -10,3 +10,4 @@ export {
   writeLocaleCookie,
   type LocaleSwitcherProps,
 } from './LocaleSwitcher';
+export { LocaleMenu, type LocaleMenuOption, type LocaleMenuProps } from './LocaleMenu';

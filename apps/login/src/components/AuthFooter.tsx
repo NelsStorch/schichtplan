@@ -40,7 +40,7 @@ export function AuthFooter({ returnTo, landingHref = '/', showBackLink = false }
         <a href={imprintUrl(org.domain)} className="font-medium text-fg-muted transition hover:text-fg">
           {t('imprint')}
         </a>
-        <LocaleSwitcher />
+        <LocaleSwitcher placement="top" />
         {showBackLink && (
           <a
             href={backTarget}
