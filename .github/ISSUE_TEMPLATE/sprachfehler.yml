@@ -1,0 +1,71 @@
+name: 🌐 Sprachfehler melden
+description: Tippfehler, falsche oder unpassende Übersetzung (Language error / Erreur de langue / Errore di lingua)
+labels: ["typ/übersetzung"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke fürs Melden! / Thank you! / Merci ! / Grazie!
+        Du kannst dieses Formular auch auf Französisch, Italienisch oder Englisch ausfüllen. / You may fill in this form in French, Italian or English.
+        Bitte keine Namen, E-Mail-Adressen oder anderen Personendaten von Helfer:innen in Text oder Screenshots.
+  - type: dropdown
+    id: sprache
+    attributes:
+      label: Sprache / Language
+      description: In welcher Sprache ist der Fehler?
+      options:
+        - Français
+        - Italiano
+        - English
+        - Deutsch
+    validations:
+      required: true
+  - type: dropdown
+    id: verband
+    attributes:
+      label: Auftritt
+      description: Die Begriffe (z. B. «Abteilung», «section», «gruppo») hängen vom Verband ab.
+      options:
+        - Cevi (cevi-schichtplan.ch)
+        - Pfadi (pfadi-schichtplan.ch)
+        - Jubla (jubla-schichtplan.ch)
+        - Verein (vereins-schichtplan.ch)
+        - Weiss nicht
+    validations:
+      required: true
+  - type: input
+    id: ort
+    attributes:
+      label: Wo steht der Text?
+      description: Seite, Link oder Bezeichnung der Stelle, z. B. «Datenschutzerklärung, Abschnitt 8» oder «OK-Bereich › Schichten».
+    validations:
+      required: true
+  - type: textarea
+    id: aktuell
+    attributes:
+      label: Aktueller Text
+      description: Der Text so, wie er jetzt erscheint (bitte kopieren).
+    validations:
+      required: true
+  - type: textarea
+    id: vorschlag
+    attributes:
+      label: Vorschlag
+      description: Wie sollte er stattdessen lauten? Wenn du es nicht weisst, beschreibe kurz, was nicht stimmt.
+  - type: dropdown
+    id: art
+    attributes:
+      label: Art des Fehlers
+      options:
+        - Tippfehler oder Rechtschreibung
+        - Falsche Übersetzung
+        - Unpassender Ton oder Begriff
+        - Falscher Artikel oder falsches Geschlecht (z. B. bei «section», «gruppo»)
+        - Text fehlt oder ist noch auf Deutsch
+        - Etwas anderes
+    validations:
+      required: true
+  - type: textarea
+    id: zusatz
+    attributes:
+      label: Screenshots oder weitere Hinweise
