@@ -1,6 +1,8 @@
-# Lint, Typecheck und Tests bei jedem Push und Pull Request, dazu ein Build der vier Frontends
-# und des Hilfe-Centers, eine Prüfung der Abhängigkeiten und ein Scan nach versehentlich
-# eingecheckten Geheimnissen.
+# Lint, Typecheck und Tests, ein Build der vier Frontends und des Hilfe-Centers, End-to-End-Tests,
+# eine Prüfung der Abhängigkeiten und ein Scan nach versehentlich eingecheckten Geheimnissen.
+# Der Job «changes» prüft, welche Dateien geändert wurden: Code-Jobs laufen nur bei Änderungen am Code,
+# das Hilfe-Center nur bei Änderungen daran. Audit und Geheimnis-Scan laufen immer.
+# Übersprungene Jobs gelten für den Branch-Schutz als bestanden.
 # Die API-Tests laufen gegen eine leere Postgres im Service-Container (nur für diesen Lauf).
 # Actions sind auf Commit-SHAs festgenagelt (Kommentar = Version); Dependabot aktualisiert sie.
 name: CI
@@ -19,7 +21,49 @@ permissions:
   contents: read
 
 jobs:
+  # Welche Bereiche hat dieser Push oder Pull Request verändert?
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+      e2e: ${{ steps.filter.outputs.e2e }}
+      hilfe: ${{ steps.filter.outputs.hilfe }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Geänderte Dateien bestimmen
+        id: filter
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set_all() { for k in code e2e hilfe; do echo "$k=true" >> "$GITHUB_OUTPUT"; done; }
+          # Neuer Branch, Force-Push oder erster Lauf: kein Vergleichsstand, also alles prüfen
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            echo "Kein Vergleichsstand, alle Jobs laufen."
+            set_all
+            exit 0
+          fi
+          files=$(git diff --name-only "$BASE" HEAD)
+          echo "Geänderte Dateien:"
+          echo "$files" | sed 's/^/  /'
+          match() { echo "$files" | grep -qE "$1" && echo true || echo false; }
+          workflow='^\.github/workflows/ci\.yml$'
+          code='^(apps/|packages/|scripts/|biome-plugins/|package(-lock)?\.json$|biome\.json$|\.nvmrc$)'
+          {
+            echo "code=$(match "$code|$workflow")"
+            echo "e2e=$(match "$code|$workflow|^e2e/|^docker-compose\.dev\.yml$")"
+            # Das Hilfe-Center liest die Verbandsdaten aus packages/shared
+            echo "hilfe=$(match "^hilfe/|^packages/shared/|$workflow")"
+          } | tee -a "$GITHUB_OUTPUT"
+
   check:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -76,6 +120,8 @@ jobs:
 
   # Die Frontends müssen sich bauen lassen (Typen allein reichen nicht: Next prüft auch Routen und Imports)
   build:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
@@ -121,6 +167,8 @@ jobs:
 
   # Das Hilfe-Center (Astro Starlight) hat eigene Abhängigkeiten: ein kaputtes MDX fällt sonst erst beim Deploy auf
   hilfe:
+    needs: changes
+    if: needs.changes.outputs.hilfe == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -143,6 +191,80 @@ jobs:
         working-directory: hilfe
         env:
           ASTRO_TELEMETRY_DISABLED: "1"
+
+  # Die wichtigsten Abläufe im Browser gegen die lokale Docker-Umgebung (wie npm run dev:docker), siehe e2e/README.md.
+  # Mails landen im Backend-Log (kein SMTP-Passwort), das Seed-Passwort entsteht pro Lauf neu.
+  e2e:
+    needs: changes
+    if: needs.changes.outputs.e2e == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 26
+          cache: npm
+
+      - run: npm ci
+
+      # Die Container binden das Repository ein und nutzen die gebauten Pakete von hier
+      - name: Sprachpaket und Shared-Paket bauen
+        run: |
+          npm run build --workspace=packages/i18n
+          npm run build --workspace=packages/shared
+
+      - name: Playwright-Browser installieren
+        run: npx playwright install --with-deps chromium
+
+      - name: Umgebung starten
+        run: docker compose -f docker-compose.dev.yml up -d --build
+
+      - name: Auf das Backend warten
+        run: |
+          for i in $(seq 1 90); do
+            curl -fsS http://localhost:4000/health > /dev/null && exit 0
+            sleep 2
+          done
+          echo "Backend antwortet nicht"; exit 1
+
+      - name: Datenbank vorbereiten
+        run: |
+          pw=$(openssl rand -hex 16)
+          echo "::add-mask::$pw"
+          echo "SEED_PASSWORD=$pw" >> "$GITHUB_ENV"
+          docker exec schichtplan-dev-backend npx prisma migrate deploy
+          docker exec -e SEED_PASSWORD="$pw" schichtplan-dev-backend npm run db:seed
+
+      # Next-Dev-Server kompilieren beim ersten Aufruf, das soll nicht in die Zeitlimits der Tests fallen
+      - name: Frontends aufwärmen
+        run: |
+          for url in http://localhost:3001 http://localhost:3002 http://demo.localhost:3000 http://localhost:3003; do
+            for i in $(seq 1 60); do
+              code=$(curl -s -o /dev/null -w '%{http_code}' --resolve "${url#http://}:127.0.0.1" "$url" || true)
+              case "$code" in 2*|3*|401|403) echo "$url bereit ($code)"; break ;; esac
+              sleep 3
+            done
+          done
+
+      - name: End-to-End-Tests
+        run: npm run test:e2e
+
+      - name: Logs der Container
+        if: failure()
+        run: docker compose -f docker-compose.dev.yml logs --no-color --tail=300
+
+      - name: Screenshots und Traces hochladen
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: e2e-test-results
+          path: test-results/
+          retention-days: 7
 
   # Bekannte Schwachstellen in Abhängigkeiten, die im Betrieb laufen (ohne devDependencies)
   audit:

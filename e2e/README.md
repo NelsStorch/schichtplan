@@ -52,6 +52,7 @@ kommen Dateiänderungen über den Mount nicht immer beim Watcher an.
 ## Hinweise
 
 - **Nur lokal:** `global-setup.ts` bricht ab, wenn eine Adresse nicht auf `localhost` zeigt. Die Tests legen Konten an und tragen sich ein.
+- **In der CI** laufen die Tests im Job `e2e` genauso gegen `docker-compose.dev.yml`, sobald Code, Tests oder die Dev-Umgebung geändert werden. Bei einem Fehler liegen Screenshots und Traces als Artefakt `e2e-test-results` am Lauf.
 - **Anmelden in den Tests:** Lokal gilt das Cookie des Login-Portals (`localhost:3002`) nicht für `demo.localhost:3000`. Die Tests melden sich darum direkt über den API-Proxy der Abteilungsseite an; den Login über das Portal prüft `login.spec.ts` separat.
 - Bei einem Fehler liegen Screenshot und Trace unter `test-results/` (`npx playwright show-trace …`).
 
