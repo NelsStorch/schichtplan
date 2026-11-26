@@ -1,4 +1,4 @@
-# Datenbank und Datenmodell 🗄️
+# Datenbank und Datenmodell
 
 ## 1. PostgreSQL 17 und Prisma 7
 

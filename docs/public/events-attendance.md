@@ -1,4 +1,4 @@
-# Anlässe, Anwesenheit und Helferverwaltung 📋
+# Anlässe, Anwesenheit und Helferverwaltung
 
 ## 1. Zugang zu Anlässen (`events.accessType`)
 
@@ -52,7 +52,7 @@
 
 ---
 
-## 5. Verpflegungs- und Getränkebons 🍔🥤
+## 5. Verpflegungs- und Getränkebons
 
 * **Einstellungen (`events.catering_tokens_enabled`):**
   * Lassen sich in den Anlass-Einstellungen einschalten.

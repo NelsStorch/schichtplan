@@ -1,4 +1,4 @@
-# Anmeldung und Berechtigungen 🔐
+# Anmeldung und Berechtigungen
 
 Wie sich Personen anmelden, wie sie einer Abteilung beitreten und wer was darf. Das Dokument beschreibt den Stand des Codes im Backend (`apps/backend`) und in `packages/shared`.
 
