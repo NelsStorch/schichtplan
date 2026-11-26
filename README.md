@@ -264,11 +264,11 @@ Der Schichtplan ist auf **Deutsch (Quellsprache), Français, Italiano und Englis
 * **Hilfe-Center:** `hilfe/src/content/docs/<fr|it|en>/`, Deutsch liegt direkt in `hilfe/src/content/docs/`.
 * **Prüfung:** `npm run i18n:check` prüft die Kataloge (gültiges ICU-Format, gleiche Platzhalter in allen Sprachen, verwaiste Schlüssel, Mindestabdeckung freigeschalteter Sprachen). Sie läuft auch in `npm run check`.
 
-**Fehler in einer Übersetzung gefunden?** Melde ihn über die Vorlage [«Sprachfehler melden»](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=sprachfehler.yml), gerne auf Deutsch, Französisch, Italienisch oder Englisch. Pull Requests mit Korrekturen in den JSON-Dateien sind willkommen. Bitte keine Personendaten von Helfenden in Texte oder Screenshots.
+**Fehler in einer Übersetzung gefunden?** Melde ihn über die Vorlage [«Sprachfehler melden»](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=sprachfehler.yml), bitte auf Deutsch (bevorzugt) oder Englisch. Pull Requests mit Korrekturen in den JSON-Dateien sind willkommen. Bitte keine Personendaten von Helfenden in Texte oder Screenshots.
 
-> **FR:** L'application est disponible en allemand, français, italien et anglais. Une erreur de traduction ? Signalez-la via le [formulaire « Sprachfehler melden »](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=sprachfehler.yml).
-> **IT:** L'applicazione è disponibile in tedesco, francese, italiano e inglese. Un errore di traduzione? Segnalalo con il [modulo «Sprachfehler melden»](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=sprachfehler.yml).
-> **EN:** The app is available in German, French, Italian and English. Found a translation error? Report it via the [“Sprachfehler melden” form](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=sprachfehler.yml).
+> **FR:** L'application est disponible en allemand, français, italien et anglais. Une erreur de traduction ? Signalez-la via le [formulaire « Sprachfehler melden »](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=sprachfehler.yml), en allemand (de préférence) ou en anglais.
+> **IT:** L'applicazione è disponibile in tedesco, francese, italiano e inglese. Un errore di traduzione? Segnalalo con il [modulo «Sprachfehler melden»](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=sprachfehler.yml), in tedesco (preferito) o in inglese.
+> **EN:** The app is available in German, French, Italian and English. Found a translation error? Report it via the [“Sprachfehler melden” form](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=sprachfehler.yml), in German (preferred) or English.
 
 ---
 

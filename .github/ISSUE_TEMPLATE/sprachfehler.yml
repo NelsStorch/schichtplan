@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         Danke fürs Melden! / Thank you! / Merci ! / Grazie!
-        Du kannst dieses Formular auch auf Französisch, Italienisch oder Englisch ausfüllen. / You may fill in this form in French, Italian or English.
+        Bitte fülle dieses Formular auf Deutsch (bevorzugt) oder Englisch aus. / Please fill in this form in German (preferred) or English.
         Bitte keine Namen, E-Mail-Adressen oder anderen Personendaten von Helfer:innen in Text oder Screenshots.
   - type: dropdown
     id: sprache
