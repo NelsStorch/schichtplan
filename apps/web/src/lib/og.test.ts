@@ -1,6 +1,11 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { isPrivateOrInternalHost, loadRemoteLogo } from '@schichtplan/ui/og';
-import { appName, openSlotsLabel, previewTitle, slugFromHost } from './og';
+import { appName, clearDepartmentPreviewCache, getDepartmentPreview, openSlotsLabel, previewTitle, slugFromHost } from './og';
+
+const mockHeaders = vi.fn();
+vi.mock('next/headers', () => ({
+  headers: () => mockHeaders(),
+}));
 
 describe('slugFromHost', () => {
   it('extrahiert den Abteilungs-Slug aus Subdomains aller Organisationen', () => {
@@ -24,6 +29,93 @@ describe('slugFromHost', () => {
 
   it('ignoriert mehrstufige oder ungültige Subdomains', () => {
     expect(slugFromHost('sub.sub.cevi-schichtplan.ch')).toBeNull();
+  });
+
+  it('schliesst reservierte Subdomains (www, login, admin, hilfe, status, mail etc.) aus', () => {
+    expect(slugFromHost('www.cevi-schichtplan.ch')).toBeNull();
+    expect(slugFromHost('login.cevi-schichtplan.ch')).toBeNull();
+    expect(slugFromHost('admin.cevi-schichtplan.ch')).toBeNull();
+    expect(slugFromHost('hilfe.cevi-schichtplan.ch')).toBeNull();
+    expect(slugFromHost('status.cevi-schichtplan.ch')).toBeNull();
+    expect(slugFromHost('mail.cevi-schichtplan.ch')).toBeNull();
+    expect(slugFromHost('app.cevi-schichtplan.ch')).toBeNull();
+    expect(slugFromHost('dev.cevi-schichtplan.ch')).toBeNull();
+    expect(slugFromHost('login.dev.cevi-schichtplan.ch')).toBeNull();
+  });
+
+  it('schliesst ungültige Slugs (nicht passend zu SUBDOMAIN_REGEX) aus', () => {
+    expect(slugFromHost('_autodiscover.cevi-schichtplan.ch')).toBeNull();
+    expect(slugFromHost('-invalid.cevi-schichtplan.ch')).toBeNull();
+  });
+});
+
+describe('getDepartmentPreview & In-Memory-Cache', () => {
+  const originalInternalApi = process.env.INTERNAL_API_URL;
+
+  beforeEach(() => {
+    clearDepartmentPreviewCache();
+    process.env.INTERNAL_API_URL = 'http://backend:4000';
+  });
+
+  afterEach(() => {
+    process.env.INTERNAL_API_URL = originalInternalApi;
+    clearDepartmentPreviewCache();
+    vi.restoreAllMocks();
+  });
+
+  it('gibt für reservierte Subdomains sofort null zurück ohne Fetch', async () => {
+    mockHeaders.mockResolvedValue(new Headers({ host: 'login.cevi-schichtplan.ch' }));
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    const res = await getDepartmentPreview();
+    expect(res).toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('dedupliziert parallele Aufrufe und cacht das Ergebnis (60s)', async () => {
+    mockHeaders.mockResolvedValue(new Headers({ host: 'illnau.cevi-schichtplan.ch' }));
+    const sampleDept = {
+      name: 'Cevi Illnau-Effretikon',
+      slug: 'illnau',
+      logoUrl: '/images/logo.png',
+      primaryColor: '#0055aa',
+      levelName: null,
+      defaultLocale: 'de',
+    };
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify(sampleDept), { status: 200, headers: { 'content-type': 'application/json' } })
+    );
+
+    // Parallele Aufrufe im selben Render
+    const [p1, p2, p3] = await Promise.all([
+      getDepartmentPreview(),
+      getDepartmentPreview(),
+      getDepartmentPreview(),
+    ]);
+
+    expect(p1).toEqual(sampleDept);
+    expect(p2).toEqual(sampleDept);
+    expect(p3).toEqual(sampleDept);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+
+    // Nachfolgender Aufruf innerhalb der TTL (aus Cache)
+    const p4 = await getDepartmentPreview();
+    expect(p4).toEqual(sampleDept);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('dämpft 404-Fehler mit negativem Cache ab (kein Backend-Dauerfeuer)', async () => {
+    mockHeaders.mockResolvedValue(new Headers({ host: 'unbekannt.cevi-schichtplan.ch' }));
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('Not Found', { status: 404 })
+    );
+
+    const first = await getDepartmentPreview();
+    expect(first).toBeNull();
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+
+    const second = await getDepartmentPreview();
+    expect(second).toBeNull();
+    expect(fetchSpy).toHaveBeenCalledTimes(1); // Aus dem negativen Cache bedient!
   });
 });
 
