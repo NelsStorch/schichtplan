@@ -48,3 +48,14 @@ updates:
     schedule:
       interval: monthly
     labels: [dependencies]
+
+  # Postgres-Image in den Compose-Dateien. Einen Major-Sprung (z. B. 17 auf 18) braucht eine
+  # Datenbank-Migration und wird bewusst von Hand gemacht.
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: monthly
+    labels: [dependencies]
+    ignore:
+      - dependency-name: postgres
+        update-types: ["version-update:semver-major"]

@@ -72,7 +72,8 @@ Helfer*innen ohne Verbandskonto tragen sich auf allen vier Auftritten mit E-Mail
   * Konsequenter Verzicht auf unnötige Adresserfassung.
   * Einstellbare automatische Löschfristen für anlassbezogene Zusatzfragen (z. B. T-Shirt-Grössen, Essenspräferenzen).
   * Konfigurierbare «Nur für Mitglieder»-Absicherung für interne Anlässe.
-* 📚 **Integriertes Hilfe-Center:** Wissensdatenbank und Schritt-für-Schritt-Anleitungen unter `hilfe.<verband>-schichtplan.ch`, mit Begriffen und Farben des jeweiligen Verbands.
+* 🗣️ **Vier Sprachen (DE, FR, IT, EN):** Web-App, Login, Landingpage, Hilfe-Center, Rechtstexte sowie E-Mails, Push-Nachrichten, Kalender-Dateien und PDFs gibt es auf Deutsch, Französisch, Italienisch und Englisch. Jede Person wählt ihre Sprache selbst, sonst gilt die Browser-Sprache und danach die Standardsprache der Abteilung. Die Verbandsbegriffe (z. B. «Abteilung», «Verein») sind pro Verband und Sprache hinterlegt. Siehe [Sprachen & Übersetzungen](#-sprachen--übersetzungen).
+* 📚 **Integriertes Hilfe-Center:** Wissensdatenbank und Schritt-für-Schritt-Anleitungen unter `hilfe.<verband>-schichtplan.ch`, mit Begriffen und Farben des jeweiligen Verbands, ebenfalls in allen vier Sprachen.
 
 ---
 
@@ -140,6 +141,7 @@ schichtplan_v2/
 │   ├── login/          # Zentrales Single Sign-On Portal (Next.js 16)
 │   └── web/            # Mandantenfähige Schichtplan-App für Abteilungen, Scharen & Vereine (Next.js 16)
 ├── packages/
+│   ├── i18n/           # Übersetzungen (DE, FR, IT, EN), Spracherkennung & Prüfungen (@schichtplan/i18n)
 │   ├── shared/         # Gemeinsame Zod-Schemas, Typen, Verbands-Konfiguration & Hilfsfunktionen
 │   └── ui/             # Gemeinsames Design-System (@schichtplan/ui mit Tailwind CSS v4)
 ├── hilfe/              # Hilfe-Center Dokumentation (Astro Starlight, unabhängig gebaut)
@@ -251,6 +253,22 @@ npm run hilfe:build
 # Statischen Build lokal vorprüfen
 npm run hilfe:preview
 ```
+
+---
+
+## 🌐 Sprachen & Übersetzungen
+
+Der Schichtplan ist auf **Deutsch (Quellsprache), Français, Italiano und English** verfügbar. Bei den Rechtstexten (Datenschutzerklärung, Nutzungsbedingungen, Impressum) ist die deutsche Fassung massgebend.
+
+* **Texte der App:** `packages/i18n/src/messages/<de|fr|it|en>/*.json` (UI, E-Mails, Push, PDFs, API-Meldungen, Login, Landingpage).
+* **Hilfe-Center:** `hilfe/src/content/docs/<fr|it|en>/`, Deutsch liegt direkt in `hilfe/src/content/docs/`.
+* **Prüfung:** `npm run i18n:check` prüft die Kataloge (gültiges ICU-Format, gleiche Platzhalter in allen Sprachen, verwaiste Schlüssel, Mindestabdeckung freigeschalteter Sprachen). Sie läuft auch in `npm run check`.
+
+**Fehler in einer Übersetzung gefunden?** Melde ihn über die Vorlage [«Sprachfehler melden»](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=sprachfehler.yml), gerne auf Deutsch, Französisch, Italienisch oder Englisch. Pull Requests mit Korrekturen in den JSON-Dateien sind willkommen. Bitte keine Personendaten von Helfenden in Texte oder Screenshots.
+
+> **FR:** L'application est disponible en allemand, français, italien et anglais. Une erreur de traduction ? Signalez-la via le [formulaire « Sprachfehler melden »](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=sprachfehler.yml).
+> **IT:** L'applicazione è disponibile in tedesco, francese, italiano e inglese. Un errore di traduzione? Segnalalo con il [modulo «Sprachfehler melden»](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=sprachfehler.yml).
+> **EN:** The app is available in German, French, Italian and English. Found a translation error? Report it via the [“Sprachfehler melden” form](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=sprachfehler.yml).
 
 ---
 

@@ -4,7 +4,8 @@
 
 | Version | Unterstützt |
 |---|---|
-| 2.x (aktueller `main`-Branch) | :white_check_mark: |
+| 3.x (aktueller `main`-Branch) | :white_check_mark: |
+| 2.x | :x: |
 | 1.x (Legacy PHP) | :x: |
 
 ## Sicherheitslücken melden
