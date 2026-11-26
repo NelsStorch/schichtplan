@@ -78,3 +78,6 @@ REVISION
 test-results/
 playwright-report/
 e2e/test-results/
+
+# Von Next bei dev/build automatisch erzeugt (Pfad wechselt zwischen .next/ und .next/dev/)
+next-env.d.ts
