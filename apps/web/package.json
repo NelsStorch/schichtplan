@@ -10,7 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@react-pdf/renderer": "^4.9.0",
+    "@react-pdf/renderer": "^4.9.2",
     "@schichtplan/i18n": "*",
     "@schichtplan/shared": "*",
     "@schichtplan/ui": "*",
