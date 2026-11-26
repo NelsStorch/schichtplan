@@ -36,6 +36,10 @@ updates:
     schedule:
       interval: monthly
     labels: [dependencies]
+    groups:
+      # init und analyze müssen dieselbe Version haben, sonst scheitert CodeQL
+      codeql-action:
+        patterns: ["github/codeql-action/*"]
 
   - package-ecosystem: docker
     directories:
