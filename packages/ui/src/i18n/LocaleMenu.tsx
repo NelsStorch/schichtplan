@@ -118,10 +118,12 @@ export function LocaleMenu({
         disabled={disabled}
         onClick={() => (open ? setOpen(false) : openMenu())}
         onKeyDown={onKeyDown}
+        role="combobox"
         aria-label={ariaLabel}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={open ? listId : undefined}
+        aria-activedescendant={open ? `${listId}-${active}` : undefined}
         className={cn(
           'inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-fg-muted transition',
           'hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50',
@@ -138,11 +140,10 @@ export function LocaleMenu({
       </button>
 
       {open && (
-        <ul
+        <div
           id={listId}
           role="listbox"
           aria-label={ariaLabel}
-          aria-activedescendant={`${listId}-${active}`}
           className={cn(
             'absolute right-0 z-sheet min-w-44 origin-top-right animate-scale-in overflow-hidden rounded-2xl border border-line',
             'bg-surface/95 p-1.5 shadow-lift backdrop-blur-xl',
@@ -153,10 +154,11 @@ export function LocaleMenu({
             const isSelected = option.value === value;
             return (
               // biome-ignore lint/a11y/useKeyWithClickEvents: Tastatursteuerung liegt am Button (aria-activedescendant)
-              <li
+              <div
                 key={option.value}
                 id={`${listId}-${index}`}
                 role="option"
+                tabIndex={-1}
                 aria-selected={isSelected}
                 lang={option.lang}
                 onClick={() => choose(index)}
@@ -180,10 +182,10 @@ export function LocaleMenu({
                 )}
                 <span className="flex-1 truncate">{option.label}</span>
                 {isSelected && <Check className="size-4 shrink-0 text-accent" aria-hidden="true" />}
-              </li>
+              </div>
             );
           })}
-        </ul>
+        </div>
       )}
     </div>
   );
