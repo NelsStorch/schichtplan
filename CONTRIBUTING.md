@@ -31,6 +31,7 @@ cd schichtplan_v2
 npm ci
 npm run build --workspace=packages/i18n
 npm run build --workspace=packages/shared
+npm exec --workspace=apps/backend -- prisma generate
 npm run dev:docker      # startet alle Dienste und die Datenbank
 npm run db:migrate      # in einem zweiten Terminal
 npm run db:seed         # Demo-Daten
@@ -106,6 +107,6 @@ Mit deinem Beitrag stimmst du zu, dass er wie das übrige Projekt unter der [AGP
 
 * Write in **German (preferred) or English**.
 * Report bugs, ideas and translation errors with the [issue templates](https://github.com/NelsStorch/schichtplan_v2/issues/new/choose). Report security issues privately ([SECURITY.md](SECURITY.md)). Please discuss larger changes first.
-* Setup: Node 26+, Docker, then `npm ci`, `npm run build --workspace=packages/i18n`, `npm run build --workspace=packages/shared`, `npm run dev:docker`, `npm run db:migrate`, `npm run db:seed`. Run `npm run check` before opening a PR, `npm run test:db` for integration tests.
+* Setup: Node 26+, Docker, then `npm ci`, `npm run build --workspace=packages/i18n`, `npm run build --workspace=packages/shared`, `npm exec --workspace=apps/backend -- prisma generate`, `npm run dev:docker`, `npm run db:migrate`, `npm run db:seed`. Run `npm run check` before opening a PR, `npm run test:db` for integration tests.
 * Rules: helper data must never be visible to unauthorised people; times only via `packages/shared/src/timezone.ts`; no secrets in the repo; no hard-coded UI strings (`packages/i18n`, German first); schema changes need a new Prisma migration; check all four brands.
 * Commits follow Conventional Commits. Contributions are licensed under AGPL-3.0-or-later.

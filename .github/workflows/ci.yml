@@ -212,11 +212,13 @@ jobs:
 
       - run: npm ci
 
-      # Die Container binden das Repository ein und nutzen die gebauten Pakete von hier
-      - name: Sprachpaket und Shared-Paket bauen
+      # Die Container binden das Repository ein (.:/app) und nutzen die gebauten Pakete und den
+      # Prisma-Client von hier, nicht die aus dem Image
+      - name: Pakete bauen und Prisma-Client erzeugen
         run: |
           npm run build --workspace=packages/i18n
           npm run build --workspace=packages/shared
+          (cd apps/backend && npx prisma generate)
 
       - name: Playwright-Browser installieren
         run: npx playwright install --with-deps chromium
@@ -226,11 +228,13 @@ jobs:
 
       - name: Auf das Backend warten
         run: |
-          for i in $(seq 1 90); do
-            curl -fsS http://localhost:4000/health > /dev/null && exit 0
+          for i in $(seq 1 60); do
+            curl -fsS http://localhost:4000/health > /dev/null 2>&1 && exit 0
             sleep 2
           done
-          echo "Backend antwortet nicht"; exit 1
+          echo "Backend antwortet nicht"
+          docker logs --tail=100 schichtplan-dev-backend
+          exit 1
 
       - name: Datenbank vorbereiten
         run: |
