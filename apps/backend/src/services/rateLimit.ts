@@ -16,12 +16,23 @@ export interface RateLimiter {
   undo(key: string): void;
 }
 
+/**
+ * Faktor für die Limits, nur für End-to-End-Tests: Dort melden sich viele Testkonten in kurzer Zeit
+ * von derselben IP an. Mit NODE_ENV=production (Prod und Dev-Server) wirkt er nie.
+ */
+function testLimitFactor(): number {
+  if (process.env.NODE_ENV === 'production') return 1;
+  const factor = Number(process.env.E2E_RATE_LIMIT_FACTOR);
+  return Number.isFinite(factor) && factor >= 1 ? factor : 1;
+}
+
 export function createRateLimiter(
   windowMs: number,
-  max: number,
+  configuredMax: number,
   now: () => number = Date.now,
   maxKeys = 10_000
 ): RateLimiter {
+  const max = configuredMax * testLimitFactor();
   const attempts = new Map<string, number[]>();
   let lastCleanup = now();
 
