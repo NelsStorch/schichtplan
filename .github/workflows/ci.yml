@@ -220,8 +220,15 @@ jobs:
           npm run build --workspace=packages/shared
           (cd apps/backend && npx prisma generate)
 
+      # Die Paketquelle von Microsoft auf den Runnern fällt ab und zu aus (403) und bricht apt ab.
+      # Gebraucht wird sie hier nicht, also beim zweiten Versuch ohne sie
       - name: Playwright-Browser installieren
-        run: npx playwright install --with-deps chromium
+        run: |
+          npx playwright install --with-deps chromium || {
+            echo "Zweiter Versuch ohne die Microsoft-Paketquelle"
+            sudo rm -f /etc/apt/sources.list.d/microsoft-prod.*
+            npx playwright install --with-deps chromium
+          }
 
       # Die Tests laufen in der CI schneller hintereinander als lokal, alle von derselben IP. Die
       # Login-Bremsen und das globale Limit würden sonst einzelne Tests mit 429 abbrechen
