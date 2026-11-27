@@ -777,7 +777,7 @@ function LoginContent() {
                       <button
                         type="button"
                         onClick={() => goTo('ceviname')}
-                        className="group flex w-full items-center gap-3.5 px-4 py-3 text-left transition-colors duration-200 hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent opacity-85 hover:opacity-100"
+                        className="group flex w-full items-center gap-3.5 px-4 py-3 text-left transition-colors duration-200 hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
                       >
                         <span className="flex size-10 shrink-0 items-center justify-center rounded-tile bg-surface-2 text-fg-muted transition-colors group-hover:bg-surface-3 group-hover:text-fg">
                           <UserRound className="size-[18px]" />
@@ -785,7 +785,7 @@ function LoginContent() {
                         <span className="min-w-0 flex-1">
                           <span className="flex flex-wrap items-center gap-2">
                             <span className="text-sm font-medium text-fg">{tStart('loginWithNickname', { nicknameTerm: org.nicknameTerm })}</span>
-                            <span className="rounded-full bg-surface-3 px-2 py-0.5 text-[10px] font-medium text-fg-subtle">
+                            <span className="rounded-full bg-surface-3 px-2 py-0.5 text-[10px] font-medium text-fg-muted">
                               {tStart('withoutPasswordLimited')}
                             </span>
                           </span>

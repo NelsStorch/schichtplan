@@ -26,7 +26,7 @@ export function HitobitoIsometricGraphic({
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-xs sm:text-sm text-fg">{authProvider}</span>
-              <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-500">
+              <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-success-ink">
                 {t('forLeaders')}
               </span>
             </div>
@@ -61,7 +61,7 @@ export function HitobitoIsometricGraphic({
           </div>
         </div>
         <div className="shrink-0 hidden xs:block sm:block">
-          <span className="text-[11px] font-mono text-emerald-500 font-semibold bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20">
+          <span className="text-[11px] font-mono text-success-ink font-semibold bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20">
             {t('noAccount')}
           </span>
         </div>

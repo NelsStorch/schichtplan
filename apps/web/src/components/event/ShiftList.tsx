@@ -205,7 +205,7 @@ export function ShiftRows({ shifts, actions }: { shifts: ShiftDto[]; actions: Sh
               }}
               className={cn(
                 'flex cursor-pointer gap-3 p-3 transition-colors hover:bg-surface-2/60 sm:gap-4 sm:p-4',
-                stats.over && 'opacity-55',
+                stats.over && 'bg-surface-2/50 grayscale',
                 mine && 'bg-accent/5'
               )}
             >

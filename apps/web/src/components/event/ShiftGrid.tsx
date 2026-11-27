@@ -50,7 +50,7 @@ export function ShiftGrid({
                 scope="col"
                 className={cn(
                   'min-w-[6.5rem] border-b border-l border-line px-2 py-2 text-left align-bottom font-normal',
-                  stats.over && 'opacity-55'
+                  stats.over && 'grayscale'
                 )}
               >
                 <button
@@ -106,7 +106,7 @@ export function ShiftGrid({
                         'tabular flex h-9 w-full items-center justify-center rounded-md text-[13px] font-bold transition hover:ring-2 hover:ring-line-strong',
                         style.soft,
                         style.text,
-                        stats.over && 'opacity-55'
+                        stats.over && 'grayscale'
                       )}
                     >
                       {filled}/{total}
