@@ -26,6 +26,7 @@ import { personLabel } from '../services/attendance.js';
 import { notifyReplacementTaken, replacementOpen } from '../services/replacement.js';
 import { EMAIL_REMINDER_MINUTES, PUSH_REMINDER_MINUTES } from '@schichtplan/shared';
 import { pastReminderMinutes, shiftDisplayTitle } from '../services/shiftDto.js';
+import { liveEvents } from '../services/liveEvents.js';
 
 const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
   // Zeitkollisionen prüfen (für Eintragen-Vorschau oder Admin-Zuweisung)
@@ -660,6 +661,8 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
         });
       }
 
+      liveEvents.notify(event.slug, 'SLOT_UPDATED', shift.id, event.departmentId);
+
       return {
         id: signup.id,
         shiftId: signup.shiftId,
@@ -824,6 +827,8 @@ const shiftSignupRoutes: FastifyPluginAsync = async (fastify) => {
         });
       });
       trackUsage('SIGNOFF', { dim: isSelf ? 'SELF' : 'OK', departmentId: event.departmentId });
+
+      liveEvents.notify(event.slug, 'SLOT_UPDATED', existingSignup.shift.id, event.departmentId);
 
       return { message: request.t('success.signedOff') };
     }

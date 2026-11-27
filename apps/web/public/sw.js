@@ -68,6 +68,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // SSE / Event-Stream-Endpunkte dürfen NIE abgefangen oder gecacht werden
+  if (req.headers.get('Accept')?.includes('text/event-stream') || url.pathname.endsWith('/live')) {
+    return;
+  }
+
   // 1. Statische Assets (Next.js Bundles, Fonts, Icons, Bilder) -> Cache First mit Background-Update
   if (
     url.pathname.startsWith('/_next/static/') ||

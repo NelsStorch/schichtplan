@@ -33,27 +33,10 @@ import { isPreviewVisible, toEventPreview } from '../../services/eventPreview.js
 import { generateQrSvg } from '../../services/qrGenerator.js';
 import { eventUrl } from '../../services/shiftReminders.js';
 
-import { toQuestionDto, toResponsiblePersonDto, } from './shared.js';
+import { isValidLinkToken, toQuestionDto, toResponsiblePersonDto } from './shared.js';
 
 /** Anlässe lesen: Liste und Details (Namen und Kontaktangaben je nach Berechtigung) */
 const eventReadRoutes: FastifyPluginAsync = async (fastify) => {
-  /** Ungelöster Einladungs-Link (?zugang=) erlaubt das Ansehen, damit man ihn danach einlösen kann */
-  async function isValidLinkToken(eventId: string, token: string | undefined, viewerId?: string) {
-    if (!token || token.length > 100) return false;
-    const link = await fastify.prisma.eventAccessLink.findUnique({
-      where: { token },
-      select: { eventId: true, expiresAt: true, kind: true, boundUserId: true },
-    });
-    if (!link || link.eventId !== eventId) return false;
-    if (link.expiresAt && link.expiresAt <= new Date()) return false;
-    // Persönlicher Link: nur gültig, wenn noch frei oder bereits an diese Person gebunden.
-    // Schon gebunden und niemand angemeldet: nicht mehr gültig (sonst öffnete er den Anlass für alle).
-    if (link.kind === 'PERSONAL' && link.boundUserId && link.boundUserId !== viewerId) {
-      return false;
-    }
-    return true;
-  }
-
   // Liste aller Events der aktuellen Abteilung
   fastify.get(
     '/api/events',
@@ -361,7 +344,7 @@ const eventReadRoutes: FastifyPluginAsync = async (fastify) => {
         accessTypeConfig(event.accessType).scope !== 'ANY' &&
         !flags.isManager &&
         !hasGrant &&
-        !(await isValidLinkToken(event.id, request.query.zugang, viewer?.id)) &&
+        !(await isValidLinkToken(fastify.prisma, event.id, request.query.zugang, viewer?.id)) &&
         !(await isDepartmentInsider(fastify.prisma, request.tenant.id, viewer?.id))
       ) {
         reply.header('Cache-Control', 'no-store');

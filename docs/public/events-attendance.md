@@ -69,3 +69,14 @@
 * **Auswertung und Kassensturz:**
   * Im OK-Anwesenheitspanel (`EventAttendancePanel`) unter «Verpflegungs-Statistik» (`GET /api/events/:slug/catering-overview`).
   * Liefert Gesamtzahlen, Einlösequote und eine Aufschlüsselung nach Bon-Typ für die Abrechnung der Festkasse.
+
+---
+
+## 6. Live-Slot-Aktualisierung (Server-Sent Events)
+
+* **Echtzeit-Aktualisierung (`GET /api/events/:slug/live`):**
+  * Verwendet HTTP Server-Sent Events (SSE) mit `text/event-stream`.
+  * **Datenschutz:** Der Event-Stream sendet keine Personennamen oder Kontaktdaten, sondern lediglich Signale (`SLOT_UPDATED`, `SHIFT_CHANGED`). Der Client ruft anschliessend über die bestehende, rechtegeprüfte Lese-Route (`GET /api/events/:slug`) den aktuellen Stand ab.
+  * **Akkusparend:** Bei minimiertem Tab (`document.visibilityState === 'hidden'`) wird die Verbindung getrennt und beim Wiederöffnen des Tabs automatisch wieder aufgebaut.
+  * **Keep-Alive:** Regelmässige Kommentare (`: keep-alive\n\n` alle 25 Sekunden) halten Verbindungen über Traefik und Mobilfunk-Gateways stabil.
+

@@ -69,6 +69,7 @@ import { ApiError, api, departmentSetupUrl, errorMessage, loginUrl, useLoginHref
 import { businessDayKey, dayKeyToIso, fmtDateRange, fmtDayMonth, fmtShortWeekday, fmtTime, fmtWeekday, groupByBusinessDay, fmtTimeRange, shiftName } from '@/lib/format';
 import { usePortal } from '@/lib/portal';
 import { useDynamicFavicon } from '@/lib/favicon';
+import { useEventLiveUpdates } from '@/hooks/useEventLiveUpdates';
 import type { EventDetails } from '@/lib/types';
 
 type View = 'list' | 'grid';
@@ -186,6 +187,14 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
   useEffect(() => {
     load();
   }, [load]);
+
+  // Live-Aktualisierungen über Server-Sent Events (SSE)
+  useEventLiveUpdates({
+    slug,
+    enabled: !membersOnly && !error,
+    zugangToken: pendingToken,
+    onUpdate: load,
+  });
 
   const [redeeming, setRedeeming] = useState(false);
 

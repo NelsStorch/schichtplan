@@ -32,7 +32,7 @@ export function CommandPaletteButton({ className }: { className?: string }) {
     >
       <Search className="size-3.5 text-fg-subtle transition group-hover:text-fg" />
       <span className="sr-only sm:not-sr-only sm:inline">{t('searchPlaceholder')}</span>
-      <kbd aria-hidden="true" className="hidden rounded border border-line bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-fg-subtle shadow-2xs group-hover:border-line-strong sm:inline-block">
+      <kbd className="hidden rounded border border-line bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-fg-subtle shadow-2xs group-hover:border-line-strong sm:inline-block">
         {isMac ? '⌘K' : 'Ctrl+K'}
       </kbd>
     </button>

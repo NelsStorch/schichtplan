@@ -19,6 +19,7 @@ import { EMAIL_REMINDER_MINUTES, PUSH_REMINDER_MINUTES, isPlaceholderEmail } fro
 import { pastReminderMinutes, toResponsiblePersonDto } from '../services/shiftDto.js';
 import { formatShiftTime, eventUrl } from '../services/shiftReminders.js';
 import { sendShiftCancelledEmail } from '../services/email.js';
+import { liveEvents } from '../services/liveEvents.js';
 
 const shiftRoutes: FastifyPluginAsync = async (fastify) => {
   // Schicht erstellen (Admin, Planner oder Event-OK)
@@ -144,6 +145,7 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
         },
       });
       await syncEventRange(fastify.prisma, eventId);
+      liveEvents.notify(event.slug, 'SHIFT_CHANGED', shift.id, event.departmentId);
 
       return {
         ...shift,
@@ -300,6 +302,7 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
         )
       );
       await syncEventRange(fastify.prisma, eventId);
+      liveEvents.notify(event.slug, 'SHIFT_CHANGED', undefined, event.departmentId);
 
       return {
         count: createdShifts.length,
@@ -504,6 +507,8 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.fail(404, 'signup.shiftNotFound');
       }
 
+      liveEvents.notify(shift.event.slug, 'SHIFT_CHANGED', updated.id, shift.event.departmentId);
+
       return {
         ...updated,
         responsibles: updated.responsibles.map((r) =>
@@ -619,6 +624,8 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
         await syncEventRange(tx, shift.eventId);
       });
 
+      liveEvents.notify(shift.event.slug, 'SHIFT_CHANGED', shift.id, shift.event.departmentId);
+
       return { message: request.t('success.shiftDeleted') };
     }
   );
@@ -715,6 +722,7 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
         },
       });
       await syncEventRange(fastify.prisma, shift.eventId);
+      liveEvents.notify(shift.event.slug, 'SHIFT_CHANGED', duplicated.id, shift.event.departmentId);
 
       return {
         ...duplicated,
@@ -889,6 +897,8 @@ const shiftRoutes: FastifyPluginAsync = async (fastify) => {
           await syncEventRange(tx, event.id);
         }
       });
+
+      liveEvents.notify(event.slug, 'SHIFT_CHANGED', undefined, event.departmentId);
 
       return { updated, skipped } satisfies BulkShiftsResultDto;
     }

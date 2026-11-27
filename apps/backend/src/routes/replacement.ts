@@ -6,6 +6,7 @@ import { personLabel } from '../services/attendance.js';
 import { replacementOpen } from '../services/replacement.js';
 import { trackUsage } from '../services/usageStats.js';
 import { type ErrorTranslator } from '../plugins/i18n.js';
+import { liveEvents } from '../services/liveEvents.js';
 
 /**
  * «Ersatz gesucht»: Eingetragene bieten ihre Schicht zur Übernahme an. Sie bleiben eingetragen,
@@ -93,6 +94,8 @@ const replacementRoutes: FastifyPluginAsync = async (fastify) => {
         trackUsage('REPLACEMENT_OFFERED', { dim: isSelf ? 'SELF' : 'OK', departmentId: event.departmentId });
       }
 
+      liveEvents.notify(event.slug, 'SLOT_UPDATED', signup.shift.id, event.departmentId);
+
       return {
         id: updated.id,
         replacementWantedAt: updated.replacementWantedAt?.toISOString() ?? null,
@@ -125,6 +128,9 @@ const replacementRoutes: FastifyPluginAsync = async (fastify) => {
         where: { id: found.signup.id },
         data: { replacementWantedAt: null, replacementNote: null, replacementByName: null },
       });
+
+      liveEvents.notify(found.event.slug, 'SLOT_UPDATED', found.signup.shift.id, found.event.departmentId);
+
       return { id: found.signup.id, replacementWantedAt: null, replacementNote: null, replacementByName: null };
     }
   );

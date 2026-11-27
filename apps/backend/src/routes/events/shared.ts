@@ -136,3 +136,26 @@ export async function replaceAccessLists(tx: Tx, eventId: string, departmentIds:
     await tx.eventAllowedStufe.createMany({ data: stufeIds.map((stufeId) => ({ eventId, stufeId })) });
   }
 }
+
+/** Ungelöster Einladungs-Link (?zugang=) erlaubt das Ansehen, damit man ihn danach einlösen kann */
+export async function isValidLinkToken(
+  prisma: Pick<PrismaClient, 'eventAccessLink'> | Tx,
+  eventId: string,
+  token: string | undefined,
+  viewerId?: string
+): Promise<boolean> {
+  if (!token || token.length > 100) return false;
+  const link = await prisma.eventAccessLink.findUnique({
+    where: { token },
+    select: { eventId: true, expiresAt: true, kind: true, boundUserId: true },
+  });
+  if (!link || link.eventId !== eventId) return false;
+  if (link.expiresAt && link.expiresAt <= new Date()) return false;
+  // Persönlicher Link: nur gültig, wenn noch frei oder bereits an diese Person gebunden.
+  // Schon gebunden und niemand angemeldet: nicht mehr gültig (sonst öffnete er den Anlass für alle).
+  if (link.kind === 'PERSONAL' && link.boundUserId && link.boundUserId !== viewerId) {
+    return false;
+  }
+  return true;
+}
+

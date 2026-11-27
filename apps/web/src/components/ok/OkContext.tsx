@@ -6,6 +6,7 @@ import { ApiError, api, errorMessage } from '@/lib/api';
 import { usePermissionText } from '@/lib/permissionText';
 import { usePortal } from '@/lib/portal';
 import type { EventDetails } from '@/lib/types';
+import { useEventLiveUpdates } from '@/hooks/useEventLiveUpdates';
 import { EVENT_CAPABILITIES, type EventCapability } from '@schichtplan/shared';
 
 /** Auswahl, die von «Helfende» oder «Schichten» an «Nachrichten» übergeben wird */
@@ -90,6 +91,13 @@ export function OkProvider({ slug, children }: { slug: string; children: ReactNo
   useEffect(() => {
     reload();
   }, [reload]);
+
+  // Live-Aktualisierungen für den OK-Bereich (Helfende, Schichten, Anwesenheit)
+  useEventLiveUpdates({
+    slug,
+    enabled: !error,
+    onUpdate: reload,
+  });
 
   const permissions = useMemo<OkPermissions>(() => {
     const caps = new Set(event?.viewer.access.capabilities ?? []);

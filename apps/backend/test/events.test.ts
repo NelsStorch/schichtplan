@@ -273,4 +273,25 @@ describe.skipIf(!hasTestDb)('Rechte bei Anlässen', () => {
     expect(created.json().startDate).toBe('2030-12-07T17:00:00.000Z');
     expect(created.json().endDate).toBe('2030-12-08T02:00:00.000Z');
   });
+
+  it('liefert 404 für Live-Stream eines nicht existierenden Anlasses', async () => {
+    const department = await createDepartment(app);
+    const res = await inject(app, {
+      method: 'GET',
+      url: '/api/events/unbekannt-12345/live',
+      tenant: department.slug,
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('blockiert Live-Stream bei nur für Mitglieder ohne Berechtigung mit 403', async () => {
+    const department = await createDepartment(app, { membersOnly: true });
+    const event = await createEvent(app, department.id, { accessType: 'DEPARTMENT' });
+    const res = await inject(app, {
+      method: 'GET',
+      url: `/api/events/${event.slug}/live`,
+      tenant: department.slug,
+    });
+    expect(res.statusCode).toBe(403);
+  });
 });

@@ -23,6 +23,7 @@ import {
   personLabel,
 } from '../services/attendance.js';
 import { createRateLimiter } from '../services/rateLimit.js';
+import { liveEvents } from '../services/liveEvents.js';
 
 // Der Code ist nicht erratbar (144 Bit), die Bremse hält nur Skripte und Tippfehler-Schleifen auf.
 const checkinIpLimiter = createRateLimiter(10 * 60 * 1000, 60);
@@ -146,6 +147,8 @@ const attendanceRoutes: FastifyPluginAsync = async (fastify) => {
         request.log.error(logErr, 'Fehler beim Protokollieren der Anwesenheit');
       }
 
+      liveEvents.notify(event.slug, 'SLOT_UPDATED', signup.shiftId, event.departmentId);
+
       return {
         id: updated.id,
         attendance: updated.attendance as AttendanceStatus | null,
@@ -259,6 +262,10 @@ const attendanceRoutes: FastifyPluginAsync = async (fastify) => {
         } catch (catErr) {
           request.log.error(catErr, 'Fehler beim Laden von Verpflegungs-Tokens beim Check-in');
         }
+      }
+
+      if (due.length > 0) {
+        liveEvents.notify(event.slug, 'SLOT_UPDATED', undefined, event.departmentId);
       }
 
       const next = due.length === 0 ? signups.find((s) => s.shift.startTime > now) : undefined;
