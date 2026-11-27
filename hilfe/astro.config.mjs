@@ -49,6 +49,7 @@ export default defineConfig({
         Header: './src/overrides/Header.astro',
         SiteTitle: './src/overrides/SiteTitle.astro',
         ThemeSelect: './src/overrides/ThemeSelect.astro',
+        LanguageSelect: './src/overrides/LanguageSelect.astro',
         Hero: './src/overrides/Hero.astro',
         PageTitle: './src/overrides/PageTitle.astro',
         MarkdownContent: './src/overrides/MarkdownContent.astro',
