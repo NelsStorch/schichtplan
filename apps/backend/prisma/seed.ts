@@ -12,15 +12,17 @@ const prisma = createPrismaClient();
 async function main() {
   console.log('Seede Cevi Schichtplan V2 Datenbank...');
 
-  // 1. Demo-Abteilung
+  // 1. Demo-Abteilung. Der Spitzname-Login ist standardmässig aus, hier an, damit man ihn lokal
+  // ausprobieren kann (die E2E-Tests in e2e/tests/nickname.spec.ts brauchen ihn)
   const department = await prisma.department.upsert({
     where: { organization_slug: { organization: 'CEVI', slug: 'demo' } },
-    update: {},
+    update: { allowPasswordless: true },
     create: {
       name: 'Demo-Abteilung',
       slug: 'demo',
       organization: 'CEVI',
       primaryColor: '#e11d48',
+      allowPasswordless: true,
     },
   });
 
