@@ -29,7 +29,8 @@ export function AppVersion({ className, showCommit = true }: AppVersionProps) {
         className
       )}
       title={`Version ${VERSION}${cleanSha ? ` (${cleanSha})` : ''} · Quellcode auf GitHub`}
-      aria-label={`Version ${VERSION}${cleanSha ? `, Commit ${cleanSha}` : ''} auf GitHub anzeigen`}
+      // Kein aria-label: Es müsste den sichtbaren Text «v3.1.0 (abc1234)» enthalten (WCAG 2.5.3),
+      // der sichtbare Text ist als Name verständlich genug
     >
       {label}
     </a>
