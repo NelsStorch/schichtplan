@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Danke fürs Melden! **Sicherheitslücken bitte nicht hier**, sondern vertraulich gemäss [SECURITY.md](https://github.com/NelsStorch/schichtplan_v2/blob/main/SECURITY.md).
+        Danke fürs Melden! **Sicherheitslücken bitte nicht hier**, sondern vertraulich gemäss [SECURITY.md](https://github.com/NelsStorch/schichtplan/blob/main/SECURITY.md).
         Bitte keine Namen, E-Mail-Adressen oder anderen Personendaten von Helfer:innen in Text oder Screenshots.
   - type: textarea
     id: beschreibung

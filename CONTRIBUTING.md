@@ -6,11 +6,11 @@ Schön, dass du helfen willst! Bitte schreibe auf **Deutsch (bevorzugt) oder Eng
 
 | Du hast … | Dann … |
 |---|---|
-| einen **Fehler** gefunden | [Fehler melden](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=fehler.yml) |
-| eine **Idee** | [Wunsch oder Idee](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=wunsch.yml) |
-| eine **falsche Übersetzung** entdeckt | [Sprachfehler melden](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=sprachfehler.yml) oder direkt ein Pull Request (siehe [Übersetzungen](#übersetzungen)) |
-| eine **Rolle oder Gruppe**, die aus Cevi.DB, MiData oder Jubla-DB falsch erkannt wird | [Gruppe oder Rolle anpassen](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=rollen.yml) |
-| eine **Frage** | [Discussions](https://github.com/NelsStorch/schichtplan_v2/discussions) |
+| einen **Fehler** gefunden | [Fehler melden](https://github.com/NelsStorch/schichtplan/issues/new?template=fehler.yml) |
+| eine **Idee** | [Wunsch oder Idee](https://github.com/NelsStorch/schichtplan/issues/new?template=wunsch.yml) |
+| eine **falsche Übersetzung** entdeckt | [Sprachfehler melden](https://github.com/NelsStorch/schichtplan/issues/new?template=sprachfehler.yml) oder direkt ein Pull Request (siehe [Übersetzungen](#übersetzungen)) |
+| eine **Rolle oder Gruppe**, die aus Cevi.DB, MiData oder Jubla-DB falsch erkannt wird | [Gruppe oder Rolle anpassen](https://github.com/NelsStorch/schichtplan/issues/new?template=rollen.yml) |
+| eine **Frage** | [Discussions](https://github.com/NelsStorch/schichtplan/discussions) |
 | eine **Sicherheitslücke** gefunden | **nicht öffentlich**, sondern wie in [SECURITY.md](SECURITY.md) beschrieben |
 
 Bitte keine Namen, E-Mail-Adressen oder anderen Personendaten von Helfenden in Texten oder Screenshots. Für Screenshots eignen sich die Demo-Daten (siehe unten).
@@ -19,15 +19,15 @@ Bitte keine Namen, E-Mail-Adressen oder anderen Personendaten von Helfenden in T
 
 ## Code beitragen
 
-Bei neuen Funktionen oder grösseren Umbauten bitte zuerst ein Issue oder eine Discussion eröffnen, damit keine Arbeit umsonst ist. Kleine Korrekturen kannst du direkt als Pull Request schicken. Gute Einstiegspunkte sind die Labels [`good first issue`](https://github.com/NelsStorch/schichtplan_v2/labels/good%20first%20issue) und [`help wanted`](https://github.com/NelsStorch/schichtplan_v2/labels/help%20wanted).
+Bei neuen Funktionen oder grösseren Umbauten bitte zuerst ein Issue oder eine Discussion eröffnen, damit keine Arbeit umsonst ist. Kleine Korrekturen kannst du direkt als Pull Request schicken. Gute Einstiegspunkte sind die Labels [`good first issue`](https://github.com/NelsStorch/schichtplan/labels/good%20first%20issue) und [`help wanted`](https://github.com/NelsStorch/schichtplan/labels/help%20wanted).
 
 ### Lokal starten
 
 Du brauchst Node.js 26 oder neuer (siehe `.nvmrc`), npm 11 und Docker.
 
 ```bash
-git clone https://github.com/NelsStorch/schichtplan_v2.git
-cd schichtplan_v2
+git clone https://github.com/NelsStorch/schichtplan.git
+cd schichtplan
 npm ci
 npm run build --workspace=packages/i18n
 npm run build --workspace=packages/shared
@@ -106,7 +106,7 @@ Mit deinem Beitrag stimmst du zu, dass er wie das übrige Projekt unter der [AGP
 ## English summary
 
 * Write in **German (preferred) or English**.
-* Report bugs, ideas and translation errors with the [issue templates](https://github.com/NelsStorch/schichtplan_v2/issues/new/choose). Report security issues privately ([SECURITY.md](SECURITY.md)). Please discuss larger changes first.
+* Report bugs, ideas and translation errors with the [issue templates](https://github.com/NelsStorch/schichtplan/issues/new/choose). Report security issues privately ([SECURITY.md](SECURITY.md)). Please discuss larger changes first.
 * Setup: Node 26+, Docker, then `npm ci`, `npm run build --workspace=packages/i18n`, `npm run build --workspace=packages/shared`, `npm exec --workspace=apps/backend -- prisma generate`, `npm run dev:docker`, `npm run db:migrate`, `npm run db:seed`. Run `npm run check` before opening a PR, `npm run test:db` for integration tests.
 * Rules: helper data must never be visible to unauthorised people; times only via `packages/shared/src/timezone.ts`; no secrets in the repo; no hard-coded UI strings (`packages/i18n`, German first); schema changes need a new Prisma migration; check all four brands.
 * Commits follow Conventional Commits. Contributions are licensed under AGPL-3.0-or-later.

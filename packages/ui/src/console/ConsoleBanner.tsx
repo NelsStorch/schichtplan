@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { getBrowserOrganization } from '@schichtplan/shared';
 
-const REPO_URL = 'https://github.com/NelsStorch/schichtplan_v2';
+const REPO_URL = 'https://github.com/NelsStorch/schichtplan';
 const SECURITY_URL = `${REPO_URL}/security/advisories/new`;
 
 /** ASCII-Buchstaben (Figlet «Standard»), je 5 Zeilen. Nur was für die Verbandsnamen gebraucht wird. */

@@ -13,7 +13,7 @@ import {
  * die Verbands-Unterschiede in `PROFILES`.
  */
 
-const REPO_URL = 'https://github.com/NelsStorch/schichtplan_v2';
+const REPO_URL = 'https://github.com/NelsStorch/schichtplan';
 
 interface OrgProfile {
   /** Verband, dessen Datenbank für den Login genutzt wird (null = kein Verband, Login mit E-Mail und Passwort) */

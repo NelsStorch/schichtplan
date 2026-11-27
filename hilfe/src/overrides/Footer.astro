@@ -16,7 +16,7 @@ if (!revision) {
 }
 const cleanSha = revision.replace(/-dirty-\d+$/, '').replace(/-dirty$/, '');
 const isGitSha = /^[0-9a-f]{7,40}$/i.test(cleanSha);
-const commitUrl = isGitSha ? `https://github.com/NelsStorch/schichtplan_v2/commit/${cleanSha}` : 'https://github.com/NelsStorch/schichtplan_v2';
+const commitUrl = isGitSha ? `https://github.com/NelsStorch/schichtplan/commit/${cleanSha}` : 'https://github.com/NelsStorch/schichtplan';
 const versionLabel = cleanSha ? `v${rootPkg.version} (${cleanSha})` : `v${rootPkg.version}`;
 
 const isSplash = Astro.locals.starlightRoute.entry.data.template === 'splash';
@@ -117,7 +117,7 @@ const imprintHref = isFrench ? 'https://cevi-schichtplan.ch/fr/mentions-legales'
       <a href={privacyHref} data-footer-privacy-domain>{isFrench ? 'Protection des données' : isItalian ? 'Protezione dei dati' : isEnglish ? 'Privacy' : 'Datenschutz'}</a>
       <a href={termsHref} data-footer-terms-domain>{isFrench ? 'Conditions d’utilisation' : isItalian ? 'Condizioni' : isEnglish ? 'Terms' : 'Nutzungsbedingungen'}</a>
       <a href={imprintHref} data-footer-imprint-domain>{isFrench ? 'Mentions légales' : isItalian ? 'Colophon' : isEnglish ? 'Imprint' : 'Impressum'}</a>
-      <a href="https://github.com/NelsStorch/schichtplan_v2" rel="noopener">GitHub</a>
+      <a href="https://github.com/NelsStorch/schichtplan" rel="noopener">GitHub</a>
       <a href={commitUrl} rel="noopener" target="_blank" class="ft-version" title={`Version ${rootPkg.version}${cleanSha ? ` (${cleanSha})` : ''} auf GitHub`}>{versionLabel}</a>
     </nav>
   </div>

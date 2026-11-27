@@ -1,6 +1,6 @@
 # Schichtplan · Cevi · Pfadi · Jubla · Vereine 🏕️
 
-[![CI](https://github.com/NelsStorch/schichtplan_v2/actions/workflows/ci.yml/badge.svg)](https://github.com/NelsStorch/schichtplan_v2/actions/workflows/ci.yml)
+[![CI](https://github.com/NelsStorch/schichtplan/actions/workflows/ci.yml/badge.svg)](https://github.com/NelsStorch/schichtplan/actions/workflows/ci.yml)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D26-brightgreen.svg)](https://nodejs.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
 [![Fastify](https://img.shields.io/badge/Fastify-5-black.svg)](https://fastify.dev/)
@@ -112,9 +112,9 @@ Fehler melden, Ideen einbringen, Übersetzungen verbessern oder Code beitragen: 
 
 Bitte schreibe auf Deutsch (bevorzugt) oder Englisch.
 
-> **FR:** Une erreur de traduction ? Signalez-la via le [formulaire « Sprachfehler melden »](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=sprachfehler.yml), en allemand ou en anglais.<br>
-> **IT:** Un errore di traduzione? Segnalalo con il [modulo «Sprachfehler melden»](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=sprachfehler.yml), in tedesco o in inglese.<br>
-> **EN:** Found a translation error? Report it via the [“Sprachfehler melden” form](https://github.com/NelsStorch/schichtplan_v2/issues/new?template=sprachfehler.yml), in German or English.
+> **FR:** Une erreur de traduction ? Signalez-la via le [formulaire « Sprachfehler melden »](https://github.com/NelsStorch/schichtplan/issues/new?template=sprachfehler.yml), en allemand ou en anglais.<br>
+> **IT:** Un errore di traduzione? Segnalalo con il [modulo «Sprachfehler melden»](https://github.com/NelsStorch/schichtplan/issues/new?template=sprachfehler.yml), in tedesco o in inglese.<br>
+> **EN:** Found a translation error? Report it via the [“Sprachfehler melden” form](https://github.com/NelsStorch/schichtplan/issues/new?template=sprachfehler.yml), in German or English.
 
 ---
 

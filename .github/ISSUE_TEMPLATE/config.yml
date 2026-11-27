@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: 🔒 Sicherheitslücke melden
-    url: https://github.com/NelsStorch/schichtplan_v2/security/advisories/new
+    url: https://github.com/NelsStorch/schichtplan/security/advisories/new
     about: Bitte vertraulich melden, nicht als öffentliches Issue.
   - name: 📚 Hilfe-Center Cevi
     url: https://hilfe.cevi-schichtplan.ch/
@@ -16,5 +16,5 @@ contact_links:
     url: https://hilfe.vereins-schichtplan.ch/
     about: Anleitungen und FAQ für Vereine und Festkomitees.
   - name: 💬 Fragen & Community-Austausch
-    url: https://github.com/NelsStorch/schichtplan_v2/discussions
+    url: https://github.com/NelsStorch/schichtplan/discussions
     about: Für allgemeine Fragen, Ideen oder verbandsübergreifenden Austausch (Cevi, Pfadi, Jubla, Vereine).

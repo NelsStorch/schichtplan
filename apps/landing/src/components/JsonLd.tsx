@@ -36,7 +36,7 @@ export function JsonLd({ origin, locale, org }: JsonLdProps) {
           '@type': 'ImageObject',
           url: logoUrl,
         },
-        sameAs: ['https://github.com/NelsStorch/schichtplan_v2'],
+        sameAs: ['https://github.com/NelsStorch/schichtplan'],
       },
       {
         '@type': 'WebSite',

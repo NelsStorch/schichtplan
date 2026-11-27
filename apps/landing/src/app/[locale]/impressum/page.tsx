@@ -47,7 +47,7 @@ export default async function ImpressumPage({
 
   const tags = {
     github: (chunks: ReactNode) => (
-      <a href="https://github.com/NelsStorch/schichtplan_v2" target="_blank" rel="noopener noreferrer">
+      <a href="https://github.com/NelsStorch/schichtplan" target="_blank" rel="noopener noreferrer">
         {chunks}
       </a>
     ),

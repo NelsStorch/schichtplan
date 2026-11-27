@@ -560,7 +560,7 @@ export default async function LandingPage({
                 llms.txt
               </a>
               <a
-                href="https://github.com/NelsStorch/schichtplan_v2"
+                href="https://github.com/NelsStorch/schichtplan"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-fg transition inline-flex items-center gap-1"

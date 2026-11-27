@@ -8,7 +8,7 @@ export interface AppVersionProps {
 
 const VERSION = process.env.NEXT_PUBLIC_APP_VERSION || '3.1.0';
 const REVISION = process.env.NEXT_PUBLIC_APP_REVISION || '';
-const GITHUB_REPO_URL = 'https://github.com/NelsStorch/schichtplan_v2';
+const GITHUB_REPO_URL = 'https://github.com/NelsStorch/schichtplan';
 
 export function AppVersion({ className, showCommit = true }: AppVersionProps) {
   const cleanSha = REVISION.replace(/-dirty-\d+$/, '').replace(/-dirty$/, '');
