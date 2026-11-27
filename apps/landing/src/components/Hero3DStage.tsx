@@ -137,7 +137,7 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
                   <h3 className="font-display text-sm sm:text-base font-bold text-fg truncate">
                     {eventTitle}
                   </h3>
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-semibold text-emerald-400">
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-semibold text-success-ink">
                     <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     {t('live')}
                   </span>
@@ -211,7 +211,7 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
               <div className="min-w-0 pr-1">
                 <div className="font-semibold text-fg flex items-center gap-1.5 sm:gap-2">
                   <span className="truncate">{t('bar')}</span>
-                  <span className="shrink-0 rounded bg-accent/20 text-accent-ink px-1.5 py-0.5 text-[10px] font-mono font-bold">
+                  <span className="shrink-0 rounded bg-accent/12 text-accent-ink px-1.5 py-0.5 text-[10px] font-mono font-bold">
                     16+
                   </span>
                 </div>
@@ -222,13 +222,13 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
                   {barEnrolled ? (
                     <span className="flex items-center gap-1 min-w-0">
                       <span className="truncate">Falk, Remo,</span>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.2 text-[10px] font-bold text-emerald-500 shrink-0">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.2 text-[10px] font-bold text-success-ink shrink-0">
                         <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         {t('you')}
                       </span>
                     </span>
                   ) : (
-                    <span className="font-medium text-accent truncate">
+                    <span className="font-medium text-accent-ink truncate">
                       {t('oneFree')}
                     </span>
                   )}
@@ -237,7 +237,7 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
 
               <div className="shrink-0">
                 {barEnrolled ? (
-                  <span className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-emerald-500/20 px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold text-emerald-400 border border-emerald-500/30 animate-fade-in">
+                  <span className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-emerald-500/20 px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold text-success-ink border border-emerald-500/30 animate-fade-in">
                     <Check className="size-3 sm:size-3.5 stroke-[2.5]" />
                     <span>{t('joined')}</span>
                   </span>
@@ -264,7 +264,7 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
                 <div className="font-semibold text-fg truncate flex items-center gap-1.5">
                   <Moon className="size-3 text-warning shrink-0" />
                   <span>{t('night')}</span>
-                  <span className="shrink-0 rounded-full bg-warning/20 px-1.5 py-0.5 text-[9px] font-bold text-warning-ink">
+                  <span className="shrink-0 rounded-full bg-warning/12 px-1.5 py-0.5 text-[9px] font-bold text-warning-ink">
                     {t('urgent')}
                   </span>
                 </div>
@@ -274,7 +274,7 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
                   <span>•</span>
                   {nightEnrolled ? (
                     <span className="flex items-center gap-1 min-w-0">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.2 text-[10px] font-bold text-emerald-500 shrink-0">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.2 text-[10px] font-bold text-success-ink shrink-0">
                         <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         {t('you')}
                       </span>
@@ -288,12 +288,12 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
 
               <div className="shrink-0">
                 {nightEnrolled ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-bold text-emerald-400 border border-emerald-500/30">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-bold text-success-ink border border-emerald-500/30">
                     <Check className="size-3 stroke-[2.5]" />
                     <span>{t('joined')}</span>
                   </span>
                 ) : (
-                  <span className="shrink-0 rounded-full bg-warning/20 px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-bold text-warning-ink hover:bg-warning/30 transition">
+                  <span className="shrink-0 rounded-full bg-warning/12 px-2 sm:px-2.5 py-1 text-[10px] sm:text-[11px] font-bold text-warning-ink hover:bg-warning/20 transition">
                     + {t('signUp')}
                   </span>
                 )}
@@ -303,7 +303,7 @@ export function Hero3DStage({ org }: { org?: OrganizationConfig } = {}) {
 
           {/* Footer Callout */}
           <div className="mt-4 pt-3 border-t border-line/60 flex items-center justify-between gap-1.5 text-2xs text-fg-subtle">
-            <span className="flex items-center gap-1.5 text-accent font-medium">
+            <span className="flex items-center gap-1.5 text-accent-ink font-medium">
               <Sparkles className="size-3 shrink-0" />
               <span>{t('tryIt')}</span>
             </span>

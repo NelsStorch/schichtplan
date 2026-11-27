@@ -120,13 +120,14 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
                 type="button"
                 onClick={openAccount}
                 className="hidden items-center gap-2.5 rounded-full py-1 pl-1 pr-3.5 transition hover:bg-surface-2 md:flex"
-                aria-label={pushHintShown ? tShell('openAccountAriaPushOff', { name: displayName(user) }) : tShell('openAccountAria', { name: displayName(user) })}
               >
                 <span className="relative">
                   <Avatar name={displayName(user)} size="sm" highlight />
                   {pushHintShown && <HintDot />}
                 </span>
+                {/* Kein aria-label: Der Name kommt aus dem sichtbaren Namen plus Zusatz für Screenreader (WCAG 2.5.3) */}
                 <span className="max-w-32 truncate text-sm font-semibold text-fg">{displayName(user)}</span>
+                <span className="sr-only">{pushHintShown ? tShell('openAccountAriaPushOff') : tShell('openAccountAria')}</span>
               </button>
             ) : (
               <a href={loginHref} className={buttonClasses({ variant: 'secondary', size: 'sm', className: 'hidden md:inline-flex' })}>

@@ -12,6 +12,18 @@ const ADMIN_URL = process.env.E2E_ADMIN_URL || 'http://localhost:3003';
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
 async function expectAccessible(page: Page, name: string) {
+  // Erst messen, wenn Einblend-Animationen fertig sind: mitten im Ausblenden misst axe aufgehellte
+  // Farben (z. B. text-fg als Grau) und meldet falsche Kontrastfehler. Endlos-Animationen zählen nicht.
+  await page
+    .waitForFunction(
+      () =>
+        document
+          .getAnimations()
+          .every((a) => a.playState !== 'running' || a.effect?.getComputedTiming().iterations === Number.POSITIVE_INFINITY),
+      null,
+      { timeout: 5_000 }
+    )
+    .catch(() => {});
   const { violations } = await new AxeBuilder({ page }).withTags(TAGS).analyze();
   const summary = (list: typeof violations) =>
     list.map((v) => `${v.id} (${v.impact}, ${v.nodes.length}×): ${v.nodes[0]?.target.join(' ')}`);
@@ -42,6 +54,9 @@ async function expectSkipLink(page: Page) {
 }
 
 test.describe('Barrierefreiheit', () => {
+  // Wie Personen mit «Bewegung reduzieren»: weniger Animationen, die die Messung verfälschen
+  test.use({ reducedMotion: 'reduce' });
+
   test('Landingpage', async ({ page }) => {
     await page.goto(`${URLS.landing}/`);
     await expectAccessible(page, 'Landingpage');

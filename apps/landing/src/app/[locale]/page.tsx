@@ -296,7 +296,7 @@ export default async function LandingPage({
               {/* Zielgruppen-Gliederung */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
                 <Reveal className="rounded-2xl border border-line bg-surface/70 p-5 shadow-sm">
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-accent">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-accent-ink">
                     <Heart className="size-3.5" />
                     <span>{t('benefits.helpersLabel')}</span>
                   </div>
@@ -309,7 +309,7 @@ export default async function LandingPage({
                 </Reveal>
 
                 <Reveal delay={100} className="rounded-2xl border border-line bg-surface/70 p-5 shadow-sm">
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-500">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-warning-ink">
                     <Users className="size-3.5" />
                     <span>{t('benefits.committeeLabel')}</span>
                   </div>
@@ -323,7 +323,7 @@ export default async function LandingPage({
 
                 <Reveal delay={200} className="rounded-2xl border border-line bg-surface/70 p-5 shadow-sm flex flex-col justify-between">
                   <div>
-                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-500">
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-success-ink">
                       <ShieldCheck className="size-3.5" />
                       <span>{t('benefits.leadLabel', vocab)}</span>
                     </div>
@@ -366,7 +366,7 @@ export default async function LandingPage({
                     </div>
 
                     <div className="pt-4 border-t border-line/80 flex flex-wrap items-center justify-between gap-2 text-xs text-fg-muted">
-                      <span className="text-2xs text-emerald-500 font-semibold flex items-center gap-1.5 shrink-0">
+                      <span className="text-2xs text-success-ink font-semibold flex items-center gap-1.5 shrink-0">
                         <span className="size-2 rounded-full bg-emerald-500" />
                         {t('features.loginWith', vocab)}
                       </span>
@@ -393,7 +393,7 @@ export default async function LandingPage({
                     </div>
 
                     <div className="pt-4 border-t border-line/80 flex flex-wrap items-center justify-between gap-2 text-xs text-fg-subtle">
-                      <span className="font-mono text-accent font-bold break-all sm:break-normal text-2xs sm:text-xs">
+                      <span className="font-mono text-accent-ink font-bold break-all sm:break-normal text-2xs sm:text-xs">
                         {t('features.addressExample', { slug: vocab.unit.toLowerCase() })}.{org.domain}
                       </span>
                       <a
@@ -449,7 +449,7 @@ export default async function LandingPage({
                     </div>
 
                     <div className="pt-4 border-t border-line/80 flex flex-wrap items-center justify-between gap-2 text-xs text-fg-muted">
-                      <span className="flex items-center gap-1.5 sm:gap-2 text-emerald-500 font-semibold text-2xs sm:text-xs">
+                      <span className="flex items-center gap-1.5 sm:gap-2 text-success-ink font-semibold text-2xs sm:text-xs">
                         <CheckCircle2 className="size-3.5 sm:size-4 shrink-0" />
                         {t('features.mobileAge')}
                       </span>
