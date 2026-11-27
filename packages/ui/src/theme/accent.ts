@@ -2,8 +2,8 @@
  * Leitet aus einer beliebigen Abteilungsfarbe die Akzent-Tokens ab:
  *  --accent            Flächenfarbe (Buttons, Ring, Glow)
  *  --accent-fg         Textfarbe AUF der Akzentfläche (weiss oder fast-schwarz, je nach Kontrast)
- *  --accent-ink-light  Akzent als Textfarbe auf hellem Grund (abgedunkelt bis WCAG AA 4.5:1)
- *  --accent-ink-dark   Akzent als Textfarbe auf dunklem Grund (aufgehellt bis WCAG AA 4.5:1)
+ *  --accent-ink-light  Akzent als Textfarbe auf hellem Grund (abgedunkelt bis WCAG AA 4.5:1, auch auf Tönungen)
+ *  --accent-ink-dark   Akzent als Textfarbe auf dunklem Grund (aufgehellt bis WCAG AA 4.5:1, auch auf Tönungen)
  *
  * So bleibt jede Abteilungsfarbe – auch Gelb oder Hellblau – in beiden Modi lesbar.
  */
@@ -31,13 +31,25 @@ export {
   type ContrastEvaluation,
 };
 
+// Flächen aus packages/ui/theme.css (--surface und --surface-2, hell und dunkel)
 const LIGHT_SURFACE: Rgb = [254, 254, 253];
+const LIGHT_SURFACE_2: Rgb = [245, 244, 242];
 const DARK_SURFACE: Rgb = [23, 21, 19];
+const DARK_SURFACE_2: Rgb = [33, 30, 28];
 
-function inkFor(color: Rgb, background: Rgb, towards: Rgb): Rgb {
+/** Stärkste Akzenttönung, auf der accent-ink als Text steht (bg-accent/12 bis bg-accent/15) */
+const MAX_TINT = 0.15;
+
+/**
+ * Akzent als Textfarbe, die auf allen üblichen Flächen 4.5:1 erreicht: auf der Fläche, auf
+ * surface-2 und auf einer Akzenttönung (Badges, aktive Einträge). Nur gegen Weiss zu rechnen
+ * reicht nicht, auf einer roten Tönung fällt Cevi-Rot sonst unter 3.5:1.
+ */
+function inkFor(color: Rgb, surfaces: Rgb[], towards: Rgb): Rgb {
+  const backgrounds = surfaces.flatMap((s) => [s, mixRgb(s, color, MAX_TINT)]);
   for (let t = 0; t <= 1; t += 0.05) {
     const candidate = mixRgb(color, towards, t);
-    if (contrastRatio(candidate, background) >= 4.5) return candidate;
+    if (backgrounds.every((bg) => contrastRatio(candidate, bg) >= 4.5)) return candidate;
   }
   return towards;
 }
@@ -50,8 +62,8 @@ export function accentVars(hex?: string | null): Record<string, string> {
   return {
     '--accent': channels(accent),
     '--accent-fg': channels(fg),
-    '--accent-ink-light': channels(inkFor(accent, LIGHT_SURFACE, [0, 0, 0])),
-    '--accent-ink-dark': channels(inkFor(accent, DARK_SURFACE, WHITE)),
+    '--accent-ink-light': channels(inkFor(accent, [LIGHT_SURFACE, LIGHT_SURFACE_2], [0, 0, 0])),
+    '--accent-ink-dark': channels(inkFor(accent, [DARK_SURFACE, DARK_SURFACE_2], WHITE)),
   };
 }
 
