@@ -16,6 +16,7 @@ import {
   UserRound,
 } from 'lucide-react';
 import {
+  AppVersion,
   Avatar,
   Badge,
   Button,
@@ -161,7 +162,8 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
       <footer className="border-t border-line/70 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-6 text-xs text-fg-subtle md:px-6">
           <p>
-            © {new Date().getFullYear()} {department?.name ?? org.orgName}
+            © {new Date().getFullYear()} {department ? department.name : org.name}
+            {org.independentNotice && <> · {org.independentNotice}</>}
           </p>
           <div className="flex items-center gap-5">
             <a href={helpUrl('/', org.domain)} className="transition hover:text-fg">
@@ -176,6 +178,7 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
             <a href={imprintUrl(org.domain)} className="transition hover:text-fg">
               {tFooter('imprint')}
             </a>
+            <AppVersion />
             <LocaleSwitcher placement="top" onPersist={user ? (locale) => api('/api/auth/me', { method: 'PATCH', json: { locale } }) : undefined} />
             <a
               href={getLandingUrl('/', org.domain)}

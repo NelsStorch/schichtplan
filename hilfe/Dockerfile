@@ -4,6 +4,8 @@
 
 FROM node:26-alpine AS builder
 WORKDIR /app/hilfe
+ARG APP_REVISION=""
+ENV APP_REVISION=$APP_REVISION
 COPY hilfe/package.json hilfe/package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
 # Zugangsarten kommen direkt aus den gemeinsamen Konstanten der App

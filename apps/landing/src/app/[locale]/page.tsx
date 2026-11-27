@@ -28,7 +28,7 @@ import {
 } from '@schichtplan/shared';
 import { getRequestOrigin } from '@schichtplan/ui/og';
 import { BrandLogo } from '@/components/BrandLogo';
-import { ThemeToggle, buttonClasses } from '@schichtplan/ui';
+import { AppVersion, ThemeToggle, buttonClasses } from '@schichtplan/ui';
 import { CampfireBackground } from '@/components/CampfireBackground';
 import { Hero3DStage } from '@/components/Hero3DStage';
 import { ComparisonTable } from '@/components/ComparisonTable';
@@ -568,6 +568,7 @@ export default async function LandingPage({
                 <span>GitHub</span>
                 <ExternalLink className="size-3" />
               </a>
+              <AppVersion />
               <Link href="/login" className="hover:text-fg transition">
                 {t('footer.centralLogin')}
               </Link>

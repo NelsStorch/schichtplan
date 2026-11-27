@@ -1,7 +1,7 @@
 
 import { ArrowLeft } from 'lucide-react';
 import { helpUrl, imprintUrl, privacyUrl, statusUrl, termsUrl } from '@schichtplan/shared/redirect';
-import { useOrganization } from '@schichtplan/ui';
+import { AppVersion, useOrganization } from '@schichtplan/ui';
 import { LocaleSwitcher } from '@schichtplan/ui/i18n';
 import { useTranslations } from 'next-intl';
 
@@ -40,6 +40,7 @@ export function AuthFooter({ returnTo, landingHref = '/', showBackLink = false }
         <a href={imprintUrl(org.domain)} className="font-medium text-fg-muted transition hover:text-fg">
           {t('imprint')}
         </a>
+        <AppVersion />
         <LocaleSwitcher placement="top" />
         {showBackLink && (
           <a

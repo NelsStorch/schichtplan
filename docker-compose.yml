@@ -97,6 +97,7 @@ services:
       args:
         # Optionale Web-Statistik (Umami): Ursprung für die Content-Security-Policy
         UMAMI_SCRIPT_URL: ${UMAMI_SCRIPT_URL:-}
+        APP_REVISION: ${APP_REVISION:-unknown}
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -141,6 +142,7 @@ services:
       args:
         # Optionale Web-Statistik (Umami): Ursprung für die Content-Security-Policy
         UMAMI_SCRIPT_URL: ${UMAMI_SCRIPT_URL:-}
+        APP_REVISION: ${APP_REVISION:-unknown}
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -188,6 +190,7 @@ services:
       args:
         # Optionale Web-Statistik (Umami): Ursprung für die Content-Security-Policy
         UMAMI_SCRIPT_URL: ${UMAMI_SCRIPT_URL:-}
+        APP_REVISION: ${APP_REVISION:-unknown}
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -220,6 +223,8 @@ services:
     build:
       context: .
       dockerfile: apps/admin/Dockerfile
+      args:
+        APP_REVISION: ${APP_REVISION:-unknown}
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -247,6 +252,8 @@ services:
     build:
       context: .
       dockerfile: hilfe/Dockerfile
+      args:
+        APP_REVISION: ${APP_REVISION:-unknown}
     restart: unless-stopped
     # Statisches HTML (nginx): braucht weder Backend noch DB, nur Traefik
     networks:

@@ -14,6 +14,7 @@ import {
   Users,
 } from 'lucide-react';
 import {
+  AppVersion,
   BrandLogo,
   Button,
   Callout,
@@ -144,6 +145,7 @@ function Shell({
             <a href={imprintUrl(org.domain)} className="transition hover:text-fg">
               Impressum
             </a>
+            <AppVersion />
           </div>
         </div>
       </footer>

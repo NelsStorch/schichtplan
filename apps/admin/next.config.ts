@@ -1,6 +1,20 @@
 import path from 'path';
+import fs from 'node:fs';
+import { execSync } from 'node:child_process';
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
+
+const rootPkg = JSON.parse(fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf-8'));
+
+function getGitRevision(): string {
+  if (process.env.NEXT_PUBLIC_APP_REVISION) return process.env.NEXT_PUBLIC_APP_REVISION;
+  if (process.env.APP_REVISION) return process.env.APP_REVISION;
+  try {
+    return execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+  } catch {
+    return '';
+  }
+}
 
 /**
  * Content-Security-Policy: nur eigene Skripte/Verbindungen, keine fremden Frames/Formulare. Next braucht
@@ -27,6 +41,10 @@ const contentSecurityPolicy = [
 const nextConfig: NextConfig = {
   output: 'standalone',
   poweredByHeader: false,
+  env: {
+    NEXT_PUBLIC_APP_VERSION: rootPkg.version,
+    NEXT_PUBLIC_APP_REVISION: getGitRevision(),
+  },
   transpilePackages: ['@schichtplan/ui'],
   turbopack: {
     root: path.join(__dirname, '../..'),

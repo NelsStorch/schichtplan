@@ -33,6 +33,8 @@ CMD ["npm", "run", "dev"]
 FROM base AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG APP_REVISION=""
+ENV APP_REVISION=$APP_REVISION
 COPY package.json package-lock.json ./
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY packages/i18n ./packages/i18n

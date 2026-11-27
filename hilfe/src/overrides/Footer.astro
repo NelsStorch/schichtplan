@@ -5,6 +5,19 @@ import LifeBuoy from '@lucide/astro/icons/life-buoy';
 import ThumbsUp from '@lucide/astro/icons/thumbs-up';
 import ThumbsDown from '@lucide/astro/icons/thumbs-down';
 import UsageStats from '../components/UsageStats.astro';
+import rootPkg from '../../../package.json';
+import { execSync } from 'node:child_process';
+
+let revision = process.env.APP_REVISION || '';
+if (!revision) {
+  try {
+    revision = execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+  } catch {}
+}
+const cleanSha = revision.replace(/-dirty-\d+$/, '').replace(/-dirty$/, '');
+const isGitSha = /^[0-9a-f]{7,40}$/i.test(cleanSha);
+const commitUrl = isGitSha ? `https://github.com/NelsStorch/schichtplan_v2/commit/${cleanSha}` : 'https://github.com/NelsStorch/schichtplan_v2';
+const versionLabel = cleanSha ? `v${rootPkg.version} (${cleanSha})` : `v${rootPkg.version}`;
 
 const isSplash = Astro.locals.starlightRoute.entry.data.template === 'splash';
 const locale = Astro.locals.starlightRoute.locale;
@@ -105,6 +118,7 @@ const imprintHref = isFrench ? 'https://cevi-schichtplan.ch/fr/mentions-legales'
       <a href={termsHref} data-footer-terms-domain>{isFrench ? 'Conditions d’utilisation' : isItalian ? 'Condizioni' : isEnglish ? 'Terms' : 'Nutzungsbedingungen'}</a>
       <a href={imprintHref} data-footer-imprint-domain>{isFrench ? 'Mentions légales' : isItalian ? 'Colophon' : isEnglish ? 'Imprint' : 'Impressum'}</a>
       <a href="https://github.com/NelsStorch/schichtplan_v2" rel="noopener">GitHub</a>
+      <a href={commitUrl} rel="noopener" target="_blank" class="ft-version" title={`Version ${rootPkg.version}${cleanSha ? ` (${cleanSha})` : ''} auf GitHub`}>{versionLabel}</a>
     </nav>
   </div>
   <UsageStats />
@@ -266,5 +280,11 @@ const imprintHref = isFrench ? 'https://cevi-schichtplan.ch/fr/mentions-legales'
 
   .ft-bottom a:hover {
     color: rgb(var(--fg));
+  }
+
+  .ft-version {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.75rem;
+    opacity: 0.85;
   }
 </style>

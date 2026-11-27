@@ -44,6 +44,7 @@ export {
   type SlotStatus,
 } from './components/Display';
 export { PageLoader, Spinner, type PageLoaderProps, type SpinnerSize } from './components/Loading';
+export { AppVersion, type AppVersionProps } from './components/AppVersion';
 export { BrandLogo, CeviLogo } from './components/BrandLogo';
 export { OrganizationProvider, useOrganization, useOrganizationSlug, useVocabulary } from './components/OrganizationContext';
 export {

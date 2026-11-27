@@ -36,6 +36,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Optionale Web-Statistik: Ursprung landet beim Build in der Content-Security-Policy (next.config.ts)
 ARG UMAMI_SCRIPT_URL=""
 ENV UMAMI_SCRIPT_URL=$UMAMI_SCRIPT_URL
+ARG APP_REVISION=""
+ENV APP_REVISION=$APP_REVISION
 COPY package.json package-lock.json ./
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY packages/i18n ./packages/i18n
