@@ -98,9 +98,8 @@
   "replacementDialog": {
     "titleSelf": "Ersatz suchen",
     "titleOther": "Ersatz für {name} suchen",
-    "descriptionSelf": "Du bleibst eingetragen, bis jemand die Schicht übernimmt. Wer sich für diese Schicht eintragen darf, kann sie mit einem Klick übernehmen. Du bekommst dann eine Mail. {moreLink}",
-    "descriptionOther": "{name} bleibt eingetragen, bis jemand die Schicht übernimmt. Wer sich für diese Schicht eintragen darf, kann sie mit einem Klick übernehmen. {name} bekommt dann eine Mail. {moreLink}",
-    "moreLinkText": "Mehr dazu",
+    "descriptionSelf": "Du bleibst eingetragen, bis jemand die Schicht übernimmt. Wer sich für diese Schicht eintragen darf, kann sie mit einem Klick übernehmen. Du bekommst dann eine Mail. <moreLink>Mehr dazu</moreLink>",
+    "descriptionOther": "{name} bleibt eingetragen, bis jemand die Schicht übernimmt. Wer sich für diese Schicht eintragen darf, kann sie mit einem Klick übernehmen. {name} bekommt dann eine Mail. <moreLink>Mehr dazu</moreLink>",
     "reasonLabel": "Grund (freiwillig)",
     "reasonPlaceholder": "z. B. Bin an diesem Tag verhindert",
     "privacyWarning": "Den Grund sehen alle, die im Schichtplan die Namen sehen. Schreib nichts Persönliches hinein, z. B. keine Krankheit.",
@@ -2269,7 +2268,6 @@
     "leaders": "Leitende"
   },
   "commandButton": {
-    "ariaLabel": "Befehlsmenü und Suche öffnen (Cmd+K)",
     "title": "Befehlsmenü und Suche ({shortcut})",
     "searchPlaceholder": "Suchen..."
   },

@@ -63,8 +63,8 @@ export function ReplacementDialog({
       <div className="space-y-4">
         <p className="text-sm text-fg-muted">
           {personName
-            ? t.rich('descriptionOther', { name: personName, moreLink: () => moreLink(t('moreLinkText')) })
-            : t.rich('descriptionSelf', { moreLink: () => moreLink(t('moreLinkText')) })}
+            ? t.rich('descriptionOther', { name: personName, moreLink })
+            : t.rich('descriptionSelf', { moreLink })}
         </p>
         <Field label={t('reasonLabel')}>
           <Textarea

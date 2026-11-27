@@ -98,9 +98,8 @@
   "replacementDialog": {
     "titleSelf": "Trouver un·e remplaçant·e",
     "titleOther": "Trouver un·e remplaçant·e pour {name}",
-    "descriptionSelf": "Vous restez inscrit·e jusqu'à ce que quelqu'un reprenne le créneau. Toute personne autorisée peut le reprendre en un clic. Vous recevrez un e-mail. {moreLink}",
-    "descriptionOther": "{name} reste inscrit·e jusqu'à ce que quelqu'un reprenne le créneau. Toute personne autorisée peut le reprendre en un clic. {name} recevra un e-mail. {moreLink}",
-    "moreLinkText": "En savoir plus",
+    "descriptionSelf": "Vous restez inscrit·e jusqu'à ce que quelqu'un reprenne le créneau. Toute personne autorisée peut le reprendre en un clic. Vous recevrez un e-mail. <moreLink>En savoir plus</moreLink>",
+    "descriptionOther": "{name} reste inscrit·e jusqu'à ce que quelqu'un reprenne le créneau. Toute personne autorisée peut le reprendre en un clic. {name} recevra un e-mail. <moreLink>En savoir plus</moreLink>",
     "reasonLabel": "Motif (facultatif)",
     "reasonPlaceholder": "ex. Empêchement imprévu",
     "privacyWarning": "Le motif est visible par tous ceux qui voient les noms dans le planning. Ne mentionnez aucune donnée personnelle ou médicale.",
@@ -2269,7 +2268,6 @@
     "leaders": "Responsables"
   },
   "commandButton": {
-    "ariaLabel": "Ouvrir le menu de commandes et la recherche (Cmd+K)",
     "title": "Menu de commandes et recherche ({shortcut})",
     "searchPlaceholder": "Rechercher..."
   },

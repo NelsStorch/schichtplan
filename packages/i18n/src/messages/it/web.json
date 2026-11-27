@@ -98,9 +98,8 @@
   "replacementDialog": {
     "titleSelf": "Cerca sostituto/a",
     "titleOther": "Cerca sostituto/a per {name}",
-    "descriptionSelf": "Rimani assegnato/a fino a quando qualcun altro subentra nel turno. Chiunque abbia i permessi necessari può subentrare con un clic. Riceverai un'e-mail. {moreLink}",
-    "descriptionOther": "{name} rimane assegnato/a fino a quando qualcun altro subentra nel turno. Chiunque abbia i permessi necessari può subentrare con un clic. {name} riceverà un'e-mail. {moreLink}",
-    "moreLinkText": "Maggiori informazioni",
+    "descriptionSelf": "Rimani assegnato/a fino a quando qualcun altro subentra nel turno. Chiunque abbia i permessi necessari può subentrare con un clic. Riceverai un'e-mail. <moreLink>Maggiori informazioni</moreLink>",
+    "descriptionOther": "{name} rimane assegnato/a fino a quando qualcun altro subentra nel turno. Chiunque abbia i permessi necessari può subentrare con un clic. {name} riceverà un'e-mail. <moreLink>Maggiori informazioni</moreLink>",
     "reasonLabel": "Motivo (facoltativo)",
     "reasonPlaceholder": "es. Impegno imprevisto",
     "privacyWarning": "Il motivo è visibile a chiunque visualizzi i nomi nel piano turni. Non inserire dettagli personali o sanitari.",
@@ -2269,7 +2268,6 @@
     "leaders": "Responsabili"
   },
   "commandButton": {
-    "ariaLabel": "Apri menu comandi e cerca (Cmd+K)",
     "title": "Menu comandi e cerca ({shortcut})",
     "searchPlaceholder": "Cerca..."
   },

@@ -98,9 +98,8 @@
   "replacementDialog": {
     "titleSelf": "Find replacement",
     "titleOther": "Find replacement for {name}",
-    "descriptionSelf": "You remain signed up until someone takes over the shift. Anyone permitted to sign up for this shift can take it over with one click. You will receive an email when that happens. {moreLink}",
-    "descriptionOther": "{name} remains signed up until someone takes over the shift. Anyone permitted to sign up for this shift can take it over with one click. {name} will receive an email when that happens. {moreLink}",
-    "moreLinkText": "Learn more",
+    "descriptionSelf": "You remain signed up until someone takes over the shift. Anyone permitted to sign up for this shift can take it over with one click. You will receive an email when that happens. <moreLink>Learn more</moreLink>",
+    "descriptionOther": "{name} remains signed up until someone takes over the shift. Anyone permitted to sign up for this shift can take it over with one click. {name} will receive an email when that happens. <moreLink>Learn more</moreLink>",
     "reasonLabel": "Reason (optional)",
     "reasonPlaceholder": "e.g. Unavailable on this date",
     "privacyWarning": "The reason is visible to everyone who can see names in the shift plan. Do not write personal details, such as medical conditions.",
@@ -2269,7 +2268,6 @@
     "leaders": "Leaders"
   },
   "commandButton": {
-    "ariaLabel": "Open command palette and search (Cmd+K)",
     "title": "Command palette and search ({shortcut})",
     "searchPlaceholder": "Search..."
   },

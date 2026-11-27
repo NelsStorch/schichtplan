@@ -17,7 +17,7 @@
     "or": "oder"
   },
   "authShell": {
-    "privacyNotice": "Wir nutzen deine Daten nur für die Schichtplanung, ohne Werbung und ohne Tracking. Mehr dazu in der {privacyLink}."
+    "privacyNotice": "Wir nutzen deine Daten nur für die Schichtplanung, ohne Werbung und ohne Tracking. Mehr dazu in der <privacyLink>Datenschutzerklärung</privacyLink>."
   },
   "error": {
     "backToLogin": "Zurück zum Login"
@@ -293,8 +293,7 @@
     "subdomainLabel": "Subdomain",
     "subdomainHint": "{slug}.{rootHost}. Lässt sich später nicht ändern.",
     "calloutInfo": "Du wirst Hauptverantwortliche*r ({unitTerm}-Leitung im Schichtplan). Das lässt sich später unter «{unitTerm} → Personen» ändern. Name, Logo, Farbe und Stufen kannst du jederzeit anpassen, nur die Subdomain bleibt fest.",
-    "acceptTerms": "Ich habe die {termsLink} gelesen und stimme ihnen im Namen der {unitTerm} zu, inklusive der Regeln zur Auftragsbearbeitung.",
-    "termsLinkText": "Nutzungsbedingungen",
+    "acceptTerms": "Ich habe die <termsLink>Nutzungsbedingungen</termsLink> gelesen und stimme ihnen im Namen der {unitTerm} zu, inklusive der Regeln zur Auftragsbearbeitung.",
     "submit": "{unitTerm} anlegen",
     "later": "Später",
     "noPlanYetTitle": "Für {names} gibt es noch keinen Schichtplan",

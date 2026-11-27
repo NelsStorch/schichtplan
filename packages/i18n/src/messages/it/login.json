@@ -17,7 +17,7 @@
     "or": "o"
   },
   "authShell": {
-    "privacyNotice": "Utilizziamo i tuoi dati esclusivamente per la pianificazione dei turni, senza pubblicità né tracciamento. Scopri di più nell''{privacyLink}."
+    "privacyNotice": "Utilizziamo i tuoi dati esclusivamente per la pianificazione dei turni, senza pubblicità né tracciamento. Scopri di più nell''<privacyLink>informativa sulla privacy</privacyLink>."
   },
   "error": {
     "backToLogin": "Torna al login"
@@ -293,8 +293,7 @@
     "subdomainLabel": "Sottodominio",
     "subdomainHint": "{slug}.{rootHost}. Non potrà essere modificato in seguito.",
     "calloutInfo": "Diventerai il/la responsabile principale (responsabile di {unitTerm} nel piano turni). Questo potrà essere modificato successivamente in «{unitTerm} → Persone». Puoi modificare nome, logo, colore e gruppi in qualsiasi momento; solo il sottodominio rimane fisso.",
-    "acceptTerms": "Ho letto le {termsLink} e le accetto a nome del {unitTerm}, comprese le disposizioni sul trattamento dei dati.",
-    "termsLinkText": "Condizioni d'uso",
+    "acceptTerms": "Ho letto le <termsLink>Condizioni d'uso</termsLink> e le accetto a nome del {unitTerm}, comprese le disposizioni sul trattamento dei dati.",
     "submit": "Crea {unitTerm}",
     "later": "Più tardi",
     "noPlanYetTitle": "Non c'è ancora un piano turni per {names}",

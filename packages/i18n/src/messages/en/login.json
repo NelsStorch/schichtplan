@@ -17,7 +17,7 @@
     "or": "or"
   },
   "authShell": {
-    "privacyNotice": "We only use your data for shift planning, with no ads and no tracking. Learn more in the {privacyLink}."
+    "privacyNotice": "We only use your data for shift planning, with no ads and no tracking. Learn more in the <privacyLink>privacy policy</privacyLink>."
   },
   "error": {
     "backToLogin": "Back to login"
@@ -293,8 +293,7 @@
     "subdomainLabel": "Subdomain",
     "subdomainHint": "{slug}.{rootHost}. Cannot be changed later.",
     "calloutInfo": "You will become the main responsible person ({unitTerm} leader in the shift plan). This can be changed later under «{unitTerm} → People». You can adjust name, logo, color, and groups at any time; only the subdomain remains fixed.",
-    "acceptTerms": "I have read the {termsLink} and accept them on behalf of the {unitTerm}, including data processing provisions.",
-    "termsLinkText": "Terms of Service",
+    "acceptTerms": "I have read the <termsLink>Terms of Service</termsLink> and accept them on behalf of the {unitTerm}, including data processing provisions.",
     "submit": "Create {unitTerm}",
     "later": "Later",
     "noPlanYetTitle": "There is no shift plan for {names} yet",

@@ -17,7 +17,7 @@
     "or": "ou"
   },
   "authShell": {
-    "privacyNotice": "Nous utilisons vos données uniquement pour la planification des tranches horaires, sans publicité ni suivi. En savoir plus dans la {privacyLink}."
+    "privacyNotice": "Nous utilisons vos données uniquement pour la planification des tranches horaires, sans publicité ni suivi. En savoir plus dans la <privacyLink>politique de confidentialité</privacyLink>."
   },
   "error": {
     "backToLogin": "Retour à la connexion"
@@ -293,8 +293,7 @@
     "subdomainLabel": "Sous-domaine",
     "subdomainHint": "{slug}.{rootHost}. Ne pourra plus être modifié par la suite.",
     "calloutInfo": "Vous deviendrez le·la responsable principal·e (responsable de {unitTerm} dans le planning). Cela pourra être modifié plus tard sous « {unitTerm} → Personnes ». Vous pouvez ajuster le nom, le logo, la couleur et les branches à tout moment ; seul le sous-domaine reste fixe.",
-    "acceptTerms": "J'ai lu les {termsLink} et les accepte au nom du {unitTerm}, y compris les dispositions relatives au traitement des données.",
-    "termsLinkText": "Conditions d'utilisation",
+    "acceptTerms": "J'ai lu les <termsLink>Conditions d'utilisation</termsLink> et les accepte au nom du {unitTerm}, y compris les dispositions relatives au traitement des données.",
     "submit": "Créer {unitTerm}",
     "later": "Plus tard",
     "noPlanYetTitle": "Il n'y a pas encore de planning pour {names}",
