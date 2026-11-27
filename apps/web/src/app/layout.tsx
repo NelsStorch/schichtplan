@@ -11,6 +11,7 @@ import { getRequestOrigin, ogImage, ogVersion, safeAccent } from '@schichtplan/u
 import { CommandPalette, CommandPaletteProvider } from '@/components/command';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 import { PwaInstallBanner } from '@/components/PwaInstallBanner';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { appName, getDepartmentPreview, previewTitle } from '@/lib/og';
 import { departmentOgResponse, warmOgImage } from '@/lib/ogRender';
 import { PortalProvider } from '@/lib/portal';
@@ -91,6 +92,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               {children}
               <CommandPalette />
               <PwaInstallBanner />
+              <PullToRefresh />
             </CommandPaletteProvider>
           </PortalProvider>
           <ServiceWorkerRegister />

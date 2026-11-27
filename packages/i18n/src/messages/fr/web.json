@@ -15,6 +15,9 @@
     "emptyDescription": "Vous n'êtes inscrit·e à aucun créneau pour l'instant. Choisissez un événement et venez aider.",
     "findShiftsAction": "Trouver des créneaux",
     "nextHeader": "Prochain engagement",
+    "startsInHours": "Commence dans {hours} h {minutes} min",
+    "startsInMinutes": "Commence dans {minutes} min",
+    "runningNow": "En cours · jusqu’à {end}",
     "roleLeader": "Responsable de créneau",
     "cateringTokensAction": "Bons repas",
     "googleCalendarAction": "Google Agenda",
@@ -347,6 +350,7 @@
       "unlockAccessAction": "Débloquer l’accès",
       "notUnlockedForYou": "Accès non autorisé",
       "signupForTaskAction": "S’inscrire à cette tâche",
+      "moreActionsAria": "Plus d’actions",
       "x": {
         "shift": "Créneau",
         "shareFree": "{count, plural, one {Encore # place libre.} other {Encore # places libres.}}",

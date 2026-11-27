@@ -15,6 +15,9 @@
     "emptyDescription": "Du bist noch für keine Schicht eingetragen. Such dir einen Anlass aus und hilf mit.",
     "findShiftsAction": "Schichten finden",
     "nextHeader": "Als Nächstes",
+    "startsInHours": "Beginnt in {hours} h {minutes} min",
+    "startsInMinutes": "Beginnt in {minutes} min",
+    "runningNow": "Läuft gerade · bis {end}",
     "roleLeader": "Schichtleitung",
     "cateringTokensAction": "Verpflegungs-Bons",
     "googleCalendarAction": "Google Kalender",
@@ -347,6 +350,7 @@
       "unlockAccessAction": "Zugang freischalten",
       "notUnlockedForYou": "Für dich nicht freigeschaltet",
       "signupForTaskAction": "Für diese Arbeit eintragen",
+      "moreActionsAria": "Weitere Aktionen",
       "x": {
         "shift": "Schicht",
         "shareFree": "{count, plural, one {Noch # Platz frei.} other {Noch # Plätze frei.}}",

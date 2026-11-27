@@ -165,11 +165,12 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
             © {new Date().getFullYear()} {department ? department.name : org.name}
             {org.independentNotice && <> · {org.independentNotice}</>}
           </p>
-          <div className="flex items-center gap-5">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <a href={helpUrl('/', org.domain)} className="transition hover:text-fg">
               {tFooter('help')}
             </a>
-            <a href={statusUrl('/', org.domain)} className="transition hover:text-fg">
+            {/* Handy: nur das Nötigste (Hilfe, Recht, Sprache), der Rest ab md */}
+            <a href={statusUrl('/', org.domain)} className="transition hover:text-fg max-md:hidden">
               {tFooter('status')}
             </a>
             <a href={privacyUrl(org.domain)} className="transition hover:text-fg">
@@ -178,11 +179,11 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
             <a href={imprintUrl(org.domain)} className="transition hover:text-fg">
               {tFooter('imprint')}
             </a>
-            <AppVersion />
+            <AppVersion className="max-md:hidden" />
             <LocaleSwitcher placement="top" onPersist={user ? (locale) => api('/api/auth/me', { method: 'PATCH', json: { locale } }) : undefined} />
             <a
               href={getLandingUrl('/', org.domain)}
-              className="transition hover:text-fg"
+              className="transition hover:text-fg max-md:hidden"
             >
               {typeof window !== 'undefined' && window.location.hostname.includes('.')
                 ? getRootDomain(window.location.hostname)

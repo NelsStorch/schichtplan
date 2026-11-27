@@ -388,7 +388,7 @@ export function AssignPersonToShiftsDialog({
                     <button
                       type="button"
                       onClick={() => toggleShift(s)}
-                      className="rounded p-1 text-fg-subtle hover:bg-surface-2 hover:text-fg"
+                      className="relative touch-hitbox rounded p-1 text-fg-subtle hover:bg-surface-2 hover:text-fg"
                       aria-label={t('x.deselect', { shift: shiftName(s) })}
                     >
                       <X className="size-3.5" />

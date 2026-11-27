@@ -894,7 +894,7 @@ function HelpersPage() {
                               <button
                                 type="button"
                                 onClick={() => removeSignup(row, s)}
-                                className="shrink-0 rounded p-1 text-fg-subtle hover:bg-danger/10 hover:text-danger-ink"
+                                className="relative touch-hitbox shrink-0 rounded p-1 text-fg-subtle hover:bg-danger/10 hover:text-danger-ink"
                                 aria-label={`Aus ${shiftName(s)} austragen`}
                               >
                                 <X className="size-3.5" />

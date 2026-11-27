@@ -11,6 +11,7 @@ import {
   Lock,
   LogIn,
   Mail,
+  MoreHorizontal,
   Phone,
   Repeat,
   Share2,
@@ -154,6 +155,25 @@ export function ShiftDetailsDialog({
   // Sucht jemand Ersatz, teilt «Teilen» die Ersatz-Suche (eigene Vorschau «Ersatz gesucht»)
   const sharesReplacement = offerCount > 0 && replacementOpen && !over;
 
+  // Darf man sich direkt (ohne Login/Freischaltung) eintragen? Gleiche Kette wie der Knopf in der Aufgabe.
+  const pendingLinkBlocks = Boolean(
+    event.viewer?.pendingLink && !event.viewer.pendingLink.alreadyRedeemed && !event.viewer.access?.canSignup
+  );
+  const canPlainSignup = (taskFull: boolean) =>
+    !over &&
+    !isMine &&
+    !conflictingShift &&
+    !taskFull &&
+    Boolean(event.allowPublicSignup) &&
+    !(event.signupOpensAt && !isSignupTimeOpen(event.signupOpensAt)) &&
+    !needsLogin &&
+    !pendingLinkBlocks &&
+    !blockedReason;
+  // Handy: Bei nur einer Aufgabe steht «Eintragen» gross unten im Sheet (Daumen-Zone)
+  const primaryTask =
+    tasks.length === 1 && canPlainSignup(signups.length >= tasks[0].requiredSlots) ? tasks[0] : null;
+  const manageActions = canManage && (onAssignHelper || onEditShift);
+
   /** Schicht-Link teilen (Handy: Teilen-Menü, sonst kopieren). Der Link bekommt eine eigene Vorschau. */
   const shareShift = async () => {
     const url = `${window.location.origin}/events/${encodeURIComponent(event.slug)}?schicht=${shift.id}${sharesReplacement ? '&ersatz=1' : ''}`;
@@ -218,52 +238,95 @@ export function ShiftDetailsDialog({
         </div>
       }
       footer={
-        <div className="flex w-full flex-wrap items-center justify-between gap-3">
-          <div className="text-xs text-fg-muted">
-            {t.rich('slotsFilled', {
-              filled,
-              total,
-              bold: (chunks) => <span className="tabular font-mono font-bold text-fg">{chunks}</span>,
-            })}
-          </div>
-          <div className="flex items-center gap-2">
-            {canManage && onAssignHelper && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => onAssignHelper(shift)}
-              >
-                <UserPlus className="size-3.5" /> {t('assignHelperAction')}
-              </Button>
-            )}
-            {canManage && onEditShift && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  onClose();
-                  onEditShift(shift);
-                }}
-              >
-                <Edit className="size-3.5" /> {t('editAction')}
-              </Button>
-            )}
-            {!over && (
-              <Button variant="secondary" size="sm" onClick={() => shareShift()}>
-                {sharesReplacement ? (
-                  <>
-                    <Repeat className="size-3.5" /> {t('shareReplacementAction')}
-                  </>
-                ) : (
-                  <>
-                    <Share2 className="size-3.5" /> {t('shareAction')}
-                  </>
-                )}
-              </Button>
-            )}
-            <Button variant="secondary" size="sm" onClick={onClose}>
-              {t('closeAction')}
+        <div className="flex w-full flex-col gap-3">
+          {primaryTask && (
+            <Button size="lg" className="w-full md:hidden" disabled={busy} onClick={() => onSignup(primaryTask)}>
+              <UserPlus /> {t('signupForTaskAction')}
             </Button>
+          )}
+          <div className="flex w-full flex-wrap items-center justify-between gap-3">
+            <div className="text-xs text-fg-muted">
+              {t.rich('slotsFilled', {
+                filled,
+                total,
+                bold: (chunks) => <span className="tabular font-mono font-bold text-fg">{chunks}</span>,
+              })}
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Desktop: Verwaltung als Knöpfe */}
+              {canManage && onAssignHelper && (
+                <Button variant="secondary" size="sm" className="max-md:hidden" onClick={() => onAssignHelper(shift)}>
+                  <UserPlus className="size-3.5" /> {t('assignHelperAction')}
+                </Button>
+              )}
+              {canManage && onEditShift && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="max-md:hidden"
+                  onClick={() => {
+                    onClose();
+                    onEditShift(shift);
+                  }}
+                >
+                  <Edit className="size-3.5" /> {t('editAction')}
+                </Button>
+              )}
+              {!over && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => shareShift()}
+                  aria-label={sharesReplacement ? t('shareReplacementAction') : t('shareAction')}
+                >
+                  {sharesReplacement ? <Repeat className="size-3.5" /> : <Share2 className="size-3.5" />}
+                  <span className={manageActions ? 'max-md:sr-only' : undefined}>
+                    {sharesReplacement ? t('shareReplacementAction') : t('shareAction')}
+                  </span>
+                </Button>
+              )}
+              {/* Handy: Verwaltung im «⋯»-Menü, damit die Leiste nicht überquillt */}
+              {manageActions && (
+                <details className="group/more relative md:hidden">
+                  <summary
+                    aria-label={t('moreActionsAria')}
+                    className={cn(buttonClasses({ variant: 'secondary', size: 'icon-sm' }), 'cursor-pointer list-none [&::-webkit-details-marker]:hidden')}
+                  >
+                    <MoreHorizontal />
+                  </summary>
+                  <div className="absolute bottom-full right-0 z-10 mb-2 w-56 overflow-hidden rounded-card border border-line bg-surface-2 p-1 shadow-lift">
+                    {onAssignHelper && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.currentTarget.closest('details')?.removeAttribute('open');
+                          onAssignHelper(shift);
+                        }}
+                        className="flex h-11 w-full items-center gap-2.5 rounded-field px-3 text-sm font-medium text-fg hover:bg-surface-3"
+                      >
+                        <UserPlus className="size-4 text-fg-muted" /> {t('assignHelperAction')}
+                      </button>
+                    )}
+                    {onEditShift && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose();
+                          onEditShift(shift);
+                        }}
+                        className="flex h-11 w-full items-center gap-2.5 rounded-field px-3 text-sm font-medium text-fg hover:bg-surface-3"
+                      >
+                        <Edit className="size-4 text-fg-muted" /> {t('editAction')}
+                      </button>
+                    )}
+                  </div>
+                </details>
+              )}
+              {/* Handy schliesst per «X» oder Wischen; der Knopf bleibt für Desktop */}
+              <Button variant="secondary" size="sm" className="max-md:hidden" onClick={onClose}>
+                {t('closeAction')}
+              </Button>
+            </div>
           </div>
         </div>
       }
@@ -545,7 +608,7 @@ export function ShiftDetailsDialog({
                               key={s.id}
                               title={wanted ? t('seekingReplacementTooltip') : undefined}
                               className={cn(
-                                'inline-flex h-7 items-center gap-1.5 rounded-full pl-1 pr-2.5 text-xs font-medium transition-colors',
+                                'inline-flex h-9 items-center gap-1.5 rounded-full pl-1.5 pr-2 text-sm font-medium transition-colors md:h-7 md:pl-1 md:pr-2.5 md:text-xs',
                                 wanted
                                   ? 'border border-dashed border-warning/60 bg-warning/10 text-warning-ink'
                                   : isCurrentUser
@@ -576,9 +639,9 @@ export function ShiftDetailsDialog({
                                       : t('seekReplacementAria', { name: s.displayName })
                                   }
                                   title={s.replacementWantedAt ? t('stopReplacementTitle') : t('seekReplacementTitle')}
-                                  className="-mr-1 ml-0.5 rounded-full p-0.5 text-fg-subtle transition hover:bg-warning/15 hover:text-warning-ink"
+                                  className="-mr-0.5 ml-0.5 rounded-full p-1.5 text-fg-subtle transition hover:bg-warning/15 hover:text-warning-ink md:-mr-1 md:p-0.5"
                                 >
-                                  <Repeat className="size-3" />
+                                  <Repeat className="size-3.5 md:size-3" />
                                 </button>
                               )}
                               {canManage && (
@@ -586,9 +649,9 @@ export function ShiftDetailsDialog({
                                   type="button"
                                   onClick={() => onRemoveHelper(s.id, s.displayName)}
                                   aria-label={t('removeHelperAria', { name: s.displayName })}
-                                  className="-mr-1 ml-0.5 rounded-full p-0.5 text-fg-subtle transition hover:bg-danger/10 hover:text-danger-ink"
+                                  className="-mr-0.5 ml-0.5 rounded-full p-1.5 text-fg-subtle transition hover:bg-danger/10 hover:text-danger-ink md:-mr-1 md:p-0.5"
                                 >
-                                  <X className="size-3" />
+                                  <X className="size-3.5 md:size-3" />
                                 </button>
                               )}
                             </li>
@@ -636,7 +699,13 @@ export function ShiftDetailsDialog({
 
                   {/* Aktions-Button mit Button-in-Button Muster */}
                   {!over && (
-                    <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-line/60">
+                    <div
+                      className={cn(
+                        'flex flex-wrap items-center justify-end gap-2 border-t border-line/60 pt-2',
+                        // Handy: «Eintragen» steht schon gross unten im Sheet
+                        primaryTask && 'max-md:hidden'
+                      )}
+                    >
                       {isMineInThisTask && taskMineSignup?.replacementWantedAt ? (
                         <div className="flex w-full flex-wrap items-center justify-between gap-2">
                           <p className="flex items-center gap-1.5 text-xs font-semibold text-warning-ink">
@@ -667,7 +736,7 @@ export function ShiftDetailsDialog({
                           type="button"
                           onClick={() => onCancel(taskMineSignup?.id)}
                           disabled={busy}
-                          className="group inline-flex items-center gap-2 rounded-full border border-danger/40 bg-danger/15 py-1.5 pl-3.5 pr-2 text-xs font-semibold text-danger-ink transition-all duration-200 hover:bg-danger/25 active:scale-[0.98]"
+                          className="relative touch-hitbox group inline-flex items-center gap-2 rounded-full border border-danger/40 bg-danger/15 py-1.5 pl-3.5 pr-2 text-xs max-md:min-h-11 max-md:pl-4 max-md:text-sm font-semibold text-danger-ink transition-all duration-200 hover:bg-danger/25 active:scale-[0.98]"
                         >
                           <span>{t('cancelTaskSignupAction')}</span>
                           <span className="flex size-5 items-center justify-center rounded-full bg-danger/20 transition-transform duration-200 group-hover:scale-110">
@@ -710,7 +779,7 @@ export function ShiftDetailsDialog({
                       ) : needsLogin ? (
                         <a
                           href={loginUrl()}
-                          className="group inline-flex items-center gap-2 rounded-full bg-accent py-1.5 pl-3.5 pr-2 text-xs font-semibold text-accent-fg transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
+                          className="group inline-flex items-center gap-2 rounded-full bg-accent py-1.5 pl-3.5 pr-2 text-xs max-md:min-h-11 max-md:pl-4 max-md:text-sm font-semibold text-accent-fg transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
                         >
                           <span>{t('loginAndSignupAction')}</span>
                           <span className="flex size-5 items-center justify-center rounded-full bg-black/20 transition-transform duration-200 group-hover:scale-110">
@@ -731,7 +800,7 @@ export function ShiftDetailsDialog({
                             type="button"
                             onClick={onRedeemLink}
                             disabled={busy}
-                            className="group inline-flex items-center gap-2 rounded-full bg-accent py-1.5 pl-3.5 pr-2 text-xs font-semibold text-accent-fg shadow-sm transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
+                            className="relative touch-hitbox group inline-flex items-center gap-2 rounded-full bg-accent py-1.5 pl-3.5 pr-2 text-xs max-md:min-h-11 max-md:pl-4 max-md:text-sm font-semibold text-accent-fg shadow-sm transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
                           >
                             <span>{t('unlockAccessAction')}</span>
                             <span className="flex size-5 items-center justify-center rounded-full bg-black/20 transition-transform duration-200 group-hover:scale-110">
@@ -755,7 +824,7 @@ export function ShiftDetailsDialog({
                           type="button"
                           onClick={() => onSignup(task)}
                           disabled={busy}
-                          className="group inline-flex items-center gap-2 rounded-full bg-accent py-1.5 pl-3.5 pr-2 text-xs font-semibold text-accent-fg shadow-sm transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
+                          className="relative touch-hitbox group inline-flex items-center gap-2 rounded-full bg-accent py-1.5 pl-3.5 pr-2 text-xs max-md:min-h-11 max-md:pl-4 max-md:text-sm font-semibold text-accent-fg shadow-sm transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
                         >
                           <span>{t('signupForTaskAction')}</span>
                           <span className="flex size-5 items-center justify-center rounded-full bg-black/20 transition-transform duration-200 group-hover:scale-110">

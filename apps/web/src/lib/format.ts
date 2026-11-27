@@ -63,10 +63,8 @@ export function fmtRelativeDay(iso: string, now = new Date()) {
   const diff = Math.round(
     (Date.parse(businessDayKey(iso)) - Date.parse(businessDayKey(now.toISOString()))) / 86_400_000
   );
-  if (diff === 0) return 'heute';
-  if (diff === 1) return 'morgen';
-  if (diff === -1) return 'gestern';
-  return diff > 0 ? `in ${diff} Tagen` : `vor ${-diff} Tagen`;
+  // In der aktiven Sprache («heute», «tomorrow», «dans 5 jours» …)
+  return new Intl.RelativeTimeFormat(getDefaultIntlLocale(), { numeric: 'auto' }).format(diff, 'day');
 }
 
 /** Stand der Offline-Daten: «Heute, 14:32 Uhr», «Gestern, 09:15 Uhr» oder «25.10., 14:32 Uhr» (in der aktiven Sprache) */

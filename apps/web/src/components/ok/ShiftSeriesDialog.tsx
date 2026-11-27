@@ -516,7 +516,7 @@ export function ShiftSeriesDialog({
                     <button
                       type="button"
                       onClick={() => removeTask(idx)}
-                      className="rounded-full p-1 text-fg-subtle transition hover:bg-danger/10 hover:text-danger-ink"
+                      className="relative touch-hitbox rounded-full p-1 text-fg-subtle transition hover:bg-danger/10 hover:text-danger-ink"
                       title={t('x.removeTask')}
                       aria-label={t('x.removeTask')}
                     >

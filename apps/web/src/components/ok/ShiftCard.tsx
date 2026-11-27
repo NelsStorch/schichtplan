@@ -180,7 +180,7 @@ export function ShiftCard({
                         <button
                           type="button"
                           onClick={() => onRemoveSignup(su.id, su.displayName)}
-                          className="rounded-full p-0.5 text-fg-subtle transition hover:bg-danger/10 hover:text-danger-ink"
+                          className="relative touch-hitbox rounded-full p-0.5 text-fg-subtle transition hover:bg-danger/10 hover:text-danger-ink"
                           title={t('removeSignupAria', { name: su.displayName })}
                           aria-label={t('removeSignupAria', { name: su.displayName })}
                         >

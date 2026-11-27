@@ -280,7 +280,7 @@ export function HelperHoursDialog({
         {viewMode === 'helpers' && (
           <div className="rounded-xl border border-line bg-surface overflow-hidden">
             <div className="max-h-96 overflow-y-auto">
-              <table className="w-full text-left text-xs">
+              <table className="table-cards w-full text-left text-xs">
                 <thead className="sticky top-0 bg-surface-subtle border-b border-line text-fg-muted uppercase tracking-wider text-[10px] font-semibold">
                   <tr>
                     <th scope="col" className="py-2.5 px-3">{t('colName')}</th>
@@ -324,7 +324,7 @@ export function HelperHoursDialog({
                           </div>
                         </td>
 
-                        <td className="py-2.5 px-3 text-fg-muted">
+                        <td data-label={`${t('colUnit')} / ${t('colStufen')}`} className="py-2.5 px-3 text-fg-muted">
                           {h.departmentName ? (
                             <div>
                               <div>{h.departmentName}</div>
@@ -339,24 +339,26 @@ export function HelperHoursDialog({
                           )}
                         </td>
 
-                        <td className="py-2.5 px-3 text-center font-mono font-medium">
+                        <td data-label={t('colShifts')} className="py-2.5 px-3 text-center font-mono font-medium">
                           {h.shiftCount}
                         </td>
 
-                        <td className="py-2.5 px-3 text-right font-mono text-fg-muted">
+                        <td data-label={t('x.colEvent')} className="py-2.5 px-3 text-right font-mono text-fg-muted">
                           {h.eventHours > 0 ? `${h.eventHours} Std.` : '–'}
                         </td>
 
-                        <td className="py-2.5 px-3 text-right font-mono text-fg-muted">
+                        <td data-label={t('x.colSetup')} className="py-2.5 px-3 text-right font-mono text-fg-muted">
                           {h.setupHours > 0 ? `${h.setupHours} Std.` : '–'}
                         </td>
 
-                        <td className="py-2.5 px-3 text-right">
-                          <div className="font-semibold font-mono text-fg">
-                            {h.formattedTime}
-                          </div>
-                          <div className="text-[10px] text-fg-subtle font-mono">
-                            {t('x.hours', { hours: h.totalHours })}
+                        <td data-label={t('colHours')} className="py-2.5 px-3 text-right">
+                          <div>
+                            <div className="font-semibold font-mono text-fg">
+                              {h.formattedTime}
+                            </div>
+                            <div className="text-[10px] text-fg-subtle font-mono">
+                              {t('x.hours', { hours: h.totalHours })}
+                            </div>
                           </div>
                         </td>
                       </tr>

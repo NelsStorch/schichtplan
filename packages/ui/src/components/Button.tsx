@@ -6,7 +6,7 @@ export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'dan
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon' | 'icon-sm';
 
 const base =
-  'relative inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full font-semibold select-none ' +
+  'touch-hitbox relative inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full font-semibold select-none ' +
   'transition-[transform,background-color,border-color,color,box-shadow,filter] duration-200 ease-out-expo ' +
   'active:scale-[0.97] disabled:pointer-events-none disabled:opacity-45 ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-canvas';
@@ -21,11 +21,11 @@ const variants: Record<ButtonVariant, string> = {
 };
 
 const sizes: Record<ButtonSize, string> = {
-  sm: 'h-9 px-3.5 text-[13px] [&_svg]:size-4',
+  sm: 'h-10 px-4 text-sm md:h-9 md:px-3.5 md:text-[13px] [&_svg]:size-4',
   md: 'h-11 px-5 text-sm [&_svg]:size-[18px]',
   lg: 'h-13 px-7 text-[15px] [&_svg]:size-5',
   icon: 'size-11 [&_svg]:size-5',
-  'icon-sm': 'size-9 [&_svg]:size-4',
+  'icon-sm': 'size-10 md:size-9 [&_svg]:size-4',
 };
 
 /** Klassen für Links, die wie Buttons aussehen sollen (z. B. next/link). */

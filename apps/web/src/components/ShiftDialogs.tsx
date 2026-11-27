@@ -708,7 +708,7 @@ function ShiftForm({
                 <button
                   type="button"
                   onClick={() => removeTask(idx)}
-                  className="absolute right-2 top-2 rounded-full p-1 text-fg-subtle transition hover:bg-danger/10 hover:text-danger-ink"
+                  className="touch-hitbox absolute right-2 top-2 rounded-full p-1 text-fg-subtle transition hover:bg-danger/10 hover:text-danger-ink"
                   aria-label={t('removeTaskAria')}
                 >
                   <Trash2 className="size-4" />
@@ -831,7 +831,7 @@ function ShiftForm({
                     <button
                       type="button"
                       onClick={() => setResponsibleUserIds((prev) => prev.filter((id) => id !== userId))}
-                      className="ml-1 rounded p-0.5 hover:bg-fg/10 text-fg-muted hover:text-fg"
+                      className="relative touch-hitbox ml-1 rounded p-0.5 hover:bg-fg/10 text-fg-muted hover:text-fg"
                       title={t('removeTooltip')}
                     >
                       <Trash2 className="size-3" />
@@ -1312,7 +1312,7 @@ export function DayResponsiblesDialog({
                   <button
                     type="button"
                     onClick={() => setSelectedUserIds((prev) => prev.filter((id) => id !== userId))}
-                    className="ml-1 rounded p-0.5 hover:bg-fg/10 text-fg-muted hover:text-fg"
+                    className="relative touch-hitbox ml-1 rounded p-0.5 hover:bg-fg/10 text-fg-muted hover:text-fg"
                     title={t('removeTooltip')}
                   >
                     <Trash2 className="size-3" />

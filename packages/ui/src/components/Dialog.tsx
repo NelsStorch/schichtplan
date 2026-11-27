@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '../utils/cn';
@@ -52,6 +52,10 @@ export function Dialog({
     if (!dialog) return;
     if (open && !dialog.open) dialog.showModal();
     if (!open && dialog.open) dialog.close();
+    if (!open) {
+      dialog.style.translate = '';
+      dialog.style.transition = '';
+    }
   }, [open]);
 
   // Hintergrund-Scroll sperren, solange offen
@@ -64,6 +68,44 @@ export function Dialog({
       root.style.overflow = previous;
     };
   }, [open]);
+
+  // Mobile: Sheet am Griff/Kopf nach unten wischen schliesst es (wie das «X»)
+  const drag = useRef<{ startY: number; startT: number; dy: number; pointerId: number } | null>(null);
+  const isSheet = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 639.98px)').matches;
+
+  const onDragStart = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!isSheet() || e.button !== 0) return;
+    // Klicks auf Knöpfe im Kopf (z. B. «X») nicht als Wischen werten
+    if ((e.target as HTMLElement).closest('button, a, input, select, textarea')) return;
+    drag.current = { startY: e.clientY, startT: performance.now(), dy: 0, pointerId: e.pointerId };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    if (ref.current) ref.current.style.transition = 'none';
+  };
+
+  const onDragMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    if (!d || d.pointerId !== e.pointerId || !ref.current) return;
+    d.dy = Math.max(0, e.clientY - d.startY);
+    // `translate` statt `transform`: Die Einblend-Animation hält `transform` fest (fill-mode both)
+    ref.current.style.translate = d.dy ? `0 ${d.dy}px` : '';
+  };
+
+  const onDragEnd = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    drag.current = null;
+    const dialog = ref.current;
+    if (!d || d.pointerId !== e.pointerId || !dialog) return;
+    const velocity = d.dy / Math.max(1, performance.now() - d.startT);
+    const shouldClose = d.dy > Math.min(140, dialog.offsetHeight * 0.3) || (d.dy > 40 && velocity > 0.6);
+    dialog.style.transition = 'translate 200ms cubic-bezier(0.2, 0.8, 0.2, 1)';
+    if (shouldClose) {
+      dialog.style.translate = '0 100%';
+      // Zurücksetzen erst nach dem Schliessen (siehe Effekt oben), sonst blitzt das Sheet kurz auf
+      window.setTimeout(onClose, 180);
+    } else {
+      dialog.style.translate = '';
+    }
+  };
 
   return (
     <dialog
@@ -91,7 +133,14 @@ export function Dialog({
     >
       {open && (
         <div className="flex max-h-[inherit] flex-col">
-          {/* Griff als visueller Hinweis auf das Sheet (nur Mobile) */}
+          {/* Griff + Kopf: auf Mobile nach unten wischen schliesst das Sheet */}
+          <div
+            className="touch-none select-none sm:touch-auto sm:select-auto"
+            onPointerDown={onDragStart}
+            onPointerMove={onDragMove}
+            onPointerUp={onDragEnd}
+            onPointerCancel={onDragEnd}
+          >
           <div aria-hidden className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-line-strong sm:hidden" />
           <header className="flex items-start gap-3 px-5 pb-4 pt-4 sm:px-7 sm:pt-6">
             {icon && (
@@ -114,6 +163,7 @@ export function Dialog({
               <X className="size-5" aria-hidden />
             </button>
           </header>
+          </div>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-5 sm:px-7 sm:pb-6">
             {children}
           </div>

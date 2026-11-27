@@ -61,6 +61,7 @@ import { ParticipationDialog } from '@/components/event/ParticipationDialog';
 import { ReplacementDialog } from '@/components/event/ReplacementDialog';
 import { CateringTokensDialog } from '@/components/CateringTokensDialog';
 import { ShiftGrid } from '@/components/event/ShiftGrid';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import { NeededShifts, ShiftRows, type ShiftActions, type ShiftPauseHint } from '@/components/event/ShiftList';
 import { replacementOffers, shiftStats, shiftTasks } from '@/components/event/shift-utils';
 import { AssignHelperDialog, DayResponsiblesDialog, OrganizerDialog, ShiftFormDialog } from '@/components/ShiftDialogs';
@@ -91,7 +92,10 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
   const [membersOnly, setMembersOnly] = useState(false);
   // Nicht ladbares Event-Logo -> Cevi-Standardlogo
   const [brokenLogo, setBrokenLogo] = useState<string | null>(null);
-  const [view, setView] = useState<View>('list');
+  const [viewChoice, setView] = useState<View>('list');
+  // Handy: Raster (breite Tabelle) ergibt keinen Sinn, dort immer die Liste
+  const isMobile = useIsMobile();
+  const view: View = isMobile ? 'list' : viewChoice;
   const [day, setDay] = useState<string>('ALL');
   const [taskFilter, setTaskFilter] = useState<string>('ALL');
   const [onlySetup, setOnlySetup] = useState(false);
@@ -825,7 +829,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                       <button
                         type="button"
                         onClick={() => setShowCatering(true)}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-fg shadow-sm transition hover:brightness-110"
+                        className="relative touch-hitbox inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-fg shadow-sm transition hover:brightness-110"
                       >
                         <UtensilsCrossed className="size-3.5" /> {t('cateringTokensBtn')}
                       </button>
@@ -952,7 +956,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                         type="button"
                         onClick={() => removeOrganizer(org.id, orgName)}
                         aria-label={t('removeOrganizerAria', { name: org.displayName })}
-                        className="-mr-2 ml-1 rounded-full p-1.5 text-fg-subtle transition hover:bg-danger/10 hover:text-danger-ink"
+                        className="relative touch-hitbox -mr-2 ml-1 rounded-full p-1.5 text-fg-subtle transition hover:bg-danger/10 hover:text-danger-ink"
                       >
                         <X className="size-3.5" />
                       </button>
@@ -997,7 +1001,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
       {event.shifts.length > 0 && (
         <div id="schichten" className="sticky top-16 z-20 mt-8 scroll-mt-16 border-b border-line/70 bg-canvas/85 backdrop-blur-xl">
           <div className="mx-auto flex max-w-6xl items-center gap-2 overflow-x-auto px-4 py-3 scrollbar-none sm:px-6">
-            <div role="radiogroup" aria-label={t('viewAria')} className="flex shrink-0 rounded-full border border-line bg-surface p-0.5">
+            <div role="radiogroup" aria-label={t('viewAria')} className="hidden shrink-0 md:flex rounded-full border border-line bg-surface p-0.5">
               {(
                 [
                   { value: 'list', label: t('viewList'), icon: List },
@@ -1193,7 +1197,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
                             <button
                               type="button"
                               onClick={() => setSelectedShiftId(s.id)}
-                              className="tabular inline-flex items-center gap-1 rounded-full border border-success/30 bg-surface px-2.5 py-0.5 font-semibold text-fg transition hover:border-accent"
+                              className="relative touch-hitbox tabular inline-flex items-center gap-1 rounded-full border border-success/30 bg-surface px-2.5 py-0.5 font-semibold text-fg transition hover:border-accent"
                             >
                               <Check className="size-3 text-success-ink" />
                               <span>{fmtTimeRange(s.startTime, s.endTime)}</span>

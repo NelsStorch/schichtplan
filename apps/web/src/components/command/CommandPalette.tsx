@@ -231,7 +231,7 @@ export function CommandPalette() {
               <button
                 type="button"
                 onClick={() => setActiveSubActionItem(null)}
-                className="flex items-center gap-1 rounded px-1.5 py-0.5 text-accent-ink transition hover:bg-surface-3"
+                className="relative touch-hitbox flex items-center gap-1 rounded px-1.5 py-0.5 text-accent-ink transition hover:bg-surface-3"
               >
                 <ArrowLeft className="size-3.5" /> {t('back')}
               </button>
@@ -258,7 +258,7 @@ export function CommandPalette() {
                 <button
                   type="button"
                   onClick={() => setSubQuery('')}
-                  className="rounded p-1 text-fg-subtle hover:text-fg"
+                  className="relative touch-hitbox rounded p-1 text-fg-subtle hover:text-fg"
                 >
                   <X className="size-3.5" />
                 </button>
@@ -307,7 +307,7 @@ export function CommandPalette() {
               <button
                 type="button"
                 onClick={() => setQuery('')}
-                className="rounded-full p-1 text-fg-subtle transition hover:bg-surface-2 hover:text-fg"
+                className="relative touch-hitbox rounded-full p-1 text-fg-subtle transition hover:bg-surface-2 hover:text-fg"
                 aria-label={t('clearSearchAria')}
               >
                 <X className="size-4" />
@@ -504,7 +504,7 @@ export function CommandPalette() {
                                     'flex items-center gap-1 rounded-md px-1.5 py-0.5 text-2xs font-semibold transition',
                                     isSelected
                                       ? 'bg-accent/15 text-accent-ink hover:bg-accent/25'
-                                      : 'text-fg-subtle hover:bg-surface-3 hover:text-fg opacity-0 group-hover:opacity-100'
+                                      : 'text-fg-subtle hover:bg-surface-3 hover:text-fg opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100'
                                   )}
                                 >
                                   <span>{t('actions')}</span>

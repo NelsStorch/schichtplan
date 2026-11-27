@@ -101,14 +101,14 @@ export function PwaInstallBanner() {
                 <button
                   type="button"
                   onClick={handleDismiss}
-                  className="inline-flex items-center gap-1.5 rounded-field bg-accent px-3 py-1.5 text-xs font-semibold text-white shadow-soft transition hover:bg-accent-hover active:scale-95"
+                  className="relative touch-hitbox inline-flex items-center gap-1.5 rounded-field bg-accent px-3 py-1.5 text-xs font-semibold text-white shadow-soft transition hover:bg-accent-hover active:scale-95"
                 >
                   {t('understoodBtn')}
                 </button>
                 <button
                   type="button"
                   onClick={handleDismiss}
-                  className="rounded-field px-2.5 py-1.5 text-xs font-medium text-fg-muted hover:text-fg"
+                  className="relative touch-hitbox rounded-field px-2.5 py-1.5 text-xs font-medium text-fg-muted hover:text-fg"
                 >
                   {t('laterBtn')}
                 </button>
@@ -119,7 +119,7 @@ export function PwaInstallBanner() {
               <button
                 type="button"
                 onClick={handleInstallClick}
-                className="inline-flex items-center gap-1.5 rounded-field bg-accent px-3 py-1.5 text-xs font-semibold text-white shadow-soft transition hover:bg-accent-hover active:scale-95"
+                className="relative touch-hitbox inline-flex items-center gap-1.5 rounded-field bg-accent px-3 py-1.5 text-xs font-semibold text-white shadow-soft transition hover:bg-accent-hover active:scale-95"
               >
                 <Download className="size-3.5" aria-hidden="true" />
                 {t('installBtn')}
@@ -127,7 +127,7 @@ export function PwaInstallBanner() {
               <button
                 type="button"
                 onClick={handleDismiss}
-                className="rounded-field px-2.5 py-1.5 text-xs font-medium text-fg-muted hover:text-fg"
+                className="relative touch-hitbox rounded-field px-2.5 py-1.5 text-xs font-medium text-fg-muted hover:text-fg"
               >
                 {t('laterBtn')}
               </button>
@@ -138,7 +138,7 @@ export function PwaInstallBanner() {
         <button
           type="button"
           onClick={handleDismiss}
-          className="shrink-0 rounded-field p-1 text-fg-muted transition hover:bg-surface-muted hover:text-fg"
+          className="relative touch-hitbox shrink-0 rounded-field p-1 text-fg-muted transition hover:bg-surface-muted hover:text-fg"
           aria-label={t('closeAria')}
         >
           <X className="size-4" aria-hidden="true" />

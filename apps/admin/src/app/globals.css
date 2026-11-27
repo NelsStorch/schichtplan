@@ -1,3 +1,10 @@
 @import "tailwindcss";
 @import "../../../../packages/ui/theme.css";
 @source "../../../../packages/ui/src";
+
+/* Sicherheitsnetz mobile: Ein zu breites Element darf nie die ganze Seite seitlich verschiebbar machen.
+   «clip» statt «hidden», damit position: sticky weiter funktioniert. */
+html,
+body {
+  overflow-x: clip;
+}

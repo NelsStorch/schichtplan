@@ -7,6 +7,13 @@ html {
   scrollbar-gutter: stable;
 }
 
+/* Sicherheitsnetz mobile: Ein zu breites Element darf nie die ganze Seite seitlich verschiebbar machen.
+   «clip» statt «hidden», damit position: sticky weiter funktioniert. */
+html,
+body {
+  overflow-x: clip;
+}
+
 /* Seiten mit klebenden Leisten: Sprünge und Tab-Fokus landen nicht darunter */
 html:has([data-sticky-bars]) {
   scroll-padding-top: 9.5rem;

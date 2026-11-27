@@ -232,6 +232,75 @@ svg.lucide {
   animation-delay: calc(var(--i, 0) * 55ms);
 }
 
+/* Touch: unsichtbare Trefferfläche von mindestens 44 × 44 px (WCAG 2.5.8 / Apple HIG), ohne das Layout zu ändern */
+@utility touch-hitbox {
+  @media (pointer: coarse) {
+    &::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: max(100%, 44px);
+      height: max(100%, 44px);
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+/*
+ * Handy: Tabelle wird zur Kartenliste (eine Zeile = eine Karte). Zellen ohne `data-label` bilden den Kartenkopf,
+ * die übrigen zeigen ihre Spaltenüberschrift aus `data-label` links und den Wert rechts.
+ * Reihenfolge innerhalb der Karte lässt sich mit `max-md:order-first` steuern.
+ * Ab md bleibt es eine normale Tabelle.
+ */
+@utility table-cards {
+  @media (max-width: 767.98px) {
+    & thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    & tbody,
+    & tbody tr {
+      display: block;
+      width: 100%;
+    }
+    & tbody tr {
+      display: flex;
+      flex-direction: column;
+      padding: 0.75rem 1rem;
+    }
+    & tbody td {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.25rem 0;
+      text-align: right;
+    }
+    & tbody td[data-label]::before {
+      content: attr(data-label);
+      flex-shrink: 0;
+      color: var(--color-fg-subtle);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-align: left;
+    }
+    & tbody td:not([data-label]),
+    & tbody td[colspan] {
+      display: block;
+      padding: 0 0 0.5rem;
+      text-align: left;
+    }
+    & tbody td[colspan] {
+      text-align: center;
+    }
+  }
+}
+
 @utility tabular {
   font-variant-numeric: tabular-nums;
 }

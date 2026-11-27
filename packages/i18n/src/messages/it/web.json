@@ -15,6 +15,9 @@
     "emptyDescription": "Non sei ancora iscritto/a a nessun turno. Trova un evento e unisciti come volontario/a.",
     "findShiftsAction": "Trova turni",
     "nextHeader": "Prossimo turno",
+    "startsInHours": "Inizia tra {hours} h {minutes} min",
+    "startsInMinutes": "Inizia tra {minutes} min",
+    "runningNow": "In corso · fino alle {end}",
     "roleLeader": "Responsabile del turno",
     "cateringTokensAction": "Buoni pasto",
     "googleCalendarAction": "Google Calendar",
@@ -347,6 +350,7 @@
       "unlockAccessAction": "Sblocca accesso",
       "notUnlockedForYou": "Non autorizzato",
       "signupForTaskAction": "Iscriviti a questa mansione",
+      "moreActionsAria": "Altre azioni",
       "x": {
         "shift": "Turno",
         "shareFree": "{count, plural, one {Ancora # posto libero.} other {Ancora # posti liberi.}}",

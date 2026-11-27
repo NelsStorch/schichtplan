@@ -15,6 +15,9 @@
     "emptyDescription": "You are not signed up for any shifts yet. Find an event and help out.",
     "findShiftsAction": "Find shifts",
     "nextHeader": "Up Next",
+    "startsInHours": "Starts in {hours} h {minutes} min",
+    "startsInMinutes": "Starts in {minutes} min",
+    "runningNow": "In progress · until {end}",
     "roleLeader": "Shift leader",
     "cateringTokensAction": "Meal vouchers",
     "googleCalendarAction": "Google Calendar",
@@ -347,6 +350,7 @@
       "unlockAccessAction": "Unlock access",
       "notUnlockedForYou": "Not unlocked for you",
       "signupForTaskAction": "Sign up for this task",
+      "moreActionsAria": "More actions",
       "x": {
         "shift": "Shift",
         "shareFree": "{count, plural, one {# spot left.} other {# spots left.}}",

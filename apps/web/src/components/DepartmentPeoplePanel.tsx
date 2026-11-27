@@ -286,7 +286,38 @@ function PermissionMatrix({ people }: { people: DepartmentPersonDto[] }) {
     return <EmptyState title={t('matrixEmptyTitle')} description={t('matrixEmptyDesc')} />;
   }
   return (
-    <div className="max-h-[28rem] overflow-auto rounded-card border border-line">
+    <>
+    {/* Handy: eine Karte pro Person mit ihren Berechtigungen statt einer breiten Matrix */}
+    <ul className="max-h-[28rem] divide-y divide-line overflow-auto rounded-card border border-line md:hidden">
+      {rows.map((p) => {
+        const isLeader = p.departmentRole === 'ADMIN';
+        const granted = isLeader ? DEPARTMENT_PERMISSION_KEYS : DEPARTMENT_PERMISSION_KEYS.filter((perm) => p.permissions.includes(perm));
+        return (
+          <li key={p.userId} className="px-4 py-3">
+            <p className="font-semibold text-fg">{p.ceviName || p.firstName}</p>
+            <p className="text-2xs text-fg-subtle">{permText.roleLabel(roleInput(p))}</p>
+            {granted.length > 0 ? (
+              <ul className="mt-2 flex flex-wrap gap-1.5">
+                {granted.map((perm) => (
+                  <li
+                    key={perm}
+                    className={cn(
+                      'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium',
+                      isLeader ? 'border-line text-fg-subtle' : 'border-accent/30 bg-accent/10 text-accent-ink'
+                    )}
+                  >
+                    <Check className="size-3" aria-hidden /> {permText.label(perm)}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-1 text-xs text-fg-subtle">–</p>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+    <div className="max-h-[28rem] overflow-auto rounded-card border border-line max-md:hidden">
       <table className="w-full border-collapse text-xs">
         <thead className="sticky top-0 z-10 bg-surface">
           <tr>
@@ -339,6 +370,7 @@ function PermissionMatrix({ people }: { people: DepartmentPersonDto[] }) {
         </tbody>
       </table>
     </div>
+    </>
   );
 }
 

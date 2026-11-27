@@ -562,7 +562,7 @@ function Participants({ event }: { event: EventDetails }) {
             />
           ) : (
             <div className="overflow-x-auto rounded-card border border-line bg-surface">
-              <table className="w-full min-w-[40rem] text-left text-sm">
+              <table className="table-cards w-full text-left text-sm md:min-w-[40rem]">
                 <thead className="bg-surface-2 text-xs font-semibold text-fg-subtle">
                   <tr>
                     <th scope="col" className="px-4 py-2.5">{t('x.colPerson')}</th>
@@ -597,7 +597,8 @@ function Participants({ event }: { event: EventDetails }) {
                           </Badge>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-xs text-fg-muted">
+                      <td data-label={t('x.colContact')} className="px-4 py-3 text-xs text-fg-muted">
+                        <div className="min-w-0">
                         {p.phone && (
                           <a href={`tel:${p.phone}`} className="block text-fg hover:underline">
                             {p.phone}
@@ -609,10 +610,12 @@ function Participants({ event }: { event: EventDetails }) {
                           </a>
                         )}
                         {p.birthDate && <span className="block">{t('x.born', { date: p.birthDate.split('-').reverse().join('.') })}</span>}
+                        </div>
                       </td>
-                      <td className="tabular px-4 py-3 text-fg">{p.shiftCount}</td>
+                      <td data-label={t('x.csvShifts')} className="tabular px-4 py-3 text-fg">{p.shiftCount}</td>
                       {event.questions.map((q) => (
-                        <td key={q.id} className="px-4 py-3 text-fg">
+                        <td key={q.id} data-label={q.label} className="px-4 py-3 text-fg">
+                          <div className="min-w-0">
                           {q.scope === 'PER_SIGNUP' ? (
                             perSignup(q, p).length ? (
                               <ul className="space-y-0.5">
@@ -628,6 +631,7 @@ function Participants({ event }: { event: EventDetails }) {
                           ) : (
                             answerText(q, p.answers[q.id]) || <span className="text-fg-subtle">–</span>
                           )}
+                          </div>
                         </td>
                       ))}
                     </tr>

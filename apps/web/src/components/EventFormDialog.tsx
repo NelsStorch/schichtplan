@@ -899,7 +899,7 @@ export function EventForm({
                     type="button"
                     onClick={() => removeOrganizer(idx)}
                     title={t('removeOrganizerTitle')}
-                    className="rounded p-1.5 text-fg-subtle hover:bg-danger/10 hover:text-danger"
+                    className="relative touch-hitbox rounded p-1.5 text-fg-subtle hover:bg-danger/10 hover:text-danger"
                   >
                     <Trash2 className="size-4" />
                   </button>
@@ -1383,7 +1383,7 @@ export function EventForm({
                           <button
                             type="button"
                             onClick={() => removeCateringItem(idx)}
-                            className="hover:text-danger-ink focus-visible:ring-2 focus-visible:ring-accent p-0.5 rounded"
+                            className="relative touch-hitbox hover:text-danger-ink focus-visible:ring-2 focus-visible:ring-accent p-0.5 rounded"
                             title={t('cateringRemoveItemAria', { item })}
                             aria-label={t('cateringRemoveItemAria', { item })}
                           >

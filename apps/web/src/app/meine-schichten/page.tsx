@@ -395,6 +395,7 @@ export default function MyShiftsPage() {
                     <p className="mt-1 font-display text-5xl font-extrabold tracking-[-0.03em] text-accent-ink sm:text-6xl">
                       {fmtRelativeDay(next.startTime)}
                     </p>
+                    <NextShiftCountdown startTime={next.startTime} endTime={next.endTime} />
                     <p className="mt-4 text-xl font-bold text-fg">
                       {next.title}
                       {next.taskTitle && next.taskTitle !== next.title && (
@@ -853,7 +854,7 @@ function Timeline({
                                 <button
                                   type="button"
                                   onClick={() => toggleBriefing(s.signupId)}
-                                  className="inline-flex items-center gap-1 font-semibold text-accent-ink hover:underline"
+                                  className="relative touch-hitbox inline-flex items-center gap-1 font-semibold text-accent-ink hover:underline"
                                 >
                                   {t('briefingAndContact')} <ChevronDown className="size-3.5" />
                                 </button>
@@ -980,5 +981,35 @@ function Timeline({
         );
       })}
     </ol>
+  );
+}
+
+/** Live-Countdown für die nächste Schicht (ab 12 h vor Beginn), damit man vor Ort sieht, wie viel Zeit bleibt */
+function NextShiftCountdown({ startTime, endTime }: { startTime: string; endTime: string }) {
+  const t = useTranslations('web.myShifts');
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
+  const start = new Date(startTime).getTime();
+  const end = new Date(endTime).getTime();
+  if (now >= end) return null;
+  if (now >= start) {
+    return (
+      <p className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-success-ink">
+        <span aria-hidden className="size-2 animate-pulse rounded-full bg-success" />
+        {t('runningNow', { end: fmtTime(endTime) })}
+      </p>
+    );
+  }
+  const minutesLeft = Math.ceil((start - now) / 60_000);
+  if (minutesLeft > 12 * 60) return null;
+  const hours = Math.floor(minutesLeft / 60);
+  const minutes = minutesLeft % 60;
+  return (
+    <p className="tabular mt-2 text-sm font-semibold text-fg-muted" aria-live="polite">
+      {hours > 0 ? t('startsInHours', { hours, minutes }) : t('startsInMinutes', { minutes })}
+    </p>
   );
 }

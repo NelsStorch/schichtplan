@@ -617,7 +617,7 @@ export function DepartmentStatsPanel() {
 
               {/* Helfer-Tabelle */}
               <div className="overflow-x-auto rounded-card border border-border bg-surface shadow-xs">
-                <table className="w-full text-left text-xs sm:text-sm">
+                <table className="table-cards w-full text-left text-xs sm:text-sm">
                   <thead className="border-b border-border bg-surface-2 text-fg-muted">
                     <tr>
                       <th scope="col" className="py-2.5 px-3 font-semibold w-12 text-center">{t('tableRank')}</th>
@@ -639,10 +639,10 @@ export function DepartmentStatsPanel() {
                     ) : (
                       filteredHelpers.map((h, idx) => (
                         <tr key={h.userId ?? `guest-${h.displayName}-${idx}`} className="hover:bg-surface-2/50 transition">
-                          <td className="py-2.5 px-3 text-center font-bold text-fg-muted">
+                          <td data-label={t('tableRank')} className="py-2.5 px-3 text-center font-bold text-fg-muted">
                             {idx === 0 ? '🥇 1' : idx === 1 ? '🥈 2' : idx === 2 ? '🥉 3' : idx + 1}
                           </td>
-                          <td className="py-2.5 px-3 font-medium text-fg">
+                          <td className="py-2.5 px-3 font-medium text-fg max-md:order-first">
                             <div className="flex items-center gap-1.5">
                               {(h.nickname || h.ceviName) ? (
                                 <>
@@ -659,7 +659,7 @@ export function DepartmentStatsPanel() {
                               )}
                             </div>
                           </td>
-                          <td className="py-2.5 px-3">
+                          <td data-label={t('tableStufen')} className="py-2.5 px-3">
                             <div className="flex flex-wrap gap-1">
                               {h.stufen.length > 0 ? (
                                 h.stufen.map((st) => (
@@ -672,16 +672,18 @@ export function DepartmentStatsPanel() {
                               )}
                             </div>
                           </td>
-                          <td className="py-2.5 px-3 text-right text-fg-muted font-mono">{h.eventCount}</td>
-                          <td className="py-2.5 px-3 text-right text-fg-muted font-mono">{h.shiftCount}</td>
-                          <td className="py-2.5 px-3 text-right font-mono">
+                          <td data-label={t('tableEvents')} className="py-2.5 px-3 text-right text-fg-muted font-mono">{h.eventCount}</td>
+                          <td data-label={t('tableShifts')} className="py-2.5 px-3 text-right text-fg-muted font-mono">{h.shiftCount}</td>
+                          <td data-label={t('tableAttended')} className="py-2.5 px-3 text-right font-mono">
                             <span className={cn(h.attendedShiftCount > 0 ? 'text-emerald-600 font-semibold' : 'text-fg-muted')}>
                               {h.attendedShiftCount}
                             </span>
                           </td>
-                          <td className="py-2.5 px-3 text-right font-bold text-fg font-mono">
-                            {h.hours} h
-                            <span className="block text-[10px] font-normal text-fg-subtle">{h.formattedTime}</span>
+                          <td data-label={t('tableHours')} className="py-2.5 px-3 text-right font-bold text-fg font-mono">
+                            <span>
+                              {h.hours} h
+                              <span className="block text-[10px] font-normal text-fg-subtle">{h.formattedTime}</span>
+                            </span>
                           </td>
                         </tr>
                       ))
@@ -695,7 +697,7 @@ export function DepartmentStatsPanel() {
           {/* 5. Tab 2: Anlässe */}
           {activeSubTab === 'events' && (
             <div className="overflow-x-auto rounded-card border border-border bg-surface shadow-xs">
-              <table className="w-full text-left text-xs sm:text-sm">
+              <table className="table-cards w-full text-left text-xs sm:text-sm">
                 <thead className="border-b border-border bg-surface-2 text-fg-muted">
                   <tr>
                     <th scope="col" className="py-2.5 px-3 font-semibold">{t('tabEvents')}</th>
@@ -723,14 +725,14 @@ export function DepartmentStatsPanel() {
                           )}
                         </Link>
                       </td>
-                      <td className="py-2.5 px-3 text-fg-muted text-xs whitespace-nowrap">
+                      <td data-label={t('tableDate')} className="py-2.5 px-3 text-fg-muted text-xs whitespace-nowrap">
                         {fmtShortDate(ev.startDate)}
                       </td>
-                      <td className="py-2.5 px-3 text-right text-fg-muted font-mono">{ev.helpersCount}</td>
-                      <td className="py-2.5 px-3 text-right text-fg-muted font-mono">
+                      <td data-label={t('tabHelpers')} className="py-2.5 px-3 text-right text-fg-muted font-mono">{ev.helpersCount}</td>
+                      <td data-label={t('tableShifts')} className="py-2.5 px-3 text-right text-fg-muted font-mono">
                         {ev.filledSlots} / {ev.totalSlots}
                       </td>
-                      <td className="py-2.5 px-3 text-right">
+                      <td data-label={t('tableFillRate')} className="py-2.5 px-3 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <span className="font-mono text-xs">{ev.fillRatePct}%</span>
                           <div className="h-1.5 w-12 overflow-hidden rounded-full bg-surface-2">
@@ -741,13 +743,15 @@ export function DepartmentStatsPanel() {
                           </div>
                         </div>
                       </td>
-                      <td className="py-2.5 px-3 text-right font-mono text-xs text-fg-muted">
+                      <td data-label={t('tableAttendance')} className="py-2.5 px-3 text-right font-mono text-xs text-fg-muted">
                         {ev.attendedRatePct}%
                       </td>
-                      <td className="py-2.5 px-3 text-right font-bold text-fg font-mono">
-                        {ev.totalHours} h
-                        <span className="block text-[10px] font-normal text-fg-subtle">
-                          {ev.eventHours}h / {ev.setupHours}h
+                      <td data-label={t('tableHours')} className="py-2.5 px-3 text-right font-bold text-fg font-mono">
+                        <span>
+                          {ev.totalHours} h
+                          <span className="block text-[10px] font-normal text-fg-subtle">
+                            {ev.eventHours}h / {ev.setupHours}h
+                          </span>
                         </span>
                       </td>
                     </tr>

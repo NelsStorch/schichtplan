@@ -130,12 +130,12 @@ function Shell({
       </main>
 
       <footer className="border-t border-line/70">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-6 text-xs text-fg-subtle sm:px-6">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-6 text-xs text-fg-subtle sm:px-6">
           <span>
             &copy; {new Date().getFullYear()} {org.name}
             {org.independentNotice && <> · {org.independentNotice}</>}
           </span>
-          <div className="flex items-center gap-5">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <a href={statusUrl('/', org.domain)} className="transition hover:text-fg">
               Status
             </a>
