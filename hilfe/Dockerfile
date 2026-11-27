@@ -12,6 +12,8 @@ RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
 COPY packages/shared/src/constants.ts /app/packages/shared/src/constants.ts
 # Verbandsliste: daraus entstehen branding.js und nginx.conf (npm run generate)
 COPY packages/shared/src/organizations.ts /app/packages/shared/src/organizations.ts
+# Versionsnummer für den Footer (src/overrides/Footer.astro liest ../../../package.json)
+COPY package.json /app/package.json
 COPY hilfe ./
 RUN npm run build
 
