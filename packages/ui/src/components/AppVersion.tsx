@@ -6,7 +6,7 @@ export interface AppVersionProps {
   showCommit?: boolean;
 }
 
-const VERSION = process.env.NEXT_PUBLIC_APP_VERSION || '3.1.0';
+const VERSION = process.env.NEXT_PUBLIC_APP_VERSION || '3.1.1';
 const REVISION = process.env.NEXT_PUBLIC_APP_REVISION || '';
 const GITHUB_REPO_URL = 'https://github.com/NelsStorch/schichtplan';
 

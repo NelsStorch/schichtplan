@@ -21,6 +21,7 @@ import {
 } from '../../services/departmentVisibility.js';
 import { generateCheckinToken } from '../../services/attendance.js';
 import { moveEventByDays } from '../../services/eventRange.js';
+import { liveEvents } from '../../services/liveEvents.js';
 
 import { toQuestionDto, resolveAccessLists, syncQuestions, replaceAccessLists } from './shared.js';
 
@@ -343,6 +344,11 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
         return saved;
       });
 
+      liveEvents.notify({ slug: event.slug, type: 'EVENT_CHANGED', departmentId: event.departmentId });
+      if (updated.slug !== event.slug) {
+        liveEvents.notify({ slug: updated.slug, type: 'EVENT_CHANGED', departmentId: event.departmentId });
+      }
+
       return {
         id: updated.id,
         title: updated.title,
@@ -407,6 +413,8 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
       const updated = await fastify.prisma.event.findUniqueOrThrow({ where: { id: event.id } });
       request.log.info({ eventId: event.id, days: input.days, movedShifts }, 'Anlass verschoben');
 
+      liveEvents.notify({ slug: event.slug, type: 'EVENT_CHANGED', departmentId: event.departmentId });
+
       return {
         movedShifts,
         startDate: updated.startDate.toISOString(),
@@ -456,6 +464,8 @@ const eventManageRoutes: FastifyPluginAsync = async (fastify) => {
 
       // Kaskadiert zu Schichten, Eintragungen, OK, Fragen, Zugangs-Links, Protokoll und Nachrichten
       await fastify.prisma.event.delete({ where: { id: event.id } });
+
+      liveEvents.notify({ slug: event.slug, type: 'EVENT_CHANGED', departmentId: event.departmentId });
 
       request.log.warn(
         { userId: request.user.id, eventId: event.id, slug: event.slug, departmentId: event.departmentId },

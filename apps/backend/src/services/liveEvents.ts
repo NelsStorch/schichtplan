@@ -10,6 +10,13 @@ export interface LiveEventPayload {
   timestamp: number;
 }
 
+export interface LiveEventNotifyOptions {
+  slug: string;
+  type?: LiveEventType;
+  shiftId?: string;
+  departmentId?: string;
+}
+
 export class LiveEventsBus {
   private emitter = new EventEmitter();
 
@@ -21,18 +28,34 @@ export class LiveEventsBus {
   /**
    * Benachrichtigt alle aktiven SSE-Clients eines Anlasses über eine Änderung.
    * Wichtig: Es werden keine Personendaten im Payload gesendet, nur Signals.
+   * Unterstützt Options-Objekt oder Positions-Parameter für flexible und typsichere Nutzung.
    */
-  notify(slug: string, type: LiveEventType = 'SLOT_UPDATED', shiftId?: string, departmentId?: string): void {
-    const payload: LiveEventPayload = {
-      type,
-      slug,
-      departmentId,
-      shiftId,
-      timestamp: Date.now(),
-    };
-    this.emitter.emit(`event:${slug}`, payload);
-    if (departmentId) {
-      this.emitter.emit(`event:${departmentId}:${slug}`, payload);
+  notify(
+    slugOrOptions: string | LiveEventNotifyOptions,
+    type: LiveEventType = 'SLOT_UPDATED',
+    shiftId?: string,
+    departmentId?: string
+  ): void {
+    const payload: LiveEventPayload =
+      typeof slugOrOptions === 'object'
+        ? {
+            slug: slugOrOptions.slug,
+            type: slugOrOptions.type ?? 'SLOT_UPDATED',
+            shiftId: slugOrOptions.shiftId,
+            departmentId: slugOrOptions.departmentId,
+            timestamp: Date.now(),
+          }
+        : {
+            slug: slugOrOptions,
+            type,
+            shiftId,
+            departmentId,
+            timestamp: Date.now(),
+          };
+
+    this.emitter.emit(`event:${payload.slug}`, payload);
+    if (payload.departmentId) {
+      this.emitter.emit(`event:${payload.departmentId}:${payload.slug}`, payload);
     }
   }
 

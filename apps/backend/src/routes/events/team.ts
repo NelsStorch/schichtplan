@@ -18,7 +18,8 @@ import {
   allUsersRelatedToEvent,
 } from '../../services/departmentVisibility.js';
 
-import { toResponsiblePersonDto, } from './shared.js';
+import { toResponsiblePersonDto } from './shared.js';
+import { liveEvents } from '../../services/liveEvents.js';
 
 /** OK-Team, Tagesverantwortliche, Helfende abmelden und Eintragungsprotokoll */
 const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
@@ -107,6 +108,8 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
         },
         orderBy: { createdAt: 'asc' },
       });
+
+      liveEvents.notify({ slug: event.slug, type: 'EVENT_CHANGED', departmentId: event.departmentId });
 
       return {
         dayDate,
@@ -207,6 +210,8 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
         },
       });
 
+      liveEvents.notify({ slug: event.slug, type: 'EVENT_CHANGED', departmentId: event.departmentId });
+
       return {
         id: organizer.id,
         userId: organizer.userId,
@@ -266,6 +271,8 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
       await fastify.prisma.eventOrganizer.delete({
         where: { id: organizerId },
       });
+
+      liveEvents.notify({ slug: existing.event.slug, type: 'EVENT_CHANGED', departmentId: existing.event.departmentId });
 
       return { message: request.t('success.okMemberRemoved') };
     }
@@ -390,6 +397,10 @@ const eventTeamRoutes: FastifyPluginAsync = async (fastify) => {
         } catch (logErr) {
           request.log.error(logErr, 'Fehler beim Erstellen der Abmelde-Logs');
         }
+      }
+
+      if (deleted.count > 0) {
+        liveEvents.notify({ slug: event.slug, type: 'SLOT_UPDATED', departmentId: event.departmentId });
       }
 
       return {

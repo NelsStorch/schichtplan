@@ -99,7 +99,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ slug: st
   const [onlyReplacement, setOnlyReplacement] = useState(false);
   const [busyShift, setBusyShift] = useState<string | null>(null);
   // Einladungs-Link (?zugang=...), der noch eingelöst werden muss
-  const [pendingToken, setPendingToken] = useState<string | null>(null);
+  const [pendingToken, setPendingToken] = useState<string | null>(() =>
+    typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('zugang') : null
+  );
 
   const [selectedShiftId, setSelectedShiftId] = useState<string | null>(null);
   const [assigningShift, setAssigningShift] = useState<ShiftDto | null>(null);

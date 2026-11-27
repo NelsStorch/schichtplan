@@ -293,5 +293,6 @@ describe.skipIf(!hasTestDb)('Rechte bei Anlässen', () => {
       tenant: department.slug,
     });
     expect(res.statusCode).toBe(403);
+    expect(res.json().code).toBe('MEMBERS_ONLY');
   });
 });

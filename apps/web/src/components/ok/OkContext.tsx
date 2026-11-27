@@ -41,7 +41,7 @@ interface OkState {
   event: EventDetails | null;
   loading: boolean;
   error: string | null;
-  reload: () => Promise<void>;
+  reload: (options?: { silent?: boolean }) => Promise<void>;
   permissions: OkPermissions;
   stats: OkStats;
   messageDraft: MessageDraft | null;
@@ -76,27 +76,36 @@ export function OkProvider({ slug, children }: { slug: string; children: ReactNo
   const [error, setError] = useState<string | null>(null);
   const [messageDraft, setMessageDraft] = useState<MessageDraft | null>(null);
 
-  const reload = useCallback(async () => {
-    try {
-      const data = await api<EventDetails>(`/api/events/${slug}`);
-      setEvent(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof ApiError && err.status === 404 ? tRoles('notFound') : errorMessage(err));
-    } finally {
-      setLoading(false);
-    }
-  }, [slug, tRoles]);
+  const reload = useCallback(
+    async (options?: { silent?: boolean }) => {
+      try {
+        if (!options?.silent) {
+          setLoading(true);
+        }
+        const data = await api<EventDetails>(`/api/events/${slug}`);
+        setEvent(data);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof ApiError && err.status === 404 ? tRoles('notFound') : errorMessage(err));
+      } finally {
+        if (!options?.silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [slug, tRoles]
+  );
 
   useEffect(() => {
     reload();
   }, [reload]);
 
   // Live-Aktualisierungen für den OK-Bereich (Helfende, Schichten, Anwesenheit)
+  // Im Hintergrund still aktualisieren, damit offene Formulare und Eingaben nicht unmountet werden
   useEventLiveUpdates({
     slug,
     enabled: !error,
-    onUpdate: reload,
+    onUpdate: () => reload({ silent: true }),
   });
 
   const permissions = useMemo<OkPermissions>(() => {

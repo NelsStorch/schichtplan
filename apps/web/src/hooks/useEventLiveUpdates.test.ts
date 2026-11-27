@@ -1,16 +1,35 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useEventLiveUpdates } from './useEventLiveUpdates';
 
+let currentCleanup: (() => void) | undefined = undefined;
+vi.mock('react', () => ({
+  useRef: (val: unknown) => ({ current: val }),
+  useEffect: (effect: () => (() => void) | undefined) => {
+    currentCleanup = effect();
+  },
+}));
+
+function useTestLiveUpdates(options: Parameters<typeof useEventLiveUpdates>[0]) {
+  currentCleanup = undefined;
+  useEventLiveUpdates(options);
+  return () => {
+    if (typeof currentCleanup === 'function') {
+      currentCleanup();
+    }
+  };
+}
+
 interface MockEventSourceInstance {
   url: string;
   options?: { withCredentials?: boolean };
   onmessage: ((ev: unknown) => void) | null;
+  onopen: ((ev: unknown) => void) | null;
   onerror: ((ev: unknown) => void) | null;
   readyState: number;
   close: ReturnType<typeof vi.fn>;
 }
 
-describe('useEventLiveUpdates hook logic', () => {
+describe('useEventLiveUpdates hook', () => {
   let mockEventSourceInstances: MockEventSourceInstance[] = [];
   let visibilityState = 'visible';
   let listeners: Record<string, ((e?: unknown) => void)[]> = {};
@@ -19,11 +38,13 @@ describe('useEventLiveUpdates hook logic', () => {
     mockEventSourceInstances = [];
     visibilityState = 'visible';
     listeners = {};
+    currentCleanup = undefined;
 
     class MockEventSource implements MockEventSourceInstance {
       url: string;
       options?: { withCredentials?: boolean };
       onmessage: ((ev: unknown) => void) | null = null;
+      onopen: ((ev: unknown) => void) | null = null;
       onerror: ((ev: unknown) => void) | null = null;
       readyState = 0;
       static CLOSED = 2;
@@ -77,7 +98,7 @@ describe('useEventLiveUpdates hook logic', () => {
 
   it('connects to event SSE endpoint with withCredentials', () => {
     const onUpdate = vi.fn();
-    const cleanup = testHookEffect({
+    const cleanup = useTestLiveUpdates({
       slug: 'sommerlager-2026',
       enabled: true,
       onUpdate,
@@ -92,7 +113,7 @@ describe('useEventLiveUpdates hook logic', () => {
   });
 
   it('includes zugang token in query parameter if present', () => {
-    const cleanup = testHookEffect({
+    const cleanup = useTestLiveUpdates({
       slug: 'lager-2026',
       zugangToken: 'secret-token-123',
       enabled: true,
@@ -106,7 +127,7 @@ describe('useEventLiveUpdates hook logic', () => {
   });
 
   it('does not connect when enabled is false', () => {
-    const cleanup = testHookEffect({
+    const cleanup = useTestLiveUpdates({
       slug: 'lager-2026',
       enabled: false,
       onUpdate: vi.fn(),
@@ -119,7 +140,7 @@ describe('useEventLiveUpdates hook logic', () => {
   it('debounces update calls on message events', async () => {
     vi.useFakeTimers();
     const onUpdate = vi.fn();
-    const cleanup = testHookEffect({
+    const cleanup = useTestLiveUpdates({
       slug: 'lager-2026',
       enabled: true,
       onUpdate,
@@ -143,7 +164,7 @@ describe('useEventLiveUpdates hook logic', () => {
   it('disconnects when document is hidden and reconnects when visible', () => {
     vi.useFakeTimers();
     const onUpdate = vi.fn();
-    const cleanup = testHookEffect({
+    const cleanup = useTestLiveUpdates({
       slug: 'lager-2026',
       enabled: true,
       onUpdate,
@@ -174,114 +195,31 @@ describe('useEventLiveUpdates hook logic', () => {
     cleanup();
     vi.useRealTimers();
   });
+
+  it('schedules reconnect with backoff when stream closes on error', () => {
+    vi.useFakeTimers();
+    const onUpdate = vi.fn();
+    const cleanup = useTestLiveUpdates({
+      slug: 'lager-2026',
+      enabled: true,
+      onUpdate,
+      debounceMs: 100,
+    });
+
+    expect(mockEventSourceInstances).toHaveLength(1);
+    const es = mockEventSourceInstances[0];
+    es.readyState = 2; // EventSource.CLOSED
+    es.onerror?.({ type: 'error' });
+
+    expect(es.close).toHaveBeenCalled();
+    // Vor Ablauf der Retry-Zeit noch kein neuer Versuch
+    expect(mockEventSourceInstances).toHaveLength(1);
+
+    // Nach 3s Backoff erfolgt die Wiederverbindung
+    vi.advanceTimersByTime(3100);
+    expect(mockEventSourceInstances).toHaveLength(2);
+
+    cleanup();
+    vi.useRealTimers();
+  });
 });
-
-/**
- * Helper to execute the useEffect block of useEventLiveUpdates directly in Node.js
- */
-function testHookEffect(options: Parameters<typeof useEventLiveUpdates>[0]) {
-  const { slug, enabled = true, zugangToken, onUpdate, debounceMs = 250 } = options;
-  const onUpdateRef = { current: onUpdate };
-
-  if (!enabled || !slug || typeof window === 'undefined') {
-    return () => {};
-  }
-
-  if (!('EventSource' in window)) {
-    return () => {};
-  }
-
-  let eventSource: EventSource | null = null;
-  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-  let isDisposed = false;
-
-  const triggerUpdate = () => {
-    if (debounceTimer) {
-      clearTimeout(debounceTimer);
-    }
-    debounceTimer = setTimeout(() => {
-      if (!isDisposed) {
-        void onUpdateRef.current();
-      }
-    }, debounceMs);
-  };
-
-  const disconnect = () => {
-    if (eventSource) {
-      try {
-        eventSource.close();
-      } catch {
-        // ignore
-      }
-      eventSource = null;
-    }
-  };
-
-  const connect = () => {
-    if (isDisposed || eventSource) return;
-
-    const url = new URL(`/api/events/${encodeURIComponent(slug)}/live`, window.location.origin);
-    if (zugangToken) {
-      url.searchParams.set('zugang', zugangToken);
-    }
-
-    try {
-      const es = new EventSource(url.toString(), { withCredentials: true });
-      eventSource = es;
-
-      es.onmessage = () => {
-        triggerUpdate();
-      };
-
-      es.onerror = () => {
-        if (es.readyState === EventSource.CLOSED) {
-          disconnect();
-        }
-      };
-    } catch {
-      // Fallback
-    }
-  };
-
-  const handleVisibilityChange = () => {
-    if (typeof document === 'undefined') return;
-    if (document.visibilityState === 'visible') {
-      connect();
-      triggerUpdate();
-    } else if (document.visibilityState === 'hidden') {
-      disconnect();
-    }
-  };
-
-  const handleOnline = () => {
-    connect();
-    triggerUpdate();
-  };
-
-  const handleOffline = () => {
-    disconnect();
-  };
-
-  if (typeof document === 'undefined' || document.visibilityState === 'visible') {
-    connect();
-  }
-
-  if (typeof document !== 'undefined') {
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-  }
-  window.addEventListener('online', handleOnline);
-  window.addEventListener('offline', handleOffline);
-
-  return () => {
-    isDisposed = true;
-    if (debounceTimer) {
-      clearTimeout(debounceTimer);
-    }
-    if (typeof document !== 'undefined') {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    }
-    window.removeEventListener('online', handleOnline);
-    window.removeEventListener('offline', handleOffline);
-    disconnect();
-  };
-}

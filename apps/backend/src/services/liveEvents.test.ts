@@ -48,6 +48,31 @@ describe('LiveEventsBus', () => {
     unsub2();
   });
 
+  it('supports options object notation', () => {
+    const bus = new LiveEventsBus();
+    const received: LiveEventPayload[] = [];
+
+    const unsub = bus.subscribe(
+      'lager-2026',
+      (payload) => received.push(payload),
+      'dept-abc'
+    );
+
+    bus.notify({
+      slug: 'lager-2026',
+      type: 'EVENT_CHANGED',
+      departmentId: 'dept-abc',
+    });
+
+    expect(received).toHaveLength(1);
+    expect(received[0].slug).toBe('lager-2026');
+    expect(received[0].type).toBe('EVENT_CHANGED');
+    expect(received[0].departmentId).toBe('dept-abc');
+    expect(received[0].shiftId).toBeUndefined();
+
+    unsub();
+  });
+
   it('reports listener counts accurately', () => {
     const bus = new LiveEventsBus();
     expect(bus.listenerCount('test-event')).toBe(0);

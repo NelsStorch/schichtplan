@@ -79,7 +79,7 @@ const eventLiveRoutes: FastifyPluginAsync = async (fastify) => {
         !(await isValidLinkToken(fastify.prisma, event.id, request.query.zugang, viewer?.id)) &&
         !(await isDepartmentInsider(fastify.prisma, request.tenant.id, viewer?.id))
       ) {
-        return reply.status(403).send({ error: 'event.membersOnly' });
+        return reply.fail(403, 'event.membersOnly', undefined, { code: 'MEMBERS_ONLY' });
       }
 
       reply.hijack();
@@ -94,6 +94,20 @@ const eventLiveRoutes: FastifyPluginAsync = async (fastify) => {
       reply.raw.write(': connected\n\n');
 
       let closed = false;
+
+      const cleanup = () => {
+        if (closed) return;
+        closed = true;
+        clearInterval(keepAliveInterval);
+        unsubscribe();
+        try {
+          if (!reply.raw.destroyed) {
+            reply.raw.end();
+          }
+        } catch {
+          // ignore
+        }
+      };
 
       const unsubscribe = liveEvents.subscribe(
         event.slug,
@@ -119,23 +133,12 @@ const eventLiveRoutes: FastifyPluginAsync = async (fastify) => {
           cleanup();
         }
       }, 25000);
-
-      const cleanup = () => {
-        if (closed) return;
-        closed = true;
-        clearInterval(keepAliveInterval);
-        unsubscribe();
-        try {
-          if (!reply.raw.destroyed) {
-            reply.raw.end();
-          }
-        } catch {
-          // ignore
-        }
-      };
+      keepAliveInterval.unref();
 
       request.raw.on('close', cleanup);
       request.raw.on('error', cleanup);
+      reply.raw.on('close', cleanup);
+      reply.raw.on('error', cleanup);
     }
   );
 };

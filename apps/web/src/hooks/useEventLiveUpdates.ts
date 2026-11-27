@@ -48,6 +48,8 @@ export function useEventLiveUpdates({
 
     let eventSource: EventSource | null = null;
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let retryDelay = 3000;
     let isDisposed = false;
 
     const triggerUpdate = () => {
@@ -61,7 +63,24 @@ export function useEventLiveUpdates({
       }, debounceMs);
     };
 
-    const disconnect = () => {
+    const clearTimers = () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+        debounceTimer = null;
+      }
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+    };
+
+    const disconnect = (keepReconnect = false) => {
+      if (!keepReconnect) {
+        clearTimers();
+      } else if (debounceTimer) {
+        clearTimeout(debounceTimer);
+        debounceTimer = null;
+      }
       if (eventSource) {
         try {
           eventSource.close();
@@ -70,6 +89,20 @@ export function useEventLiveUpdates({
         }
         eventSource = null;
       }
+    };
+
+    const scheduleReconnect = () => {
+      if (isDisposed || reconnectTimer || typeof document === 'undefined' || document.visibilityState === 'hidden') {
+        return;
+      }
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        if (!isDisposed && (typeof document === 'undefined' || document.visibilityState === 'visible')) {
+          connect();
+          triggerUpdate();
+        }
+      }, retryDelay);
+      retryDelay = Math.min(Math.round(retryDelay * 1.5), 30000);
     };
 
     const connect = () => {
@@ -84,24 +117,35 @@ export function useEventLiveUpdates({
         const es = new EventSource(url.toString(), { withCredentials: true });
         eventSource = es;
 
+        es.onopen = () => {
+          retryDelay = 3000;
+        };
+
         es.onmessage = () => {
+          retryDelay = 3000;
           triggerUpdate();
         };
 
         es.onerror = () => {
-          // Bei Verbindungsverlust oder Stream-Ende sauber aufräumen
+          // Bei Verbindungsverlust oder Stream-Ende sauber aufräumen und mit Backoff erneut versuchen
           if (es.readyState === EventSource.CLOSED) {
-            disconnect();
+            disconnect(true);
+            scheduleReconnect();
           }
         };
       } catch {
-        // Fallback: Ignorieren, EventSource nicht verfügbar
+        scheduleReconnect();
       }
     };
 
     const handleVisibilityChange = () => {
       if (typeof document === 'undefined') return;
       if (document.visibilityState === 'visible') {
+        retryDelay = 3000;
+        if (reconnectTimer) {
+          clearTimeout(reconnectTimer);
+          reconnectTimer = null;
+        }
         connect();
         triggerUpdate();
       } else if (document.visibilityState === 'hidden') {
@@ -110,6 +154,11 @@ export function useEventLiveUpdates({
     };
 
     const handleOnline = () => {
+      retryDelay = 3000;
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
       connect();
       triggerUpdate();
     };
@@ -131,15 +180,12 @@ export function useEventLiveUpdates({
 
     return () => {
       isDisposed = true;
-      if (debounceTimer) {
-        clearTimeout(debounceTimer);
-      }
+      disconnect();
       if (typeof document !== 'undefined') {
         document.removeEventListener('visibilitychange', handleVisibilityChange);
       }
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      disconnect();
     };
   }, [slug, enabled, zugangToken, debounceMs]);
 }

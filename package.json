@@ -1,6 +1,6 @@
 {
   "name": "schichtplan",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "private": true,
   "license": "AGPL-3.0-or-later",
   "description": "Schichtplan V2 für Cevi, Pfadi, Jubla und Vereine - Multi-Tenant, Multi-Event Shift Management",

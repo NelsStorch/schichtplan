@@ -30,6 +30,7 @@ import {
 import { applyProfileUpdate } from '../services/profileUpdate.js';
 import { createRateLimiter } from '../services/rateLimit.js';
 import { errorTranslator, type ErrorTranslator } from '../plugins/i18n.js';
+import { liveEvents } from '../services/liveEvents.js';
 
 const redeemLimiter = createRateLimiter(10 * 60 * 1000, 20);
 
@@ -300,6 +301,8 @@ const eventParticipationRoutes: FastifyPluginAsync = async (fastify) => {
         update: { linkId: link.id },
         create: { eventId: event.id, userId, linkId: link.id },
       });
+
+      liveEvents.notify({ slug: event.slug, type: 'EVENT_CHANGED', departmentId: event.departmentId });
 
       return { message: request.t('success.accessGranted', { event: event.title }), label: link.label };
     }
