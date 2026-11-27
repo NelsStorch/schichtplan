@@ -337,7 +337,7 @@ export default async function LandingPage({
                   <div className="mt-3 pt-2.5 border-t border-line/60">
                     <a
                       href={createDepartmentUrl}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-accent-ink hover:underline"
                     >
                       <span>{t('benefits.leadLink', vocab)}</span>
                       <ArrowRight className="size-3" />
@@ -398,7 +398,7 @@ export default async function LandingPage({
                       </span>
                       <a
                         href={createDepartmentUrl}
-                        className="inline-flex items-center gap-1 font-semibold text-accent hover:underline text-2xs sm:text-xs"
+                        className="inline-flex items-center gap-1 font-semibold text-accent-ink hover:underline text-2xs sm:text-xs"
                       >
                         <span>{t('features.addressLink', vocab)}</span>
                         <ArrowRight className="size-3" />

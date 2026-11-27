@@ -120,7 +120,7 @@ export function AppShell({ children, actions }: { children: ReactNode; actions?:
                 type="button"
                 onClick={openAccount}
                 className="hidden items-center gap-2.5 rounded-full py-1 pl-1 pr-3.5 transition hover:bg-surface-2 md:flex"
-                aria-label={pushHintShown ? tShell('openAccountAriaPushOff') : tShell('openAccountAria')}
+                aria-label={pushHintShown ? tShell('openAccountAriaPushOff', { name: displayName(user) }) : tShell('openAccountAria', { name: displayName(user) })}
               >
                 <span className="relative">
                   <Avatar name={displayName(user)} size="sm" highlight />

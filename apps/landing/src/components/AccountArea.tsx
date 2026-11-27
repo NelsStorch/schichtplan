@@ -126,7 +126,7 @@ export function CreateDepartmentButton({ className, href }: { className?: string
       href={href || targetHref}
       className={
         className ??
-        'font-semibold text-accent hover:underline inline-flex items-center gap-1'
+        'font-semibold text-accent-ink hover:underline inline-flex items-center gap-1'
       }
     >
       <span>{t('createUnit', vocab)}</span>
