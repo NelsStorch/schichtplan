@@ -18,6 +18,15 @@ async function expectAccessible(page: Page, name: string) {
   const blocking = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
   const minor = violations.filter((v) => !blocking.includes(v));
   if (minor.length) console.log(`[a11y] ${name} – Hinweise:\n  ${summary(minor).join('\n  ')}`);
+  // Bei Verstössen alle betroffenen Elemente mit HTML und Begründung (z. B. gemessene Farben) ausgeben,
+  // nicht nur das erste: sonst kommt pro Lauf nur eine Stelle zum Vorschein
+  for (const v of blocking) {
+    for (const node of v.nodes) {
+      console.log(
+        `[a11y] ${name} – ${v.id}: ${node.target.join(' ')}\n    ${node.html.slice(0, 200)}\n    ${(node.failureSummary ?? '').replace(/\n/g, ' ')}`
+      );
+    }
+  }
   expect(summary(blocking), `Barrierefreiheit auf «${name}»`).toEqual([]);
 }
 

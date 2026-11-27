@@ -223,12 +223,13 @@ jobs:
       - name: Playwright-Browser installieren
         run: npx playwright install --with-deps chromium
 
-      # Die Tests melden sich in der CI schneller hintereinander an als lokal, die Login-Bremse
-      # würde sonst einzelne Tests mit «Zu viele Anfragen» abbrechen
+      # Die Tests laufen in der CI schneller hintereinander als lokal, alle von derselben IP. Die
+      # Login-Bremsen und das globale Limit würden sonst einzelne Tests mit 429 abbrechen
       - name: Umgebung starten
         run: docker compose -f docker-compose.dev.yml up -d --build
         env:
           E2E_RATE_LIMIT_FACTOR: "20"
+          RATE_LIMIT_MAX: "6000"
 
       - name: Auf das Backend warten
         run: |
